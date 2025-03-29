@@ -1,0 +1,6 @@
+This is a placeholder file. Replace this with your actual image files.
+
+To add images to your gallery:
+1. Place your image files (.jpg, .jpeg, .png, .gif, .webp) in this folder
+2. The file names will be used as captions (without the extension)
+3. Images will automatically appear in your gallery page
