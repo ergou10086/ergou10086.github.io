@@ -4,3 +4,13 @@ To add images to your gallery:
 1. Place your image files (.jpg, .jpeg, .png, .gif, .webp) in this folder
 2. The file names will be used as captions (without the extension)
 3. Images will automatically appear in your gallery page
+
+如何使用画廊功能
+添加图片：
+将你想展示的图片放在 D:\WorkSpace\github space\hexo-blog\themes\hexo-theme-only\source\gallery\images 目录中
+支持的图片格式：JPG、JPEG、PNG、GIF、WEBP
+访问画廊：
+通过主页或导航菜单中的"Gallery"链接访问
+图片会自动以网格形式显示，并带有基于文件名的标题
+查看大图：
+点击任何缩略图可以在新标签页中查看原始大小的图片
