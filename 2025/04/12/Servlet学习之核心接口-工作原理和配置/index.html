@@ -1,0 +1,312 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Servlet学习之核心接口,工作原理和配置 | ErgouTree's Blog</title><meta name="author" content="ErgouTree"><meta name="copyright" content="ErgouTree"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="什么是Servlet运行在服务器端的程序 servlet是一个接口，定义了Java类被浏览器访问到的规则（接口） Servlet是用java编写的服务器端的程序，主要是交互式的浏览和修改数据，生成动态Web内容，在JavaEE平台上，处理TCP连接，解析HTTP协议这些底层工作统统扔给现成的Web服务器去做，我们只需要把自己的应用程序跑在Web服务器上 Servlet运行于支持Java的应用服务器">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Servlet学习之核心接口,工作原理和配置">
+<meta property="og:url" content="https://ergou10086.github.io/2025/04/12/Servlet%E5%AD%A6%E4%B9%A0%E4%B9%8B%E6%A0%B8%E5%BF%83%E6%8E%A5%E5%8F%A3-%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86%E5%92%8C%E9%85%8D%E7%BD%AE/index.html">
+<meta property="og:site_name" content="ErgouTree&#39;s Blog">
+<meta property="og:description" content="什么是Servlet运行在服务器端的程序 servlet是一个接口，定义了Java类被浏览器访问到的规则（接口） Servlet是用java编写的服务器端的程序，主要是交互式的浏览和修改数据，生成动态Web内容，在JavaEE平台上，处理TCP连接，解析HTTP协议这些底层工作统统扔给现成的Web服务器去做，我们只需要把自己的应用程序跑在Web服务器上 Servlet运行于支持Java的应用服务器">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://ergou10086.github.io/img/butterfly-icon.png">
+<meta property="article:published_time" content="2025-04-12T12:50:52.000Z">
+<meta property="article:modified_time" content="2025-04-13T07:19:23.491Z">
+<meta property="article:author" content="ErgouTree">
+<meta property="article:tag" content="Java学习">
+<meta property="article:tag" content="技术">
+<meta property="article:tag" content="Servlet">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ergou10086.github.io/img/butterfly-icon.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Servlet学习之核心接口,工作原理和配置",
+  "url": "https://ergou10086.github.io/2025/04/12/Servlet%E5%AD%A6%E4%B9%A0%E4%B9%8B%E6%A0%B8%E5%BF%83%E6%8E%A5%E5%8F%A3-%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86%E5%92%8C%E9%85%8D%E7%BD%AE/",
+  "image": "https://ergou10086.github.io/img/butterfly-icon.png",
+  "datePublished": "2025-04-12T12:50:52.000Z",
+  "dateModified": "2025-04-13T07:19:23.491Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "ErgouTree",
+      "url": "https://ergou10086.github.io/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://ergou10086.github.io/2025/04/12/Servlet%E5%AD%A6%E4%B9%A0%E4%B9%8B%E6%A0%B8%E5%BF%83%E6%8E%A5%E5%8F%A3-%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86%E5%92%8C%E9%85%8D%E7%BD%AE/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Servlet学习之核心接口,工作原理和配置',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">ErgouTree's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">Servlet学习之核心接口,工作原理和配置</span></a></span><div id="menus"></div></nav><div id="post-info"><h1 class="post-title">Servlet学习之核心接口,工作原理和配置</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2025-04-12T12:50:52.000Z" title="发表于 2025-04-12 20:50:52">2025-04-12</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2025-04-13T07:19:23.491Z" title="更新于 2025-04-13 15:19:23">2025-04-13</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Java%E5%AD%A6%E4%B9%A0/">Java学习</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Java%E5%AD%A6%E4%B9%A0/Servlet/">Servlet</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="什么是Servlet"><a href="#什么是Servlet" class="headerlink" title="什么是Servlet"></a>什么是Servlet</h2><p>运行在服务器端的程序</p>
+<p>servlet是一个接口，定义了Java类被浏览器访问到的规则（接口）</p>
+<p>Servlet是用java编写的服务器端的程序，主要是交互式的浏览和修改数据，生成动态Web内容，在JavaEE平台上，处理TCP连接，解析HTTP协议这些底层工作统统扔给现成的Web服务器去做，我们只需要把自己的应用程序跑在Web服务器上</p>
+<p>Servlet运行于支持Java的<a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/%E5%BA%94%E7%94%A8%E6%9C%8D%E5%8A%A1%E5%99%A8">应用服务器</a>中。从实现上讲，Servlet可以响应任何类型的请求，但绝大多数情况下Servlet只用来扩展基于<a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/HTTP">HTTP</a><a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/%E5%8D%8F%E8%AE%AE">协议</a>的<a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/Web%E6%9C%8D%E5%8A%A1%E5%99%A8">Web服务器</a>。</p>
+<p>Struts2的核心用的是Filter（过滤器），而SpringMVC的核心用的就是Servlet。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// WebServlet注解表示这是一个Servlet，并映射到地址/:</span></span><br><span class="line"><span class="meta">@WebServlet(urlPatterns = &quot;/&quot;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">HelloServlet</span> <span class="keyword">extends</span> <span class="title class_">HttpServlet</span> &#123;</span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">void</span> <span class="title function_">doGet</span><span class="params">(HttpServletRequest req, HttpServletResponse resp)</span></span><br><span class="line">            <span class="keyword">throws</span> ServletException, IOException &#123;</span><br><span class="line">        <span class="comment">// 设置响应类型:</span></span><br><span class="line">        resp.setContentType(<span class="string">&quot;text/html&quot;</span>);</span><br><span class="line">        <span class="comment">// 获取输出流:</span></span><br><span class="line">        <span class="type">PrintWriter</span> <span class="variable">pw</span> <span class="operator">=</span> resp.getWriter();</span><br><span class="line">        <span class="comment">// 写入响应:</span></span><br><span class="line">        pw.write(<span class="string">&quot;&lt;h1&gt;Hello, world!&lt;/h1&gt;&quot;</span>);</span><br><span class="line">        <span class="comment">// 最后不要忘记flush强制输出:</span></span><br><span class="line">        pw.flush();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>一个Servlet总是继承自<code>HttpServlet</code>，然后重写<code>doGet()</code>或<code>doPost()</code>方法。注意到<code>doGet()</code>方法传入了<code>HttpServletRequest</code>和<code>HttpServletResponse</code>两个对象，分别代表HTTP请求和响应。我们使用Servlet API时，并不直接与底层TCP交互，也不需要解析HTTP协议，因为<code>HttpServletRequest</code>和<code>HttpServletResponse</code>就已经封装好了请求和响应</p>
+<h3 id="工作模式"><a href="#工作模式" class="headerlink" title="工作模式"></a>工作模式</h3><ul>
+<li>客户端发送请求至服务器</li>
+<li>服务器启动并调用Servlet，Servlet根据客户端请求生成响应内容并将其传给服务器</li>
+<li>服务器将响应返回客户端</li>
+</ul>
+<h3 id="API预览"><a href="#API预览" class="headerlink" title="API预览"></a>API预览</h3><p>Servlet API 包含以下4个Java包：</p>
+<p>1.javax.servlet   其中包含定义servlet和servlet容器之间契约的类和接口。</p>
+<p>2.javax.servlet.http   其中包含定义HTTP Servlet 和Servlet容器之间的关系。</p>
+<p>3.javax.servlet.annotation   其中包含标注servlet，Filter,Listener的标注。它还为被标注元件定义元数据。</p>
+<p>4.javax.servlet.descriptor，其中包含提供程序化登录Web应用程序的配置信息的类型。</p>
+<h3 id="使用Servlet"><a href="#使用Servlet" class="headerlink" title="使用Servlet"></a>使用Servlet</h3><p>Servlet技术的核心是Servlet，<strong>它是所有Servlet类必须直接或者间接实现的一个接口</strong>。在编写实现Servlet的Servlet类时，直接实现它。在扩展实现这个这个接口的类时，间接实现它。</p>
+<h2 id="工作原理"><a href="#工作原理" class="headerlink" title="工作原理"></a>工作原理</h2><p>​    Servlet接口定义了<strong>Servlet</strong>与<strong>servlet容器</strong>之间的契约：Servlet容器将Servlet类载入内存，并产生Servlet实例和调用它具体的方法。</p>
+<p>​    但是要注意的是，<strong>在一个应用程序中，每种Servlet类型只能有一个实例</strong>。</p>
+<p>​    用户请求致使Servlet容器调用Servlet的Service()方法,并传入一个ServletRequest对象和一个ServletResponse对象。 ServletRequest中封装了当前的Http请求,ServletResponse表示当前用户的Http响应.</p>
+<p>​     对于每一个应用程序，Servlet容器还会创建一个ServletContext对象。这个对象中封装了上下文（应用程序）的环境详情。每个应用程序只有一个ServletContext。每个Servlet对象也都有一个封装Servlet配置的ServletConfig对象。</p>
+<h3 id="接口中定义的方法"><a href="#接口中定义的方法" class="headerlink" title="接口中定义的方法"></a>接口中定义的方法</h3><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">Servlet</span> &#123;</span><br><span class="line">    <span class="comment">// 这是 Servlet 的初始化方法，在 Servlet 实例被创建之后，容器会调用此方法对 Servlet 进行初始化操作。</span></span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">init</span><span class="params">(ServletConfig var1)</span> <span class="keyword">throws</span> ServletException;</span><br><span class="line"> 	</span><br><span class="line">    <span class="comment">// 用于获取 Servlet 的配置信息，会返回由Servlet容器传给init（ ）方法的ServletConfig对象</span></span><br><span class="line">    ServletConfig <span class="title function_">getServletConfig</span><span class="params">()</span>;</span><br><span class="line"> 	</span><br><span class="line">    <span class="comment">// 用来处理客户端的请求并生成响应。当有客户端请求到达时，Servlet 容器会调用这个方法。</span></span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">service</span><span class="params">(ServletRequest var1, ServletResponse var2)</span> <span class="keyword">throws</span> ServletException, IOException;</span><br><span class="line"> 	</span><br><span class="line">    <span class="comment">// 用于返回 Servlet 的描述信息</span></span><br><span class="line">    String <span class="title function_">getServletInfo</span><span class="params">()</span>;</span><br><span class="line"> 	</span><br><span class="line">    <span class="comment">// 这是 Servlet 的销毁方法，在 Servlet 实例被销毁之前，容器会调用此方法，用于释放 Servlet 占用的资源</span></span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">destroy</span><span class="params">()</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="执行原理"><a href="#执行原理" class="headerlink" title="执行原理"></a>执行原理</h3><p>当服务器接收到客户端浏览器的请求后，会解析请求URL路径，获取访问的Servlet的资源路径</p>
+<p>查找Web.xml文件，是否有对应的<url-pattern>标签体的内容，如果有，则在对应的<servlet-class>全类名</servlet-class></url-pattern></p>
+<p>tomcat会将其字节码加载进内存然后构建对象，调用其方法</p>
+<h2 id="Servlet的生命周期"><a href="#Servlet的生命周期" class="headerlink" title="Servlet的生命周期"></a>Servlet的生命周期</h2><p>上述接口中定义的方法内，init( ),service( ),destroy( )是Servlet生命周期的方法。</p>
+<p>Servlet容器（例如TomCat）会根据下面的规则来调用这三个方法：</p>
+<ul>
+<li><p>当Servlet第一次被请求时，Servlet容器就会开始调用 init() 方法，初始化一个Servlet对象出来,这个方法在后续请求中不会在被Servlet容器调用。调用这个方法时，Servlet容器会传入一个ServletConfig对象进来从而对Servlet对象进行初始化。</p>
+</li>
+<li><p>service( )方法，每当请求Servlet时，Servlet容器就会调用这个方法，第一次请求时，Servlet容器会先调用init( )方法初始化一个Servlet对象出来，然后会调用它的service( )方法进行工作，但在后续的请求中，Servlet容器只会调用service方法了。</p>
+</li>
+<li><p>destory,当要销毁Servlet时，Servlet容器就会调用这个方法，一般在这个方法中会写一些清除代码，只有服务器正常关闭的时候，才会执行destory方法</p>
+<p>演示代码</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">init</span><span class="params">(ServletConfig servletConfig)</span> <span class="keyword">throws</span> ServletException &#123;</span><br><span class="line">    System.out.println(<span class="string">&quot;Servlet正在初始化&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">public</span> ServletConfig <span class="title function_">getServletConfig</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">service</span><span class="params">(ServletRequest servletRequest, ServletResponse servletResponse)</span> <span class="keyword">throws</span> ServletException, IOException &#123;</span><br><span class="line">    <span class="comment">//专门向客服端提供响应的方法</span></span><br><span class="line">    System.out.println(<span class="string">&quot;Servlet正在提供服务&quot;</span>);</span><br><span class="line"> </span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">public</span> String <span class="title function_">getServletInfo</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">destroy</span><span class="params">()</span> &#123;</span><br><span class="line">    System.out.println(<span class="string">&quot;Servlet正在销毁&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<p>其中servlet的创建时期是可以被指定的</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="comment">&lt;!-- 指定servlet的创建时期，负数为第一次访问时期，0或正数为服务器启动时期--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">load-on-startup</span>&gt;</span>5<span class="tag">&lt;/<span class="name">load-on-startup</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>Servlet中的 init 方法只执行一次，说明一个Servlet中只存在一个对象，是单例的，多个用户同时访问可能存在线程安全的隐患，所以尽量不要再其中定义成员变量，也不要对其赋值</p>
+<h2 id="Tomcat部分"><a href="#Tomcat部分" class="headerlink" title="Tomcat部分"></a>Tomcat部分</h2><p>普通的Java程序是通过启动JVM，然后执行<code>main()</code>方法开始运行。但是Web应用程序有所不同，我们无法直接运行<code>war</code>文件，必须先启动Web服务器，再由Web服务器加载我们编写的<code>HelloServlet</code>，这样就可以让<code>HelloServlet</code>处理浏览器发送的请求。</p>
+<p>Tomcat本身的目录层次结构</p>
+<p><img src="https://pic4.zhimg.com/v2-d3ecce3722bb00063eb8a5166a158569_1440w.jpg" alt="img"></p>
+<p>Tomcat提供了一个部署其服务器在你本地电脑上的功能</p>
+<p>​	实际上，类似Tomcat这样的服务器也是Java编写的，启动Tomcat服务器实际上是启动Java虚拟机</p>
+<p>​	执行Tomcat的<code>main()</code>方法，然后由Tomcat负责加载我们的<code>.war</code>文件，并创建一个<code>HelloServlet</code>实例，最后以多线程的模式来处理HTTP请求。</p>
+<p>​	如果Tomcat服务器收到的请求路径是<code>/</code>（假定部署文件为ROOT.war），就转发到<code>HelloServlet</code>并传入<code>HttpServletRequest</code>和<code>HttpServletResponse</code>两个对象。</p>
+<h2 id="配置Servlet"><a href="#配置Servlet" class="headerlink" title="配置Servlet"></a>配置Servlet</h2><h3 id="web-xml配置"><a href="#web-xml配置" class="headerlink" title="web.xml配置"></a>web.xml配置</h3><p><code>web.xml</code> 文件是用于配置 Web 应用程序的核心文件，它能对 Servlet、过滤器、监听器等组件进行配置</p>
+<h3 id="Servlet-定义"><a href="#Servlet-定义" class="headerlink" title="Servlet 定义"></a>Servlet 定义</h3><figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">servlet</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">servlet-name</span>&gt;</span>ServletExpDemo<span class="tag">&lt;/<span class="name">servlet-name</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">servlet-class</span>&gt;</span>org.ergoutree.servletexpdemo.demo1.FastGo<span class="tag">&lt;/<span class="name">servlet-class</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">servlet</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><servlet>标签：该标签的作用是定义一个 Servlet。在一个 <code>web.xml</code> 文件中，可以定义多个 Servlet。</servlet></li>
+<li><servlet-name>标签：这里为 Servlet 指定一个名称，也就是 <code>ServletExpDemo</code>。这个名称属于逻辑名称，主要用于在 <code>web.xml</code> 文件的其他部分引用该 Servlet。</servlet-name></li>
+<li><servlet-class>标签：它指定了 Servlet 类的全限定名，即 org.ergoutree.servletexpdemo.demo1.FastGo。当 Web 容器启动时，会依据这个全限定名来加载并实例化该 Servlet 类。</servlet-class></li>
+</ul>
+<h3 id="Servlet-映射"><a href="#Servlet-映射" class="headerlink" title="Servlet 映射"></a>Servlet 映射</h3><figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">servlet-mapping</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">servlet-name</span>&gt;</span>ServletExpDemo<span class="tag">&lt;/<span class="name">servlet-name</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">url-pattern</span>&gt;</span>/demo1<span class="tag">&lt;/<span class="name">url-pattern</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">servlet-mapping</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><servlet-mapping>标签：此标签的功能是将 Servlet 与一个或多个 URL 模式进行映射。当客户端发送请求时，Web 容器会根据请求的 URL 找到对应的 Servlet。</servlet-mapping></li>
+<li><servlet-name>标签：这里引用了之前定义的 Servlet 的名称，也就是 <code>ServletExpDemo</code>。</servlet-name></li>
+<li><url-pattern>标签：它指定了与该 Servlet 关联的 URL 模式，即 <code>/demo1</code>。当客户端请求的 URL 匹配这个模式时，Web 容器就会将请求转发给 <code>ServletExpDemo</code> 所对应的 Servlet 类（也就是<code>org.ergoutree.servletexpdemo.demo1.FastGo</code>）进行处理。</url-pattern></li>
+</ul>
+<h3 id="原理及其示例"><a href="#原理及其示例" class="headerlink" title="原理及其示例"></a>原理及其示例</h3><h4 id="原理说明"><a href="#原理说明" class="headerlink" title="原理说明"></a>原理说明</h4><p>当客户端向 Web 应用程序发送 HTTP 请求时，Web 容器（像 Tomcat 这类）会按照以下步骤处理请求：</p>
+<ol>
+<li><strong>解析请求 URL</strong>：Web 容器对客户端请求的 URL 进行解析，从中提取出请求的路径部分。</li>
+<li><strong>查找 Servlet 映射</strong>：Web 容器在 <code>web.xml</code> 文件里查找与请求路径相匹配的 &#96;&#96;。</li>
+<li><strong>定位 Servlet</strong>：若找到匹配的 <code>，Web 容器会根据对应的 </code> 找到之前定义的 Servlet。</li>
+<li><strong>实例化并调用 Servlet</strong>：Web 容器加载并实例化该 Servlet 类，然后调用其 <code>service()</code> 方法来处理请求。</li>
+<li><strong>返回响应</strong>：Servlet 处理完请求后，将响应返回给客户端。</li>
+</ol>
+<h4 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h4><p>假设客户端发送的请求 URL 为 <code>http://localhost:8080/yourApp/demo1</code>，Web 容器会进行如下操作：</p>
+<ol>
+<li>解析出请求路径为 <code>/demo1</code>。</li>
+<li>在 <code>web.xml</code> 文件中找到 <code>为 `/demo1` 的</code>。</li>
+<li>根据 &#96;&#96; 为 <code>ServletExpDemo</code>，找到对应的 Servlet 类 <code>org.ergoutree.servletexpdemo.demo1.FastGo</code>。</li>
+<li>加载并实例化 <code>FastGo</code> 类，调用其 <code>service()</code> 方法处理请求。</li>
+<li>将处理结果返回给客户端。</li>
+</ol>
+<h3 id="Serlvet3-0的注解配置"><a href="#Serlvet3-0的注解配置" class="headerlink" title="Serlvet3.0的注解配置"></a>Serlvet3.0的注解配置</h3><p>@WebServlet 的属性列表：</p>
+<p>![image-20250412202207184](D:\WorkSpace\github space\hexo-blog\source_posts\Servlet学习之核心接口，工作原理和配置\image-20250412202207184.png)</p>
+<h4 id="核心注解-WebServlet"><a href="#核心注解-WebServlet" class="headerlink" title="核心注解**@WebServlet**"></a>核心注解**@WebServlet**</h4><p>取代 <servlet> <code>和</code><servlet-mapping> ，直接绑定 URL 模式与 Servlet 类。</servlet-mapping></servlet></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@WebServlet(</span></span><br><span class="line"><span class="meta">    name = &quot;userServlet&quot;, // Servlet 名称（可选）</span></span><br><span class="line"><span class="meta">    urlPatterns = &#123;&quot;/user&quot;, &quot;/api/user&quot;&#125;, // 支持多 URL 模式</span></span><br><span class="line"><span class="meta">    loadOnStartup = 1, // 容器启动时立即加载（替代 &lt;load-on-startup&gt;）</span></span><br><span class="line"><span class="meta">    initParams = &#123;</span></span><br><span class="line"><span class="meta">        @WebInitParam(name = &quot;encoding&quot;, value = &quot;UTF-8&quot;) // 初始化参数</span></span><br><span class="line"><span class="meta">    &#125;,</span></span><br><span class="line"><span class="meta">    asyncSupported = true // 启用异步支持（默认 false）</span></span><br><span class="line"><span class="meta">)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">UserServlet</span> <span class="keyword">extends</span> <span class="title class_">HttpServlet</span> &#123; ... &#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p><code>urlPatterns</code>：支持精确匹配 (<code>/user</code>)、通配符 (<code>/api/*</code>)、后缀匹配 (<code>*.do</code>)。</p>
+</li>
+<li><p><code>loadOnStartup</code>：值越小优先级越高，控制 Servlet 初始化顺序。</p>
+</li>
+<li><p><code>asyncSupported</code>：异步处理开关，需配合 <code>AsyncContext</code> 使用（后文详解）。</p>
+</li>
+</ul>
+<h4 id="WebFilter：声明过滤器"><a href="#WebFilter：声明过滤器" class="headerlink" title="@WebFilter：声明过滤器"></a><strong>@WebFilter：声明过滤器</strong></h4><p>替代 <filter> <code>和</code><filter-mapping>，定义请求预处理和后处理逻辑。</filter-mapping></filter></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@WebFilter(</span></span><br><span class="line"><span class="meta">    filterName = &quot;auditFilter&quot;,</span></span><br><span class="line"><span class="meta">    urlPatterns = &quot;/*&quot;, // 过滤所有请求</span></span><br><span class="line"><span class="meta">    servletNames = &#123;&quot;userServlet&quot;&#125;, // 针对特定 Servlet</span></span><br><span class="line"><span class="meta">    dispatcherTypes = &#123;DispatcherType.REQUEST, DispatcherType.ASYNC&#125;</span></span><br><span class="line"><span class="meta">)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">AuditFilter</span> <span class="keyword">implements</span> <span class="title class_">Filter</span> &#123; ... &#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>dispatcherTypes</code>：控制过滤器作用的请求类型（如 <code>FORWARD</code>、<code>ERROR</code>）。</li>
+<li><strong>执行顺序问题</strong>：注解无法直接指定顺序，需通过类名自然排序或结合 <code>web.xml</code> 的 &#96;&#96;。</li>
+</ul>
+<p><strong>@WebListener：事件监听器</strong><br>简化监听器的声明，覆盖 Servlet 上下文、会话、请求等生命周期事件。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@WebListener</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">AppContextListener</span> <span class="keyword">implements</span> <span class="title class_">ServletContextListener</span> &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">contextInitialized</span><span class="params">(ServletContextEvent sce)</span> &#123;</span><br><span class="line">        <span class="comment">// 应用启动逻辑</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="异步处理"><a href="#异步处理" class="headerlink" title="异步处理"></a>异步处理</h4><p>在 <code>@WebServlet</code> 或 <code>@WebFilter</code> 中设置 <code>asyncSupported = true</code>。</p>
+<p>流程：</p>
+<ol>
+<li>开启异步上下文：<code>AsyncContext asyncContext = request.startAsync()</code>。</li>
+<li>提交耗时任务到其他线程（如数据库查询、远程调用）。</li>
+<li>任务完成时，通过 <code>asyncContext.complete()</code> 或返回响应。</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@WebServlet(urlPatterns = &quot;/async&quot;, asyncSupported = true)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">AsyncServlet</span> <span class="keyword">extends</span> <span class="title class_">HttpServlet</span> &#123;</span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">void</span> <span class="title function_">doGet</span><span class="params">(HttpServletRequest req, HttpServletResponse resp)</span> &#123;</span><br><span class="line">        <span class="type">AsyncContext</span> <span class="variable">ctx</span> <span class="operator">=</span> req.startAsync();</span><br><span class="line">        CompletableFuture.runAsync(() -&gt; &#123;</span><br><span class="line">            <span class="comment">// 模拟耗时操作</span></span><br><span class="line">            ctx.getResponse().getWriter().write(<span class="string">&quot;Async Response&quot;</span>);</span><br><span class="line">            ctx.complete();</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="模块化部署介绍"><a href="#模块化部署介绍" class="headerlink" title="模块化部署介绍"></a>模块化部署介绍</h4><p><strong>Servlet 3.0 模块化特性</strong>：</p>
+<ul>
+<li>允许将 Web 组件（Servlet、Filter、Listener）打包为 JAR 文件，置于 <code>WEB-INF/lib</code> 目录。</li>
+<li>容器自动扫描 JAR 中的 <code>META-INF/web-fragment.xml</code> 和注解，实现“即插即用”</li>
+</ul>
+<h4 id="注意情况"><a href="#注意情况" class="headerlink" title="注意情况"></a>注意情况</h4><p>如果使用@WebServlet Annotation（注解）来配置Servlet，需要注意：</p>
+<p>① 不要在 web.xml 文件的根元素（&lt;web-app—&#x2F;&gt;）中指定 metadata-complete&#x3D;“true”；<br>② 不要在 web.xml 文件中再次配置该 Servlet 相关属性</p>
+<p><code>ServletRequest</code> 和 <code>ServletResponse</code> 为 <code>Servlet</code> 提供了处理客户端请求和发送响应的能力；<code>ServletConfig</code> 为 <code>Servlet</code> 提供了配置信息；<code>ServletContext</code> 为 <code>Servlet</code> 提供了整个 Web 应用程序的上下文环境。它们共同协作，使得 <code>Servlet</code> 能够正常运行并处理客户端的请求。</p>
+<h2 id="ServletRequset接口"><a href="#ServletRequset接口" class="headerlink" title="ServletRequset接口"></a>ServletRequset接口</h2><p>Servlet容器对于接受到的每一个Http请求，都会创建一个ServletRequest对象，并把这个对象传递给Servlet的Sevice( )方法。其中，ServletRequest对象内封装了关于这个请求的许多详细信息。</p>
+<p>ServletRequest接口的部分内容：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">ServletRequest</span> &#123;</span><br><span class="line">    <span class="type">int</span> <span class="title function_">getContentLength</span><span class="params">()</span>;<span class="comment">//返回请求主体的字节数</span></span><br><span class="line">    String <span class="title function_">getContentType</span><span class="params">()</span>;<span class="comment">//返回主体的MIME类型</span></span><br><span class="line">    String <span class="title function_">getParameter</span><span class="params">(String var1)</span>;<span class="comment">//返回请求参数的值</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="ServletResponse接口"><a href="#ServletResponse接口" class="headerlink" title="ServletResponse接口"></a>ServletResponse接口</h2><p>javax.servlet.ServletResponse接口表示一个Servlet响应，在调用Servlet的Service( )方法前，Servlet容器会先创建一个ServletResponse对象，并把它作为第二个参数传给Service( )方法。</p>
+<p>ServletResponse隐藏了向浏览器发送响应的复杂过程。在向客户端发送响应时，大多数都是使用该对象向客户端发送HTML。</p>
+<p>ServletResponse内部定义的方法：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">ServletResponse</span> &#123;</span><br><span class="line">    String <span class="title function_">getCharacterEncoding</span><span class="params">()</span>;</span><br><span class="line"> 	<span class="comment">// 在发送任何HTML之前，应该先调用setContentType（）方法，设置响应的内容类型,加上“charset=UTF-8”改变响应的编码方式以防止发生中文乱码现象。</span></span><br><span class="line">    String <span class="title function_">getContentType</span><span class="params">()</span>;</span><br><span class="line"> 	<span class="comment">// 发送二进制数据的</span></span><br><span class="line">    ServletOutputStream <span class="title function_">getOutputStream</span><span class="params">()</span> <span class="keyword">throws</span> IOException;</span><br><span class="line"> 	<span class="comment">// PrintWriter对象使用ISO-8859-1编码（该编码在输入中文时会发生乱码）。</span></span><br><span class="line">    PrintWriter <span class="title function_">getWriter</span><span class="params">()</span> <span class="keyword">throws</span> IOException;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">setCharacterEncoding</span><span class="params">(String var1)</span>;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">setContentLength</span><span class="params">(<span class="type">int</span> var1)</span>;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">setContentType</span><span class="params">(String var1)</span>;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">setBufferSize</span><span class="params">(<span class="type">int</span> var1)</span>;</span><br><span class="line"> </span><br><span class="line">    <span class="type">int</span> <span class="title function_">getBufferSize</span><span class="params">()</span>;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">flushBuffer</span><span class="params">()</span> <span class="keyword">throws</span> IOException;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">resetBuffer</span><span class="params">()</span>;</span><br><span class="line"> </span><br><span class="line">    <span class="type">boolean</span> <span class="title function_">isCommitted</span><span class="params">()</span>;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">reset</span><span class="params">()</span>;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">setLocale</span><span class="params">(Locale var1)</span>;</span><br><span class="line"> </span><br><span class="line">    Locale <span class="title function_">getLocale</span><span class="params">()</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="ServletConfig接口"><a href="#ServletConfig接口" class="headerlink" title="ServletConfig接口"></a>ServletConfig接口</h2><p>当Servlet容器初始化Servlet时，Servlet容器会给Servlet的init( )方式传入一个ServletConfig对象。</p>
+<p>其中几个方法如下：</p>
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/3398ca59a36f4f9db43d1b24d6c816b7.png" alt="img"></p>
+<h2 id="ServletContext对象"><a href="#ServletContext对象" class="headerlink" title="ServletContext对象"></a>ServletContext对象</h2><p>ServletContext对象表示Servlet应用程序，是Servlet的上下文对象。每个Web应用程序都只有一个ServletContext对象。</p>
+<p>在将一个应用程序同时部署到多个容器的分布式环境中，每台Java虚拟机上的Web应用都会有一个ServletContext对象。</p>
+<p>通过在ServletConfig中调用getServletContext方法，也可以获得ServletContext对象。</p>
+<p><strong>有了ServletContext对象，就可以共享从应用程序中的所有资料处访问到的信息，并且可以动态注册Web对象。前者将对象保存在ServletContext中的一个内部Map中</strong></p>
+<p>ServletContext中的下列方法负责处理属性：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">Object <span class="title function_">getAttribute</span><span class="params">(String var1)</span>;  <span class="comment">// 获取 ServletContext 中指定名称的属性值</span></span><br><span class="line"> </span><br><span class="line"><span class="comment">// 用于获取 ServletContext 中所有属性的名称。返回的是一个 Enumeration 对象，通过它可以遍历所有属性的名称。</span></span><br><span class="line">Enumeration&lt;String&gt; <span class="title function_">getAttributeNames</span><span class="params">()</span>;</span><br><span class="line"> </span><br><span class="line"><span class="keyword">void</span> <span class="title function_">setAttribute</span><span class="params">(String var1, Object var2)</span>;    <span class="comment">// 向 ServletContext 中设置一个属性</span></span><br><span class="line"> </span><br><span class="line"><span class="keyword">void</span> <span class="title function_">removeAttribute</span><span class="params">(String var1)</span>;    <span class="comment">// 从 ServletContext 中移除指定名称的属性</span></span><br></pre></td></tr></table></figure>
+
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://ergou10086.github.io">ErgouTree</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://ergou10086.github.io/2025/04/12/Servlet%E5%AD%A6%E4%B9%A0%E4%B9%8B%E6%A0%B8%E5%BF%83%E6%8E%A5%E5%8F%A3-%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86%E5%92%8C%E9%85%8D%E7%BD%AE/">https://ergou10086.github.io/2025/04/12/Servlet%E5%AD%A6%E4%B9%A0%E4%B9%8B%E6%A0%B8%E5%BF%83%E6%8E%A5%E5%8F%A3-%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86%E5%92%8C%E9%85%8D%E7%BD%AE/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://ergou10086.github.io" target="_blank">ErgouTree's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Java%E5%AD%A6%E4%B9%A0/">Java学习</a><a class="post-meta__tags" href="/tags/%E6%8A%80%E6%9C%AF/">技术</a><a class="post-meta__tags" href="/tags/Servlet/">Servlet</a></div><div class="post-share"><div class="social-share" data-image="/img/butterfly-icon.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2025/03/29/%E8%93%9D%E6%A1%A5%E6%9D%AF3%E6%9C%88%E6%9C%88%E8%B5%9BF%E9%A2%98%E9%A2%98%E8%A7%A3/" title="蓝桥杯3月月赛F题题解"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">蓝桥杯3月月赛F题题解</div></div><div class="info-2"><div class="info-item-1">「蓝桥·算法双周赛」第二十七场蓝桥月赛最后一题题解(可能是首发？？nm，真比第三题简单吧) (求你们看看吧我对我的码风很自信) 问题描述  二分枚举时间m，然后剩下的就是根据题意纯模拟   注意备份和等待能不能跨天进行，这是个坑点 细节在注释里有 package 蓝桥月赛第27场;import java.util.Scanner;public class F &#123;		private static int calculateDays(int m, int[] a, int[] b) &#123;		// 如果没有电脑需要备份，返回 0 天    	if(a.length == 0) return 0;    	    	// 如果 M 小于第一台电脑的备份时间    	if(m &lt; a[0]) return Integer.MAX_VALUE;    	    	// 第一天    	int days = 1;    	// 备份第一台开始算剩余时间    	int currentRemaining = m - a[0];    	// 第一台都备份不上？？    ...</div></div></div></a><a class="pagination-related" href="/2025/04/12/markdown%E5%B8%B8%E7%94%A8%E8%AF%AD%E6%B3%95/" title="markdown常用语法"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">markdown常用语法</div></div><div class="info-2"><div class="info-item-1">markdown常用语法标题# 一级标题## 二级标题### 三级标题#### 四级标题##### 五级标题###### 六级标题 #后必须要有空格还可以在文本下方添加任意数量的 == 号来标识一级标题，或者 -- 号来标识二级标题。Heading level 1===============Heading level 2---------------在实际渲染中，’#’ 号数量对应标题级别，一个 ‘#’ 是一级标题，两个 ‘#’ 是二级标题，以此类推。#的叠加可以很多，但是当过多之后，会变的比正常字体还要小，可以利用这个特性***## 段落和换行#### 换行句子末尾双空格代表换行。或者多个空格进行换行 貌似也可以#### 段落处理段落就是用空白行将一行或多行文本进行分割注意：不要用空格（spaces）或制表符（ tabs）缩进段落。***## 强调*斜体文本*   前后各添加一个星号或下划线  _斜体文本_**粗体文本**   前后各添加两个星号或下划线  __粗体文本__***加粗斜体文本***~~删除线文本~~粗体和斜体可以混合用***## 代码块行内代码：用反引号...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2025/04/12/markdown%E5%B8%B8%E7%94%A8%E8%AF%AD%E6%B3%95/" title="markdown常用语法"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-04-12</div><div class="info-item-2">markdown常用语法</div></div><div class="info-2"><div class="info-item-1">markdown常用语法标题# 一级标题## 二级标题### 三级标题#### 四级标题##### 五级标题###### 六级标题 #后必须要有空格还可以在文本下方添加任意数量的 == 号来标识一级标题，或者 -- 号来标识二级标题。Heading level 1===============Heading level 2---------------在实际渲染中，’#’ 号数量对应标题级别，一个 ‘#’ 是一级标题，两个 ‘#’ 是二级标题，以此类推。#的叠加可以很多，但是当过多之后，会变的比正常字体还要小，可以利用这个特性***## 段落和换行#### 换行句子末尾双空格代表换行。或者多个空格进行换行 貌似也可以#### 段落处理段落就是用空白行将一行或多行文本进行分割注意：不要用空格（spaces）或制表符（ tabs）缩进段落。***## 强调*斜体文本*   前后各添加一个星号或下划线  _斜体文本_**粗体文本**   前后各添加两个星号或下划线  __粗体文本__***加粗斜体文本***~~删除线文本~~粗体和斜体可以混合用***## 代码块行内代码：用反引号...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/butterfly-icon.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">ErgouTree</div><div class="author-info-description">Shirone</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">7</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">9</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">7</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AFServlet"><span class="toc-number">1.</span> <span class="toc-text">什么是Servlet</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B7%A5%E4%BD%9C%E6%A8%A1%E5%BC%8F"><span class="toc-number">1.1.</span> <span class="toc-text">工作模式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#API%E9%A2%84%E8%A7%88"><span class="toc-number">1.2.</span> <span class="toc-text">API预览</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8Servlet"><span class="toc-number">1.3.</span> <span class="toc-text">使用Servlet</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86"><span class="toc-number">2.</span> <span class="toc-text">工作原理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8E%A5%E5%8F%A3%E4%B8%AD%E5%AE%9A%E4%B9%89%E7%9A%84%E6%96%B9%E6%B3%95"><span class="toc-number">2.1.</span> <span class="toc-text">接口中定义的方法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%89%A7%E8%A1%8C%E5%8E%9F%E7%90%86"><span class="toc-number">2.2.</span> <span class="toc-text">执行原理</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Servlet%E7%9A%84%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F"><span class="toc-number">3.</span> <span class="toc-text">Servlet的生命周期</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Tomcat%E9%83%A8%E5%88%86"><span class="toc-number">4.</span> <span class="toc-text">Tomcat部分</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%85%8D%E7%BD%AEServlet"><span class="toc-number">5.</span> <span class="toc-text">配置Servlet</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#web-xml%E9%85%8D%E7%BD%AE"><span class="toc-number">5.1.</span> <span class="toc-text">web.xml配置</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Servlet-%E5%AE%9A%E4%B9%89"><span class="toc-number">5.2.</span> <span class="toc-text">Servlet 定义</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Servlet-%E6%98%A0%E5%B0%84"><span class="toc-number">5.3.</span> <span class="toc-text">Servlet 映射</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8E%9F%E7%90%86%E5%8F%8A%E5%85%B6%E7%A4%BA%E4%BE%8B"><span class="toc-number">5.4.</span> <span class="toc-text">原理及其示例</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%8E%9F%E7%90%86%E8%AF%B4%E6%98%8E"><span class="toc-number">5.4.1.</span> <span class="toc-text">原理说明</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%A4%BA%E4%BE%8B"><span class="toc-number">5.4.2.</span> <span class="toc-text">示例</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Serlvet3-0%E7%9A%84%E6%B3%A8%E8%A7%A3%E9%85%8D%E7%BD%AE"><span class="toc-number">5.5.</span> <span class="toc-text">Serlvet3.0的注解配置</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E6%B3%A8%E8%A7%A3-WebServlet"><span class="toc-number">5.5.1.</span> <span class="toc-text">核心注解**@WebServlet**</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#WebFilter%EF%BC%9A%E5%A3%B0%E6%98%8E%E8%BF%87%E6%BB%A4%E5%99%A8"><span class="toc-number">5.5.2.</span> <span class="toc-text">@WebFilter：声明过滤器</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%BC%82%E6%AD%A5%E5%A4%84%E7%90%86"><span class="toc-number">5.5.3.</span> <span class="toc-text">异步处理</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%A8%A1%E5%9D%97%E5%8C%96%E9%83%A8%E7%BD%B2%E4%BB%8B%E7%BB%8D"><span class="toc-number">5.5.4.</span> <span class="toc-text">模块化部署介绍</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B3%A8%E6%84%8F%E6%83%85%E5%86%B5"><span class="toc-number">5.5.5.</span> <span class="toc-text">注意情况</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ServletRequset%E6%8E%A5%E5%8F%A3"><span class="toc-number">6.</span> <span class="toc-text">ServletRequset接口</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ServletResponse%E6%8E%A5%E5%8F%A3"><span class="toc-number">7.</span> <span class="toc-text">ServletResponse接口</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ServletConfig%E6%8E%A5%E5%8F%A3"><span class="toc-number">8.</span> <span class="toc-text">ServletConfig接口</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ServletContext%E5%AF%B9%E8%B1%A1"><span class="toc-number">9.</span> <span class="toc-text">ServletContext对象</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/04/13/Hexo%E6%A0%B9%E7%9B%AE%E5%BD%95%E4%B8%8B%E7%9A%84_config.yml%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6/" title="无标题">无标题</a><time datetime="2025-04-13T09:13:03.562Z" title="发表于 2025-04-13 17:13:03">2025-04-13</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/04/12/markdown%E5%B8%B8%E7%94%A8%E8%AF%AD%E6%B3%95/" title="markdown常用语法">markdown常用语法</a><time datetime="2025-04-12T12:52:32.000Z" title="发表于 2025-04-12 20:52:32">2025-04-12</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/04/12/Servlet%E5%AD%A6%E4%B9%A0%E4%B9%8B%E6%A0%B8%E5%BF%83%E6%8E%A5%E5%8F%A3-%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86%E5%92%8C%E9%85%8D%E7%BD%AE/" title="Servlet学习之核心接口,工作原理和配置">Servlet学习之核心接口,工作原理和配置</a><time datetime="2025-04-12T12:50:52.000Z" title="发表于 2025-04-12 20:50:52">2025-04-12</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/03/29/%E8%93%9D%E6%A1%A5%E6%9D%AF3%E6%9C%88%E6%9C%88%E8%B5%9BF%E9%A2%98%E9%A2%98%E8%A7%A3/" title="蓝桥杯3月月赛F题题解">蓝桥杯3月月赛F题题解</a><time datetime="2025-03-29T13:16:48.000Z" title="发表于 2025-03-29 21:16:48">2025-03-29</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/03/29/about/" title="AboutMe">AboutMe</a><time datetime="2025-03-29T04:02:39.000Z" title="发表于 2025-03-29 12:02:39">2025-03-29</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2019 - 2025 By ErgouTree</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><div class="js-pjax"></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

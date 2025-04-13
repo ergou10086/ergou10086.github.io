@@ -1,0 +1,171 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>蓝桥杯3月月赛F题题解 | ErgouTree's Blog</title><meta name="author" content="ErgouTree"><meta name="copyright" content="ErgouTree"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="「蓝桥·算法双周赛」第二十七场蓝桥月赛最后一题题解(可能是首发？？nm，真比第三题简单吧) (求你们看看吧我对我的码风很自信) 问题描述  二分枚举时间m，然后剩下的就是根据题意纯模拟   注意备份和等待能不能跨天进行，这是个坑点 细节在注释里有 package 蓝桥月赛第27场;import java.util.Scanner;public class F &#123;		private sta">
+<meta property="og:type" content="article">
+<meta property="og:title" content="蓝桥杯3月月赛F题题解">
+<meta property="og:url" content="https://ergou10086.github.io/2025/03/29/%E8%93%9D%E6%A1%A5%E6%9D%AF3%E6%9C%88%E6%9C%88%E8%B5%9BF%E9%A2%98%E9%A2%98%E8%A7%A3/index.html">
+<meta property="og:site_name" content="ErgouTree&#39;s Blog">
+<meta property="og:description" content="「蓝桥·算法双周赛」第二十七场蓝桥月赛最后一题题解(可能是首发？？nm，真比第三题简单吧) (求你们看看吧我对我的码风很自信) 问题描述  二分枚举时间m，然后剩下的就是根据题意纯模拟   注意备份和等待能不能跨天进行，这是个坑点 细节在注释里有 package 蓝桥月赛第27场;import java.util.Scanner;public class F &#123;		private sta">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://ergou10086.github.io/img/butterfly-icon.png">
+<meta property="article:published_time" content="2025-03-29T13:16:48.000Z">
+<meta property="article:modified_time" content="2025-04-13T07:19:23.501Z">
+<meta property="article:author" content="ErgouTree">
+<meta property="article:tag" content="算法">
+<meta property="article:tag" content="题解">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ergou10086.github.io/img/butterfly-icon.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "蓝桥杯3月月赛F题题解",
+  "url": "https://ergou10086.github.io/2025/03/29/%E8%93%9D%E6%A1%A5%E6%9D%AF3%E6%9C%88%E6%9C%88%E8%B5%9BF%E9%A2%98%E9%A2%98%E8%A7%A3/",
+  "image": "https://ergou10086.github.io/img/butterfly-icon.png",
+  "datePublished": "2025-03-29T13:16:48.000Z",
+  "dateModified": "2025-04-13T07:19:23.501Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "ErgouTree",
+      "url": "https://ergou10086.github.io/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://ergou10086.github.io/2025/03/29/%E8%93%9D%E6%A1%A5%E6%9D%AF3%E6%9C%88%E6%9C%88%E8%B5%9BF%E9%A2%98%E9%A2%98%E8%A7%A3/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '蓝桥杯3月月赛F题题解',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">ErgouTree's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">蓝桥杯3月月赛F题题解</span></a></span><div id="menus"></div></nav><div id="post-info"><h1 class="post-title">蓝桥杯3月月赛F题题解</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2025-03-29T13:16:48.000Z" title="发表于 2025-03-29 21:16:48">2025-03-29</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2025-04-13T07:19:23.501Z" title="更新于 2025-04-13 15:19:23">2025-04-13</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E9%A2%98%E8%A7%A3/">题解</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h3 id="「蓝桥·算法双周赛」第二十七场蓝桥月赛最后一题题解"><a href="#「蓝桥·算法双周赛」第二十七场蓝桥月赛最后一题题解" class="headerlink" title="「蓝桥·算法双周赛」第二十七场蓝桥月赛最后一题题解"></a>「蓝桥·算法双周赛」第二十七场蓝桥月赛最后一题题解</h3><p>(可能是首发？？nm，真比第三题简单吧)</p>
+<p><del>(求你们看看吧我对我的码风很自信)</del></p>
+<p>问题描述 </p>
+<p>二分枚举时间m，然后剩下的就是根据题意纯模拟  </p>
+<p>注意备份和等待能不能跨天进行，这是个坑点</p>
+<p>细节在注释里有</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> 蓝桥月赛第<span class="number">27</span>场;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.util.Scanner;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">F</span> &#123;</span><br><span class="line">	</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">static</span> <span class="type">int</span> <span class="title function_">calculateDays</span><span class="params">(<span class="type">int</span> m, <span class="type">int</span>[] a, <span class="type">int</span>[] b)</span> &#123;</span><br><span class="line">		<span class="comment">// 如果没有电脑需要备份，返回 0 天</span></span><br><span class="line">    	<span class="keyword">if</span>(a.length == <span class="number">0</span>) <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    	</span><br><span class="line">    	<span class="comment">// 如果 M 小于第一台电脑的备份时间</span></span><br><span class="line">    	<span class="keyword">if</span>(m &lt; a[<span class="number">0</span>]) <span class="keyword">return</span> Integer.MAX_VALUE;</span><br><span class="line">    	</span><br><span class="line">    	<span class="comment">// 第一天</span></span><br><span class="line">    	<span class="type">int</span> <span class="variable">days</span> <span class="operator">=</span> <span class="number">1</span>;</span><br><span class="line">    	<span class="comment">// 备份第一台开始算剩余时间</span></span><br><span class="line">    	<span class="type">int</span> <span class="variable">currentRemaining</span> <span class="operator">=</span> m - a[<span class="number">0</span>];</span><br><span class="line">    	<span class="comment">// 第一台都备份不上？？</span></span><br><span class="line">        <span class="keyword">if</span> (currentRemaining &lt; <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> Integer.MAX_VALUE;</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">1</span>; i &lt;= a.length; i++) &#123;</span><br><span class="line">        	<span class="type">int</span> <span class="variable">wait</span> <span class="operator">=</span> b[i];   <span class="comment">// 获取前一台电脑的等待时间</span></span><br><span class="line">        	</span><br><span class="line">        	<span class="comment">// 处理等待时间</span></span><br><span class="line">        	<span class="comment">// 时间足够，直接减去</span></span><br><span class="line">        	<span class="keyword">if</span>(currentRemaining &gt;= wait) &#123;</span><br><span class="line">        		currentRemaining -= wait;</span><br><span class="line">        	<span class="comment">// 不够只能过天了，计算剩余的等待时间</span></span><br><span class="line">        	&#125;<span class="keyword">else</span> &#123;</span><br><span class="line">        		<span class="comment">// 把当天能等的给等了</span></span><br><span class="line">        		wait -= currentRemaining;</span><br><span class="line">        		days++;</span><br><span class="line">        		currentRemaining = m;   <span class="comment">// 重置剩余时间</span></span><br><span class="line">        		</span><br><span class="line">        		<span class="type">int</span> <span class="variable">fullDays</span> <span class="operator">=</span> wait / m;   <span class="comment">// 计算等几天</span></span><br><span class="line">        		days += fullDays;</span><br><span class="line">        		wait -= fullDays * m;</span><br><span class="line">        		</span><br><span class="line">        		<span class="keyword">if</span>(wait &gt; <span class="number">0</span>) &#123;</span><br><span class="line">        			<span class="comment">// 减去零头</span></span><br><span class="line">        			currentRemaining = m - wait;</span><br><span class="line">        		&#125;<span class="keyword">else</span> &#123;</span><br><span class="line">        			currentRemaining = m;  <span class="comment">// 重置</span></span><br><span class="line">        		&#125;</span><br><span class="line">        	&#125;</span><br><span class="line">        	</span><br><span class="line">        	</span><br><span class="line">        	<span class="comment">// 处理备份时间</span></span><br><span class="line">        	<span class="comment">// 今天够备份</span></span><br><span class="line">        	<span class="keyword">if</span>(currentRemaining &gt;= a[i]) &#123;</span><br><span class="line">        		currentRemaining -= a[i];</span><br><span class="line">        	&#125;<span class="keyword">else</span> &#123;</span><br><span class="line">        		<span class="comment">// 今天备份不完，备份不能留到第二天</span></span><br><span class="line">        		days++;</span><br><span class="line">        		currentRemaining = m - a[i];</span><br><span class="line">        		<span class="comment">// 不行，时间太短，备份不完</span></span><br><span class="line">        		<span class="keyword">if</span> (currentRemaining &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        			<span class="keyword">return</span> Integer.MAX_VALUE;</span><br><span class="line">        		&#125;</span><br><span class="line">        	&#125;</span><br><span class="line">        	</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> days;</span><br><span class="line">    &#125;</span><br><span class="line">	</span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">		<span class="type">Scanner</span> <span class="variable">scanner</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Scanner</span>(System.in);</span><br><span class="line">		</span><br><span class="line">		<span class="comment">// N 台电脑</span></span><br><span class="line">        <span class="type">int</span> <span class="variable">n</span> <span class="operator">=</span> scanner.nextInt();</span><br><span class="line">        <span class="comment">// 最多允许的天数T</span></span><br><span class="line">        <span class="type">int</span> <span class="variable">t</span> <span class="operator">=</span> scanner.nextInt();</span><br><span class="line">        <span class="comment">// 表示每台电脑的备份时间。</span></span><br><span class="line">        <span class="type">int</span>[] a = <span class="keyword">new</span> <span class="title class_">int</span>[n];</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">1</span>; i &lt;= n; i++) &#123;</span><br><span class="line">            a[i] = scanner.nextInt();</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 每台电脑备份完成后需要等待的时间。</span></span><br><span class="line">        <span class="type">int</span>[] b = <span class="keyword">new</span> <span class="title class_">int</span>[n];</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">1</span>; i &lt;= n; i++) &#123;</span><br><span class="line">            b[i] = scanner.nextInt();</span><br><span class="line">        &#125;</span><br><span class="line">        scanner.close();</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 最长备份时间</span></span><br><span class="line">        <span class="type">int</span> <span class="variable">maxA</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">for</span>(<span class="type">int</span> ai: a) &#123;</span><br><span class="line">        	<span class="keyword">if</span> (ai &gt; maxA) &#123;</span><br><span class="line">                maxA = ai;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">if</span> (maxA &gt; <span class="number">3600</span>) &#123;</span><br><span class="line">            System.out.println(-<span class="number">1</span>);</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 开始二分 枚举m</span></span><br><span class="line">        <span class="type">int</span> <span class="variable">left</span> <span class="operator">=</span> maxA;</span><br><span class="line">        <span class="type">int</span> <span class="variable">right</span> <span class="operator">=</span> <span class="number">3600</span>;</span><br><span class="line">        <span class="type">int</span> <span class="variable">result</span> <span class="operator">=</span> -<span class="number">1</span>;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">while</span>(left &lt;= right) &#123;</span><br><span class="line">        	<span class="type">int</span> <span class="variable">mid</span> <span class="operator">=</span> (left + right) / <span class="number">2</span>;</span><br><span class="line">        	<span class="type">int</span> <span class="variable">days</span> <span class="operator">=</span> calculateDays(mid, a, b);</span><br><span class="line">        	<span class="keyword">if</span> (days &lt;= t) &#123;</span><br><span class="line">                result = mid;</span><br><span class="line">                right = mid - <span class="number">1</span>;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                left = mid + <span class="number">1</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        System.out.println(result != -<span class="number">1</span> ? result : -<span class="number">1</span>);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://ergou10086.github.io">ErgouTree</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://ergou10086.github.io/2025/03/29/%E8%93%9D%E6%A1%A5%E6%9D%AF3%E6%9C%88%E6%9C%88%E8%B5%9BF%E9%A2%98%E9%A2%98%E8%A7%A3/">https://ergou10086.github.io/2025/03/29/%E8%93%9D%E6%A1%A5%E6%9D%AF3%E6%9C%88%E6%9C%88%E8%B5%9BF%E9%A2%98%E9%A2%98%E8%A7%A3/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://ergou10086.github.io" target="_blank">ErgouTree's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E7%AE%97%E6%B3%95/">算法</a><a class="post-meta__tags" href="/tags/%E9%A2%98%E8%A7%A3/">题解</a></div><div class="post-share"><div class="social-share" data-image="/img/butterfly-icon.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2025/03/29/about/" title="AboutMe"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">AboutMe</div></div><div class="info-2"><div class="info-item-1">  主要语言是Java和安卓，基本全平台同名，唉苦手   谁来教我kotlin，我好想玩galgame   是保真的后端苦手，目标是啥都会点能干全栈，喜欢学点自己配置点乱七八糟的东西   空闲时候我会做什么：肯定是打osu!mania啊 我的osu主页 个人喜欢绘画，尤其是手绘，可以看看我的作品   会的东西                                                        一张深浜祈莉手绘  </div></div></div></a><a class="pagination-related" href="/2025/04/12/Servlet%E5%AD%A6%E4%B9%A0%E4%B9%8B%E6%A0%B8%E5%BF%83%E6%8E%A5%E5%8F%A3-%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86%E5%92%8C%E9%85%8D%E7%BD%AE/" title="Servlet学习之核心接口,工作原理和配置"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Servlet学习之核心接口,工作原理和配置</div></div><div class="info-2"><div class="info-item-1">什么是Servlet运行在服务器端的程序 servlet是一个接口，定义了Java类被浏览器访问到的规则（接口） Servlet是用java编写的服务器端的程序，主要是交互式的浏览和修改数据，生成动态Web内容，在JavaEE平台上，处理TCP连接，解析HTTP协议这些底层工作统统扔给现成的Web服务器去做，我们只需要把自己的应用程序跑在Web服务器上 Servlet运行于支持Java的应用服务器中。从实现上讲，Servlet可以响应任何类型的请求，但绝大多数情况下Servlet只用来扩展基于HTTP协议的Web服务器。 Struts2的核心用的是Filter（过滤器），而SpringMVC的核心用的就是Servlet。 // WebServlet注解表示这是一个Servlet，并映射到地址/:@WebServlet(urlPatterns = &quot;/&quot;)public class HelloServlet extends HttpServlet &#123;    protected void doGet(HttpServletRequest req,...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/butterfly-icon.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">ErgouTree</div><div class="author-info-description">Shirone</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">7</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">9</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">7</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E3%80%8C%E8%93%9D%E6%A1%A5%C2%B7%E7%AE%97%E6%B3%95%E5%8F%8C%E5%91%A8%E8%B5%9B%E3%80%8D%E7%AC%AC%E4%BA%8C%E5%8D%81%E4%B8%83%E5%9C%BA%E8%93%9D%E6%A1%A5%E6%9C%88%E8%B5%9B%E6%9C%80%E5%90%8E%E4%B8%80%E9%A2%98%E9%A2%98%E8%A7%A3"><span class="toc-number">1.</span> <span class="toc-text">「蓝桥·算法双周赛」第二十七场蓝桥月赛最后一题题解</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/04/13/Hexo%E6%A0%B9%E7%9B%AE%E5%BD%95%E4%B8%8B%E7%9A%84_config.yml%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6/" title="无标题">无标题</a><time datetime="2025-04-13T09:13:03.562Z" title="发表于 2025-04-13 17:13:03">2025-04-13</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/04/12/markdown%E5%B8%B8%E7%94%A8%E8%AF%AD%E6%B3%95/" title="markdown常用语法">markdown常用语法</a><time datetime="2025-04-12T12:52:32.000Z" title="发表于 2025-04-12 20:52:32">2025-04-12</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/04/12/Servlet%E5%AD%A6%E4%B9%A0%E4%B9%8B%E6%A0%B8%E5%BF%83%E6%8E%A5%E5%8F%A3-%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86%E5%92%8C%E9%85%8D%E7%BD%AE/" title="Servlet学习之核心接口,工作原理和配置">Servlet学习之核心接口,工作原理和配置</a><time datetime="2025-04-12T12:50:52.000Z" title="发表于 2025-04-12 20:50:52">2025-04-12</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/03/29/%E8%93%9D%E6%A1%A5%E6%9D%AF3%E6%9C%88%E6%9C%88%E8%B5%9BF%E9%A2%98%E9%A2%98%E8%A7%A3/" title="蓝桥杯3月月赛F题题解">蓝桥杯3月月赛F题题解</a><time datetime="2025-03-29T13:16:48.000Z" title="发表于 2025-03-29 21:16:48">2025-03-29</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/03/29/about/" title="AboutMe">AboutMe</a><time datetime="2025-03-29T04:02:39.000Z" title="发表于 2025-03-29 12:02:39">2025-03-29</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2019 - 2025 By ErgouTree</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><div class="js-pjax"></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
