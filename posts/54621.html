@@ -1,0 +1,218 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Java注解与Annotation类 | ErgouTree's Blog</title><meta name="author" content="ErgouTree"><meta name="copyright" content="ErgouTree"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="Java难绷知识01之对象流本篇文章会探讨一些JavaIO流中比较容易被忽视的对象流，而且会相对的探讨其中的一些细节其中对于对象流的操作讲解会少一些，主要讨论的是一些细节   在 Java IO 流中，对象流（ObjectInputStream对象输入流 和 ObjectOutputStream对象输出流）用于将对象进行序列化和反序列化操作   对象流及其序列化首先，ObjectInputStre">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java注解与Annotation类">
+<meta property="og:url" content="https://ergou10086.github.io/posts/54621.html">
+<meta property="og:site_name" content="ErgouTree&#39;s Blog">
+<meta property="og:description" content="Java难绷知识01之对象流本篇文章会探讨一些JavaIO流中比较容易被忽视的对象流，而且会相对的探讨其中的一些细节其中对于对象流的操作讲解会少一些，主要讨论的是一些细节   在 Java IO 流中，对象流（ObjectInputStream对象输入流 和 ObjectOutputStream对象输出流）用于将对象进行序列化和反序列化操作   对象流及其序列化首先，ObjectInputStre">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://ergou10086.github.io/images/posts/cover_java.jpg">
+<meta property="article:published_time" content="2024-11-14T10:26:17.000Z">
+<meta property="article:modified_time" content="2025-04-14T10:34:16.181Z">
+<meta property="article:author" content="ErgouTree">
+<meta property="article:tag" content="Java技术">
+<meta property="article:tag" content="实用知识">
+<meta property="article:tag" content="JavaSE">
+<meta property="article:tag" content="语言方面">
+<meta property="article:tag" content="学习">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ergou10086.github.io/images/posts/cover_java.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Java注解与Annotation类",
+  "url": "https://ergou10086.github.io/posts/54621.html",
+  "image": "https://ergou10086.github.io/images/posts/cover_java.jpg",
+  "datePublished": "2024-11-14T10:26:17.000Z",
+  "dateModified": "2025-04-14T10:34:16.181Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "ErgouTree",
+      "url": "https://ergou10086.github.io/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/pi.ico"><link rel="canonical" href="https://ergou10086.github.io/posts/54621.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Java注解与Annotation类',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="web_bg" style="background: linear-gradient(20deg, #0062be, #925696, #cc426e, #fb0347);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/arp.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">11</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">20</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">14</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-gallery"></i><span> Gallery</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/images/posts/cover_java.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">ErgouTree's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">Java注解与Annotation类</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-gallery"></i><span> Gallery</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">Java注解与Annotation类</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2024-11-14T10:26:17.000Z" title="发表于 2024-11-14 18:26:17">2024-11-14</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2025-04-14T10:34:16.181Z" title="更新于 2025-04-14 18:34:16">2025-04-14</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Java%E5%AD%A6%E4%B9%A0/">Java学习</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Java%E5%AD%A6%E4%B9%A0/JavaSE/">JavaSE</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Java%E5%AD%A6%E4%B9%A0/JavaSE/Java%E9%9A%BE%E7%BB%B7%E7%9F%A5%E8%AF%86%E7%B3%BB%E5%88%97/">Java难绷知识系列</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="Java难绷知识01之对象流"><a href="#Java难绷知识01之对象流" class="headerlink" title="Java难绷知识01之对象流"></a>Java难绷知识01之对象流</h2><p>本篇文章会探讨一些JavaIO流中比较容易被忽视的对象流，而且会相对的探讨其中的一些细节<br>其中对于对象流的操作讲解会少一些，主要讨论的是一些细节  </p>
+<p>在 Java IO 流中，对象流（ObjectInputStream对象输入流 和 ObjectOutputStream对象输出流）用于将对象进行序列化和反序列化操作  </p>
+<h3 id="对象流及其序列化"><a href="#对象流及其序列化" class="headerlink" title="对象流及其序列化"></a>对象流及其序列化</h3><p>首先，ObjectInputStream和ObjectOutputStream这两个类都属于是字节流，它们分别继承自InputStream和OutputStream  </p>
+<p>对象输出流，ObjectOutputStream，用于对象的序列化，也就是把Java对象转换成字节序列，把字节序列写出到文件，以这种对象转换为字节序列的机制实现了对象存储<br>序列化目的是能够将整个 Java 对象（包括对象的状态，即成员变量的值）转换为字节流，以便在网络上传输或存储到文件中，之后还能稳定的从字节流中恢复出原来的对象。<br>通过序列化，对象的状态信息（包括成员变量的值）可以被保存下来，以便后续传输或存储。  </p>
+<p>对象输入流，ObjectInputStream，用于对象的反序列化，是将文件中的字节序列恢复为Java对象，以这种字节序列转换为对象的机制实现了对象读取<br>反序列化时，系统会根据字节流中的信息重新构建对象的状态。<br><img src="https://img2024.cnblogs.com/blog/3460931/202412/3460931-20241228161731123-279514454.png" alt="image">  </p>
+<p>在其基础上，我们再探讨序列化的一些细节  </p>
+<h3 id="对象序列化的条件"><a href="#对象序列化的条件" class="headerlink" title="对象序列化的条件"></a>对象序列化的条件</h3><p>要想使一个类的对象能够被序列化，该类必须实现 java.io.Serializable 接口<br>这是一个标记接口，没有任何方法需要实现。实现该接口，意味着告诉 Java 虚拟机这个类的对象可以被序列化。  </p>
+<details>
+<summary>点击查看代码</summary>
+
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">import java.io.*;</span><br><span class="line"></span><br><span class="line">// 定义一个实现Serializable接口的类</span><br><span class="line">class Person implements Serializable &#123;</span><br><span class="line">    private static final long serialVersionUID = 1L;</span><br><span class="line">    private String name;</span><br><span class="line">    private int age;</span><br><span class="line"></span><br><span class="line">    public Person(String name, int age) &#123;</span><br><span class="line">        this.name = name;</span><br><span class="line">        this.age = age;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public String toString() &#123;</span><br><span class="line">        return &quot;Person&#123;&quot; +</span><br><span class="line">                &quot;name=&#x27;&quot; + name + &#x27;\&#x27;&#x27; +</span><br><span class="line">                &quot;, age=&quot; + age +</span><br><span class="line">                &#x27;&#125;&#x27;;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">public class SerializationExample &#123;</span><br><span class="line">    public static void main(String[] args) &#123;</span><br><span class="line">        // 创建一个对象</span><br><span class="line">        Person person = new Person(&quot;Alice&quot;, 30);</span><br><span class="line"></span><br><span class="line">        // 序列化对象到文件</span><br><span class="line">        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(&quot;person.ser&quot;))) &#123;</span><br><span class="line">            oos.writeObject(person);</span><br><span class="line">            System.out.println(&quot;对象已成功序列化到文件 person.ser&quot;);</span><br><span class="line">        &#125; catch (IOException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        // 从文件反序列化对象</span><br><span class="line">        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(&quot;person.ser&quot;))) &#123;</span><br><span class="line">            Person deserializedPerson = (Person) ois.readObject();</span><br><span class="line">            System.out.println(&quot;反序列化后的对象: &quot; + deserializedPerson);</span><br><span class="line">        &#125; catch (IOException | ClassNotFoundException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</details>
+注意：
+每个可序列化的类都应该有一个serialVersionUID，用于验证序列化和反序列化过程中的版本兼容性
+使用transient关键字声明的成员变量不会被序列化
+序列化可能会引发安全问题  
+
+<h3 id="对象流的使用细节"><a href="#对象流的使用细节" class="headerlink" title="对象流的使用细节"></a>对象流的使用细节</h3><h4 id="对象流需要关闭吗"><a href="#对象流需要关闭吗" class="headerlink" title="对象流需要关闭吗"></a>对象流需要关闭吗</h4><p>先说结论，可以不关<br>但是<strong>强烈建议关闭</strong>。这与 Java 流的资源管理机制紧密相关。<br>涉及到对外部资源的读写操作，包括网络、硬盘等等的I&#x2F;O流，如果在使用完毕之后不关闭，会导致资源泄漏以及可能会引起文件锁定等问题。  </p>
+<p>当我们使用流进行数据操作时，它们会占用系统资源，如文件句柄、网络连接等。如果不关闭流，这些资源将不会被释放，可能导致资源泄漏问题。长时间运行的程序如果频繁出现资源泄漏，最终可能耗尽系统资源，导致程序崩溃或系统性能严重下降。</p>
+<p>而且关闭流可以确保所有已写入的数据被正确地传输到目标位置<br>例如，当使用 ObjectOutputStream 将对象写入文件时，关闭流会保证缓冲区中的所有数据都被写入文件，避免数据丢失。<br>通常建议使用try - with - resources语句来自动关闭流，示例代码如下  </p>
+<details>
+<summary>示例代码</summary>
+
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">import java.io.*;</span><br><span class="line"></span><br><span class="line">class MyClass implements Serializable &#123;</span><br><span class="line">    private static final long serialVersionUID = 1L;</span><br><span class="line">    int data;</span><br><span class="line"></span><br><span class="line">    public MyClass(int data) &#123;</span><br><span class="line">        this.data = data;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">public class SerializeExample &#123;</span><br><span class="line">    public static void main(String[] args) &#123;</span><br><span class="line">        MyClass obj = new MyClass(42);</span><br><span class="line">        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(&quot;myfile.ser&quot;))) &#123;</span><br><span class="line">            oos.writeObject(obj);</span><br><span class="line">        &#125; catch (IOException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</details>  
+#### 对象流需要使用flush吗
+先说结论，不用  
+ObjectOutputStream内部维护了一个缓冲区。在调用writeObject方法时，数据首先会被写入缓冲区。调用flush方法可以强制将缓冲区中的数据立即写入底层输出流。然而，在大多数情况下，并不需要显式调用flush。因为当缓冲区满、流关闭或者调用某些特定方法（如writeObject在某些情况下会触发缓冲区数据的刷新）时，缓冲区的数据会自动被写入底层流。
+当然特意需要弄的时候可以弄  
+
+<h4 id="serialVersionUID在对象流中的必要性"><a href="#serialVersionUID在对象流中的必要性" class="headerlink" title="serialVersionUID在对象流中的必要性"></a>serialVersionUID在对象流中的必要性</h4><p>凡是实现Serializable接口（标识接口）的类都有一个表示序列化版本标识符的静态常量：<br>    private static final long serialVersionUID;<br>来表明类的不同版本间的兼容性。  </p>
+<p>在完成序列化操作后，如果对序列化对象进行了修改，那么我们再进行反序列化就会抛出InvalidClassException异常。 因为serialVersionUID缺失（没有显式分配）或者serialVersionUID发生了变化， serialVersionUID的作用在此体现——对序列化对象进行版本控制，有关各版本反序加化时是否兼容。避免混乱。  </p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">class Person implements Serializable &#123;</span><br><span class="line">    private static final long serialVersionUID = 1234567890123456789L;</span><br><span class="line">    private String name;</span><br><span class="line">    private int age;</span><br><span class="line">    // 后续可以安全地对类结构进行一些兼容的修改</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>一个类在没有显示定义这个静态变量，它的值是Java运行时环境根据类的内部细节自动生成的。<br>若类的实例变量做了修改，serialVersionUID 可能发生变化。所以建议一般显式声明。  </p>
+<h4 id="序列化的一些细节"><a href="#序列化的一些细节" class="headerlink" title="序列化的一些细节"></a>序列化的一些细节</h4><p><strong>static修饰的属性 不可以被序列化</strong><br>原因在于 static 变量属于类，而不是类的实例。它们是类级别的共享数据，与对象的状态无关。<br>序列化的目的是保存对象的状态，所以 static 变量不会被包含在序列化的内容中。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">class StaticExample implements Serializable &#123;</span><br><span class="line">    private static final long serialVersionUID = 1L;</span><br><span class="line">    private static int sharedValue = 10;</span><br><span class="line">    private int instanceValue;</span><br><span class="line"></span><br><span class="line">    public StaticExample(int instanceValue) &#123;</span><br><span class="line">        this.instanceValue = instanceValue;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>当我们序列化 StaticExample 类的对象时，sharedValue 不会被序列化。<br>在反序列化时，sharedValue 的值将取决于类加载时的初始化状态，而不是序列化时的值  </p>
+<p><strong>transient 修饰的属性不可以被序列化</strong><br>transient 关键字用于标记那些不希望被序列化的属性。<br>这在某些场景下非常有用，比如当对象的某个属性包含敏感信息（如密码）或者该属性在反序列化后可以通过其他方式重新计算得到时。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">class TransientExample implements Serializable &#123;</span><br><span class="line">    private static final long serialVersionUID = 1L;</span><br><span class="line">    private String username;</span><br><span class="line">    private transient String password;</span><br><span class="line"></span><br><span class="line">    public TransientExample(String username, String password) &#123;</span><br><span class="line">        this.username = username;</span><br><span class="line">        this.password = password;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>当对 TransientExample 对象进行序列化时，password 的值不会被写入序列化流。这样可以保护敏感信息，防止其在序列化过程中被泄露。在反序列化后，password 属性的值将为 null，程序可以重新设置该值。</p>
+<h3 id="对象序列化的作用"><a href="#对象序列化的作用" class="headerlink" title="对象序列化的作用"></a>对象序列化的作用</h3><p>为什么JavaIO流要特意造出这么一个IO流  </p>
+<p>当你需要把对象写入到文件或者读取的时候，其实我们更多的情况通常是保存对象的有效值字段，也就是对象的具体实例的字段，那么使用文件操作流FileOutputStream和字符输出流BufferedWriter或PrintStream就足够。这些流可以用于处理文件写入和基本数据类型及字符串的输出，但对象序列化有着独特且不可替代的作用  </p>
+<h4 id="网络传输对象"><a href="#网络传输对象" class="headerlink" title="网络传输对象"></a>网络传输对象</h4><p>对象序列化机制是Java内建的一种对象持久化方式，可以很容易实现在JVM中的活动对象与字节流之间进行转换</p>
+<p>在网络传输中，发送端将对象序列化成字节流，经过网络传输到网络的另一端，可以从字节流重新还原为对象，这个特点使得在进行端到端的网络传输数据时候，字节流和Java对象之间的转换稳定且快速。  </p>
+<p>在其中分布式系统中，不同的节点之间需要进行对象的传递，对象序列化使得这种对象传输变得简单直接，确保了对象在不同 Java 虚拟机之间的准确传输，即使这些 JVM 运行在不同的操作系统上。</p>
+<p>RMI 是 Java 的一种远程方法调用机制，它允许一个 JVM 中的对象调用另一个 JVM 中的对象的方法。对象序列化也在其中起着关键作用 </p>
+<h4 id="确保对象深层次的复制和持久化"><a href="#确保对象深层次的复制和持久化" class="headerlink" title="确保对象深层次的复制和持久化"></a>确保对象深层次的复制和持久化</h4><p>当对一个对象进行序列化然后反序列化时，会得到一个与原对象状态完全相同但内存地址不同的新对象。可以实现在不影响原对象的情况下对对象进行操作，多线程下的数据处理的机制也有一定序列化和反序列化的影子。<br>这种情况对于远程创建对象副本并且调度的时候十分方便，而且不会干扰对象内部包含的复杂的引用关系，合理使用对象流可以大大提高程序处理复杂数据的能力。  </p>
+<p>在很多情况下，对象内部状态是需要被持久化的，序列化通过把对象写为字节流，保存的位置从JVM内存转移到文件系统，在需要的时候随时可以进行快速方便的还原<br>例如：在一个游戏中，可以使用对象流将玩家的游戏进度（一个复杂的对象，包含玩家角色信息、游戏关卡等）保存到文件中，下次玩家启动游戏时可以恢复到上次的进度。  </p>
+<h4 id="对象流与其他流的关系"><a href="#对象流与其他流的关系" class="headerlink" title="对象流与其他流的关系"></a>对象流与其他流的关系</h4><h5 id="与字节流的关系"><a href="#与字节流的关系" class="headerlink" title="与字节流的关系"></a>与字节流的关系</h5><p>字符流是对象流的特例，它们处理的是字符数据的序列化和反序列化。</p>
+<p>字符流（Reader 和 Writer 及其子类，如 BufferedReader、BufferedWriter 等）主要用于处理字符数据。Java 采用 Unicode 编码来表示字符，字符流对其的输入输出有优化。而且字符流在处理数据时，会根据指定的字符编码进行字节和字符之间的转换  </p>
+<p>而对象流可以将任何实现了 Serializable 接口的对象进行序列化和反序列化，意味着对象流操作的数据是复杂的对象结构，包括对象的成员变量、对象之间的引用关系。  </p>
+<h5 id="与缓冲流的关系"><a href="#与缓冲流的关系" class="headerlink" title="与缓冲流的关系"></a>与缓冲流的关系</h5><p>功能叠加：缓冲流（如 BufferedInputStream、BufferedOutputStream、BufferedReader、BufferedWriter）的主要作用是提高数据读写的效率，通过在内存中设置缓冲区，减少实际的 I&#x2F;O 操作次数。<br>对象流可以和缓冲流结合使用，以提升对象序列化和反序列化的性能。<br>可以将 ObjectOutputStream 包装在 BufferedOutputStream 中，这样在写入对象时，数据会先写入缓冲区，当缓冲区满或流关闭时，才会一次性将数据写入底层输出流，从而减少磁盘 I&#x2F;O 操作的频率，提高写入效率。<br>在处理大量对象的序列化或反序列化时，结合缓冲流能显著提升性能。不过反序列化涉及到的种种安全关系，这种情况，讨论一下就好。  </p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://ergou10086.github.io">ErgouTree</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://ergou10086.github.io/posts/54621.html">https://ergou10086.github.io/posts/54621.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://ergou10086.github.io" target="_blank">ErgouTree's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Java%E6%8A%80%E6%9C%AF/">Java技术</a><a class="post-meta__tags" href="/tags/%E5%AE%9E%E7%94%A8%E7%9F%A5%E8%AF%86/">实用知识</a><a class="post-meta__tags" href="/tags/JavaSE/">JavaSE</a><a class="post-meta__tags" href="/tags/%E8%AF%AD%E8%A8%80%E6%96%B9%E9%9D%A2/">语言方面</a><a class="post-meta__tags" href="/tags/%E5%AD%A6%E4%B9%A0/">学习</a></div><div class="post-share"><div class="social-share" data-image="/images/posts/cover_java.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width" href="/posts/16107.html" title="Hello World"><img class="cover" src="/images/posts/start.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Hello World</div></div><div class="info-2"><div class="info-item-1">常用命令Quick StartCreate a new post$ hexo new &quot;My New Post&quot;  More info: Writing Run server$ hexo server  More info: Server Generate static files$ hexo generate  More info: Generating Deploy to remote sites$ hexo deploy  More info: Deployment Write Draftshexo n draft draft1  在source\目录下创建_drafts目录，并生成一个draft1.md文件 当你编辑完草稿后，可以把文章推送到_posts目录下 $ hexo publish &lt;file_name&gt;  或 hexo --draft  Deploy In Github# 清理旧文件hexo clean# 生成新文件hexo g# 部署到 GitHub Pageshexo dhexo...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/posts/54622.html" title="Java注解与Annotation类"><img class="cover" src="/images/posts/cover_java.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-04-14</div><div class="info-item-2">Java注解与Annotation类</div></div><div class="info-2"><div class="info-item-1">了解注解Java 注解（Annotation）又称 Java 标注，是 JDK5.0 引入的一种注释机制。是提供一种为程序元素设置元数据的方法，这些信息可以被编译器、开发工具或运行时环境读取和处理。 （程序元素：接口、类、属性、方法等；   元数据：描述数据的数据） 关键特性：  注解本身不包含业务逻辑，但可以通过反射机制在运行时获取并处理  注解不影响程序本身的执行，但可以通过工具影响程序的行为  注解可以包含命名参数，这些参数可以有默认值   其实就是写在接口、类、属性、方法上的一个标签，或者说是一个特殊形式的注释，普通注释只是一个注释，而注解在代码运行时是可以被反射读取并进行相应的操作，而如果没有使用反射或者其他检查，那么注解是没有任何真实作用的，也不会影响到程序的正常运行结果。 Java 语言中的类、方法、变量、参数和包等都可以被标注。和 Javadoc 不同，Java 标注可以通过反射获取标注内容。 在编译器生成类文件时，标注可以被嵌入到字节码中。Java 虚拟机可以保留标注内容，在运行时可以获取到标注内容 。 当然它也支持自定义 Java...</div></div></div></a><a class="pagination-related" href="/posts/31243.html" title="JavaWeb-http"><img class="cover" src="/images/posts/cover_java.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-04-14</div><div class="info-item-2">JavaWeb-http</div></div><div class="info-2"><div class="info-item-1">HTTP请求客户端–&gt;请求–&gt;服务器  超文本传输协议（Hypertext Transfer Protocol，HTTP）是一个简单的请求-响应协议，是用于从万维网（WWW:World Wide Web ）服务器传输超文本到本地浏览器的传送协议。  HTTP是基于TCP&#x2F;IP通信协议来传递数据（HTML 文件, 图片文件, 查询结果等）。它指定了客户端可能发送给服务器什么样的消息以及得到什么样的响应。  HTTP是基于客户端&#x2F;服务端（C&#x2F;S）的架构模型，通过一个可靠的链接来交换信息，是一个无状态的请求&#x2F;响应协议。   以请求百度为例 Request URL: https://www.baidu.com/  请求地址Request Method: GET 请求方法get/postStatus Code: 200 OK  状态码Remote Address: 36.152.44.96:443   远程地址ip+端口 Accept: text/htmlAccept-Encoding: gzip, deflate,...</div></div></div></a><a class="pagination-related" href="/posts/4234.html" title="Servlet学习之核心接口,工作原理和配置"><img class="cover" src="/images/posts/cover_java.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-04-12</div><div class="info-item-2">Servlet学习之核心接口,工作原理和配置</div></div><div class="info-2"><div class="info-item-1">什么是Servlet运行在服务器端的程序 servlet是一个接口，定义了Java类被浏览器访问到的规则（接口） Servlet是用java编写的服务器端的程序，主要是交互式的浏览和修改数据，生成动态Web内容，在JavaEE平台上，处理TCP连接，解析HTTP协议这些底层工作统统扔给现成的Web服务器去做，我们只需要把自己的应用程序跑在Web服务器上 Servlet运行于支持Java的应用服务器中。从实现上讲，Servlet可以响应任何类型的请求，但绝大多数情况下Servlet只用来扩展基于HTTP协议的Web服务器。 Struts2的核心用的是Filter（过滤器），而SpringMVC的核心用的就是Servlet。 // WebServlet注解表示这是一个Servlet，并映射到地址/:@WebServlet(urlPatterns = &quot;/&quot;)public class HelloServlet extends HttpServlet &#123;    protected void doGet(HttpServletRequest req,...</div></div></div></a><a class="pagination-related" href="/posts/62509.html" title="Servlet与http"><img class="cover" src="/images/posts/cover_java.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-04-14</div><div class="info-item-2">Servlet与http</div></div><div class="info-2"><div class="info-item-1">软件架构与网络通信软件架构：  B&#x2F;S：浏览器端-服务器端（JavaEE体系）  客户端不用再去开发，开发更加快速 C&#x2F;S：客户端-服务器端  资源分类：  静态资源：所有用户访问后得到的结果是一样的，称为静态资源 如html css js   动态资源：每个用户访问相同资源后，得到的结构可能不一样，称为动态资源。动态资源被访问后，需要先转换为静态资源，再返回给浏览器 如 servlet php jsp    网络通信三要素：  IP：电子设备在网络中的唯一标识 端口:应用程序在计算机中的唯一标识 传输协议：规定了通信的规则 基础协议：tcp udp      http概述http：超文本传输协议 传输协议：定义了客户端和服务器端通信的时候发送数据的格式 特点：  基于TCP&#x2F;IP的高级协议 默认端口号是80 基于请求响应模型，一次请求对应一次响应 无状态的，每次请求之间相互独立  http的请求消息和请求行请求消息数据格式： 请求行 明确请求的基本信息（操作类型、目标资源、协议版本） 请求方式 请求url 请求协议&#x2F;版本   ...</div></div></div></a><a class="pagination-related" href="/posts/63024.html" title="Hexo根目录下的_config.yml配置文件"><img class="cover" src="/images/posts/cover_%E5%AE%9E%E7%94%A8.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-04-13</div><div class="info-item-2">Hexo根目录下的_config.yml配置文件</div></div><div class="info-2"><div class="info-item-1">我们在使用hexo初始化一个项目的时候，在根目录下会有一个配置文件_config.yml，这个文件配置了所写博客里面的内容，我们从根目录的该文件来说明每个配置的作用 头注释_config.yml文件在头部会有一些注释，Hexo Configuration下的两行表示hexo文档的相关文档，Docs指的是hexo的文档，Source指的是hexo的GitHub源码，方便供他人参考查阅 # Hexo Configuration## Docs: https://hexo.io/docs/configuration.html## Source: https://github.com/hexojs/hexo/    博客网站相关Site下面是网站相关的一些信息配置 # Sitetitle: Hexosubtitle: &#x27;&#x27;description: &#x27;&#x27;keywords:author: John Doelanguage: entimezone: &#x27;&#x27;  title：网站的名字，会写在hexo...</div></div></div></a><a class="pagination-related" href="/posts/43275.html" title="markdown常用语法"><img class="cover" src="/images/posts/cover_%E5%AE%9E%E7%94%A8.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-04-12</div><div class="info-item-2">markdown常用语法</div></div><div class="info-2"><div class="info-item-1">markdown常用语法标题# 一级标题## 二级标题### 三级标题#### 四级标题##### 五级标题###### 六级标题 #后必须要有空格还可以在文本下方添加任意数量的 == 号来标识一级标题，或者 -- 号来标识二级标题。Heading level 1===============Heading level 2---------------在实际渲染中，’#’ 号数量对应标题级别，一个 ‘#’ 是一级标题，两个 ‘#’ 是二级标题，以此类推。#的叠加可以很多，但是当过多之后，会变的比正常字体还要小，可以利用这个特性***## 段落和换行#### 换行句子末尾双空格代表换行。或者多个空格进行换行 貌似也可以#### 段落处理段落就是用空白行将一行或多行文本进行分割注意：不要用空格（spaces）或制表符（ tabs）缩进段落。***## 强调*斜体文本*   前后各添加一个星号或下划线  _斜体文本_**粗体文本**   前后各添加两个星号或下划线  __粗体文本__***加粗斜体文本***~~删除线文本~~粗体和斜体可以混合用***## 代码块行内代码：用反引号...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/arp.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">ErgouTree</div><div class="author-info-description">Shirone</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">11</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">20</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">14</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/ergou10086" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="/zjm88822201@126.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a><a class="social-icon" href="https://space.bilibili.com/142045656?spm_id_from=333.1007.0.0" target="_blank" title="bilibili"><i class="fas fa-bilibili" style="color: #4a7dbe;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Java%E9%9A%BE%E7%BB%B7%E7%9F%A5%E8%AF%8601%E4%B9%8B%E5%AF%B9%E8%B1%A1%E6%B5%81"><span class="toc-number">1.</span> <span class="toc-text">Java难绷知识01之对象流</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AF%B9%E8%B1%A1%E6%B5%81%E5%8F%8A%E5%85%B6%E5%BA%8F%E5%88%97%E5%8C%96"><span class="toc-number">1.1.</span> <span class="toc-text">对象流及其序列化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AF%B9%E8%B1%A1%E5%BA%8F%E5%88%97%E5%8C%96%E7%9A%84%E6%9D%A1%E4%BB%B6"><span class="toc-number">1.2.</span> <span class="toc-text">对象序列化的条件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AF%B9%E8%B1%A1%E6%B5%81%E7%9A%84%E4%BD%BF%E7%94%A8%E7%BB%86%E8%8A%82"><span class="toc-number">1.3.</span> <span class="toc-text">对象流的使用细节</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AF%B9%E8%B1%A1%E6%B5%81%E9%9C%80%E8%A6%81%E5%85%B3%E9%97%AD%E5%90%97"><span class="toc-number">1.3.1.</span> <span class="toc-text">对象流需要关闭吗</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#serialVersionUID%E5%9C%A8%E5%AF%B9%E8%B1%A1%E6%B5%81%E4%B8%AD%E7%9A%84%E5%BF%85%E8%A6%81%E6%80%A7"><span class="toc-number">1.3.2.</span> <span class="toc-text">serialVersionUID在对象流中的必要性</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%BA%8F%E5%88%97%E5%8C%96%E7%9A%84%E4%B8%80%E4%BA%9B%E7%BB%86%E8%8A%82"><span class="toc-number">1.3.3.</span> <span class="toc-text">序列化的一些细节</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AF%B9%E8%B1%A1%E5%BA%8F%E5%88%97%E5%8C%96%E7%9A%84%E4%BD%9C%E7%94%A8"><span class="toc-number">1.4.</span> <span class="toc-text">对象序列化的作用</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BD%91%E7%BB%9C%E4%BC%A0%E8%BE%93%E5%AF%B9%E8%B1%A1"><span class="toc-number">1.4.1.</span> <span class="toc-text">网络传输对象</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%A1%AE%E4%BF%9D%E5%AF%B9%E8%B1%A1%E6%B7%B1%E5%B1%82%E6%AC%A1%E7%9A%84%E5%A4%8D%E5%88%B6%E5%92%8C%E6%8C%81%E4%B9%85%E5%8C%96"><span class="toc-number">1.4.2.</span> <span class="toc-text">确保对象深层次的复制和持久化</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AF%B9%E8%B1%A1%E6%B5%81%E4%B8%8E%E5%85%B6%E4%BB%96%E6%B5%81%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="toc-number">1.4.3.</span> <span class="toc-text">对象流与其他流的关系</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E4%B8%8E%E5%AD%97%E8%8A%82%E6%B5%81%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="toc-number">1.4.3.1.</span> <span class="toc-text">与字节流的关系</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E4%B8%8E%E7%BC%93%E5%86%B2%E6%B5%81%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="toc-number">1.4.3.2.</span> <span class="toc-text">与缓冲流的关系</span></a></li></ol></li></ol></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/54622.html" title="Java注解与Annotation类"><img src="/images/posts/cover_java.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Java注解与Annotation类"/></a><div class="content"><a class="title" href="/posts/54622.html" title="Java注解与Annotation类">Java注解与Annotation类</a><time datetime="2025-04-14T10:26:17.000Z" title="发表于 2025-04-14 18:26:17">2025-04-14</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/62509.html" title="Servlet与http"><img src="/images/posts/cover_java.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Servlet与http"/></a><div class="content"><a class="title" href="/posts/62509.html" title="Servlet与http">Servlet与http</a><time datetime="2025-04-14T07:19:16.000Z" title="发表于 2025-04-14 15:19:16">2025-04-14</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/31243.html" title="JavaWeb-http"><img src="/images/posts/cover_java.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="JavaWeb-http"/></a><div class="content"><a class="title" href="/posts/31243.html" title="JavaWeb-http">JavaWeb-http</a><time datetime="2025-04-14T07:11:08.000Z" title="发表于 2025-04-14 15:11:08">2025-04-14</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/53748.html" title="把Hexo博客配置到Github Pages下"><img src="/images/posts/cover_teach.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="把Hexo博客配置到Github Pages下"/></a><div class="content"><a class="title" href="/posts/53748.html" title="把Hexo博客配置到Github Pages下">把Hexo博客配置到Github Pages下</a><time datetime="2025-04-13T09:20:08.000Z" title="发表于 2025-04-13 17:20:08">2025-04-13</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/63024.html" title="Hexo根目录下的_config.yml配置文件"><img src="/images/posts/cover_%E5%AE%9E%E7%94%A8.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Hexo根目录下的_config.yml配置文件"/></a><div class="content"><a class="title" href="/posts/63024.html" title="Hexo根目录下的_config.yml配置文件">Hexo根目录下的_config.yml配置文件</a><time datetime="2025-04-13T09:17:38.000Z" title="发表于 2025-04-13 17:17:38">2025-04-13</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url(/images/posts/cover_java.jpg);"><div id="footer-wrap"><div class="copyright">&copy;2019 - 2025 By ErgouTree</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><div class="js-pjax"></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
