@@ -75,7 +75,7 @@
         document.head.appendChild(link)
       }),
       addGlobalFn: (key, fn, name = false, parent = window) => {
-        if (!false && key.startsWith('pjax')) return
+        if (!true && key.startsWith('pjax')) return
         const globalFn = parent.globalFn || {}
         globalFn[key] = globalFn[key] || {}
         globalFn[key][name || Object.keys(globalFn[key]).length] = fn
@@ -172,7 +172,7 @@ btf.addGlobalFn('pjaxComplete', () => {
   isHighlightShrink: false,
   isToc: true,
   pageType: 'post'
-}</script><meta name="generator" content="Hexo 7.3.0"></head><body><script>window.paceOptions = {
+}</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css"><meta name="generator" content="Hexo 7.3.0"></head><body><script>window.paceOptions = {
   restartOnPushState: false
 }
 
@@ -207,8 +207,8 @@ btf.addGlobalFn('pjaxSend', () => {
 <li>Session技术将会话数据保存在服务器端</li>
 </ul>
 <h3 id="会话的实现过程"><a href="#会话的实现过程" class="headerlink" title="会话的实现过程"></a>会话的实现过程</h3><p>HTTP没有提供任何记住客户端的途径，服务器如何建立、维护与客户端的会话</p>
+<p><img src="/posts/45466/45466/image-20250415081247045.png" alt="image-20250415081247045"></p>
 <p><img src="/posts/45466/image-20250415081247045.png" alt="image-20250415081247045"></p>
-<p><img src="/Servlet%E4%B8%8E%E4%BC%9A%E8%AF%9D%E7%AE%A1%E7%90%86/image-20250415081247045.png" alt="image-20250415081247045"></p>
 <h2 id="Cookie技术"><a href="#Cookie技术" class="headerlink" title="Cookie技术"></a>Cookie技术</h2><h3 id="如何理解Cookie技术"><a href="#如何理解Cookie技术" class="headerlink" title="如何理解Cookie技术"></a>如何理解Cookie技术</h3><p>Cookie实际上是存放在客户端浏览器的一小块文本。</p>
 <p>客户端请求服务器，如果服务器需要记录该用户状态，就使用response向客户端浏览器颁发一个Cookie。客户端浏览器会把Cookie保存起来。当浏览器再请求该网站时，浏览器把请求的网址连同该Cookie一同提交给服务器。服务器检查该Cookie，以此来记录用户状态。</p>
 <p>Cookie的工作原理主要的记录用户状态，客户端浏览器第一次请求服务器后，服务器会颁发一个Cookie(name &#x3D;  ErgouTree，该Cookie就相当于那唯一的卡号)响应给客户端浏览器，以后客户端的每次请求都会带上这个Cookie，这样服务器就可以根据这唯一的Cookie识别不同的用户。</p>
@@ -226,8 +226,8 @@ btf.addGlobalFn('pjaxSend', () => {
 <p>创建Cookie对象，利用Cookie的构造函数来创建Cookie，Cookie的构造函数有两个参数，name和value，必须要有这两个参数，value固定为String类型的。</p>
 <p>Cookie 是存放在浏览器端的，所以还需要把 Cookie 从 servlet 里发送到浏览器端，利用<code>response</code>里的<code>addCookie</code>方法可以做到，原理是通过在响应中设置 set-Cookie 标头，以 Key&#x2F;Value 键值对的形式发送到浏览器</p>
 <p>你可以使用google浏览器查看响应头中的set-Cookie标头，你能看到你刚刚添加的Cookie和它的属性值</p>
+<p><img src="/posts/45466/45466/1328382-20180913000208754-1008141036.png" alt="img"></p>
 <p><img src="/posts/45466/1328382-20180913000208754-1008141036.png" alt="img"></p>
-<p><img src="/Servlet%E4%B8%8E%E4%BC%9A%E8%AF%9D%E7%AE%A1%E7%90%86/1328382-20180913000208754-1008141036.png" alt="img"></p>
 <p>响应首部中黄色的部分就是从Servlet发送到浏览器的Cookie</p>
 <p>请求首部中红色划线部分是浏览器发回到服务器的Cookie，这个不是你刚创建的Cookie，因为你创建的Cookie刚发送到浏览器，之后你再请求一次就可以在请求首部看到你刚创建的Cookie。</p>
 <h4 id="Cookie的获取"><a href="#Cookie的获取" class="headerlink" title="Cookie的获取"></a>Cookie的获取</h4><p>在Servlet中只能使用getCookies方法获取所有的Cookie，没有通过Cookie名来获取Cookie的方法。所以需要你自己来编写代码实现。</p>
@@ -251,8 +251,8 @@ btf.addGlobalFn('pjaxSend', () => {
 
 <h3 id="Cookie的属性"><a href="#Cookie的属性" class="headerlink" title="Cookie的属性"></a>Cookie的属性</h3><p>除了name与value之外，Cookie还有其它的一些可选属性，比如注释、路径和域限定符、最大生存时间和版本号。</p>
 <p>每个属性对应着一个get方法和一个set方法。</p>
+<p><img src="/posts/45466/45466/1328382-20180911124140706-1037047510.png" alt="img"></p>
 <p><img src="/posts/45466/1328382-20180911124140706-1037047510.png" alt="img"></p>
-<p><img src="/Servlet%E4%B8%8E%E4%BC%9A%E8%AF%9D%E7%AE%A1%E7%90%86/1328382-20180911124140706-1037047510.png" alt="img"></p>
 <h4 id="有效期"><a href="#有效期" class="headerlink" title="有效期"></a>有效期</h4><p>Cookie的maxAge决定着Cookie的有效期，单位为秒，默认值为-1。</p>
 <p>Cookie中通过getMaxAge()方法与setMaxAge()方法来读写maxAge属性。</p>
 <ul>
@@ -652,7 +652,7 @@ btf.addGlobalFn('pjaxSend', () => {
   } else {
     window.loadOtherComment = loadGitalk
   }
-})()</script></div><script defer="defer" id="ribbon" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-ribbon.min.js" size="150" alpha="0.6" zIndex="-1" mobile="true" data-click="true"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+})()</script></div><div class="aplayer no-destroy" data-id="13587761608" data-server="netease" data-type="playlist" data-fixed="true" data-autoplay="false" data-lrcType="-1"> </div><script defer="defer" id="ribbon" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-ribbon.min.js" size="150" alpha="0.6" zIndex="-1" mobile="true" data-click="true"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
 POWERMODE.shake = false;
 POWERMODE.mobile = false;
 document.body.addEventListener('input', POWERMODE);
@@ -687,6 +687,72 @@ document.body.addEventListener('input', POWERMODE);
         hide: () => Chatra('hide'),
         show: () => Chatra('show')
       }
+    }
+  })
+})()</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/metingjs/dist/Meting.min.js"></script><script>(() => {
+  const destroyAplayer = () => {
+    if (window.aplayers) {
+      for (let i = 0; i < window.aplayers.length; i++) {
+        if (!window.aplayers[i].options.fixed) {
+          window.aplayers[i].destroy()
+        }
+      }
+    }
+  }
+
+  const runMetingJS = () => {
+    typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+  }
+
+  btf.addGlobalFn('pjaxSend', destroyAplayer, 'destroyAplayer')
+  btf.addGlobalFn('pjaxComplete', loadMeting, 'runMetingJS')
+})()</script><script src="https://cdn.jsdelivr.net/npm/pjax/pjax.min.js"></script><script>(() => {
+  const pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+  window.pjax = new Pjax({
+    elements: 'a:not([target="_blank"]):not([href="/music/"])',
+    selectors: pjaxSelectors,
+    cacheBust: false,
+    analytics: false,
+    scrollRestoration: false
+  })
+
+  const triggerPjaxFn = (val) => {
+    if (!val) return
+    Object.values(val).forEach(fn => fn())
+  }
+
+  document.addEventListener('pjax:send', () => {
+    // removeEventListener
+    btf.removeGlobalFnEvent('pjaxSendOnce')
+    btf.removeGlobalFnEvent('themeChange')
+
+    // reset readmode
+    const $bodyClassList = document.body.classList
+    if ($bodyClassList.contains('read-mode')) $bodyClassList.remove('read-mode')
+
+    triggerPjaxFn(window.globalFn.pjaxSend)
+  })
+
+  document.addEventListener('pjax:complete', () => {
+    btf.removeGlobalFnEvent('pjaxCompleteOnce')
+    document.querySelectorAll('script[data-pjax]').forEach(item => {
+      const newScript = document.createElement('script')
+      const content = item.text || item.textContent || item.innerHTML || ""
+      Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+      newScript.appendChild(document.createTextNode(content))
+      item.parentNode.replaceChild(newScript, item)
+    })
+
+    triggerPjaxFn(window.globalFn.pjaxComplete)
+  })
+
+  document.addEventListener('pjax:error', e => {
+    if (e.request.status === 404) {
+      const usePjax = true
+      true 
+        ? (usePjax ? pjax.loadUrl('/404.html') : window.location.href = '/404.html')
+        : window.location.href = e.request.responseURL
     }
   })
 })()</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div></body></html>

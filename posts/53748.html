@@ -74,7 +74,7 @@
         document.head.appendChild(link)
       }),
       addGlobalFn: (key, fn, name = false, parent = window) => {
-        if (!false && key.startsWith('pjax')) return
+        if (!true && key.startsWith('pjax')) return
         const globalFn = parent.globalFn || {}
         globalFn[key] = globalFn[key] || {}
         globalFn[key][name || Object.keys(globalFn[key]).length] = fn
@@ -171,7 +171,7 @@ btf.addGlobalFn('pjaxComplete', () => {
   isHighlightShrink: false,
   isToc: true,
   pageType: 'post'
-}</script><meta name="generator" content="Hexo 7.3.0"></head><body><script>window.paceOptions = {
+}</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css"><meta name="generator" content="Hexo 7.3.0"></head><body><script>window.paceOptions = {
   restartOnPushState: false
 }
 
@@ -202,9 +202,9 @@ btf.addGlobalFn('pjaxSend', () => {
 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hexo g   <span class="comment"># 生成页面</span></span><br><span class="line">hexo s   <span class="comment"># 启动预览</span></span><br></pre></td></tr></table></figure>
 
 <p><strong>访问</strong> <code>http://localhost:4000</code><strong>，出现 Hexo 默认页面，本地博客安装成功！</strong></p>
-<p><img src="/posts/53748/image-20250413155631935.png" alt="image-20250413155631935"></p>
+<p><img src="/posts/53748/53748/image-20250413155631935.png" alt="image-20250413155631935"></p>
 <p>如果出现页面加载不出来，可能是端口被占用了。Ctrl+C 关闭服务器，运行 <code>hexo server -p 5000</code> 更改端口号后重试。</p>
-<h4 id="博客文件目录结构"><a href="#博客文件目录结构" class="headerlink" title="博客文件目录结构"></a>博客文件目录结构</h4><p><img src="/posts/53748/v2-264c75c0e493ae8cc5f283567c64ff2c_r.jpg" alt="img"></p>
+<h4 id="博客文件目录结构"><a href="#博客文件目录结构" class="headerlink" title="博客文件目录结构"></a>博客文件目录结构</h4><p><img src="/posts/53748/53748/v2-264c75c0e493ae8cc5f283567c64ff2c_r.jpg" alt="img"></p>
 <h3 id="创建一个Github仓库来存放你的静态页面"><a href="#创建一个Github仓库来存放你的静态页面" class="headerlink" title="创建一个Github仓库来存放你的静态页面"></a>创建一个Github仓库来存放你的静态页面</h3><p>GitHub 主页右上角加号 -&gt; New repository：</p>
 <p>​	注意，这里的仓库名字是 用户名.github.io   最好选上 “Initialize this repository with a README”</p>
 <p>此时如果你在这个仓库上配置博客的话，博客地址为：<code>https://用户名.github.io</code></p>
@@ -224,14 +224,14 @@ btf.addGlobalFn('pjaxSend', () => {
 <li>域名注册和解析教程：<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/33921436">Namesilo 域名购买及使用教程</a></li>
 </ul>
 <p>按上面教程注册并解析域名，在 DNS 设置部分，删除自带的记录，然后添加 CNAME 记录将 www 域名解析指向 <code>用户名.github.io</code>。</p>
-<p><img src="/posts/53748/v2-d5d37c8ad523d8ab5c7c200fabc9585e_1440w.jpg" alt="img"></p>
+<p><img src="/posts/53748/53748/v2-d5d37c8ad523d8ab5c7c200fabc9585e_1440w.jpg" alt="img"></p>
 <h4 id="绑定域名到-Hexo-博客"><a href="#绑定域名到-Hexo-博客" class="headerlink" title="绑定域名到 Hexo 博客"></a><strong>绑定域名到 Hexo 博客</strong></h4><p>进入本地博客文件夹的 source 目录，打开记事本，里面输入自己的域名，如 <a target="_blank" rel="noopener" href="http://www.example.com,保存名称为/">http://www.example.com，保存名称为</a> “CNAME”，格式为 “所有文件”（无 .txt 后缀）。</p>
 <p>清除缓存等文件并重新发布网站：</p>
 <figure class="highlight text"><table><tr><td class="code"><pre><span class="line">hexo clean   # 清除缓存文件等</span><br><span class="line">hexo g       # 生成页面</span><br><span class="line">hexo s       # 启动预览</span><br></pre></td></tr></table></figure>
 
 <p>现在就可以使用自己的域名访问 Hexo 博客了。</p>
 <h4 id="开启HTTPS"><a href="#开启HTTPS" class="headerlink" title="开启HTTPS"></a>开启HTTPS</h4><p>配置自己的域名后，需要我们手动开启 HTTPS。打开博客所在 GitHub 仓库，Settings -&gt; 下拉找到 GitHub Pages -&gt; 勾选 Enforce HTTPS。</p>
-<p><img src="/posts/53748/v2-54f8744afc9746884e6b3acecfc5f8cf_r.jpg" alt="img"></p>
+<p><img src="/posts/53748/53748/v2-54f8744afc9746884e6b3acecfc5f8cf_r.jpg" alt="img"></p>
 <p>HTTPS 证书部署成功需要一定时间，等大概几分钟再访问域名，就可以看到域名前面的小绿锁了，HTTPS 配置完成！</p>
 <h3 id="关于使用"><a href="#关于使用" class="headerlink" title="关于使用"></a>关于使用</h3><h4 id="发布文章"><a href="#发布文章" class="headerlink" title="发布文章"></a>发布文章</h4><p>进入博客所在目录，右键打开 Git Bash Here，创建博文：</p>
 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
@@ -500,7 +500,7 @@ btf.addGlobalFn('pjaxSend', () => {
   } else {
     window.loadOtherComment = loadGitalk
   }
-})()</script></div><script defer="defer" id="ribbon" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-ribbon.min.js" size="150" alpha="0.6" zIndex="-1" mobile="true" data-click="true"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+})()</script></div><div class="aplayer no-destroy" data-id="13587761608" data-server="netease" data-type="playlist" data-fixed="true" data-autoplay="false" data-lrcType="-1"> </div><script defer="defer" id="ribbon" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-ribbon.min.js" size="150" alpha="0.6" zIndex="-1" mobile="true" data-click="true"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
 POWERMODE.shake = false;
 POWERMODE.mobile = false;
 document.body.addEventListener('input', POWERMODE);
@@ -535,6 +535,72 @@ document.body.addEventListener('input', POWERMODE);
         hide: () => Chatra('hide'),
         show: () => Chatra('show')
       }
+    }
+  })
+})()</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/metingjs/dist/Meting.min.js"></script><script>(() => {
+  const destroyAplayer = () => {
+    if (window.aplayers) {
+      for (let i = 0; i < window.aplayers.length; i++) {
+        if (!window.aplayers[i].options.fixed) {
+          window.aplayers[i].destroy()
+        }
+      }
+    }
+  }
+
+  const runMetingJS = () => {
+    typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+  }
+
+  btf.addGlobalFn('pjaxSend', destroyAplayer, 'destroyAplayer')
+  btf.addGlobalFn('pjaxComplete', loadMeting, 'runMetingJS')
+})()</script><script src="https://cdn.jsdelivr.net/npm/pjax/pjax.min.js"></script><script>(() => {
+  const pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+  window.pjax = new Pjax({
+    elements: 'a:not([target="_blank"]):not([href="/music/"])',
+    selectors: pjaxSelectors,
+    cacheBust: false,
+    analytics: false,
+    scrollRestoration: false
+  })
+
+  const triggerPjaxFn = (val) => {
+    if (!val) return
+    Object.values(val).forEach(fn => fn())
+  }
+
+  document.addEventListener('pjax:send', () => {
+    // removeEventListener
+    btf.removeGlobalFnEvent('pjaxSendOnce')
+    btf.removeGlobalFnEvent('themeChange')
+
+    // reset readmode
+    const $bodyClassList = document.body.classList
+    if ($bodyClassList.contains('read-mode')) $bodyClassList.remove('read-mode')
+
+    triggerPjaxFn(window.globalFn.pjaxSend)
+  })
+
+  document.addEventListener('pjax:complete', () => {
+    btf.removeGlobalFnEvent('pjaxCompleteOnce')
+    document.querySelectorAll('script[data-pjax]').forEach(item => {
+      const newScript = document.createElement('script')
+      const content = item.text || item.textContent || item.innerHTML || ""
+      Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+      newScript.appendChild(document.createTextNode(content))
+      item.parentNode.replaceChild(newScript, item)
+    })
+
+    triggerPjaxFn(window.globalFn.pjaxComplete)
+  })
+
+  document.addEventListener('pjax:error', e => {
+    if (e.request.status === 404) {
+      const usePjax = true
+      true 
+        ? (usePjax ? pjax.loadUrl('/404.html') : window.location.href = '/404.html')
+        : window.location.href = e.request.responseURL
     }
   })
 })()</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div></body></html>
