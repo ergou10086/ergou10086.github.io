@@ -1,0 +1,879 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Hibernate的其他API以及HQL查询.md | ErgouTree's Blog</title><meta name="author" content="ErgouTree"><meta name="copyright" content="ErgouTree"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="Hibernate的其他APIQueryQuery接口让你方便地对数据库及持久对象进行查询，它可以有两种表达方式：HQL语言或本地数据库的SQL语句。 HQL：Hibernate Query Language ：Hibernate查询语言。这种语言与SQL的语法及其类似，是一个面向对象的查询语言。 SQL的操作对象是数据表、列等数据库对象，而HQL操作对象是类、对象、属性等。 Query 接口用来">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Hibernate的其他API以及HQL查询.md">
+<meta property="og:url" content="https://ergou10086.github.io/posts/48129.html">
+<meta property="og:site_name" content="ErgouTree&#39;s Blog">
+<meta property="og:description" content="Hibernate的其他APIQueryQuery接口让你方便地对数据库及持久对象进行查询，它可以有两种表达方式：HQL语言或本地数据库的SQL语句。 HQL：Hibernate Query Language ：Hibernate查询语言。这种语言与SQL的语法及其类似，是一个面向对象的查询语言。 SQL的操作对象是数据表、列等数据库对象，而HQL操作对象是类、对象、属性等。 Query 接口用来">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://ergou10086.github.io/images/posts/cover_hibernate.jpg">
+<meta property="article:published_time" content="2025-05-12T09:07:17.000Z">
+<meta property="article:modified_time" content="2025-05-12T09:08:28.256Z">
+<meta property="article:author" content="ErgouTree">
+<meta property="article:tag" content="Java技术">
+<meta property="article:tag" content="JavaWeb">
+<meta property="article:tag" content="Hibernate">
+<meta property="article:tag" content="数据库技术">
+<meta property="article:tag" content="框架知识">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ergou10086.github.io/images/posts/cover_hibernate.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Hibernate的其他API以及HQL查询.md",
+  "url": "https://ergou10086.github.io/posts/48129.html",
+  "image": "https://ergou10086.github.io/images/posts/cover_hibernate.jpg",
+  "datePublished": "2025-05-12T09:07:17.000Z",
+  "dateModified": "2025-05-12T09:08:28.256Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "ErgouTree",
+      "url": "https://github.com/ergou10086"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/pi.ico"><link rel="canonical" href="https://ergou10086.github.io/posts/48129.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//hm.baidu.com"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!true && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?https://hm.baidu.com/hm.js?a6ab1b78e2c6320b664f31e8b9bf0e36";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+btf.addGlobalFn('pjaxComplete', () => {
+  _hmt.push(['_trackPageview',window.location.pathname])
+}, 'baidu_analytics')
+</script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.json","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: {"chs_to_cht":"已切换为繁体中文","cht_to_chs":"已切换为简体中文","day_to_night":"已切换为深色模式","night_to_day":"已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#1f1f1f","position":"bottom-left"},
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Hibernate的其他API以及HQL查询.md',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css"><meta name="generator" content="Hexo 7.3.0"></head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js/pace.min.js"></script><div id="web_bg" style="background: linear-gradient(20deg, #0062be, #925696, #cc426e, #fb0347);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/arp.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">51</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">53</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">29</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-gallery"></i><span> Gallery</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/video/"><i class="fa-fw fas fa-video"></i><span> Video</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/images/posts/cover_hibernate.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">ErgouTree's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">Hibernate的其他API以及HQL查询.md</span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-gallery"></i><span> Gallery</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/video/"><i class="fa-fw fas fa-video"></i><span> Video</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">Hibernate的其他API以及HQL查询.md<a class="post-edit-link" href="https://github.com/ergou10086/ergou10086.github.io/edit/main/source/_posts/_posts/Hibernate的其他API以及HQL查询-md.md" title="编辑" target="_blank"><i class="fas fa-pencil-alt"></i></a></h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2025-05-12T09:07:17.000Z" title="发表于 2025-05-12 17:07:17">2025-05-12</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2025-05-12T09:08:28.256Z" title="更新于 2025-05-12 17:08:28">2025-05-12</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Java%E5%AD%A6%E4%B9%A0/">Java学习</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Java%E5%AD%A6%E4%B9%A0/Hibernate%E6%A1%86%E6%9E%B6/">Hibernate框架</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">6k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>23分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span><span class="post-meta-separator">|</span><span class="post-meta-commentcount"><i class="far fa-comments fa-fw post-meta-icon"></i><span class="post-meta-label">评论数:</span><a href="/posts/48129.html#post-comment"><span class="gitalk-comment-count"><i class="fa-solid fa-spinner fa-spin"></i></span></a></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="Hibernate的其他API"><a href="#Hibernate的其他API" class="headerlink" title="Hibernate的其他API"></a>Hibernate的其他API</h2><h3 id="Query"><a href="#Query" class="headerlink" title="Query"></a>Query</h3><p>Query接口让你方便地对数据库及持久对象进行查询，它可以有两种表达方式：HQL语言或本地数据库的SQL语句。</p>
+<p>HQL：Hibernate Query Language ：Hibernate查询语言。这种语言与SQL的语法及其类似，是一个<strong>面向对象的查询语言。</strong></p>
+<p><strong>SQL的操作对象是数据表、列等数据库对象，而HQL操作对象是类、对象、属性等。</strong></p>
+<p>Query 接口用来执行 HQL，Query 接口实例可以从 Session 对象 session 中生成：<code>session.createQuery(String hql)</code></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// HQL 查询</span></span><br><span class="line">Query&lt;Student&gt; hqlQuery = session.createQuery(<span class="string">&quot;FROM Student WHERE age &gt; :age&quot;</span>, Student.class);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 原生 SQL 查询</span></span><br><span class="line">Query&lt;Student&gt; sqlQuery = session.createNativeQuery(<span class="string">&quot;SELECT * FROM students WHERE age &gt; ?&quot;</span>, Student.class);</span><br></pre></td></tr></table></figure>
+
+<p>通过 JPA EntityManager 创建</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// JPQL 查询</span></span><br><span class="line">javax.persistence.<span class="type">Query</span> <span class="variable">jpqlQuery</span> <span class="operator">=</span> entityManager.createQuery(<span class="string">&quot;SELECT s FROM Student s WHERE s.age &gt; :age&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 原生 SQL 查询</span></span><br><span class="line">javax.persistence.<span class="type">Query</span> <span class="variable">sqlQuery</span> <span class="operator">=</span> entityManager.createNativeQuery(<span class="string">&quot;SELECT * FROM students&quot;</span>);</span><br></pre></td></tr></table></figure>
+
+<p>Query对象在Session对象关闭之前有效，否则会抛出SessionException异常。因为Session对象就想ＪＤＢＣ中的Connection 对象，即数据库的一次连接。关闭Connection对象，Statement对象就不能再使用，所以关闭Session后就不能再使用Query对象了。</p>
+<p>Query经常被用来绑定查询参数、限制查询记录数量，并最终执行查询操作。</p>
+<p>通过Query即可以执行hql语句:</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">Query</span> <span class="variable">query</span> <span class="operator">=</span> session.createQuery(<span class="string">&quot;hql语句&quot;</span>);</span><br></pre></td></tr></table></figure>
+
+<p>又可以执行本地sql语句：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">SQLQuery</span> <span class="variable">sqlQuery</span> <span class="operator">=</span> session.createSQLQuery(<span class="string">&quot;本地sql语句&quot;</span>);</span><br></pre></td></tr></table></figure>
+
+<p>其中SQLQuery是Query的子类</p>
+<p>Query 接口的主要方法</p>
+<p>Query 的主要方法：</p>
+<p><code>setxxx()</code>:用于设置HQL语句中问号或者变量的值;</p>
+<p><code>setString(int position,String value);</code></p>
+<p>设置HQL中的“？”的值，其中position代表“？”在HQL中的位置，value是要为“？”设置的值</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">Query query=session.createQuery(<span class="string">&quot;from UserInfoPO u where u.age&gt;? and u.useName like ?&quot;</span>);</span><br><span class="line">query.setInteger(<span class="number">0</span>, <span class="number">22</span>);     <span class="comment">//使用&quot;?&quot;,第一个下标是从0开始的，给第一个问号赋值22</span></span><br><span class="line">query.setString(<span class="number">1</span>, <span class="string">&quot;%志%&quot;</span>);   <span class="comment">//设置第二个问号的值为“%志%”</span></span><br></pre></td></tr></table></figure>
+
+<p><code>setString(String paraName,String value);</code></p>
+<p>设置HQL中“：”后所跟变量的值；其中  paraName代表HQL中“：”后边的变量名，value是该变量的值：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">Query query=session.createQuery(<span class="string">&quot;from UserInfoPO u where u.age&gt;：minAge and u.useName like:useName&quot;</span>);</span><br><span class="line">query.setInteger(<span class="string">&quot;minAge&quot;</span>, <span class="number">22</span>);       <span class="comment">//设置minAge的值</span></span><br><span class="line">query.setString(<span class="string">&quot;userName&quot;</span>, <span class="string">&quot;%志%&quot;</span>);   <span class="comment">//设置useName的值</span></span><br></pre></td></tr></table></figure>
+
+
+
+<p><code>setParameter()</code>方法：参数绑定方法</p>
+<p>位置参数绑定</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">Query&lt;Student&gt; query = session.createQuery(</span><br><span class="line">    <span class="string">&quot;FROM Student WHERE age &gt; ?1 AND name LIKE ?2&quot;</span>, </span><br><span class="line">    Student.class);</span><br><span class="line">query.setParameter(<span class="number">1</span>, <span class="number">18</span>);</span><br><span class="line">query.setParameter(<span class="number">2</span>, <span class="string">&quot;张%&quot;</span>);</span><br></pre></td></tr></table></figure>
+
+<p>命名参数绑定</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">Query&lt;Student&gt; query = session.createQuery(</span><br><span class="line">    <span class="string">&quot;FROM Student WHERE age &gt; :minAge AND age &lt; :maxAge&quot;</span>, </span><br><span class="line">    Student.class);</span><br><span class="line">query.setParameter(<span class="string">&quot;minAge&quot;</span>, <span class="number">18</span>);</span><br><span class="line">query.setParameter(<span class="string">&quot;maxAge&quot;</span>, <span class="number">25</span>);</span><br></pre></td></tr></table></figure>
+
+
+
+<p>分页控制方法：</p>
+<p><code>setFirstResult</code>：设定从哪一个对象开始检索，参数表示这个对象在查询结果中的索引位置，起始值为0，默认情况下，从查询结果的第一个对象开始检索</p>
+<p><code>setMaxResults</code>：一次检索最多返回多少数目</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">Query&lt;Student&gt; query = session.createQuery(<span class="string">&quot;FROM Student ORDER BY name&quot;</span>, Student.class);</span><br><span class="line">query.setFirstResult(<span class="number">10</span>); <span class="comment">// 从第10条记录开始(0-based)</span></span><br><span class="line">query.setMaxResults(<span class="number">5</span>);   <span class="comment">// 最多返回5条记录</span></span><br><span class="line">List&lt;Student&gt; students = query.getResultList();</span><br></pre></td></tr></table></figure>
+
+
+
+<p><code>list()</code>；返回查询结果，并把查询结果转换成list对象</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">Query query=session.createQuery(<span class="string">&quot;from UserInfoPO u where u.age&gt;：minAge and u.useName like:useName&quot;</span>);</span><br><span class="line">           query.setInteger(<span class="string">&quot;minAge&quot;</span>, <span class="number">22</span>);       <span class="comment">//设置minAge的值</span></span><br><span class="line">           query.setString(<span class="string">&quot;userName&quot;</span>, <span class="string">&quot;%志%&quot;</span>);   <span class="comment">//设置useName的值</span></span><br><span class="line">           List&lt;UserInfoPO&gt; list=query.list();</span><br><span class="line">           </span><br><span class="line">          <span class="keyword">for</span>(<span class="type">int</span> i=<span class="number">0</span>;i&lt;list.size();i++)&#123;</span><br><span class="line">       	   ui=(UserInfoPO)list.get(i);</span><br><span class="line">       	   System.out.println(ui.getUserName());</span><br><span class="line">          &#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>getResultList();</code>：也可以获取结果列表</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">List&lt;Student&gt; students = query.getResultList();</span><br></pre></td></tr></table></figure>
+
+<p><code>executeUpdate()</code>：执行更新，删除：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">Query&lt;?&gt; updateQuery = session.createQuery(</span><br><span class="line">    <span class="string">&quot;UPDATE Student SET email = :email WHERE id = :id&quot;</span>);</span><br><span class="line">updateQuery.setParameter(<span class="string">&quot;email&quot;</span>, <span class="string">&quot;new@example.com&quot;</span>);</span><br><span class="line">updateQuery.setParameter(<span class="string">&quot;id&quot;</span>, <span class="number">1L</span>);</span><br><span class="line"><span class="type">int</span> <span class="variable">updatedCount</span> <span class="operator">=</span> updateQuery.executeUpdate();</span><br></pre></td></tr></table></figure>
+
+<p>标量结果</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">Query&lt;Long&gt; countQuery = session.createQuery(</span><br><span class="line">    <span class="string">&quot;SELECT COUNT(*) FROM Student&quot;</span>, Long.class);</span><br><span class="line"><span class="type">long</span> <span class="variable">count</span> <span class="operator">=</span> countQuery.getSingleResult();</span><br></pre></td></tr></table></figure>
+
+
+
+
+<ol>
+<li>查询所有表当中信息</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">HibernateDemo5</span> &#123;</span><br><span class="line">	<span class="meta">@Test</span></span><br><span class="line">	<span class="comment">// Query</span></span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">demo01</span><span class="params">()</span> &#123;</span><br><span class="line">		<span class="type">Session</span> <span class="variable">session</span> <span class="operator">=</span> HibernateUtils.getCurrentSession();</span><br><span class="line">		<span class="type">Transaction</span> <span class="variable">transaction</span> <span class="operator">=</span> session.beginTransaction();</span><br><span class="line">		<span class="comment">// 通过Session活动Query接口</span></span><br><span class="line">		<span class="type">String</span> <span class="variable">hql</span> <span class="operator">=</span> <span class="string">&quot;from Customer&quot;</span>;</span><br><span class="line">		<span class="type">Query</span> <span class="variable">query</span> <span class="operator">=</span> session.createQuery(hql);</span><br><span class="line">		List&lt;Customer&gt; list = query.list();</span><br><span class="line">		<span class="keyword">for</span> (Customer customer : list) &#123;</span><br><span class="line">			System.out.println(customer);</span><br><span class="line">		&#125;</span><br><span class="line">		transaction.commit();</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><img src="/posts/null/f3d1b63f8132c370198504fd7ecd8e9a.png" alt="img"></p>
+<ol start="2">
+<li><p>查询指定字符的数据（条件查询）</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">HibernateDemo5</span> &#123;</span><br><span class="line">	<span class="meta">@Test</span></span><br><span class="line">	<span class="comment">// Query</span></span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">demo01</span><span class="params">()</span> &#123;</span><br><span class="line">		<span class="type">Session</span> <span class="variable">session</span> <span class="operator">=</span> HibernateUtils.getCurrentSession();</span><br><span class="line">		<span class="type">Transaction</span> <span class="variable">transaction</span> <span class="operator">=</span> session.beginTransaction();</span><br><span class="line">		<span class="comment">// 通过Session活动Query接口</span></span><br><span class="line">		<span class="comment">// String hql = &quot;from Customer&quot;;</span></span><br><span class="line">		<span class="type">String</span> <span class="variable">hql</span> <span class="operator">=</span> <span class="string">&quot;from Customer where cust_name like ?&quot;</span>;</span><br><span class="line">		<span class="type">Query</span> <span class="variable">query</span> <span class="operator">=</span> session.createQuery(hql);</span><br><span class="line">		query.setParameter(<span class="number">0</span>, <span class="string">&quot;王%&quot;</span>);</span><br><span class="line">		List&lt;Customer&gt; list = query.list();</span><br><span class="line">		<span class="keyword">for</span> (Customer customer : list) &#123;</span><br><span class="line">			System.out.println(customer);</span><br><span class="line">		&#125;</span><br><span class="line">		transaction.commit();</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p><img src="/posts/null/e83420f1af9d01144e79229074b63ec2.png" alt="img"></p>
+</li>
+<li><p>分页查询</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">HibernateDemo5</span> &#123;</span><br><span class="line">	<span class="meta">@Test</span></span><br><span class="line">	<span class="comment">// Query</span></span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">demo01</span><span class="params">()</span> &#123;</span><br><span class="line">		<span class="type">Session</span> <span class="variable">session</span> <span class="operator">=</span> HibernateUtils.getCurrentSession();</span><br><span class="line">		<span class="type">Transaction</span> <span class="variable">transaction</span> <span class="operator">=</span> session.beginTransaction();</span><br><span class="line">		<span class="comment">// 通过Session活动Query接口</span></span><br><span class="line">		<span class="comment">//分页查询</span></span><br><span class="line">		<span class="type">String</span> <span class="variable">hql</span> <span class="operator">=</span> <span class="string">&quot;from Customer&quot;</span>;</span><br><span class="line">		<span class="type">Query</span> <span class="variable">query</span> <span class="operator">=</span> session.createQuery(hql);</span><br><span class="line">		<span class="comment">//设置分页</span></span><br><span class="line">		query.setFirstResult(<span class="number">0</span>);<span class="comment">//相当于MySQL当中limit的第一个参数</span></span><br><span class="line">		query.setMaxResults(<span class="number">3</span>);</span><br><span class="line">		<span class="comment">//query.setParameter(0, &quot;王%&quot;);</span></span><br><span class="line">		List&lt;Customer&gt; list = query.list();</span><br><span class="line">		<span class="keyword">for</span> (Customer customer : list) &#123;</span><br><span class="line">			System.out.println(customer);</span><br><span class="line">		&#125;</span><br><span class="line">		transaction.commit();</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><img src="/posts/null/9e48597db6e9cc16ee0e235ef622d00e.png" alt="img"></p>
+</li>
+</ol>
+<h3 id="Criteria与条件查询"><a href="#Criteria与条件查询" class="headerlink" title="Criteria与条件查询"></a>Criteria与条件查询</h3><p><strong>Criteria API</strong> 是一种面向对象的查询方式，它允许你通过编程方式构建查询条件，而无需编写 SQL 或 HQL。这种方式也被称为 <strong>QBC（Query By Criteria）</strong>，即 “条件查询”</p>
+<p>使用QBC(Query By Criteria);<strong>更加面向对象的一种查询方式。</strong></p>
+<p>Criteria接口与Query接口非常类似，也是Hibernate的查询接口，它允许创建并执行面向对象方式的查询。</p>
+<p>Criteria的主要作用：</p>
+<ul>
+<li>Criteria查询通过面向对象的设计，将数据查询条件封装为一个对象。简单的说，Criteria查询可以看成是传统SQL语言的对象化表示。</li>
+<li>Criteria接口完全封装了基于字符串形式的查询语句，它更擅长于执行动态查询。</li>
+</ul>
+<p>条件查询查询的步骤：</p>
+<ul>
+<li>获得Hibernate的Session对象。</li>
+<li>以Session对象创建Criteria对象。</li>
+<li>使用Restrictions的方法为Criteria对象设置查询条件，Order工具类的方法设置排序方式，Projections工具类的方法进行统计和分组。</li>
+<li>向Criterion查询添加Criterion查询条件。</li>
+<li>执行Criteria的list()或uniqueResult()方法返回结果集。</li>
+</ul>
+<p>核心组件</p>
+<ul>
+<li><strong>Criteria</strong>：主查询接口，通过 <code>session.createCriteria(EntityClass.class)</code> 创建。</li>
+<li><strong>Criterion</strong>：查询条件（如 <code>eq</code>, <code>like</code>, <code>gt</code> 等），通过 <code>Restrictions</code> 工具类生成。</li>
+<li><strong>Projection</strong>：结果集投影（如 <code>count</code>, <code>avg</code>, <code>group by</code> 等），通过 <code>Projections</code> 工具类生成。</li>
+<li><strong>Order</strong>：排序规则，通过 <code>Order.asc()</code> 或 <code>Order.desc()</code> 创建。</li>
+<li><strong>DetachedCriteria</strong>：独立于 Session 的查询对象，可在多个 Session 中复用。</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> org.hibernate.*;</span><br><span class="line"><span class="keyword">import</span> org.hibernate.boot.registry.*;</span><br><span class="line"><span class="keyword">import</span> org.hibernate.cfg.*;</span><br><span class="line"><span class="keyword">import</span> org.hibernate.service.*;</span><br><span class="line"> </span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">HibernateUtil</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> SessionFactory sessionFactory;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">static</span> &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="comment">// 使用默认的hibernate.cfg.xml配置文件创建Configuration实例</span></span><br><span class="line">            <span class="type">Configuration</span> <span class="variable">cfg</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Configuration</span>().configure();</span><br><span class="line">            <span class="comment">// 以Configuration实例来创建SessionFactory实例</span></span><br><span class="line">            <span class="type">ServiceRegistry</span> <span class="variable">serviceRegistry</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">StandardServiceRegistryBuilder</span>().configure().build();</span><br><span class="line">            sessionFactory = cfg.buildSessionFactory(serviceRegistry);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Throwable ex) &#123;</span><br><span class="line">            System.err.println(<span class="string">&quot;Initial SessionFactory creation failed.&quot;</span> + ex);</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">ExceptionInInitializerError</span>(ex);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    <span class="comment">// ThreadLocal可以隔离多个线程的数据共享，因此不再需要对线程同步</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> ThreadLocal&lt;Session&gt; session = <span class="keyword">new</span> <span class="title class_">ThreadLocal</span>&lt;Session&gt;();</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> Session <span class="title function_">currentSession</span><span class="params">()</span> <span class="keyword">throws</span> HibernateException &#123;</span><br><span class="line">        <span class="type">Session</span> <span class="variable">s</span> <span class="operator">=</span> session.get();</span><br><span class="line">        <span class="comment">// 如果该线程还没有Session,则创建一个新的Session</span></span><br><span class="line">        <span class="keyword">if</span> (s == <span class="literal">null</span>) &#123;</span><br><span class="line">            s = sessionFactory.openSession();</span><br><span class="line">            <span class="comment">// 将获得的Session变量存储在ThreadLocal变量session里</span></span><br><span class="line">            session.set(s);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> s;</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">closeSession</span><span class="params">()</span> <span class="keyword">throws</span> HibernateException &#123;</span><br><span class="line">        <span class="type">Session</span> <span class="variable">s</span> <span class="operator">=</span> session.get();</span><br><span class="line">        <span class="keyword">if</span> (s != <span class="literal">null</span>)</span><br><span class="line">            s.close();</span><br><span class="line">        session.set(<span class="literal">null</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在条件查询中，Criteria接口代表一次查询，该查询本身不具备任何数据筛选功能，Session调用createCriteria(Class clazz)方法对某个持久化类创建条件查询实例。</p>
+<p>常用的Criteria操作方法：</p>
+<ul>
+<li>add()方法：它用来设置查询的条件，可以根据查询条件的个数，追加任意个add()方法。</li>
+<li>addOrder()方法：用来设置查询结果集的排序规则，相当于SQL语句中的order by子句。</li>
+<li>createCriteria()方法：当需要从多张表中联合查询时可使用createCriteria()方法。</li>
+<li>setFirstResult(int firstResult)：设置查询返回的第一行记录。</li>
+<li>setMaxResults(int maxResults)：设置查询返回的记录数。</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//分页查询前10条</span></span><br><span class="line"><span class="type">Criteria</span> <span class="variable">criteria</span> <span class="operator">=</span> session.createCriteria(Customer.class);</span><br><span class="line">criteria.addOrder( Order.asc(<span class="string">&quot;name&quot;</span>) ); <span class="comment">//排序方式</span></span><br><span class="line">criteria.setFirstResult(<span class="number">0</span>);</span><br><span class="line">criteria.setMaxResults(<span class="number">10</span>);</span><br><span class="line"><span class="type">List</span> <span class="variable">result</span> <span class="operator">=</span> criteria.list（）</span><br></pre></td></tr></table></figure>
+
+<p>常用查询条件</p>
+<table>
+<thead>
+<tr>
+<th><strong>方法</strong></th>
+<th><strong>说明</strong></th>
+<th><strong>示例</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>eq(property, value)</code></td>
+<td>等于</td>
+<td><code>Restrictions.eq(&quot;age&quot;, 20)</code></td>
+</tr>
+<tr>
+<td><code>ne(property, value)</code></td>
+<td>不等于</td>
+<td><code>Restrictions.ne(&quot;name&quot;, &quot;张三&quot;)</code></td>
+</tr>
+<tr>
+<td><code>gt(property, value)</code></td>
+<td>大于</td>
+<td><code>Restrictions.gt(&quot;age&quot;, 18)</code></td>
+</tr>
+<tr>
+<td><code>ge(property, value)</code></td>
+<td>大于等于</td>
+<td><code>Restrictions.ge(&quot;score&quot;, 90)</code></td>
+</tr>
+<tr>
+<td><code>lt(property, value)</code></td>
+<td>小于</td>
+<td><code>Restrictions.lt(&quot;age&quot;, 30)</code></td>
+</tr>
+<tr>
+<td><code>le(property, value)</code></td>
+<td>小于等于</td>
+<td><code>Restrictions.le(&quot;price&quot;, 100.0)</code></td>
+</tr>
+<tr>
+<td><code>like(property, value)</code></td>
+<td>模糊查询（支持 <code>%</code> 和 <code>_</code>）</td>
+<td><code>Restrictions.like(&quot;name&quot;, &quot;张%&quot;)</code></td>
+</tr>
+<tr>
+<td><code>in(property, values)</code></td>
+<td>包含在集合中</td>
+<td><code>Restrictions.in(&quot;id&quot;, Arrays.asList(1, 2, 3))</code></td>
+</tr>
+<tr>
+<td><code>isNull(property)</code></td>
+<td>为空</td>
+<td><code>Restrictions.isNull(&quot;email&quot;)</code></td>
+</tr>
+<tr>
+<td><code>isNotNull(property)</code></td>
+<td>不为空</td>
+<td><code>Restrictions.isNotNull(&quot;phone&quot;)</code></td>
+</tr>
+<tr>
+<td><code>and(criterion1, criterion2)</code></td>
+<td>逻辑与</td>
+<td><code>Restrictions.and(gt(&quot;age&quot;, 18), like(&quot;name&quot;, &quot;张%&quot;))</code></td>
+</tr>
+<tr>
+<td><code>or(criterion1, criterion2)</code></td>
+<td>逻辑或</td>
+<td><code>Restrictions.or(eq(&quot;status&quot;, 1), isNull(&quot;deleted&quot;))</code></td>
+</tr>
+</tbody></table>
+<h3 id><a href="#" class="headerlink" title></a></h3><h2 id="HQL查询"><a href="#HQL查询" class="headerlink" title="HQL查询"></a>HQL查询</h2><h3 id="HQL查询语句"><a href="#HQL查询语句" class="headerlink" title="HQL查询语句"></a>HQL查询语句</h3><p>HQL ——(Hibernate Query Language)：Hibernate语言查询它是完全面向对象的查询语句，查询功能非常强大，具备继承、多态和关联等特性 。Hibernate官方推荐使用HQL进行查询。<br>QBC——(Query By Criteria)：标准化对象查询，以对象的方式进行查询，将查询语句封装为对象操作。优点：可读性好，符合Java 程序员的编码习惯。<br>Native SQL Queries：原生SQL查询，直接使用数据库提供的SQL方言进行查询。</p>
+<p><strong>HQL是Hibernate Query Language的缩写，HQL的语法与SQL相似，但HQL是一种面向对象的查询语言。SQL的操作对象是数据表、列等数据库对象，而HQL操作对象是类、对象、属性等。</strong></p>
+<p>Hibernate查询语言（HQL）是面向对象的查询语言，其结构与SQL查询相似，不同的是，HQL查询的主体是<strong>持久化类</strong>而不是数据表。</p>
+<p>HQL提供了一种应用和数据库之间的抽象，提高了可移植性。</p>
+<p>HQL子句本身大小写无关，但是其中<strong>出现的类名和属性名必须注意大小写</strong>。</p>
+<p>HQL是完全面向对象的查询语言，支持继承和多态等特性。</p>
+<p>HQL语句本身是不区分大小写的，也就是说HQL语句的关键字、函数都是不区分大小写的。但HQL语句中所有使用的包名、类名、实例名、属性名都区分大小写。</p>
+<p>HQL查询依赖于Query类，每个Query对象对应一个查询对象。查询步骤如下：</p>
+<ul>
+<li>获取Hibernate Session对象。</li>
+<li>编写HQL查询语句。</li>
+<li>以HQL语句为参数，调用session的createQuery方法，创建查询对象Query。</li>
+<li>如果HQL语句中带有参数，则调用Query的setXxx方法，对参数赋值。</li>
+<li>调用Query的list, unique Result等方法，查询获得结果。</li>
+</ul>
+<h3 id="from子句"><a href="#from子句" class="headerlink" title="from子句"></a>from子句</h3><p><strong>from是最简单的HQL语句，也是最基本的HQL语句。from关键字后紧跟持久化类的类名。</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">from Person</span><br><span class="line">表明从Person 持久化类中选出全部的实例。</span><br><span class="line">from Person as p | from Person p</span><br><span class="line">–	为实体类指定别名</span><br></pre></td></tr></table></figure>
+
+<p>from后还可以同时出现多个持久化类，此时将产生一个笛卡尔积或跨表的连接。但实际上这种用法很少使用，因为通常需要使用跨表连接时，可以考虑使用隐式连接或者显式连接，而不是直接在from后紧跟多个表名。</p>
+<p>基本查询结构</p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> [<span class="keyword">DISTINCT</span>] 属性列表 </span><br><span class="line"><span class="keyword">FROM</span> 实体名 [<span class="keyword">AS</span>] 别名 </span><br><span class="line">[<span class="keyword">WHERE</span> 条件] </span><br><span class="line">[<span class="keyword">GROUP</span> <span class="keyword">BY</span> 分组属性] </span><br><span class="line">[<span class="keyword">HAVING</span> 分组条件] </span><br><span class="line">[<span class="keyword">ORDER</span> <span class="keyword">BY</span> 排序属性 [<span class="keyword">ASC</span><span class="operator">|</span><span class="keyword">DESC</span>]]</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 查询所有学生</span></span><br><span class="line"><span class="type">String</span> <span class="variable">hql</span> <span class="operator">=</span> <span class="string">&quot;FROM Student&quot;</span>;</span><br><span class="line">Query&lt;Student&gt; query = session.createQuery(hql, Student.class);</span><br><span class="line">List&lt;Student&gt; students = query.getResultList();</span><br><span class="line"></span><br><span class="line"><span class="comment">// 带别名的查询</span></span><br><span class="line"><span class="type">String</span> <span class="variable">hql</span> <span class="operator">=</span> <span class="string">&quot;FROM Student AS s WHERE s.age &gt; 20&quot;</span>;</span><br><span class="line">Query&lt;Student&gt; query = session.createQuery(hql, Student.class);</span><br></pre></td></tr></table></figure>
+
+<p>关联和连接</p>
+<p>当程序需要从多个数据表中取得数据时，SQL语句将会考虑多表连接查询。Hibernate使用关联映射来处理底层数据表之间的连接，一旦提供了正确的关联映射后，当程序通过Hibernate进行持久化访问时，将可利用Hibernate关联来进行连接。</p>
+<p>HQL支持两种关联连接形式：显式和隐式。</p>
+<p>隐式连接不需要使用join关键字，使用英文点号（.）来隐式连接关联实体，而Hibernate底层将自动进行关联查询。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 查询部门名称为&quot;研发部&quot;的学生</span></span><br><span class="line"><span class="type">String</span> <span class="variable">hql</span> <span class="operator">=</span> <span class="string">&quot;FROM Student s WHERE s.department.name = &#x27;研发部&#x27;&quot;</span>;</span><br></pre></td></tr></table></figure>
+
+<p>使用显示连接可以为相关联的实体，甚至是关联集合中的全部元素指定一个别名。</p>
+<ul>
+<li>inner join内连接，可简写为join</li>
+<li>left outer join左外连接</li>
+<li>right outer join右外连接</li>
+<li>full join全连接</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">String hql=<span class="string">&quot;select p from person p inner join p.myevent e where e.title like&#x27;%上课%&#x27;&quot;</span>;</span><br></pre></td></tr></table></figure>
+
+<p>隐式连接和显式连接的区别：</p>
+<p>隐式连接底层将转换成SQL99的交叉连接，显式连接将转换成SQL99的inner join、left join、right join等连接。<br>隐式连接和显式连接查询后返回的结果不同。当HQL省略关键字select时，隐式连接返回的结果是多个被查询实体组成的集合；显示连接查询返回的是被查询的持久化对象和被关联的持久化对象组成的数组。</p>
+<blockquote>
+<p>隐式连接查询中，在HQL中，省略select，直接使用from开头<br>例如：from Message m where m.topic.id&#x3D;3<br>对Message和Topic进行了连接查询，但是结果只包含Message的数据，结果为：List<Message></Message></p>
+<p>显示连接查询中，在HQL中，省略select，直接使用from开头<br>例如：from Message m join m.topic t where t.id&#x3D;3;<br>对Message和Topic进行了连接查询，每条记录包含Message和Topic两个实体的数据，两个实体构成一个数组，多条记录构成集合，结果为：List&lt;Object[ ]&gt;</p>
+</blockquote>
+<h3 id="SELECT子句"><a href="#SELECT子句" class="headerlink" title="SELECT子句"></a>SELECT子句</h3><p>select子句用于选择指定的属性或直接选择某个实体，当然select选择的属性必须是from后持久化类包含的属性。</p>
+<p>select选择的属性是实体类的属性；结果是一个集合，集合中的每个元素是一个Object数组：Object[]</p>
+<p>查询特定属性</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 只查询姓名和年龄</span></span><br><span class="line"><span class="type">String</span> <span class="variable">hql</span> <span class="operator">=</span> <span class="string">&quot;SELECT s.name, s.age FROM Student s&quot;</span>;</span><br><span class="line">Query&lt;Object[]&gt; query = session.createQuery(hql, Object[].class);</span><br><span class="line"><span class="comment">// 查询结果自动封装为对象</span></span><br><span class="line">List&lt;Object[]&gt; results = query.getResultList();</span><br><span class="line"></span><br><span class="line">results.forEach(row -&gt; &#123;</span><br><span class="line">    <span class="type">String</span> <span class="variable">name</span> <span class="operator">=</span> (String) row[<span class="number">0</span>];</span><br><span class="line">    <span class="type">Integer</span> <span class="variable">age</span> <span class="operator">=</span> (Integer) row[<span class="number">1</span>];</span><br><span class="line">    System.out.println(name + <span class="string">&quot;: &quot;</span> + age);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<p>使用 DTO</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 创建DTO类</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">StudentDTO</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> String name;</span><br><span class="line">    <span class="keyword">private</span> Integer age;</span><br><span class="line">    <span class="comment">// 构造器、getter/setter</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 查询并使用构造器</span></span><br><span class="line"><span class="type">String</span> <span class="variable">hql</span> <span class="operator">=</span> <span class="string">&quot;SELECT NEW com.example.StudentDTO(s.name, s.age) FROM Student s&quot;</span>;</span><br><span class="line">Query&lt;StudentDTO&gt; query = session.createQuery(hql, StudentDTO.class);</span><br></pre></td></tr></table></figure>
+
+<p>聚合函数</p>
+<p>HQL中支持的聚合函数有：concat(str,str)、substring()、trim()、lower()、upper()、length()、abs()、sqrt()、mod()、count()、avg()、min()、max()、sum()、current_date()、current_time()、current_timestamp()、day()、 month()、year()等。</p>
+<p>也可以支持数学运算和连接符号等<br>同时也支持经验证SQL函数，如length()、lower()、upper()、trim()等<br>可以使用distinct去除重复数据</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 统计各年龄段学生数量</span></span><br><span class="line"><span class="type">String</span> <span class="variable">hql</span> <span class="operator">=</span> <span class="string">&quot;SELECT s.age, COUNT(s) FROM Student s GROUP BY s.age&quot;</span>;</span><br><span class="line">Query&lt;Object[]&gt; query = session.createQuery(hql, Object[].class);</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="WHERE子句"><a href="#WHERE子句" class="headerlink" title="WHERE子句"></a>WHERE子句</h3><p>where子句用来筛选选中的结果，缩小选择范围。如果没有持久化实例命名别名，则可以直接使用属性名来引用属性。</p>
+<p>where子句中支持大部分SQL的表达式：</p>
+<p>设置参数</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 冒号+参数名</span></span><br><span class="line">from Person p where p.age &lt;:max </span><br><span class="line">query.setInteger(“max”,<span class="number">20</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 问号为占位符</span></span><br><span class="line">from Person p where p.age &lt;？ </span><br><span class="line">query.setInteger(<span class="number">0</span>,<span class="number">20</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 问号与指定数字位置</span></span><br><span class="line">from Person p where p.age &lt;？<span class="number">1</span></span><br><span class="line">query.setInteger(“<span class="number">1</span>“,<span class="number">20</span>);</span><br></pre></td></tr></table></figure>
+
+
+
+<p>基本条件</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 比较运算</span></span><br><span class="line"><span class="type">String</span> <span class="variable">hql</span> <span class="operator">=</span> <span class="string">&quot;FROM Student s WHERE s.age &gt; 20&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 模糊查询</span></span><br><span class="line"><span class="type">String</span> <span class="variable">hql</span> <span class="operator">=</span> <span class="string">&quot;FROM Student s WHERE s.name LIKE &#x27;张%&#x27;&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 范围查询</span></span><br><span class="line"><span class="type">String</span> <span class="variable">hql</span> <span class="operator">=</span> <span class="string">&quot;FROM Student s WHERE s.age BETWEEN 18 AND 22&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 空值检查</span></span><br><span class="line"><span class="type">String</span> <span class="variable">hql</span> <span class="operator">=</span> <span class="string">&quot;FROM Student s WHERE s.email IS NOT NULL&quot;</span>;</span><br></pre></td></tr></table></figure>
+
+<p>集合查询</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// IN 查询</span></span><br><span class="line"><span class="type">String</span> <span class="variable">hql</span> <span class="operator">=</span> <span class="string">&quot;FROM Student s WHERE s.name IN (&#x27;张三&#x27;, &#x27;李四&#x27;)&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 集合大小</span></span><br><span class="line"><span class="type">String</span> <span class="variable">hql</span> <span class="operator">=</span> <span class="string">&quot;FROM Student s WHERE s.projects.size &gt; 2&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 集合元素检查</span></span><br><span class="line"><span class="type">String</span> <span class="variable">hql</span> <span class="operator">=</span> <span class="string">&quot;FROM Student s WHERE &#x27;数学&#x27; MEMBER OF s.courses&quot;</span>;</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="HQL子查询"><a href="#HQL子查询" class="headerlink" title="HQL子查询"></a>HQL子查询</h3><p>如果底层数据库支持子查询（所谓子查询就是，要查询的字段及信息在A表，条件在B表），则可以在HQL语句中使用子查询。与SQL中子查询相似的是，HQL中的子查询也需要使用()。</p>
+<p>如果子查询返回多条记录，则可以使用下面关键字：</p>
+<ul>
+<li>all：表示子查询语句返回的所有记录。</li>
+<li>any：表示子查询语句返回的任意一条结果。</li>
+<li>some：与”any”等价。</li>
+<li>in：与”&#x3D;any”等价。</li>
+<li>exists：表示子查询语句至少返回一条记录。</li>
+</ul>
+<p>如果在子查询中操作集合，HQL提供了一组操纵集合的函数和属性：</p>
+<p>size()函数和size属性：获得集合中元素的数量。<br>minIndex()函数和minIndex属性：对于建立了索引的集合获得最小索引值（关于集合索引参考第一部分映射值类型集合）。<br>minElement()函数和minElement属性：对于包含基本类型的元素集合，获得集合中值最小的元素。<br>maxElement()函数和maxElement属性：对于包含基本类型元素的集合，获得集合中值最大的元素。<br>element()函数：获得集合中所有元素。</p>
+<h3 id="更新和删除"><a href="#更新和删除" class="headerlink" title="更新和删除"></a>更新和删除</h3><p>更新：执行删除操作调用Query接口的executeUpate()方法，然后提交事务</p>
+<p><code>HQL：Delete from Student where id = 10</code></p>
+<p>删除：执行删除操作调用Query接口的executeUpate()方法，然后提交事务</p>
+<p><code>HQL：update Student set age = 20,name=‘李四’ where id = 20</code></p>
+<h3 id="SQL查询"><a href="#SQL查询" class="headerlink" title="SQL查询"></a>SQL查询</h3><p>Hibernate还支持使用原生SQL查询，使用原生SQL查询可以利用某些数据库的特性，或者需要将原有JDBC应用迁移到Hibernate应用上，也可能需要使用原生SQL查询。类似于HQL查询，原生SQL查询也支持将SQL语句放在配置文件中配置，从而提高程序的解耦。命名SQL查询还可以用于调用存储过程。</p>
+<p>SQL查询是通过SQLQuery接口来表示的，SQLQuery 接口是Query 接口的子接口，因此完全可以调用Query 接口的方法：</p>
+<ul>
+<li>list()：获取记录集。</li>
+<li>uniqueResult()：返回唯一记录。</li>
+<li>addEntity()：将查询到的数据封装为特定的实体。</li>
+<li>setFirstResult()：设置结果集的起点。</li>
+<li>setMaxResults()：设置获取记录的最大条数。</li>
+<li>addScalarˈskeɪlə ()：将查询的记录关联成标量值。</li>
+</ul>
+<p>执行SQL查询的步骤：</p>
+<ul>
+<li>获取Session对象。</li>
+<li>编写SQL语句。</li>
+<li>以SQL语句作为参数，调用Session的createSQLQuery()方法创建查询对象。</li>
+<li>调用SQLQuery对象的addScalar()或addEntity()方法将选出的结果与标量值或实体进行关联。</li>
+<li>如果SQL语句包含参数，则调用Query的setXxx()方法为参数赋值。</li>
+<li>调用Query的list()方法或uniqueResult()方法返回查询的结果集。</li>
+</ul>
+<h4 id="标量查询"><a href="#标量查询" class="headerlink" title="标量查询"></a>标量查询</h4><p><strong>最基本的SQL查询就是获得一个标量（数值）列表。</strong></p>
+<p>标量查询（Scalar Query）是指直接返回数据库列值（而非实体对象）的查询方式。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">session.createSQLQuery(<span class="string">&quot;select * from student&quot;</span>).list();</span><br></pre></td></tr></table></figure>
+
+<p>默认情况下，查询语句将返回由Object数组组成的List，数据的每个元素时student表的列值，Hibernate会通过<code>ResultSetMetadata</code>来判定所返回数据列的实际顺序和类型。如果select后面只有一个字段，那么返回的List集合元素就不是数组，而只是单个的变量值。</p>
+<p>当执行 SQL 查询且未指定返回类型时，Hibernate 默认返回 <code>List</code>，每个数组元素对应数据库的一列：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 默认行为：返回 Object [] 列表</span></span><br><span class="line"><span class="type">SQLQuery</span> <span class="variable">query</span> <span class="operator">=</span> session.createSQLQuery(<span class="string">&quot;SELECT id, name, age FROM student&quot;</span>);</span><br><span class="line">List&lt;Object[]&gt; results = query.list();</span><br><span class="line"></span><br><span class="line"><span class="comment">// 遍历结果</span></span><br><span class="line"><span class="keyword">for</span> (Object[] row : results) &#123;</span><br><span class="line">    <span class="type">Long</span> <span class="variable">id</span> <span class="operator">=</span> (Long) row[<span class="number">0</span>];       <span class="comment">// 第一列</span></span><br><span class="line">    <span class="type">String</span> <span class="variable">name</span> <span class="operator">=</span> (String) row[<span class="number">1</span>]; <span class="comment">// 第二列</span></span><br><span class="line">    <span class="type">Integer</span> <span class="variable">age</span> <span class="operator">=</span> (Integer) row[<span class="number">2</span>]; <span class="comment">// 第三列</span></span><br><span class="line">    <span class="comment">// 处理数据</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>如果 SQL 中只选择一个字段，Hibernate 会直接返回 <code>List&lt;列类型&gt;</code>：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">SQLQuery</span> <span class="variable">query</span> <span class="operator">=</span> session.createSQLQuery(<span class="string">&quot;SELECT name FROM student&quot;</span>);</span><br><span class="line">List&lt;String&gt; names = query.list(); <span class="comment">// 直接返回 String 列表</span></span><br></pre></td></tr></table></figure>
+
+
+
+<p><strong>使用 <code>addScalar()</code> 指定返回类型</strong></p>
+<p><code>addScalar()</code> 方法用于明确指定返回列的类型，避免 Hibernate 通过 <code>ResultSetMetadata</code> 动态推断类型，从而提高性能，因此建议为这些数据列指定更明确的返回值类型。明确指定返回值类型通过addScalar()方法实现。addScalar()主要有两个作用：</p>
+<ul>
+<li>指定查询结果包含那些数据列——没有被addScalar()选出的列将不会包含在查询结果里面中。</li>
+<li>指定查询结果中数据列的数据类型。</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">SQLQuery</span> <span class="variable">query</span> <span class="operator">=</span> session.createSQLQuery(<span class="string">&quot;SELECT id, name, age FROM student&quot;</span>);</span><br><span class="line">query.addScalar(<span class="string">&quot;id&quot;</span>, StandardBasicTypes.LONG)    <span class="comment">// 指定 id 为 Long 类型</span></span><br><span class="line">     .addScalar(<span class="string">&quot;name&quot;</span>, StandardBasicTypes.STRING) <span class="comment">// 指定 name 为 String 类型</span></span><br><span class="line">     .addScalar(<span class="string">&quot;age&quot;</span>, StandardBasicTypes.INTEGER); <span class="comment">// 指定 age 为 Integer 类型</span></span><br><span class="line"></span><br><span class="line">List&lt;Object[]&gt; results = query.list();</span><br></pre></td></tr></table></figure>
+
+<p>此时Hibernate不再需要使用ResultSetMetadata来获取信息，而是直接从ResultSet中取出name列的值，并把name列的数据类型当成字符串处理。因此，即使使用了“*”作为查询的字段列表，但Hibernate查询的结果也只是name字段所组成的表。</p>
+<p>在原生SQL查询里，程序指定的原生SQL语句时标准的SQL语句，因此SQL语句中使用的就是数据表、数据列等对象，而不是持久化类、属性。</p>
+<h4 id="实体查询"><a href="#实体查询" class="headerlink" title="实体查询"></a>实体查询</h4><p>前面的标量值查询只是返回一些标量的结果集，这种查询方式与使用JDBC查询的效果基本类似。查询返回多个记录行，每个记录对应一个列表的元素，每个列表元素是一个数组，每个数组元素对应当前行、当前列的值。</p>
+<p>如果查询返回了某个数据表的全部数据列，且该数据表有对应的持久化类映射，接下来就可把查询结果转换成实体。将查询结果转换成实体，可以使用SQLQuery提供的多个重载addEntity()方法。</p>
+<p>使用 <code>addEntity(Class entityClass)</code> 方法将查询结果映射为实体</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">List</span> <span class="variable">list</span> <span class="operator">=</span> session.createSQLQuery(<span class="string">&quot;select * from animal&quot;</span>)</span><br><span class="line">            .addEntity(Animal.class)</span><br><span class="line">            .list();</span><br></pre></td></tr></table></figure>
+
+<p><strong>注意事项</strong>：</p>
+<ul>
+<li><strong>必须查询所有列</strong>：SQL 中需包含实体类映射的所有字段（通常用 <code>SELECT *</code>）。</li>
+<li><strong>外键列必须存在</strong>：若实体包含 <code>@ManyToOne</code> 等关联，SQL 必须返回对应的外键列（如 <code>owner_id</code>）。</li>
+<li><strong>列名与属性名需匹配</strong>：默认情况下，数据库列名需与实体属性名一致（或通过 <code>@Column</code> 注解映射）。</li>
+</ul>
+<p>在原生SQL中一样支持使用参数，这些参数既可以使用问号+索引的占位符参数（?N），也可以使用名字参数。</p>
+<ul>
+<li><p>不仅如此，如果在SQL语句中显式使用了多表连接，则SQL语句可以选出多个数据表的数据。Hibernate还支持将查询结果转换成多个实体。如果要将查询结果转换成多个实体，则SQL字符串中应为不同数据表指定不同的别名，并调用addEntity(String alias,Class entityClass)方法将不同的数据表转换成不同实体。</p>
+<p>当 SQL 中使用列别名时，需通过 <code>@Column</code> 注解或 <code>ResultTransformer</code> 显式映射：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// SQL 使用别名</span></span><br><span class="line"><span class="type">SQLQuery</span> <span class="variable">query</span> <span class="operator">=</span> session.createSQLQuery(<span class="string">&quot;SELECT id AS animal_id, name FROM animal&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 方法一：在实体类的属性上添加 @Column 注解</span></span><br><span class="line"><span class="meta">@Column(name = &quot;animal_id&quot;)</span></span><br><span class="line"><span class="keyword">private</span> Long id;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 方法二：使用 ResultTransformer</span></span><br><span class="line">query.setResultTransformer(Transformers.aliasToBean(Animal.class));</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>不仅如此，Hibernate还可以将查询结果转换成非持久化实体（即普通的JavaBean），只要该JavaBean为这些数据提供了对应的setter和getter方法即可。Query接口提供了一个setResulltTransformer()方法，该方法可接受一个Transformers对象，通过使用该对象即可把查询到的结果集转换成JavaBean集。<br>使用 <code>Transformers.aliasToBean(Class)</code> 将结果映射到普通 JavaBean：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 创建 JavaBean</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">AnimalDTO</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> Long id;</span><br><span class="line">    <span class="keyword">private</span> String name;</span><br><span class="line">    <span class="keyword">private</span> String ownerName;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// getter/setter 方法</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">String</span> <span class="variable">sql</span> <span class="operator">=</span> <span class="string">&quot;SELECT a.id, a.name, o.name AS ownerName &quot;</span> +</span><br><span class="line">             <span class="string">&quot;FROM animal a JOIN owner o ON a.owner_id = o.id&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="type">SQLQuery</span> <span class="variable">query</span> <span class="operator">=</span> session.createSQLQuery(sql);</span><br><span class="line">query.setResultTransformer(Transformers.aliasToBean(AnimalDTO.class));</span><br><span class="line"></span><br><span class="line">List&lt;AnimalDTO&gt; dtos = query.list();</span><br></pre></td></tr></table></figure></li>
+</ul>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a target="_blank" rel="noopener" href="https://github.com/ergou10086">ErgouTree</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://ergou10086.github.io/posts/48129.html">https://ergou10086.github.io/posts/48129.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://ergou10086.github.io" target="_blank">ErgouTree's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Java%E6%8A%80%E6%9C%AF/">Java技术</a><a class="post-meta__tags" href="/tags/JavaWeb/">JavaWeb</a><a class="post-meta__tags" href="/tags/Hibernate/">Hibernate</a><a class="post-meta__tags" href="/tags/%E6%95%B0%E6%8D%AE%E5%BA%93%E6%8A%80%E6%9C%AF/">数据库技术</a><a class="post-meta__tags" href="/tags/%E6%A1%86%E6%9E%B6%E7%9F%A5%E8%AF%86/">框架知识</a></div><div class="post-share"><div class="social-share" data-image="/images/posts/cover_hibernate.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width" href="/posts/33452.html" title="Hibernate框架之事务控制"><img class="cover" src="/images/posts/cover_hibernate.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">Hibernate框架之事务控制</div></div><div class="info-2"><div class="info-item-1">事务概述Hibernate是对JDBC的轻量级封装，其主要功能是操作数据库。在操作数据库过程中，经常会遇到事务处理的问题，接下来就来介绍Hibernate中的事务管理。 事务的并发问题在实际应用过程中，数据库是要被多个用户所共同访问的。在多个事务同时使用相同的数据时，可能会发生并发的问题，具体如下：  脏读：一个事务读取到另一个事务未提交的数据。 不可重复读：一个事务读到了另一个事务已经提交的update的数据，导致在同一个事务中的多次查询结果不一致。 虚读&#x2F;幻读：一个事务读到了另一个事务已经提交的insert的数据，导致在同一个事务中的多次查询结果不一致。  事务的隔离级别为了避免事务并发问题的发生，在标准SQL规范中，定义了4个事务隔离级别，不同的隔离级别对事务的处理不同。  读未提交(Read Uncommitted，1级): 一个事务在执行过程中，既可以访问其他事务提交的新插入的数据，又可以访问未提交的修改数据。如果一个事务已经开始写数据，则另外一个事务则不允许同时进行写操作，但允许其他事务读此行数据。此隔离级别可防止丢失更新。 读已提交(Read...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/posts/33452.html" title="Hibernate框架之事务控制"><img class="cover" src="/images/posts/cover_hibernate.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-05-12</div><div class="info-item-2">Hibernate框架之事务控制</div></div><div class="info-2"><div class="info-item-1">事务概述Hibernate是对JDBC的轻量级封装，其主要功能是操作数据库。在操作数据库过程中，经常会遇到事务处理的问题，接下来就来介绍Hibernate中的事务管理。 事务的并发问题在实际应用过程中，数据库是要被多个用户所共同访问的。在多个事务同时使用相同的数据时，可能会发生并发的问题，具体如下：  脏读：一个事务读取到另一个事务未提交的数据。 不可重复读：一个事务读到了另一个事务已经提交的update的数据，导致在同一个事务中的多次查询结果不一致。 虚读&#x2F;幻读：一个事务读到了另一个事务已经提交的insert的数据，导致在同一个事务中的多次查询结果不一致。  事务的隔离级别为了避免事务并发问题的发生，在标准SQL规范中，定义了4个事务隔离级别，不同的隔离级别对事务的处理不同。  读未提交(Read Uncommitted，1级): 一个事务在执行过程中，既可以访问其他事务提交的新插入的数据，又可以访问未提交的修改数据。如果一个事务已经开始写数据，则另外一个事务则不允许同时进行写操作，但允许其他事务读此行数据。此隔离级别可防止丢失更新。 读已提交(Read...</div></div></div></a><a class="pagination-related" href="/posts/48900.html" title="Hibernate框架之介绍与初识Hibernate程序"><img class="cover" src="/images/posts/cover_hibernate.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-05-11</div><div class="info-item-2">Hibernate框架之介绍与初识Hibernate程序</div></div><div class="info-2"><div class="info-item-1">...</div></div></div></a><a class="pagination-related" href="/posts/21432.html" title="Hibernate框架之实体类编写规则和Session"><img class="cover" src="/images/posts/cover_hibernate.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-05-11</div><div class="info-item-2">Hibernate框架之实体类编写规则和Session</div></div><div class="info-2"><div class="info-item-1">持久化类Hibernate是持久层的ORM映射框架，专注于数据的持久化工作。 所谓的持久化，就是将内存中的数据永久存储到关系型数据库中。 所谓的持久化类指的是一个Java类与数据库表建立了映射关系，那么这个类称为是持久化类。 其实你可以简单的理解为持久化类就是一个Java类有了一个映射文件与数据库的表建立了关系。 那么我们编写持久化类的时候有哪些要求呢？ 实体类编写规则我们在编写持久化类的时候需要有一下几点需要注意：  持久化类需要提供无参数的构造方法。因为在 Hibernate...</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="gitalk-container"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/arp.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">ErgouTree</div><div class="author-info-description">I start a brand-new life with you.</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">51</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">53</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">29</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/ergou10086"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/ergou10086" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="/zjm88822201@126.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a><a class="social-icon" href="https://space.bilibili.com/142045656?spm_id_from=333.1007.0.0" target="_blank" title="bilibili"><i class="fas fa-brands fa-bilibili" style="color: #4a72be;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">作者长期陷入galgame和osu!maina4k中 祝他好运吧</div></div><div class="card-widget"><div class="item-headline"><i></i><span></span></div><div class="item-content"></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Hibernate%E7%9A%84%E5%85%B6%E4%BB%96API"><span class="toc-number">1.</span> <span class="toc-text">Hibernate的其他API</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Query"><span class="toc-number">1.1.</span> <span class="toc-text">Query</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Criteria%E4%B8%8E%E6%9D%A1%E4%BB%B6%E6%9F%A5%E8%AF%A2"><span class="toc-number">1.2.</span> <span class="toc-text">Criteria与条件查询</span></a></li><li class="toc-item toc-level-3"><a class="toc-link"><span class="toc-number">1.3.</span> <span class="toc-text"></span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#HQL%E6%9F%A5%E8%AF%A2"><span class="toc-number">2.</span> <span class="toc-text">HQL查询</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#HQL%E6%9F%A5%E8%AF%A2%E8%AF%AD%E5%8F%A5"><span class="toc-number">2.1.</span> <span class="toc-text">HQL查询语句</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#from%E5%AD%90%E5%8F%A5"><span class="toc-number">2.2.</span> <span class="toc-text">from子句</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#SELECT%E5%AD%90%E5%8F%A5"><span class="toc-number">2.3.</span> <span class="toc-text">SELECT子句</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#WHERE%E5%AD%90%E5%8F%A5"><span class="toc-number">2.4.</span> <span class="toc-text">WHERE子句</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#HQL%E5%AD%90%E6%9F%A5%E8%AF%A2"><span class="toc-number">2.5.</span> <span class="toc-text">HQL子查询</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9B%B4%E6%96%B0%E5%92%8C%E5%88%A0%E9%99%A4"><span class="toc-number">2.6.</span> <span class="toc-text">更新和删除</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#SQL%E6%9F%A5%E8%AF%A2"><span class="toc-number">2.7.</span> <span class="toc-text">SQL查询</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%A0%87%E9%87%8F%E6%9F%A5%E8%AF%A2"><span class="toc-number">2.7.1.</span> <span class="toc-text">标量查询</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%9E%E4%BD%93%E6%9F%A5%E8%AF%A2"><span class="toc-number">2.7.2.</span> <span class="toc-text">实体查询</span></a></li></ol></li></ol></li></ol></div></div><div class="card-widget card-post-series"><div class="item-headline"><i class="fa-solid fa-layer-group"></i><span>Java框架学习之Hibernate框架</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/48129.html" title="Hibernate的其他API以及HQL查询.md"><img src="/images/posts/cover_hibernate.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Hibernate的其他API以及HQL查询.md"></a><div class="content"><a class="title" href="/posts/48129.html" title="Hibernate的其他API以及HQL查询.md">Hibernate的其他API以及HQL查询.md</a><time datetime="2025-05-12T09:07:17.000Z" title="发表于 2025-05-12 17:07:17">2025-05-12</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/33452.html" title="Hibernate框架之事务控制"><img src="/images/posts/cover_hibernate.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Hibernate框架之事务控制"></a><div class="content"><a class="title" href="/posts/33452.html" title="Hibernate框架之事务控制">Hibernate框架之事务控制</a><time datetime="2025-05-12T09:05:39.000Z" title="发表于 2025-05-12 17:05:39">2025-05-12</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/21432.html" title="Hibernate框架之实体类编写规则和Session"><img src="/images/posts/cover_hibernate.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Hibernate框架之实体类编写规则和Session"></a><div class="content"><a class="title" href="/posts/21432.html" title="Hibernate框架之实体类编写规则和Session">Hibernate框架之实体类编写规则和Session</a><time datetime="2025-05-11T13:04:22.000Z" title="发表于 2025-05-11 21:04:22">2025-05-11</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/48900.html" title="Hibernate框架之介绍与初识Hibernate程序"><img src="/images/posts/cover_hibernate.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Hibernate框架之介绍与初识Hibernate程序"></a><div class="content"><a class="title" href="/posts/48900.html" title="Hibernate框架之介绍与初识Hibernate程序">Hibernate框架之介绍与初识Hibernate程序</a><time datetime="2025-05-11T13:00:58.000Z" title="发表于 2025-05-11 21:00:58">2025-05-11</time></div></div></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/48129.html" title="Hibernate的其他API以及HQL查询.md"><img src="/images/posts/cover_hibernate.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Hibernate的其他API以及HQL查询.md"/></a><div class="content"><a class="title" href="/posts/48129.html" title="Hibernate的其他API以及HQL查询.md">Hibernate的其他API以及HQL查询.md</a><time datetime="2025-05-12T09:07:17.000Z" title="发表于 2025-05-12 17:07:17">2025-05-12</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/33452.html" title="Hibernate框架之事务控制"><img src="/images/posts/cover_hibernate.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Hibernate框架之事务控制"/></a><div class="content"><a class="title" href="/posts/33452.html" title="Hibernate框架之事务控制">Hibernate框架之事务控制</a><time datetime="2025-05-12T09:05:39.000Z" title="发表于 2025-05-12 17:05:39">2025-05-12</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/31531.html" title="galgame妹妹推荐转自七海妹"><img src="/images/posts/cover_%E5%AE%9E%E7%94%A8.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="galgame妹妹推荐转自七海妹"/></a><div class="content"><a class="title" href="/posts/31531.html" title="galgame妹妹推荐转自七海妹">galgame妹妹推荐转自七海妹</a><time datetime="2025-05-11T13:20:44.000Z" title="发表于 2025-05-11 21:20:44">2025-05-11</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/15372.html" title="Java难绷知识05--Swing中的事件调度线程和资源释放"><img src="/images/posts/cover_math.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Java难绷知识05--Swing中的事件调度线程和资源释放"/></a><div class="content"><a class="title" href="/posts/15372.html" title="Java难绷知识05--Swing中的事件调度线程和资源释放">Java难绷知识05--Swing中的事件调度线程和资源释放</a><time datetime="2025-05-11T13:17:01.000Z" title="发表于 2025-05-11 21:17:01">2025-05-11</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url(/images/posts/cover_hibernate.jpg);"><div id="footer-wrap"><div class="copyright">&copy;2024 - 2025 By ErgouTree</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">忘れたくない思い、ありますか？</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="chat-btn" type="button" title="聊天" style="display:none"><i class="fas fa-message"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><div class="js-pjax"><script>(async () => {
+  const showKatex = () => {
+    document.querySelectorAll('#article-container .katex').forEach(el => el.classList.add('katex-show'))
+  }
+
+  if (!window.katex_js_css) {
+    window.katex_js_css = true
+    await btf.getCSS('https://cdn.jsdelivr.net/npm/katex/dist/katex.min.css')
+    if (true) {
+      await btf.getScript('https://cdn.jsdelivr.net/npm/katex/dist/contrib/copy-tex.min.js')
+    }
+  }
+
+  showKatex()
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (true) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script><script>(() => {
+  const applyThemeDefaultsConfig = theme => {
+    if (theme === 'dark-mode') {
+      Chart.defaults.color = "rgba(255, 255, 255, 0.8)"
+      Chart.defaults.borderColor = "rgba(255, 255, 255, 0.2)"
+      Chart.defaults.scale.ticks.backdropColor = "transparent"
+    } else {
+      Chart.defaults.color = "rgba(0, 0, 0, 0.8)"
+      Chart.defaults.borderColor = "rgba(0, 0, 0, 0.1)"
+      Chart.defaults.scale.ticks.backdropColor = "transparent"
+    }
+  }
+
+  // Recursively traverse the config object and automatically apply theme-specific color schemes
+  const applyThemeConfig = (obj, theme) => {
+    if (typeof obj !== 'object' || obj === null) return
+
+    Object.keys(obj).forEach(key => {
+      const value = obj[key]
+      // If the property is an object and has theme-specific options, apply them
+      if (typeof value === 'object' && value !== null) {
+        if (value[theme]) {
+          obj[key] = value[theme] // Apply the value for the current theme
+        } else {
+          // Recursively process child objects
+          applyThemeConfig(value, theme)
+        }
+      }
+    })
+  }
+
+  const runChartJS = ele => {
+    window.loadChartJS = true
+
+    Array.from(ele).forEach((item, index) => {
+      const chartSrc = item.firstElementChild
+      const chartID = item.getAttribute('data-chartjs-id') || ('chartjs-' + index) // Use custom ID or default ID
+      const width = item.getAttribute('data-width')
+      const existingCanvas = document.getElementById(chartID)
+
+      // If a canvas already exists, remove it to avoid rendering duplicates
+      if (existingCanvas) {
+          existingCanvas.parentNode.remove()
+      }
+
+      const chartDefinition = chartSrc.textContent
+      const canvas = document.createElement('canvas')
+      canvas.id = chartID
+
+      const div = document.createElement('div')
+      div.className = 'chartjs-wrap'
+
+      if (width) {
+        div.style.width = width
+      }
+
+      div.appendChild(canvas)
+      chartSrc.insertAdjacentElement('afterend', div)
+
+      const ctx = document.getElementById(chartID).getContext('2d')
+
+      const config = JSON.parse(chartDefinition)
+
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark-mode' : 'light-mode'
+
+      // Set default styles (initial setup)
+      applyThemeDefaultsConfig(theme)
+
+      // Automatically traverse the config and apply dual-mode color schemes
+      applyThemeConfig(config, theme)
+
+      new Chart(ctx, config)
+    })
+  }
+
+  const loadChartJS = () => {
+    const chartJSEle = document.querySelectorAll('#article-container .chartjs-container')
+    if (chartJSEle.length === 0) return
+
+    window.loadChartJS ? runChartJS(chartJSEle) : btf.getScript('https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.min.js').then(() => runChartJS(chartJSEle))
+  }
+
+  // Listen for theme change events
+  btf.addGlobalFn('themeChange', loadChartJS, 'chartjs')
+  btf.addGlobalFn('encrypt', loadChartJS, 'chartjs')
+
+  window.pjax ? loadChartJS() : document.addEventListener('DOMContentLoaded', loadChartJS)
+})()</script><script>(function() {
+  const abcjsInit = function() {
+    const abcjsFn = function() {
+      setTimeout(function() {
+        const sheets = document.querySelectorAll(".abc-music-sheet")
+        for (let i = 0; i < sheets.length; i++) {
+          const ele = sheets[i]
+          if (ele.children.length > 0) continue
+
+          // Parse parameters from data-params attribute
+          let params = {}
+          const dp = ele.getAttribute("data-params")
+          if (dp) {
+            try {
+              params = JSON.parse(dp)
+            } catch (e) {
+              console.error("Failed to parse data-params:", e)
+            }
+          }
+
+          // Merge parsed parameters with the responsive option
+          // Ensures params content appears before responsive
+          const options = { ...params, responsive: "resize" }
+
+          // Render the music score using ABCJS.renderAbc
+          ABCJS.renderAbc(ele, ele.innerHTML, options)
+        }
+      }, 100)
+    }
+
+    if (typeof ABCJS === "object") {
+      abcjsFn()
+    } else {
+      btf.getScript("https://cdn.jsdelivr.net/npm/abcjs/dist/abcjs-basic-min.min.js").then(abcjsFn)
+    }
+  }
+
+  if (window.pjax) {
+    abcjsInit()
+  } else {
+    window.addEventListener("load", abcjsInit)
+  }
+
+  btf.addGlobalFn("encrypt", abcjsInit, "abcjs")
+})()</script><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = {"labels":["Gitalk","Comment"],"createIssueManually":false,"distractionFreeMode":false}
+
+  const commentCount = n => {
+    const isCommentCount = document.querySelector('#post-meta .gitalk-comment-count')
+    if (isCommentCount) {
+      isCommentCount.textContent= n
+    }
+  }
+
+  const initGitalk = (el, path) => {
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGitalk = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+
+    const gitalk = new Gitalk({
+      clientID: 'Ov23li3vDQANiUddL4XB',
+      clientSecret: '5c9a56d02995340fca117809cd414662aadce6ff',
+      repo: 'HexoComment',
+      owner: 'ergou10086',
+      admin: ['ergou10086'],
+      updateCountCallback: commentCount,
+      ...option,
+      id: isShuoshuo ? path : (option && option.id) || '74be047b6738dd98a633fc430cf16cc3'
+    })
+
+    gitalk.render('gitalk-container')
+  }
+
+  const loadGitalk = async(el, path) => {
+    if (typeof Gitalk === 'function') initGitalk(el, path)
+    else {
+      await btf.getCSS('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.css')
+      await btf.getScript('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.js')
+      initGitalk(el, path)
+    }
+  }
+
+  if (isShuoshuo) {
+    'Gitalk' === 'Gitalk'
+      ? window.shuoshuoComment = { loadComment: loadGitalk }
+      : window.loadOtherComment = loadGitalk
+    return
+  }
+
+  if ('Gitalk' === 'Gitalk' || !false) {
+    if (false) btf.loadComment(document.getElementById('gitalk-container'), loadGitalk)
+    else loadGitalk()
+  } else {
+    window.loadOtherComment = loadGitalk
+  }
+})()</script></div><div class="aplayer no-destroy" data-id="13587761608" data-server="netease" data-type="playlist" data-fixed="true" data-autoplay="false" data-lrcType="-1"> </div><script defer="defer" id="ribbon" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-ribbon.min.js" size="150" alpha="0.6" zIndex="-1" mobile="true" data-click="true"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = false;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><script id="click-heart" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/click-heart.min.js" async="async" mobile="false"></script><script>(() => {
+  window.ChatraID = '4bzb546NSBoJcrNyu'
+  window.Chatra = window.Chatra || function() {
+    (window.Chatra.q = window.Chatra.q || []).push(arguments)
+  }
+
+  btf.getScript('https://call.chatra.io/chatra.js').then(() => {
+    const isChatBtn = true
+    const isChatHideShow = true
+
+    if (isChatBtn) {
+      const close = () => {
+        Chatra('minimizeWidget')
+        Chatra('hide')
+      }
+
+      const open = () => {
+        Chatra('openChat', true)
+        Chatra('show')
+      }
+
+      window.ChatraSetup = { startHidden: true }
+    
+      window.chatBtnFn = () => document.getElementById('chatra').classList.contains('chatra--expanded') ? close() : open()
+
+      document.getElementById('chat-btn').style.display = 'block'
+    } else if (isChatHideShow) {
+      window.chatBtn = {
+        hide: () => Chatra('hide'),
+        show: () => Chatra('show')
+      }
+    }
+  })
+})()</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/metingjs/dist/Meting.min.js"></script><script>(() => {
+  const destroyAplayer = () => {
+    if (window.aplayers) {
+      for (let i = 0; i < window.aplayers.length; i++) {
+        if (!window.aplayers[i].options.fixed) {
+          window.aplayers[i].destroy()
+        }
+      }
+    }
+  }
+
+  const runMetingJS = () => {
+    typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+  }
+
+  btf.addGlobalFn('pjaxSend', destroyAplayer, 'destroyAplayer')
+  btf.addGlobalFn('pjaxComplete', loadMeting, 'runMetingJS')
+})()</script><script src="https://cdn.jsdelivr.net/npm/pjax/pjax.min.js"></script><script>(() => {
+  const pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+  window.pjax = new Pjax({
+    elements: 'a:not([target="_blank"]):not([href="/music/"])',
+    selectors: pjaxSelectors,
+    cacheBust: false,
+    analytics: false,
+    scrollRestoration: false
+  })
+
+  const triggerPjaxFn = (val) => {
+    if (!val) return
+    Object.values(val).forEach(fn => fn())
+  }
+
+  document.addEventListener('pjax:send', () => {
+    // removeEventListener
+    btf.removeGlobalFnEvent('pjaxSendOnce')
+    btf.removeGlobalFnEvent('themeChange')
+
+    // reset readmode
+    const $bodyClassList = document.body.classList
+    if ($bodyClassList.contains('read-mode')) $bodyClassList.remove('read-mode')
+
+    triggerPjaxFn(window.globalFn.pjaxSend)
+  })
+
+  document.addEventListener('pjax:complete', () => {
+    btf.removeGlobalFnEvent('pjaxCompleteOnce')
+    document.querySelectorAll('script[data-pjax]').forEach(item => {
+      const newScript = document.createElement('script')
+      const content = item.text || item.textContent || item.innerHTML || ""
+      Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+      newScript.appendChild(document.createTextNode(content))
+      item.parentNode.replaceChild(newScript, item)
+    })
+
+    triggerPjaxFn(window.globalFn.pjaxComplete)
+  })
+
+  document.addEventListener('pjax:error', e => {
+    if (e.request.status === 404) {
+      const usePjax = true
+      true 
+        ? (usePjax ? pjax.loadUrl('/404.html') : window.location.href = '/404.html')
+        : window.location.href = e.request.responseURL
+    }
+  })
+})()</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div></body></html>
