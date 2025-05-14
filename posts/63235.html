@@ -1,0 +1,663 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Python面向对象之匿名函数，闭包与装饰器 | ErgouTree's Blog</title><meta name="author" content="ErgouTree"><meta name="copyright" content="ErgouTree"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="匿名函数lambda函数匿名函数（也称为lambda函数）是一种可以在需要时快速定义的小型函数。 sq &#x3D; lambda x: x * xsq(2)  这里用到的 lambda 表达式与下面的函数定义有着相同的功能： def sq(x):    return(x * x)sq(2)print((lambda x: x * x)(2))    lambda表达式的基本语法如下：          l">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Python面向对象之匿名函数，闭包与装饰器">
+<meta property="og:url" content="https://ergou10086.github.io/posts/63235.html">
+<meta property="og:site_name" content="ErgouTree&#39;s Blog">
+<meta property="og:description" content="匿名函数lambda函数匿名函数（也称为lambda函数）是一种可以在需要时快速定义的小型函数。 sq &#x3D; lambda x: x * xsq(2)  这里用到的 lambda 表达式与下面的函数定义有着相同的功能： def sq(x):    return(x * x)sq(2)print((lambda x: x * x)(2))    lambda表达式的基本语法如下：          l">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://ergou10086.github.io/images/posts/cover_python.jpg">
+<meta property="article:published_time" content="2025-05-14T08:25:07.000Z">
+<meta property="article:modified_time" content="2025-05-14T08:25:37.640Z">
+<meta property="article:author" content="ErgouTree">
+<meta property="article:tag" content="学习类">
+<meta property="article:tag" content="Python">
+<meta property="article:tag" content="Python面向对象">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ergou10086.github.io/images/posts/cover_python.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Python面向对象之匿名函数，闭包与装饰器",
+  "url": "https://ergou10086.github.io/posts/63235.html",
+  "image": "https://ergou10086.github.io/images/posts/cover_python.jpg",
+  "datePublished": "2025-05-14T08:25:07.000Z",
+  "dateModified": "2025-05-14T08:25:37.640Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "ErgouTree",
+      "url": "https://github.com/ergou10086"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/pi.ico"><link rel="canonical" href="https://ergou10086.github.io/posts/63235.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//hm.baidu.com"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!true && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?https://hm.baidu.com/hm.js?a6ab1b78e2c6320b664f31e8b9bf0e36";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+btf.addGlobalFn('pjaxComplete', () => {
+  _hmt.push(['_trackPageview',window.location.pathname])
+}, 'baidu_analytics')
+</script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.json","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: {"chs_to_cht":"已切换为繁体中文","cht_to_chs":"已切换为简体中文","day_to_night":"已切换为深色模式","night_to_day":"已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#1f1f1f","position":"bottom-left"},
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Python面向对象之匿名函数，闭包与装饰器',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css"><meta name="generator" content="Hexo 7.3.0"></head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js/pace.min.js"></script><div id="web_bg" style="background: linear-gradient(20deg, #0062be, #925696, #cc426e, #fb0347);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/arp.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">66</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">60</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">38</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-gallery"></i><span> Gallery</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/video/"><i class="fa-fw fas fa-video"></i><span> Video</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/images/posts/cover_python.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">ErgouTree's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">Python面向对象之匿名函数，闭包与装饰器</span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-gallery"></i><span> Gallery</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/video/"><i class="fa-fw fas fa-video"></i><span> Video</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">Python面向对象之匿名函数，闭包与装饰器<a class="post-edit-link" href="https://github.com/ergou10086/ergou10086.github.io/edit/main/source/_posts/_posts/Python面向对象之匿名函数，闭包与装饰器.md" title="编辑" target="_blank"><i class="fas fa-pencil-alt"></i></a></h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2025-05-14T08:25:07.000Z" title="发表于 2025-05-14 16:25:07">2025-05-14</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2025-05-14T08:25:37.640Z" title="更新于 2025-05-14 16:25:37">2025-05-14</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0/">语言学习</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0/Python%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1/">Python面向对象</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">2.5k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>8分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span><span class="post-meta-separator">|</span><span class="post-meta-commentcount"><i class="far fa-comments fa-fw post-meta-icon"></i><span class="post-meta-label">评论数:</span><a href="/posts/63235.html#post-comment"><span class="gitalk-comment-count"><i class="fa-solid fa-spinner fa-spin"></i></span></a></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="匿名函数"><a href="#匿名函数" class="headerlink" title="匿名函数"></a>匿名函数</h2><h3 id="lambda函数"><a href="#lambda函数" class="headerlink" title="lambda函数"></a>lambda函数</h3><p>匿名函数（也称为lambda函数）是一种可以在需要时快速定义的小型函数。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">sq = <span class="keyword">lambda</span> x: x * x</span><br><span class="line">sq(<span class="number">2</span>)</span><br></pre></td></tr></table></figure>
+
+<p>这里用到的 <code>lambda</code> 表达式与下面的函数定义有着相同的功能：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">sq</span>(<span class="params">x</span>):</span><br><span class="line">    <span class="keyword">return</span>(x * x)</span><br><span class="line">sq(<span class="number">2</span>)</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>((<span class="keyword">lambda</span> x: x * x)(<span class="number">2</span>))</span><br></pre></td></tr></table></figure>
+
+
+
+<p>lambda表达式的基本语法如下：</p>
+<pre><code>         lambda arg1，arg2，arg3...: &lt;表达式&gt;
+                    
+   其arg1/arg2/arg3为函数的参数
+   &lt;表达式&gt;相当于函数体
+   函数返回值：表达式的计算结果
+</code></pre>
+<p><strong>注意</strong>：</p>
+<ol>
+<li>lambda实际生成了一个函数对象。</li>
+<li>lambda表达式只允许包含一个表达式。</li>
+</ol>
+<h3 id="lambda函数的使用："><a href="#lambda函数的使用：" class="headerlink" title="lambda函数的使用："></a>lambda函数的使用：</h3><p>可以作为另一个函数的参数传递，用于定制特定的行为。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">nums = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>]</span><br><span class="line">result = <span class="built_in">list</span>(<span class="built_in">map</span>(<span class="keyword">lambda</span> x: x + <span class="number">1</span>, nums))</span><br><span class="line"><span class="built_in">print</span>(result)</span><br></pre></td></tr></table></figure>
+
+<p>参数中可以使用lambda作为参数的还有<code>map()</code>等。</p>
+<p>使用<code>lambda</code>表达式反转拼写，然后依此给单词列表排序</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">fruits = [<span class="string">&#x27;strawberry&#x27;</span>, <span class="string">&#x27;fig&#x27;</span>, <span class="string">&#x27;apple&#x27;</span>, <span class="string">&#x27;cherry&#x27;</span>, <span class="string">&#x27;raspberry&#x27;</span>, <span class="string">&#x27;banana&#x27;</span>]</span><br><span class="line"><span class="built_in">sorted</span>(fruits, key=<span class="keyword">lambda</span> word: word[::-<span class="number">1</span>])</span><br></pre></td></tr></table></figure>
+
+<p>除了作为参数传递给高阶函数之外，Python 很少使用匿名函数。</p>
+<p><code>lambda</code>句法只是语法糖：与 <code>def</code>语句一样，<code>lambda</code>表达式会创建函数对象。</p>
+<h3 id="总结："><a href="#总结：" class="headerlink" title="总结："></a>总结：</h3><ol>
+<li>匿名函数是Python中的一种快速定义小型函数的方式</li>
+<li>它没有函数名，使用<code>lambda</code>关键字定义</li>
+<li>匿名函数可以简化代码、作为函数参数传递以及在列表推导中应用</li>
+</ol>
+<h2 id="闭包"><a href="#闭包" class="headerlink" title="闭包"></a>闭包</h2><ol>
+<li>闭包的定义<br>在函数嵌套的前提下，内部函数使用了外部函数的变量，并且外部函数返回了内部函数，我们把这个使用外部函数变量的内部函数称为闭包。</li>
+<li>闭包的构成条件<br>在函数嵌套的前提下<br>内部函数使用了外部函数的变量或者参数<br>外部函数返回了内部函数</li>
+<li>闭包的作用<br>可以保存外部函数内的变量，不会随着外部函数调用完而销毁<br>由于闭包引用了外部函数的变量，则外部函数的变量没有及时释放，消耗内存。</li>
+</ol>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment">#在函数嵌套的前提下</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">outer</span>():</span><br><span class="line">    num1=<span class="number">10</span> </span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">inner</span>():</span><br><span class="line">        re=num1+<span class="number">10</span> <span class="comment">#内部函数使用了外部函数的变量或者参数</span></span><br><span class="line">        <span class="built_in">print</span>(re)</span><br><span class="line">    <span class="keyword">return</span> inner   <span class="comment">#外部函数返回了内部函数,这个使用外部函数变量的内部函数称为闭包</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#获取闭包对象</span></span><br><span class="line">new_fun=outer() <span class="comment">#这个new_fun就是闭包</span></span><br><span class="line"><span class="comment">#执行闭包</span></span><br><span class="line">new_fun()</span><br></pre></td></tr></table></figure>
+
+<p>举例：</p>
+<p>假如有个名为 avg 的函数，它的作用是计算不断增加的系列值的均值。</p>
+<p>例如，商品历史周期内的平均价格，每天添加一个新的价格，目前为止均价的计算要考虑商品全部价格。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 计算移动平均值的类</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Averager</span>():</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self</span>):</span><br><span class="line">        <span class="variable language_">self</span>.series = []</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__call__</span>(<span class="params">self, new_value</span>): </span><br><span class="line">        <span class="variable language_">self</span>.series.append(new_value) </span><br><span class="line">        total = <span class="built_in">sum</span>(<span class="variable language_">self</span>.series) </span><br><span class="line">        <span class="keyword">return</span> total/<span class="built_in">len</span>(<span class="variable language_">self</span>.series)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 计算移动平均值的高阶函数。</span></span><br><span class="line"><span class="comment"># 当调用make_averager函数时，返回的是averager函数对象。</span></span><br><span class="line"><span class="comment"># 每次averager被调用时，它会将传递的参数追加到series，并计算当前的平均数。</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">make_averager</span>():  </span><br><span class="line">    total = <span class="number">0</span></span><br><span class="line">    count = <span class="number">0</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">averager</span>(<span class="params">new_value</span>): </span><br><span class="line">        </span><br><span class="line">        count = count + <span class="number">1</span>  <span class="comment">#本意想修改外部函数，其实是再闭包内定义了一个局部变量</span></span><br><span class="line">        total += new_value </span><br><span class="line">        <span class="keyword">return</span> total/count</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> averager</span><br><span class="line"></span><br><span class="line"><span class="comment"># Averager的实例是可调用对象</span></span><br><span class="line">avg = Averager()</span><br><span class="line"><span class="built_in">print</span>(avg(<span class="number">10</span>))</span><br><span class="line"><span class="built_in">print</span>(avg(<span class="number">11</span>))</span><br><span class="line"><span class="built_in">print</span>(avg(<span class="number">12</span>))</span><br><span class="line"></span><br><span class="line">avg2 = make_averager()</span><br><span class="line"><span class="built_in">print</span>(avg2(<span class="number">10</span>))</span><br><span class="line"><span class="built_in">print</span>(avg2(<span class="number">11</span>))</span><br><span class="line"><span class="built_in">print</span>(avg2(<span class="number">12</span>))</span><br></pre></td></tr></table></figure>
+
+<p><code>averager</code> 是定义在 <code>make_averager</code> 内部的函数，形成了闭包</p>
+<p>在averager内部，series是一个自由变量。</p>
+<p>这是一个技术术语，指未在本地作用域中绑定的变量。</p>
+<p><img src="/posts/63235/image-20250514153301357.png" alt="image-20250514153301357"></p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="string">&#x27;&#x27;&#x27;Python 在 __code__ 属性（表示编译后的函数定义体）中</span></span><br><span class="line"><span class="string">保存局部变量和自由变量的名称。</span></span><br><span class="line"><span class="string">series 的绑定在返回的 avg 函数的 __closure__ 属性中。</span></span><br><span class="line"><span class="string">avg.__closure__ 中的各个元素对应于avg.__code__.co_freevars 中的一个名称。</span></span><br><span class="line"><span class="string">这些元素是 cell 对象，有个 cell_contents 属性，保存着真正的值。&#x27;&#x27;&#x27;</span></span><br><span class="line"><span class="built_in">print</span>(avg.__code__.co_varnames)</span><br><span class="line"><span class="built_in">print</span>(avg.__code__.co_freevars)</span><br><span class="line"><span class="built_in">print</span>(avg.__closure__) <span class="comment"># doctest: +ELLIPSIS</span></span><br><span class="line"><span class="built_in">print</span>(avg.__closure__[<span class="number">0</span>].cell_contents)</span><br></pre></td></tr></table></figure>
+
+
+
+<p>示例：</p>
+<p>创建一个闭包实现计数器</p>
+<p>编写一个闭包函数，它应该提供一个计数器功能。每次调用该闭包时，它应返回下一个整数。</p>
+<p>例如，首次调用返回 1，下一次调用返回 2，依此类推。</p>
+<p>提示： 使用一个非局部变量来存储当前计数。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">counter() <span class="number">1</span></span><br><span class="line">counter() <span class="number">2</span></span><br><span class="line">counter() <span class="number">3</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">create_counter</span>():</span><br><span class="line">    count = <span class="number">0</span>  <span class="comment"># 非局部变量，用于存储当前计数值</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">counter</span>():</span><br><span class="line">        <span class="keyword">nonlocal</span> count  <span class="comment"># 声明 count 是外层函数的变量</span></span><br><span class="line">        count += <span class="number">1</span>     <span class="comment"># 每次调用时增加计数</span></span><br><span class="line">        <span class="keyword">return</span> count   <span class="comment"># 返回新的计数值</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> counter  <span class="comment"># 返回闭包函数</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># 创建计数器</span></span><br><span class="line">counter = create_counter()</span><br><span class="line"></span><br><span class="line"><span class="comment"># 测试计数器</span></span><br><span class="line"><span class="built_in">print</span>(counter())  <span class="comment"># 输出 1</span></span><br><span class="line"><span class="built_in">print</span>(counter())  <span class="comment"># 输出 2</span></span><br><span class="line"><span class="built_in">print</span>(counter())  <span class="comment"># 输出 3</span></span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><ol>
+<li><p>闭包是一种函数，它会保留定义函数时存在的自由变量的绑定，这样调用函数时，虽然定义作用域不可用了，但是仍能使用那些绑定。</p>
+</li>
+<li><p>注意，只有嵌套在其他函数中的函数才可能需要处理不在全局作用域中的外部变量。</p>
+</li>
+</ol>
+<h2 id="装饰器"><a href="#装饰器" class="headerlink" title="装饰器"></a>装饰器</h2><p>装饰器是 Python 中一种强大且灵活的语法结构，本质上是一个闭包函数。它可以在不改变原函数代码和调用方式的前提下，为函数增添新的功能。这就好比给一个物品添加装饰，在不改变物品本身核心功能的基础上，让它具备更多特性。</p>
+<p>装饰器在代码的可维护性、复用性和可读性方面都有很大帮助，广泛应用于日志记录、性能测试、权限验证等场景。</p>
+<ol>
+<li>是一种函数，有内置的装饰器，也可以自定义装饰器，本质上就是一个闭包函数。</li>
+<li>可以在不改变函数调用方式的情况下给函数增加对应功能</li>
+<li>通过<code>@</code>加上命名进行使用，作用在函数声明的前面，如下：</li>
+</ol>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="meta">@property</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">value</span>(<span class="params">self</span>):</span><br><span class="line">    <span class="keyword">return</span> <span class="variable language_">self</span>._value</span><br></pre></td></tr></table></figure>
+
+<p>简单来说，装饰器函数接收一个函数作为参数，然后返回一个新的函数。新函数通常会在执行原函数前后添加额外的逻辑，从而实现功能增强。</p>
+<h3 id="内置装饰器示例"><a href="#内置装饰器示例" class="headerlink" title="内置装饰器示例"></a>内置装饰器示例</h3><p>Python 有一些内置装饰器，例如<code>@property</code> ，它用于将类中的方法转换为属性调用的形式，让代码更加简洁直观。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Person</span>:</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, age</span>):</span><br><span class="line">        <span class="variable language_">self</span>._age = age</span><br><span class="line"></span><br><span class="line"><span class="meta">    @property</span></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">age</span>(<span class="params">self</span>):</span><br><span class="line">        <span class="keyword">return</span> <span class="variable language_">self</span>._age</span><br><span class="line"></span><br><span class="line">person = Person(<span class="number">30</span>)</span><br><span class="line"><span class="built_in">print</span>(person.age)  <span class="comment"># 像访问属性一样访问方法</span></span><br></pre></td></tr></table></figure>
+
+<p><code>@property</code> 装饰器把<code>age</code>方法装饰成了一个属性，调用<code>person.age</code>时，实际上调用的是被装饰的<code>age</code>方法，但看起来就像在访问一个普通属性，提升了代码的易用性。</p>
+<h3 id="自定义装饰器示例"><a href="#自定义装饰器示例" class="headerlink" title="自定义装饰器示例"></a>自定义装饰器示例</h3><p>下面通过一个简单的例子来展示如何自定义装饰器，实现函数执行时间的计算功能。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> time</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">timer</span>(<span class="params">func</span>):</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">wrapper</span>():</span><br><span class="line">        start_time = time.time()</span><br><span class="line">        func()</span><br><span class="line">        end_time = time.time()</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">f&quot;函数 <span class="subst">&#123;func.__name__&#125;</span> 执行耗时: <span class="subst">&#123;end_time - start_time&#125;</span> 秒&quot;</span>)</span><br><span class="line">    <span class="keyword">return</span> wrapper</span><br><span class="line"></span><br><span class="line"><span class="meta">@timer</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">say_hello</span>():</span><br><span class="line">    time.sleep(<span class="number">2</span>)</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;Hello!&quot;</span>)</span><br><span class="line"></span><br><span class="line">say_hello()</span><br></pre></td></tr></table></figure>
+
+<ol>
+<li>定义装饰器函数 <code>timer</code><ul>
+<li><code>timer</code> 函数接收一个函数 <code>func</code> 作为参数，这是装饰器的基本形式，即接收被装饰的函数。</li>
+<li>内部定义了一个 <code>wrapper</code> 函数，<code>wrapper</code> 函数就是闭包函数，它可以访问外部函数 <code>timer</code> 作用域内的 <code>func</code> 变量。</li>
+<li>在 <code>wrapper</code> 函数中，首先记录开始时间 <code>start_time = time.time()</code> ，然后调用原函数 <code>func()</code> ，再记录结束时间 <code>end_time = time.time()</code> ，最后计算并打印函数执行的耗时。</li>
+<li><code>timer</code> 函数最后返回 <code>wrapper</code> 函数对象。</li>
+</ul>
+</li>
+<li>使用装饰器<ul>
+<li><code>@timer</code> 语法将 <code>timer</code> 装饰器应用到 <code>say_hello</code> 函数上，这等同于执行 <code>say_hello = timer(say_hello)</code> 。</li>
+<li>调用 <code>say_hello()</code> 时，实际上调用的是 <code>wrapper</code> 函数，<code>wrapper</code> 函数会在执行 <code>say_hello</code> 函数的前后添加计算时间的逻辑，从而实现了在不改变 <code>say_hello</code> 函数本身代码和调用方式的情况下，为其增添了计算执行时间的功能。</li>
+</ul>
+</li>
+</ol>
+<h3 id="带参数的装饰器"><a href="#带参数的装饰器" class="headerlink" title="带参数的装饰器"></a>带参数的装饰器</h3><p>有时候我们需要给装饰器传递参数，来定制不同的装饰逻辑。下面是一个带参数的装饰器示例，用于根据不同的日志级别打印函数调用信息。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">logger</span>(<span class="params">level</span>):</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">decorator</span>(<span class="params">func</span>):</span><br><span class="line">        <span class="keyword">def</span> <span class="title function_">wrapper</span>():</span><br><span class="line">            <span class="keyword">if</span> level == <span class="string">&quot;DEBUG&quot;</span>:</span><br><span class="line">                <span class="built_in">print</span>(<span class="string">f&quot;DEBUG: 调用函数 <span class="subst">&#123;func.__name__&#125;</span>&quot;</span>)</span><br><span class="line">            <span class="keyword">elif</span> level == <span class="string">&quot;INFO&quot;</span>:</span><br><span class="line">                <span class="built_in">print</span>(<span class="string">f&quot;INFO: 调用函数 <span class="subst">&#123;func.__name__&#125;</span>&quot;</span>)</span><br><span class="line">            func()</span><br><span class="line">        <span class="keyword">return</span> wrapper</span><br><span class="line">    <span class="keyword">return</span> decorator</span><br><span class="line"></span><br><span class="line"><span class="meta">@logger(<span class="params">level=<span class="string">&quot;INFO&quot;</span></span>)</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">greet</span>():</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;Welcome!&quot;</span>)</span><br><span class="line"></span><br><span class="line">greet()</span><br></pre></td></tr></table></figure>
+
+<ol>
+<li>定义带参数的装饰器外层函数 <code>logger</code><ul>
+<li><code>logger</code> 函数接收一个参数 <code>level</code> ，用于指定日志级别。</li>
+<li>它返回另一个函数 <code>decorator</code> ，<code>decorator</code> 函数才是真正接收被装饰函数的装饰器函数。</li>
+</ul>
+</li>
+<li><code>decorator</code> 函数<ul>
+<li>接收被装饰的函数 <code>func</code> ，内部定义 <code>wrapper</code> 函数。</li>
+<li><code>wrapper</code> 函数根据传入的 <code>level</code> 参数进行不同的日志打印，然后调用原函数 <code>func</code> 。</li>
+<li><code>decorator</code> 函数返回 <code>wrapper</code> 函数。</li>
+</ul>
+</li>
+<li>使用带参数的装饰器<ul>
+<li><code>@logger(level=&quot;INFO&quot;)</code> 这种形式先调用 <code>logger</code> 函数并传入 <code>level</code> 参数，得到具体的装饰器函数，再将其应用到 <code>greet</code> 函数上。这样就实现了根据不同参数定制装饰器行为的功能。</li>
+</ul>
+</li>
+</ol>
+<h3 id="总结：-1"><a href="#总结：-1" class="headerlink" title="总结："></a><strong>总结：</strong></h3><ol>
+<li>装饰器可以在不改变原函数的定义和调用方式的基础上，增强函数的功能。</li>
+<li>严格来说，装饰器只是语法糖。装饰器可以像常规的可调用对象那样调用，其参数是另一个函数。</li>
+<li>装饰器能把被装饰的函数替换成其他函数。</li>
+</ol>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a target="_blank" rel="noopener" href="https://github.com/ergou10086">ErgouTree</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://ergou10086.github.io/posts/63235.html">https://ergou10086.github.io/posts/63235.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://ergou10086.github.io" target="_blank">ErgouTree's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E5%AD%A6%E4%B9%A0%E7%B1%BB/">学习类</a><a class="post-meta__tags" href="/tags/Python/">Python</a><a class="post-meta__tags" href="/tags/Python%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1/">Python面向对象</a></div><div class="post-share"><div class="social-share" data-image="/images/posts/cover_python.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/posts/62472.html" title="Python面向对象之对象和类"><img class="cover" src="/images/posts/cover_python.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">Python面向对象之对象和类</div></div><div class="info-2"><div class="info-item-1">对象和类由对象说起对象与对象名称之间的区别 把变量理解为附加在对象上的标注。创建对象之后才会把变量分配给对象 例：变量 a 和 b 引用同一个列表，而不是那个列表的副本 a = [1, 2, 3]b = ab.append(4)b   类与实例在Python中通常使用class语句来定义一个类（类对象） class定义的对象（类）可以用于产生新的对象（实例）。 class Person():    pass    someone = Person()print(id(someone),...</div></div></div></a><a class="pagination-related" href="/posts/49265.html" title="Python面向对象之类的继承，类中封装和可管理属性"><img class="cover" src="/images/posts/cover_python.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Python面向对象之类的继承，类中封装和可管理属性</div></div><div class="info-2"><div class="info-item-1">类的继承从已有类中衍生出新的类，添加或修改部分功能，能提高代码复用。 子类是从父类派生出来的新类。 子类继承了父类的属性和方法，并且可以添加自己的属性和方法。 class A():    def foo(self):        print(&#x27;A.foo&#x27;)    def zoo(self):        print(&#x27;A.zoo&#x27;)        class B(A): #  B 类将继承 A 类的所有属性和方法。    def fooo(self):        super().foo() # 使用 super() 函数调用父类 A 的 foo方法。        print(&#x27;B.foo&#x27;)    def bar(self):        print(&#x27;B.bar&#x27;)        a = A()b = B()b.bar()a = A()b = B()# a.foo()# b.fooo()# b.zoo()   # 继承自类 A，可以直接使用类 A 的所有方法。# b.foo()#...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/posts/39185.html" title="Python基础部分"><img class="cover" src="/images/posts/cover_java8.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-05-14</div><div class="info-item-2">Python基础部分</div></div><div class="info-2"><div class="info-item-1">Python程序基础Python程序构成Python程序可分解为模块、语句、表达式和对象。  Python程序由模块组成，模块对应于扩展名为.py的源文件。  模块由语句组成，运行Python程序时，按照模块中的语句顺序依次执行。  语句包含表达式。表达式由操作数和运算符组成。  表达式用于创建和处理 对象。    对象对象是Python中对数据的抽象。每个对象都有identity、type和value。  对象和变量 对象是python中的各种数据，存在于计算机内存中的一个内存块中。  变量是用来指向（绑定）对象的，也称为对象的引用。  变量名必须为有效的标识符。   标识符 标识符是程序中为了区分或引用各种数据而定义的名称，如变量名、常量名、函数名、类名、模块名等。  关键字（保留字）是特殊的标识符，在Python中有特定的含义，开发人员不能定义和关键字相同的标识符。   变量名命名规则 由字母、数字或下划线组成，...</div></div></div></a><a class="pagination-related" href="/posts/24790.html" title="Python常用模块之正则表达式与时间日期模块"><img class="cover" src="/images/posts/cover_python.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-05-14</div><div class="info-item-2">Python常用模块之正则表达式与时间日期模块</div></div><div class="info-2"><div class="info-item-1">Python的模块、包和库 模块（Module）通常以.py为扩展名，可以被其他程序通过import语句导入使用。 包（Package）包含多个模块，必须包含一个特殊的__init__.py文件，这个文件可以为空，但它的存在表明这个目录可以被作为一个包来使用。 库（Library）是一组完成特定功能的模块或包的集合，第三方库是Python强大生态系统的重要组成部分，它们提供了各种各样的工具和框架，使得Python成为一个功能丰富的编程语言。  re模块 使用 re 模块来处理正则表达式，正则表达式是一个特殊的字符序列，它能帮助你方便的检查一个字符串是否与某种模式匹配。  简单的正则 .：匹配除换行符 \n 外的任意一个字符。   ^：匹配字符串的开头。...</div></div></div></a><a class="pagination-related" href="/posts/58610.html" title="Python的数据类型"><img class="cover" src="/images/posts/cover_python.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-05-14</div><div class="info-item-2">Python的数据类型</div></div><div class="info-2"><div class="info-item-1">Python的数据类型 数值（Numbers） 字符串（String） 元组（Tuple） 列表（List） 集合（Set） 字典（Dictionary） …… 其他数据类型 字节类型（Bytes）：b’Hello’ 字节数组（Byte Arrays）： bytearray(b’Hello’) 空类型（None）：没有返回的函数值 未执行的（NotImplemented）：在运算时，对象不支持，返回该值 省略号（Ellipsis）：用于Numpy的切片或者表示无限循环    Python数据类型-数值型Python数值型介绍 整型（int）：123 布尔型（bool）：False(0)、True(1) 浮点型（float）：123.04 复数型（complex）：3 + 7j、real +...</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="gitalk-container"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/arp.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">ErgouTree</div><div class="author-info-description">I start a brand-new life with you.</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">66</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">60</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">38</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/ergou10086"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/ergou10086" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="/zjm88822201@126.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a><a class="social-icon" href="https://space.bilibili.com/142045656?spm_id_from=333.1007.0.0" target="_blank" title="bilibili"><i class="fas fa-brands fa-bilibili" style="color: #4a72be;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">作者长期陷入galgame和osu!maina4k中 祝他好运吧</div></div><div class="card-widget"><div class="item-headline"><i></i><span></span></div><div class="item-content"></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8C%BF%E5%90%8D%E5%87%BD%E6%95%B0"><span class="toc-number">1.</span> <span class="toc-text">匿名函数</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#lambda%E5%87%BD%E6%95%B0"><span class="toc-number">1.1.</span> <span class="toc-text">lambda函数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#lambda%E5%87%BD%E6%95%B0%E7%9A%84%E4%BD%BF%E7%94%A8%EF%BC%9A"><span class="toc-number">1.2.</span> <span class="toc-text">lambda函数的使用：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%80%BB%E7%BB%93%EF%BC%9A"><span class="toc-number">1.3.</span> <span class="toc-text">总结：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%97%AD%E5%8C%85"><span class="toc-number">2.</span> <span class="toc-text">闭包</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">2.1.</span> <span class="toc-text">总结</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%A3%85%E9%A5%B0%E5%99%A8"><span class="toc-number">3.</span> <span class="toc-text">装饰器</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%85%E7%BD%AE%E8%A3%85%E9%A5%B0%E5%99%A8%E7%A4%BA%E4%BE%8B"><span class="toc-number">3.1.</span> <span class="toc-text">内置装饰器示例</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%87%AA%E5%AE%9A%E4%B9%89%E8%A3%85%E9%A5%B0%E5%99%A8%E7%A4%BA%E4%BE%8B"><span class="toc-number">3.2.</span> <span class="toc-text">自定义装饰器示例</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B8%A6%E5%8F%82%E6%95%B0%E7%9A%84%E8%A3%85%E9%A5%B0%E5%99%A8"><span class="toc-number">3.3.</span> <span class="toc-text">带参数的装饰器</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%80%BB%E7%BB%93%EF%BC%9A-1"><span class="toc-number">3.4.</span> <span class="toc-text">总结：</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/33441.html" title="MySql的数据类型"><img src="/images/posts/cover_sql.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="MySql的数据类型"/></a><div class="content"><a class="title" href="/posts/33441.html" title="MySql的数据类型">MySql的数据类型</a><time datetime="2025-05-14T12:22:09.000Z" title="发表于 2025-05-14 20:22:09">2025-05-14</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/23211.html" title="MySql中的约束"><img src="/images/posts/cover_sql.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="MySql中的约束"/></a><div class="content"><a class="title" href="/posts/23211.html" title="MySql中的约束">MySql中的约束</a><time datetime="2025-05-14T12:21:10.000Z" title="发表于 2025-05-14 20:21:10">2025-05-14</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/7844.html" title="结构化查询语言SQL"><img src="/images/posts/cover_database.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="结构化查询语言SQL"/></a><div class="content"><a class="title" href="/posts/7844.html" title="结构化查询语言SQL">结构化查询语言SQL</a><time datetime="2025-05-14T12:17:07.000Z" title="发表于 2025-05-14 20:17:07">2025-05-14</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/49265.html" title="Python面向对象之类的继承，类中封装和可管理属性"><img src="/images/posts/cover_python.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Python面向对象之类的继承，类中封装和可管理属性"/></a><div class="content"><a class="title" href="/posts/49265.html" title="Python面向对象之类的继承，类中封装和可管理属性">Python面向对象之类的继承，类中封装和可管理属性</a><time datetime="2025-05-14T08:26:02.000Z" title="发表于 2025-05-14 16:26:02">2025-05-14</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url(/images/posts/cover_python.jpg);"><div id="footer-wrap"><div class="copyright">&copy;2024 - 2025 By ErgouTree</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">忘れたくない思い、ありますか？</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="chat-btn" type="button" title="聊天" style="display:none"><i class="fas fa-message"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><div class="js-pjax"><script>(async () => {
+  const showKatex = () => {
+    document.querySelectorAll('#article-container .katex').forEach(el => el.classList.add('katex-show'))
+  }
+
+  if (!window.katex_js_css) {
+    window.katex_js_css = true
+    await btf.getCSS('https://cdn.jsdelivr.net/npm/katex/dist/katex.min.css')
+    if (true) {
+      await btf.getScript('https://cdn.jsdelivr.net/npm/katex/dist/contrib/copy-tex.min.js')
+    }
+  }
+
+  showKatex()
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (true) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script><script>(() => {
+  const applyThemeDefaultsConfig = theme => {
+    if (theme === 'dark-mode') {
+      Chart.defaults.color = "rgba(255, 255, 255, 0.8)"
+      Chart.defaults.borderColor = "rgba(255, 255, 255, 0.2)"
+      Chart.defaults.scale.ticks.backdropColor = "transparent"
+    } else {
+      Chart.defaults.color = "rgba(0, 0, 0, 0.8)"
+      Chart.defaults.borderColor = "rgba(0, 0, 0, 0.1)"
+      Chart.defaults.scale.ticks.backdropColor = "transparent"
+    }
+  }
+
+  // Recursively traverse the config object and automatically apply theme-specific color schemes
+  const applyThemeConfig = (obj, theme) => {
+    if (typeof obj !== 'object' || obj === null) return
+
+    Object.keys(obj).forEach(key => {
+      const value = obj[key]
+      // If the property is an object and has theme-specific options, apply them
+      if (typeof value === 'object' && value !== null) {
+        if (value[theme]) {
+          obj[key] = value[theme] // Apply the value for the current theme
+        } else {
+          // Recursively process child objects
+          applyThemeConfig(value, theme)
+        }
+      }
+    })
+  }
+
+  const runChartJS = ele => {
+    window.loadChartJS = true
+
+    Array.from(ele).forEach((item, index) => {
+      const chartSrc = item.firstElementChild
+      const chartID = item.getAttribute('data-chartjs-id') || ('chartjs-' + index) // Use custom ID or default ID
+      const width = item.getAttribute('data-width')
+      const existingCanvas = document.getElementById(chartID)
+
+      // If a canvas already exists, remove it to avoid rendering duplicates
+      if (existingCanvas) {
+          existingCanvas.parentNode.remove()
+      }
+
+      const chartDefinition = chartSrc.textContent
+      const canvas = document.createElement('canvas')
+      canvas.id = chartID
+
+      const div = document.createElement('div')
+      div.className = 'chartjs-wrap'
+
+      if (width) {
+        div.style.width = width
+      }
+
+      div.appendChild(canvas)
+      chartSrc.insertAdjacentElement('afterend', div)
+
+      const ctx = document.getElementById(chartID).getContext('2d')
+
+      const config = JSON.parse(chartDefinition)
+
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark-mode' : 'light-mode'
+
+      // Set default styles (initial setup)
+      applyThemeDefaultsConfig(theme)
+
+      // Automatically traverse the config and apply dual-mode color schemes
+      applyThemeConfig(config, theme)
+
+      new Chart(ctx, config)
+    })
+  }
+
+  const loadChartJS = () => {
+    const chartJSEle = document.querySelectorAll('#article-container .chartjs-container')
+    if (chartJSEle.length === 0) return
+
+    window.loadChartJS ? runChartJS(chartJSEle) : btf.getScript('https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.min.js').then(() => runChartJS(chartJSEle))
+  }
+
+  // Listen for theme change events
+  btf.addGlobalFn('themeChange', loadChartJS, 'chartjs')
+  btf.addGlobalFn('encrypt', loadChartJS, 'chartjs')
+
+  window.pjax ? loadChartJS() : document.addEventListener('DOMContentLoaded', loadChartJS)
+})()</script><script>(function() {
+  const abcjsInit = function() {
+    const abcjsFn = function() {
+      setTimeout(function() {
+        const sheets = document.querySelectorAll(".abc-music-sheet")
+        for (let i = 0; i < sheets.length; i++) {
+          const ele = sheets[i]
+          if (ele.children.length > 0) continue
+
+          // Parse parameters from data-params attribute
+          let params = {}
+          const dp = ele.getAttribute("data-params")
+          if (dp) {
+            try {
+              params = JSON.parse(dp)
+            } catch (e) {
+              console.error("Failed to parse data-params:", e)
+            }
+          }
+
+          // Merge parsed parameters with the responsive option
+          // Ensures params content appears before responsive
+          const options = { ...params, responsive: "resize" }
+
+          // Render the music score using ABCJS.renderAbc
+          ABCJS.renderAbc(ele, ele.innerHTML, options)
+        }
+      }, 100)
+    }
+
+    if (typeof ABCJS === "object") {
+      abcjsFn()
+    } else {
+      btf.getScript("https://cdn.jsdelivr.net/npm/abcjs/dist/abcjs-basic-min.min.js").then(abcjsFn)
+    }
+  }
+
+  if (window.pjax) {
+    abcjsInit()
+  } else {
+    window.addEventListener("load", abcjsInit)
+  }
+
+  btf.addGlobalFn("encrypt", abcjsInit, "abcjs")
+})()</script><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = {"labels":["Gitalk","Comment"],"createIssueManually":false,"distractionFreeMode":false}
+
+  const commentCount = n => {
+    const isCommentCount = document.querySelector('#post-meta .gitalk-comment-count')
+    if (isCommentCount) {
+      isCommentCount.textContent= n
+    }
+  }
+
+  const initGitalk = (el, path) => {
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGitalk = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+
+    const gitalk = new Gitalk({
+      clientID: 'Ov23li3vDQANiUddL4XB',
+      clientSecret: '5c9a56d02995340fca117809cd414662aadce6ff',
+      repo: 'HexoComment',
+      owner: 'ergou10086',
+      admin: ['ergou10086'],
+      updateCountCallback: commentCount,
+      ...option,
+      id: isShuoshuo ? path : (option && option.id) || '9718222aedacf6ee0b5c5c5d5ce4dc99'
+    })
+
+    gitalk.render('gitalk-container')
+  }
+
+  const loadGitalk = async(el, path) => {
+    if (typeof Gitalk === 'function') initGitalk(el, path)
+    else {
+      await btf.getCSS('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.css')
+      await btf.getScript('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.js')
+      initGitalk(el, path)
+    }
+  }
+
+  if (isShuoshuo) {
+    'Gitalk' === 'Gitalk'
+      ? window.shuoshuoComment = { loadComment: loadGitalk }
+      : window.loadOtherComment = loadGitalk
+    return
+  }
+
+  if ('Gitalk' === 'Gitalk' || !false) {
+    if (false) btf.loadComment(document.getElementById('gitalk-container'), loadGitalk)
+    else loadGitalk()
+  } else {
+    window.loadOtherComment = loadGitalk
+  }
+})()</script></div><div class="aplayer no-destroy" data-id="13587761608" data-server="netease" data-type="playlist" data-fixed="true" data-autoplay="false" data-lrcType="-1"> </div><script defer="defer" id="ribbon" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-ribbon.min.js" size="150" alpha="0.6" zIndex="-1" mobile="true" data-click="true"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = false;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><script id="click-heart" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/click-heart.min.js" async="async" mobile="false"></script><script>(() => {
+  window.ChatraID = '4bzb546NSBoJcrNyu'
+  window.Chatra = window.Chatra || function() {
+    (window.Chatra.q = window.Chatra.q || []).push(arguments)
+  }
+
+  btf.getScript('https://call.chatra.io/chatra.js').then(() => {
+    const isChatBtn = true
+    const isChatHideShow = true
+
+    if (isChatBtn) {
+      const close = () => {
+        Chatra('minimizeWidget')
+        Chatra('hide')
+      }
+
+      const open = () => {
+        Chatra('openChat', true)
+        Chatra('show')
+      }
+
+      window.ChatraSetup = { startHidden: true }
+    
+      window.chatBtnFn = () => document.getElementById('chatra').classList.contains('chatra--expanded') ? close() : open()
+
+      document.getElementById('chat-btn').style.display = 'block'
+    } else if (isChatHideShow) {
+      window.chatBtn = {
+        hide: () => Chatra('hide'),
+        show: () => Chatra('show')
+      }
+    }
+  })
+})()</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/metingjs/dist/Meting.min.js"></script><script>(() => {
+  const destroyAplayer = () => {
+    if (window.aplayers) {
+      for (let i = 0; i < window.aplayers.length; i++) {
+        if (!window.aplayers[i].options.fixed) {
+          window.aplayers[i].destroy()
+        }
+      }
+    }
+  }
+
+  const runMetingJS = () => {
+    typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+  }
+
+  btf.addGlobalFn('pjaxSend', destroyAplayer, 'destroyAplayer')
+  btf.addGlobalFn('pjaxComplete', loadMeting, 'runMetingJS')
+})()</script><script src="https://cdn.jsdelivr.net/npm/pjax/pjax.min.js"></script><script>(() => {
+  const pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+  window.pjax = new Pjax({
+    elements: 'a:not([target="_blank"]):not([href="/music/"])',
+    selectors: pjaxSelectors,
+    cacheBust: false,
+    analytics: false,
+    scrollRestoration: false
+  })
+
+  const triggerPjaxFn = (val) => {
+    if (!val) return
+    Object.values(val).forEach(fn => fn())
+  }
+
+  document.addEventListener('pjax:send', () => {
+    // removeEventListener
+    btf.removeGlobalFnEvent('pjaxSendOnce')
+    btf.removeGlobalFnEvent('themeChange')
+
+    // reset readmode
+    const $bodyClassList = document.body.classList
+    if ($bodyClassList.contains('read-mode')) $bodyClassList.remove('read-mode')
+
+    triggerPjaxFn(window.globalFn.pjaxSend)
+  })
+
+  document.addEventListener('pjax:complete', () => {
+    btf.removeGlobalFnEvent('pjaxCompleteOnce')
+    document.querySelectorAll('script[data-pjax]').forEach(item => {
+      const newScript = document.createElement('script')
+      const content = item.text || item.textContent || item.innerHTML || ""
+      Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+      newScript.appendChild(document.createTextNode(content))
+      item.parentNode.replaceChild(newScript, item)
+    })
+
+    triggerPjaxFn(window.globalFn.pjaxComplete)
+  })
+
+  document.addEventListener('pjax:error', e => {
+    if (e.request.status === 404) {
+      const usePjax = true
+      true 
+        ? (usePjax ? pjax.loadUrl('/404.html') : window.location.href = '/404.html')
+        : window.location.href = e.request.responseURL
+    }
+  })
+})()</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div></body></html>
