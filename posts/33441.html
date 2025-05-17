@@ -1,0 +1,901 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>MySql的数据类型 | ErgouTree's Blog</title><meta name="author" content="ErgouTree"><meta name="copyright" content="ErgouTree"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="MySQL数据类型 MySQL 支持多种类型，大致可以分为三类：数值、日期&#x2F;时间和字符串(字符)类型。 MySQL 支持所有标准 SQL 数值数据类型。 这些类型包括严格数值数据类型(INTEGER、SMALLINT、DECIMAL 和 NUMERIC)，以及近似数值数据类型(FLOAT、REAL 和 DOUBLE PRECISION)。 关键字INT是INTEGER的同义词，关键字D">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MySql的数据类型">
+<meta property="og:url" content="https://ergou10086.github.io/posts/33441.html">
+<meta property="og:site_name" content="ErgouTree&#39;s Blog">
+<meta property="og:description" content="MySQL数据类型 MySQL 支持多种类型，大致可以分为三类：数值、日期&#x2F;时间和字符串(字符)类型。 MySQL 支持所有标准 SQL 数值数据类型。 这些类型包括严格数值数据类型(INTEGER、SMALLINT、DECIMAL 和 NUMERIC)，以及近似数值数据类型(FLOAT、REAL 和 DOUBLE PRECISION)。 关键字INT是INTEGER的同义词，关键字D">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://ergou10086.github.io/images/posts/cover_sql.jpg">
+<meta property="article:published_time" content="2025-05-14T12:22:09.000Z">
+<meta property="article:modified_time" content="2025-05-14T12:23:20.856Z">
+<meta property="article:author" content="ErgouTree">
+<meta property="article:tag" content="实用知识">
+<meta property="article:tag" content="数据库">
+<meta property="article:tag" content="MySql">
+<meta property="article:tag" content="常用知识">
+<meta property="article:tag" content="语言基础">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ergou10086.github.io/images/posts/cover_sql.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "MySql的数据类型",
+  "url": "https://ergou10086.github.io/posts/33441.html",
+  "image": "https://ergou10086.github.io/images/posts/cover_sql.jpg",
+  "datePublished": "2025-05-14T12:22:09.000Z",
+  "dateModified": "2025-05-14T12:23:20.856Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "ErgouTree",
+      "url": "https://github.com/ergou10086"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/pi.ico"><link rel="canonical" href="https://ergou10086.github.io/posts/33441.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//hm.baidu.com"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!true && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?https://hm.baidu.com/hm.js?a6ab1b78e2c6320b664f31e8b9bf0e36";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+btf.addGlobalFn('pjaxComplete', () => {
+  _hmt.push(['_trackPageview',window.location.pathname])
+}, 'baidu_analytics')
+</script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.json","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":true},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: {"chs_to_cht":"已切换为繁体中文","cht_to_chs":"已切换为简体中文","day_to_night":"已切换为深色模式","night_to_day":"已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#1f1f1f","position":"bottom-left"},
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'MySql的数据类型',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css"><script src="https://cdn.jsdelivr.net/npm/abcjs@7.1.2/dist/abcjs-basic-min.js"></script><meta name="generator" content="Hexo 7.3.0"></head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js/pace.min.js"></script><div id="web_bg" style="background: linear-gradient(20deg, #0062be, #925696, #cc426e, #fb0347);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/arp.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">76</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">69</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">43</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-gallery"></i><span> Gallery</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/video/"><i class="fa-fw fas fa-video"></i><span> Video</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/images/posts/cover_sql.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">ErgouTree's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">MySql的数据类型</span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-gallery"></i><span> Gallery</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/video/"><i class="fa-fw fas fa-video"></i><span> Video</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">MySql的数据类型<a class="post-edit-link" href="https://github.com/ergou10086/ergou10086.github.io/edit/main/source/_posts/_posts/MySql的数据类型.md" title="编辑" target="_blank"><i class="fas fa-pencil-alt"></i></a></h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2025-05-14T12:22:09.000Z" title="发表于 2025-05-14 20:22:09">2025-05-14</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2025-05-14T12:23:20.856Z" title="更新于 2025-05-14 20:23:20">2025-05-14</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%AD%A6%E4%B9%A0%E7%B1%BB/">学习类</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%AD%A6%E4%B9%A0%E7%B1%BB/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%AD%A6%E4%B9%A0%E7%B1%BB/%E6%95%B0%E6%8D%AE%E5%BA%93/MySql/">MySql</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%AD%A6%E4%B9%A0%E7%B1%BB/%E6%95%B0%E6%8D%AE%E5%BA%93/MySql/MySql%E5%9F%BA%E7%A1%80/">MySql基础</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">1.8k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>6分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span><span class="post-meta-separator">|</span><span class="post-meta-commentcount"><i class="far fa-comments fa-fw post-meta-icon"></i><span class="post-meta-label">评论数:</span><a href="/posts/33441.html#post-comment"><span class="gitalk-comment-count"><i class="fa-solid fa-spinner fa-spin"></i></span></a></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h3 id="mysql数据类型">MySQL数据类型</h3>
+<p>MySQL
+支持多种类型，大致可以分为三类：数值、日期/时间和字符串(字符)类型。</p>
+<p>MySQL 支持所有标准 SQL 数值数据类型。</p>
+<p>这些类型包括严格数值数据类型(INTEGER、SMALLINT、DECIMAL 和
+NUMERIC)，以及近似数值数据类型(FLOAT、REAL 和 DOUBLE PRECISION)。</p>
+<p>关键字INT是INTEGER的同义词，关键字DEC是DECIMAL的同义词。</p>
+<p>BIT数据类型保存位字段值，并且支持 MyISAM、MEMORY、InnoDB 和
+BDB表。</p>
+<h3 id="数值和数据类型">数值和数据类型</h3>
+<table>
+<colgroup>
+<col style="width: 8%">
+<col style="width: 20%">
+<col style="width: 31%">
+<col style="width: 31%">
+<col style="width: 7%">
+</colgroup>
+<thead>
+<tr>
+<th>类型</th>
+<th>大小</th>
+<th>范围（有符号）</th>
+<th>范围（无符号）</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>TINYINT</td>
+<td>1 Bytes</td>
+<td>(-128，127)</td>
+<td>(0，255)</td>
+<td>小整数值</td>
+</tr>
+<tr>
+<td>SMALLINT</td>
+<td>2 Bytes</td>
+<td>(-32 768，32 767)</td>
+<td>(0，65 535)</td>
+<td>大整数值</td>
+</tr>
+<tr>
+<td>MEDIUMINT</td>
+<td>3 Bytes</td>
+<td>(-8 388 608，8 388 607)</td>
+<td>(0，16 777 215)</td>
+<td>大整数值</td>
+</tr>
+<tr>
+<td>INT或INTEGER</td>
+<td>4 Bytes</td>
+<td>(-2 147 483 648，2 147 483 647)</td>
+<td>(0，4 294 967 295)</td>
+<td>大整数值</td>
+</tr>
+<tr>
+<td>BIGINT</td>
+<td>8 Bytes</td>
+<td>(-9,223,372,036,854,775,808（-(2^63)），9 223 372 036 854 775
+807（(2^63)-1）)</td>
+<td>(0，18 446 744 073 709 551 615)</td>
+<td>极大整数值</td>
+</tr>
+<tr>
+<td>FLOAT</td>
+<td>4 Bytes</td>
+<td>(-3.402 823 466 E+38，-1.175 494 351 E-38)，0，(1.175 494 351
+E-38，3.402 823 466 351 E+38)</td>
+<td>0，(1.175 494 351 E-38，3.402 823 466 E+38)</td>
+<td>单精度 浮点数值</td>
+</tr>
+<tr>
+<td>DOUBLE</td>
+<td>8 Bytes</td>
+<td>(-1.797 693 134 862 315 7 E+308，-2.225 073 858 507 201 4
+E-308)，0，(2.225 073 858 507 201 4 E-308，1.797 693 134 862 315 7
+E+308)</td>
+<td>0，(2.225 073 858 507 201 4 E-308，1.797 693 134 862 315 7
+E+308)</td>
+<td>双精度 浮点数值</td>
+</tr>
+<tr>
+<td>DECIMAL 定点类型</td>
+<td>对DECIMAL(M,D) ，如果M&gt;D，为M+2否则为D+2</td>
+<td>依赖于M和D的值，M：总位数，D：小数位数</td>
+<td>依赖于M和D的值</td>
+<td>小数值</td>
+</tr>
+</tbody>
+</table>
+<h4 id="整数类型">整数类型</h4>
+<p>MySQL 支持 SQL 标准整数类型
+<code>INTEGER</code>（或<code>INT</code>）和 <code>SMALLINT</code>.
+作为标准的扩展，MySQL 还支持整数类型
+<code>TINYINT</code>、<code>MEDIUMINT</code>和 <code>BIGINT</code>。</p>
+<p><strong>MySQL 支持的整数类型所需的存储和范围</strong></p>
+<table style="width:100%;">
+<colgroup>
+<col style="width: 13%">
+<col style="width: 14%">
+<col style="width: 15%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 28%">
+</colgroup>
+<thead>
+<tr>
+<th>类型</th>
+<th>存储（字节）</th>
+<th>有符号最小值</th>
+<th>最小值无符号</th>
+<th>有符号最大值</th>
+<th>最大值无符号（UNSIGNED）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>TINYINT</code></td>
+<td>1个</td>
+<td><code>-128</code></td>
+<td><code>0</code></td>
+<td><code>127</code></td>
+<td><code>255</code></td>
+</tr>
+<tr>
+<td><code>SMALLINT</code></td>
+<td>2个</td>
+<td><code>-32768</code></td>
+<td><code>0</code></td>
+<td><code>32767</code></td>
+<td><code>65535</code></td>
+</tr>
+<tr>
+<td><code>MEDIUMINT</code></td>
+<td>3个</td>
+<td><code>-8388608</code></td>
+<td><code>0</code></td>
+<td><code>8388607</code></td>
+<td><code>16777215</code></td>
+</tr>
+<tr>
+<td><code>INT</code></td>
+<td>4个</td>
+<td><code>-2147483648</code></td>
+<td><code>0</code></td>
+<td><code>2147483647</code></td>
+<td><code>4294967295</code></td>
+</tr>
+<tr>
+<td><code>BIGINT</code></td>
+<td>8个</td>
+<td><code>-2^63</code></td>
+<td><code>0</code></td>
+<td><code>2^63-1</code></td>
+<td><code>2^64-1</code></td>
+</tr>
+</tbody>
+</table>
+<h4 id="定点类型">定点类型</h4>
+<p><code>DECIMAL</code>和<code>NUMERIC</code> 类型存储精确的数字数据值
+。当保持精确的精度很重要时使用这些类型</p>
+<p>在<code>DECIMAL</code>列声明中，可以（并且通常）指定精度和小数位数。例如：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">salary <span class="type">DECIMAL</span>(<span class="number">5</span>,<span class="number">2</span>)</span><br></pre></td></tr></table></figure>
+<p>在此示例中，<code>5</code>是精度，2是标度。精度表示为值存储的有效位数，标度表示小数点后可以存储的位数。</p>
+<p>如果小数位数为
+0，则<code>DECIMAL</code>值不包含小数点或小数部分。</p>
+<h4 id="浮点类型近似值">浮点类型（近似值）</h4>
+<p>FLOAT DOUBLE——MySQL
+对单精度值使用四个字节，对双精度值使用八个字节。</p>
+<h4 id="bit比特值类型">BIT——比特值类型</h4>
+<p><code>BIT</code>数据类型用于存储位值。一种允许存储-bit
+值的类型。范围从 1 到 64。</p>
+<p>如果您将值分配给长度小于位的列，则该值将在左侧填充零。例如，为列分配一个值实际上与分配
+.
+<code>BIT(*</code>M<code>*)</code><em><code>M</code></em><code>b'101'``BIT(6)``b'000101'</code></p>
+<h2 id="日期和时间类型">日期和时间类型</h2>
+<p>表示时间值的日期和时间类型为DATETIME、DATE、TIMESTAMP、TIME和YEAR。</p>
+<p>每个时间类型有一个有效值范围和一个”零”值，当指定不合法的MySQL不能表示的值时使用”零”值。</p>
+<p>常用的日期有如下三个：</p>
+<ul>
+<li>date :日期 ‘yyyy-mm-dd’ ，占用三字节。</li>
+<li>datetime 时间日期格式 ‘yyyy-mm-dd HH:ii:ss’ 表示范围从 1000 到 9999
+，占用八字节。</li>
+<li>timestamp ：时间戳，从1970年开始的 yyyy-mm-dd HH:ii:ss 格式和
+datetime 完全一致，占用四字节。 表示现在的时间。</li>
+</ul>
+<table>
+<colgroup>
+<col style="width: 7%">
+<col style="width: 10%">
+<col style="width: 48%">
+<col style="width: 15%">
+<col style="width: 19%">
+</colgroup>
+<thead>
+<tr>
+<th>类型</th>
+<th>大小 ( bytes)</th>
+<th>范围</th>
+<th>格式</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DATE</td>
+<td>3</td>
+<td>1000-01-01/9999-12-31</td>
+<td>YYYY-MM-DD</td>
+<td>日期值</td>
+</tr>
+<tr>
+<td>TIME</td>
+<td>3</td>
+<td>‘-838:59:59’/‘838:59:59’</td>
+<td>HH:MM:SS</td>
+<td>时间值或持续时间</td>
+</tr>
+<tr>
+<td>YEAR</td>
+<td>1</td>
+<td>1901/2155</td>
+<td>YYYY</td>
+<td>年份值</td>
+</tr>
+<tr>
+<td>DATETIME</td>
+<td>8</td>
+<td>‘1000-01-01 00:00:00’ 到 ‘9999-12-31 23:59:59’</td>
+<td>YYYY-MM-DD hh:mm:ss</td>
+<td>混合日期和时间值</td>
+</tr>
+<tr>
+<td>TIMESTAMP</td>
+<td>4</td>
+<td>‘1970-01-01 00:00:01’ UTC 到 ‘2038-01-19 03:14:07’ UTC 结束时间是第
+<strong>2147483647</strong> 秒，北京时间 <strong>2038-1-19
+11:14:07</strong>，格林尼治时间 2038年1月19日 凌晨 03:14:07</td>
+<td>YYYY-MM-DD hh:mm:ss</td>
+<td>混合日期和时间值，时间戳</td>
+</tr>
+</tbody>
+</table>
+<h2 id="字符串类型">字符串类型</h2>
+<p>字符串类型指CHAR、VARCHAR、BINARY、VARBINARY、BLOB、TEXT、ENUM和SET。该节描述了这些类型如何工作以及如何在查询中使用这些类型。</p>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>大小</th>
+<th style="text-align: center;">用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CHAR</td>
+<td>0-255 bytes</td>
+<td style="text-align: center;">定长字符串</td>
+</tr>
+<tr>
+<td>VARCHAR</td>
+<td>0-65535 bytes</td>
+<td style="text-align: center;">变长字符串</td>
+</tr>
+<tr>
+<td>TINYBLOB</td>
+<td>0-255 bytes</td>
+<td style="text-align: center;">不超过 255 个字符的二进制字符串</td>
+</tr>
+<tr>
+<td>TINYTEXT</td>
+<td>0-255 bytes</td>
+<td style="text-align: center;">短文本字符串</td>
+</tr>
+<tr>
+<td>BLOB</td>
+<td>0-65 535 bytes</td>
+<td style="text-align: center;">二进制形式的长文本数据</td>
+</tr>
+<tr>
+<td>TEXT</td>
+<td>0-65 535 bytes</td>
+<td style="text-align: center;">长文本数据</td>
+</tr>
+<tr>
+<td>MEDIUMBLOB</td>
+<td>0-16 777 215 bytes</td>
+<td style="text-align: center;">二进制形式的中等长度文本数据</td>
+</tr>
+<tr>
+<td>MEDIUMTEXT</td>
+<td>0-16 777 215 bytes</td>
+<td style="text-align: center;">中等长度文本数据</td>
+</tr>
+<tr>
+<td>LONGBLOB</td>
+<td>0-4 294 967 295 bytes</td>
+<td style="text-align: center;">二进制形式的极大文本数据</td>
+</tr>
+<tr>
+<td>LONGTEXT</td>
+<td>0-4 294 967 295 bytes</td>
+<td style="text-align: center;">极大文本数据</td>
+</tr>
+</tbody>
+</table>
+<p>char(n) 和 varchar(n) 中括号中 n
+代表字符的个数，一个定长一个不定长。</p>
+<p><strong>varchar长度可以指定为0到65535之间的值，但是有1 - 3
+个字节用于记录数据大小，所以说有效字节数是65532。</strong></p>
+<p>当我们的表的编码是utf8时，varchar(n)的参数n最大值是65532/3=21844，（因为utf中，一个字符占用3个字节），如果编码是gbk，varchar(n)的参数n最大是65532/2=32766（因为gbk中，一个字符占用2字节）。</p>
+<figure>
+<img src="/posts/33441/image-20250318083228988.png" alt="image-20250318083228988">
+<figcaption aria-hidden="true">image-20250318083228988</figcaption>
+</figure>
+<p>CHAR 和 VARCHAR
+类型类似，但它们保存和检索的方式不同。它们的最大长度和是否尾部空格被保留等方面也不同。在存储或检索过程中不进行大小写转换。</p>
+<h2 id="枚举与集合类型enumeration-and-set-types">枚举与集合类型（Enumeration
+and Set Types）</h2>
+<p>ENUM: 枚举类型，用于存储单一值，可以选择一个预定义的集合。</p>
+<pre><code>enum(&#39;选项1&#39;,&#39;选项2&#39;,&#39;选项3&#39;,...);</code></pre>
+<p>  该设定只是提供了若干个选项的值，最终一个单元格中，实际只存储了其中一个值；而且出于效率考虑，这些值实际存储的是“数字”，因为这些选项的每个选项值依次对应如下数字：1,2,3,…最多65535个；当我们添加枚举值时，也可以添加对应的数字编号。</p>
+<p>SET: 集合类型，用于存储多个值，可以选择多个预定义的集合。</p>
+<pre><code>set(&#39;选项值1&#39;,&#39;选项值2&#39;,&#39;选项值3&#39;, ...);</code></pre>
+<p>  该设定只是提供了若干个选项的值，最终一个单元格中，设计可存储了其中任意多个值；而且出于效率考虑，这些值实际存储的是“数字”，因为这些选项的每个选项值依次对应如下数字：1,2,4,8,16,32，…最多64个。</p>
+<hr>
+<h2 id="空间数据类型spatial-data-types">空间数据类型（Spatial Data
+Types）</h2>
+<p>GEOMETRY, POINT, LINESTRING, POLYGON, MULTIPOINT, MULTILINESTRING,
+MULTIPOLYGON, GEOMETRYCOLLECTION:
+用于存储空间数据（地理信息、几何图形等）。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a target="_blank" rel="noopener" href="https://github.com/ergou10086">ErgouTree</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://ergou10086.github.io/posts/33441.html">https://ergou10086.github.io/posts/33441.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://ergou10086.github.io" target="_blank">ErgouTree's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E5%AE%9E%E7%94%A8%E7%9F%A5%E8%AF%86/">实用知识</a><a class="post-meta__tags" href="/tags/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a><a class="post-meta__tags" href="/tags/MySql/">MySql</a><a class="post-meta__tags" href="/tags/%E5%B8%B8%E7%94%A8%E7%9F%A5%E8%AF%86/">常用知识</a><a class="post-meta__tags" href="/tags/%E8%AF%AD%E8%A8%80%E5%9F%BA%E7%A1%80/">语言基础</a></div><div class="post-share"><div class="addtoany"><div class="a2a_kit a2a_kit_size_32 a2a_default_style"><a class="a2a_button_facebook"></a><a class="a2a_button_twitter"></a><a class="a2a_button_wechat"></a><a class="a2a_button_sina_weibo"></a><a class="a2a_button_facebook_messenger"></a><a class="a2a_button_email"></a><a class="a2a_button_copy_link"></a><a class="a2a_dd" target="_blank" rel="noopener" href="https://www.addtoany.com/share"></a></div></div><script async="async" src="https://static.addtoany.com/menu/page.js"></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/posts/23211.html" title="MySql中的约束"><img class="cover" src="/images/posts/cover_sql.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">MySql中的约束</div></div><div class="info-2"><div class="info-item-1">约束 概述 约束（Constraints）是用于限制表中数据的规则，确保数据的完整性和一致性。  安全性约束 完整性约束：确保数据的准确和可靠  实体完整性约束（主键约束） 域完整性约束（数据类型） 引用完整性约束（外键约束） 用户自定义完整性约束（check 约束）   主键约束（PRIMARY KEY） 作用：唯一标识表中的每一行，确保数据的唯一性 基本特性  唯一性：关系中任意元组的主键值必须唯一  主键列的值必须唯一且不能为 NULL。 一个表只能有一个主键，但主键可以由多个列组成（复合主键）。 关系中任意元组的主键值必须唯一（unique）  非空性：关系中任意元组在主键值必须非空  关系中任意元组在主键值必须非空（not null）  不可更改性：主键值一旦设定，通常不应修改  12345678910111213141516171819-- 创建表时指定主键CREATE TABLE users (    id INT AUTO_INCREMENT PRIMARY KEY,    username...</div></div></div></a><a class="pagination-related" href="/posts/42179.html" title="关于Lombok在高版本IDEA中注解处理不生效的问题解决"><img class="cover" src="/images/posts/cover_java11.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">关于Lombok在高版本IDEA中注解处理不生效的问题解决</div></div><div class="info-2"><div class="info-item-1">环境： IntelliJ IDEA 2024.1 + Spring Boot + Maven  问题描述 使用Lombok中的@Data注解标注其中实体类的时候，依旧会出现找不到 get set 方法的问题  解决方案 先从通用的解决方案说起 再说到比较针对性的解决方案  方式1：  检查是否安装 Lombok...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/posts/23211.html" title="MySql中的约束"><img class="cover" src="/images/posts/cover_sql.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-05-14</div><div class="info-item-2">MySql中的约束</div></div><div class="info-2"><div class="info-item-1">约束 概述 约束（Constraints）是用于限制表中数据的规则，确保数据的完整性和一致性。  安全性约束 完整性约束：确保数据的准确和可靠  实体完整性约束（主键约束） 域完整性约束（数据类型） 引用完整性约束（外键约束） 用户自定义完整性约束（check 约束）   主键约束（PRIMARY KEY） 作用：唯一标识表中的每一行，确保数据的唯一性 基本特性  唯一性：关系中任意元组的主键值必须唯一  主键列的值必须唯一且不能为 NULL。 一个表只能有一个主键，但主键可以由多个列组成（复合主键）。 关系中任意元组的主键值必须唯一（unique）  非空性：关系中任意元组在主键值必须非空  关系中任意元组在主键值必须非空（not null）  不可更改性：主键值一旦设定，通常不应修改  12345678910111213141516171819-- 创建表时指定主键CREATE TABLE users (    id INT AUTO_INCREMENT PRIMARY KEY,    username...</div></div></div></a><a class="pagination-related" href="/posts/7844.html" title="结构化查询语言SQL"><img class="cover" src="/images/posts/cover_database.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-05-14</div><div class="info-item-2">结构化查询语言SQL</div></div><div class="info-2"><div class="info-item-1">结构化查询语言SQL 关系数据模型 关系模型三要素：  关系数据结构 完整性约束 关系操作    image-20250512205709773    image-20250512205715465  码：关系中某些属性集合具有区分不同元组的作用，称为码  超码：如果关系的某一组属性的值能唯一标识每个元组，则称该组属性为超码（super key）。 候选码：如果一个超码的任意真子集都不是超码，则称该超码为候选码。候选码是极小的超码。 主键：每个关系都有至少一个候选码，人为指定其中一个作为主键 外码：设 F 是关系 R 的属性子集。若 F 与关系 S 的主键 K 相对应，则称 F 是 R 的外键（foreign key）。  SQL分类 DDL：数据定义语言 定义了不同的数据库，表，视图，索引等数据库对象 还可以创建修改删除等操作数据库表的结构 CREATE  ALTER  DROP  RENAME  TRUMCATE DML：数据操作语言 增删改查数据库记录 INSERT  DELETE...</div></div></div></a><a class="pagination-related" href="/posts/1878.html" title="正确使用Markdown语法进行排版的示例"><img class="cover" src="/images/posts/cover_learn.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-05-17</div><div class="info-item-2">正确使用Markdown语法进行排版的示例</div></div><div class="info-2"><div class="info-item-1">教程 这是一篇讲解如何正确使用 Markdown 的排版示例，学会这个很有必要，能让你的文章有更佳清晰的排版。  引用文本：Markdown is a text formatting syntax.  语法指导 普通内容 这段内容展示了在内容里面一些排版格式，比如：  加粗 - **加粗** 倾斜 - *倾斜* 删除线 - ~~删除线~~ Code 标记 - `Code 标记` 超级链接 - [超级链接](https://lddgo.net) username@gmail.com - [username@gmail.com](mailto:username@gmail.com)  大标题 - Heading 3 你可以选择使用 H1 至 H6，使用 ##(N) 打头。  NOTE: 别忘了 # 后面需要有空格！  Heading 4 Heading 5 Heading 6 图片 12![alt 文本](http://image-path.png)![alt 文本](http://image-path.png...</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="gitalk-container"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/arp.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">ErgouTree</div><div class="author-info-description">I start a brand-new life with you.</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">76</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">69</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">43</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/ergou10086"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/ergou10086" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="/zjm88822201@126.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a><a class="social-icon" href="https://space.bilibili.com/142045656?spm_id_from=333.1007.0.0" target="_blank" title="bilibili"><i class="fas fa-brands fa-bilibili" style="color: #4a72be;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">作者长期陷入galgame和osu!maina4k中 祝他好运吧</div></div><div class="card-widget"><div class="item-headline"><i></i><span></span></div><div class="item-content"></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#mysql%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B"><span class="toc-number">1.</span> <span class="toc-text">MySQL数据类型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E5%80%BC%E5%92%8C%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B"><span class="toc-number">2.</span> <span class="toc-text">数值和数据类型</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%95%B4%E6%95%B0%E7%B1%BB%E5%9E%8B"><span class="toc-number">2.1.</span> <span class="toc-text">整数类型</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%9A%E7%82%B9%E7%B1%BB%E5%9E%8B"><span class="toc-number">2.2.</span> <span class="toc-text">定点类型</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B5%AE%E7%82%B9%E7%B1%BB%E5%9E%8B%E8%BF%91%E4%BC%BC%E5%80%BC"><span class="toc-number">2.3.</span> <span class="toc-text">浮点类型（近似值）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#bit%E6%AF%94%E7%89%B9%E5%80%BC%E7%B1%BB%E5%9E%8B"><span class="toc-number">2.4.</span> <span class="toc-text">BIT——比特值类型</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%97%A5%E6%9C%9F%E5%92%8C%E6%97%B6%E9%97%B4%E7%B1%BB%E5%9E%8B"><span class="toc-number"></span> <span class="toc-text">日期和时间类型</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AD%97%E7%AC%A6%E4%B8%B2%E7%B1%BB%E5%9E%8B"><span class="toc-number"></span> <span class="toc-text">字符串类型</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9E%9A%E4%B8%BE%E4%B8%8E%E9%9B%86%E5%90%88%E7%B1%BB%E5%9E%8Benumeration-and-set-types"><span class="toc-number"></span> <span class="toc-text">枚举与集合类型（Enumeration
+and Set Types）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%A9%BA%E9%97%B4%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8Bspatial-data-types"><span class="toc-number"></span> <span class="toc-text">空间数据类型（Spatial Data
+Types）</span></a></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/26887.html" title="为Hexo页脚添加网站运行时间"><img src="/images/posts/cover_teach2.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="为Hexo页脚添加网站运行时间"/></a><div class="content"><a class="title" href="/posts/26887.html" title="为Hexo页脚添加网站运行时间">为Hexo页脚添加网站运行时间</a><time datetime="2025-05-17T15:23:52.000Z" title="发表于 2025-05-17 23:23:52">2025-05-17</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/63908.html" title="markdown中编写数学公式相关语法"><img src="/images/posts/cover_math.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="markdown中编写数学公式相关语法"/></a><div class="content"><a class="title" href="/posts/63908.html" title="markdown中编写数学公式相关语法">markdown中编写数学公式相关语法</a><time datetime="2025-05-17T12:51:59.000Z" title="发表于 2025-05-17 20:51:59">2025-05-17</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/6458.html" title="对书上证明样本方差是总体方差的无偏估计量的解析"><img src="/images/posts/cover_math.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="对书上证明样本方差是总体方差的无偏估计量的解析"/></a><div class="content"><a class="title" href="/posts/6458.html" title="对书上证明样本方差是总体方差的无偏估计量的解析">对书上证明样本方差是总体方差的无偏估计量的解析</a><time datetime="2025-05-17T11:28:14.000Z" title="发表于 2025-05-17 19:28:14">2025-05-17</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/37962.html" title="使用ABCjs在hexo博客中显示五线谱的测试"><img src="/images/posts/cover_other2.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="使用ABCjs在hexo博客中显示五线谱的测试"/></a><div class="content"><a class="title" href="/posts/37962.html" title="使用ABCjs在hexo博客中显示五线谱的测试">使用ABCjs在hexo博客中显示五线谱的测试</a><time datetime="2025-05-17T09:28:03.000Z" title="发表于 2025-05-17 17:28:03">2025-05-17</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url(/images/posts/cover_sql.jpg);"><div id="footer-wrap"><div class="copyright">&copy;2024 - 2025 By ErgouTree</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">忘れたくない思い、ありますか？ <br>,<span id="realtime_duration" style="font-family: monospace;"></span>,<br><a href="https://icp.gov.moe/?keyword=20257009" target="_blank">萌ICP备20257009号</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="chat-btn" type="button" title="聊天" style="display:none"><i class="fas fa-message"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (true) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script><script>(() => {
+  const applyThemeDefaultsConfig = theme => {
+    if (theme === 'dark-mode') {
+      Chart.defaults.color = "rgba(255, 255, 255, 0.8)"
+      Chart.defaults.borderColor = "rgba(255, 255, 255, 0.2)"
+      Chart.defaults.scale.ticks.backdropColor = "transparent"
+    } else {
+      Chart.defaults.color = "rgba(0, 0, 0, 0.8)"
+      Chart.defaults.borderColor = "rgba(0, 0, 0, 0.1)"
+      Chart.defaults.scale.ticks.backdropColor = "transparent"
+    }
+  }
+
+  // Recursively traverse the config object and automatically apply theme-specific color schemes
+  const applyThemeConfig = (obj, theme) => {
+    if (typeof obj !== 'object' || obj === null) return
+
+    Object.keys(obj).forEach(key => {
+      const value = obj[key]
+      // If the property is an object and has theme-specific options, apply them
+      if (typeof value === 'object' && value !== null) {
+        if (value[theme]) {
+          obj[key] = value[theme] // Apply the value for the current theme
+        } else {
+          // Recursively process child objects
+          applyThemeConfig(value, theme)
+        }
+      }
+    })
+  }
+
+  const runChartJS = ele => {
+    window.loadChartJS = true
+
+    Array.from(ele).forEach((item, index) => {
+      const chartSrc = item.firstElementChild
+      const chartID = item.getAttribute('data-chartjs-id') || ('chartjs-' + index) // Use custom ID or default ID
+      const width = item.getAttribute('data-width')
+      const existingCanvas = document.getElementById(chartID)
+
+      // If a canvas already exists, remove it to avoid rendering duplicates
+      if (existingCanvas) {
+          existingCanvas.parentNode.remove()
+      }
+
+      const chartDefinition = chartSrc.textContent
+      const canvas = document.createElement('canvas')
+      canvas.id = chartID
+
+      const div = document.createElement('div')
+      div.className = 'chartjs-wrap'
+
+      if (width) {
+        div.style.width = width
+      }
+
+      div.appendChild(canvas)
+      chartSrc.insertAdjacentElement('afterend', div)
+
+      const ctx = document.getElementById(chartID).getContext('2d')
+
+      const config = JSON.parse(chartDefinition)
+
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark-mode' : 'light-mode'
+
+      // Set default styles (initial setup)
+      applyThemeDefaultsConfig(theme)
+
+      // Automatically traverse the config and apply dual-mode color schemes
+      applyThemeConfig(config, theme)
+
+      new Chart(ctx, config)
+    })
+  }
+
+  const loadChartJS = () => {
+    const chartJSEle = document.querySelectorAll('#article-container .chartjs-container')
+    if (chartJSEle.length === 0) return
+
+    window.loadChartJS ? runChartJS(chartJSEle) : btf.getScript('https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.min.js').then(() => runChartJS(chartJSEle))
+  }
+
+  // Listen for theme change events
+  btf.addGlobalFn('themeChange', loadChartJS, 'chartjs')
+  btf.addGlobalFn('encrypt', loadChartJS, 'chartjs')
+
+  window.pjax ? loadChartJS() : document.addEventListener('DOMContentLoaded', loadChartJS)
+})()</script><script>(function() {
+  const abcjsInit = function() {
+    const abcjsFn = function() {
+      setTimeout(function() {
+        const sheets = document.querySelectorAll(".abc-music-sheet")
+        for (let i = 0; i < sheets.length; i++) {
+          const ele = sheets[i]
+          if (ele.children.length > 0) continue
+
+          // Parse parameters from data-params attribute
+          let params = {}
+          const dp = ele.getAttribute("data-params")
+          if (dp) {
+            try {
+              params = JSON.parse(dp)
+            } catch (e) {
+              console.error("Failed to parse data-params:", e)
+            }
+          }
+
+          // Merge parsed parameters with the responsive option
+          // Ensures params content appears before responsive
+          const options = { ...params, responsive: "resize" }
+
+          // Render the music score using ABCJS.renderAbc
+          ABCJS.renderAbc(ele, ele.innerHTML, options)
+        }
+      }, 100)
+    }
+
+    if (typeof ABCJS === "object") {
+      abcjsFn()
+    } else {
+      btf.getScript("https://cdn.jsdelivr.net/npm/abcjs/dist/abcjs-basic-min.min.js").then(abcjsFn)
+    }
+  }
+
+  if (window.pjax) {
+    abcjsInit()
+  } else {
+    window.addEventListener("load", abcjsInit)
+  }
+
+  btf.addGlobalFn("encrypt", abcjsInit, "abcjs")
+})()</script><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = {"labels":["Gitalk","Comment"],"createIssueManually":false,"distractionFreeMode":false}
+
+  const commentCount = n => {
+    const isCommentCount = document.querySelector('#post-meta .gitalk-comment-count')
+    if (isCommentCount) {
+      isCommentCount.textContent= n
+    }
+  }
+
+  const initGitalk = (el, path) => {
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGitalk = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+
+    const gitalk = new Gitalk({
+      clientID: 'Ov23li3vDQANiUddL4XB',
+      clientSecret: '5c9a56d02995340fca117809cd414662aadce6ff',
+      repo: 'HexoComment',
+      owner: 'ergou10086',
+      admin: ['ergou10086'],
+      updateCountCallback: commentCount,
+      ...option,
+      id: isShuoshuo ? path : (option && option.id) || 'c34d34830a19722871b5c52fe1073582'
+    })
+
+    gitalk.render('gitalk-container')
+  }
+
+  const loadGitalk = async(el, path) => {
+    if (typeof Gitalk === 'function') initGitalk(el, path)
+    else {
+      await btf.getCSS('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.css')
+      await btf.getScript('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.js')
+      initGitalk(el, path)
+    }
+  }
+
+  if (isShuoshuo) {
+    'Gitalk' === 'Gitalk'
+      ? window.shuoshuoComment = { loadComment: loadGitalk }
+      : window.loadOtherComment = loadGitalk
+    return
+  }
+
+  if ('Gitalk' === 'Gitalk' || !false) {
+    if (false) btf.loadComment(document.getElementById('gitalk-container'), loadGitalk)
+    else loadGitalk()
+  } else {
+    window.loadOtherComment = loadGitalk
+  }
+})()</script></div><div class="aplayer no-destroy" data-id="13587761608" data-server="netease" data-type="playlist" data-fixed="true" data-autoplay="false" data-lrcType="-1"> </div><script src="https://cdn.jsdelivr.net/npm/abcjs@7.1.2/dist/abcjs-basic-min.js"></script><script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.7/dayjs.min.js"></script><script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.7/plugin/duration.min.js"></script><script src="/scripts/realtime.js"></script><script defer="defer" id="ribbon" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-ribbon.min.js" size="150" alpha="0.6" zIndex="-1" mobile="true" data-click="true"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = false;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><script id="click-heart" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/click-heart.min.js" async="async" mobile="false"></script><script>(() => {
+  window.ChatraID = '4bzb546NSBoJcrNyu'
+  window.Chatra = window.Chatra || function() {
+    (window.Chatra.q = window.Chatra.q || []).push(arguments)
+  }
+
+  btf.getScript('https://call.chatra.io/chatra.js').then(() => {
+    const isChatBtn = true
+    const isChatHideShow = true
+
+    if (isChatBtn) {
+      const close = () => {
+        Chatra('minimizeWidget')
+        Chatra('hide')
+      }
+
+      const open = () => {
+        Chatra('openChat', true)
+        Chatra('show')
+      }
+
+      window.ChatraSetup = { startHidden: true }
+    
+      window.chatBtnFn = () => document.getElementById('chatra').classList.contains('chatra--expanded') ? close() : open()
+
+      document.getElementById('chat-btn').style.display = 'block'
+    } else if (isChatHideShow) {
+      window.chatBtn = {
+        hide: () => Chatra('hide'),
+        show: () => Chatra('show')
+      }
+    }
+  })
+})()</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/metingjs/dist/Meting.min.js"></script><script>(() => {
+  const destroyAplayer = () => {
+    if (window.aplayers) {
+      for (let i = 0; i < window.aplayers.length; i++) {
+        if (!window.aplayers[i].options.fixed) {
+          window.aplayers[i].destroy()
+        }
+      }
+    }
+  }
+
+  const runMetingJS = () => {
+    typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+  }
+
+  btf.addGlobalFn('pjaxSend', destroyAplayer, 'destroyAplayer')
+  btf.addGlobalFn('pjaxComplete', loadMeting, 'runMetingJS')
+})()</script><script src="https://cdn.jsdelivr.net/npm/pjax/pjax.min.js"></script><script>(() => {
+  const pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+  window.pjax = new Pjax({
+    elements: 'a:not([target="_blank"]):not([href="/music/"])',
+    selectors: pjaxSelectors,
+    cacheBust: false,
+    analytics: false,
+    scrollRestoration: false
+  })
+
+  const triggerPjaxFn = (val) => {
+    if (!val) return
+    Object.values(val).forEach(fn => fn())
+  }
+
+  document.addEventListener('pjax:send', () => {
+    // removeEventListener
+    btf.removeGlobalFnEvent('pjaxSendOnce')
+    btf.removeGlobalFnEvent('themeChange')
+
+    // reset readmode
+    const $bodyClassList = document.body.classList
+    if ($bodyClassList.contains('read-mode')) $bodyClassList.remove('read-mode')
+
+    triggerPjaxFn(window.globalFn.pjaxSend)
+  })
+
+  document.addEventListener('pjax:complete', () => {
+    btf.removeGlobalFnEvent('pjaxCompleteOnce')
+    document.querySelectorAll('script[data-pjax]').forEach(item => {
+      const newScript = document.createElement('script')
+      const content = item.text || item.textContent || item.innerHTML || ""
+      Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+      newScript.appendChild(document.createTextNode(content))
+      item.parentNode.replaceChild(newScript, item)
+    })
+
+    triggerPjaxFn(window.globalFn.pjaxComplete)
+  })
+
+  document.addEventListener('pjax:error', e => {
+    if (e.request.status === 404) {
+      const usePjax = true
+      true 
+        ? (usePjax ? pjax.loadUrl('/404.html') : window.location.href = '/404.html')
+        : window.location.href = e.request.responseURL
+    }
+  })
+})()</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div></body></html>
