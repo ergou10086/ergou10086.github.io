@@ -1,0 +1,14 @@
+/* FPS显示器样式 */
+.fps-display {
+  position: fixed;
+  right: 10px;
+  bottom: 10px;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 14px;
+  z-index: 999;
+  user-select: none;
+  pointer-events: none;
+}
