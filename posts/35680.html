@@ -1,0 +1,1496 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>MATLAB part3-数据类型与运算符 | ErgouTree's Blog</title><meta name="author" content="ErgouTree"><meta name="copyright" content="ErgouTree"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="MATLAB 数据类型 MATLAB 采用了动态类型系统，这意味着您不需要像 C++ 或 Java 那样预先声明变量的类型。当您创建一个新变量时，MATLAB 会自动推断其类型并分配相应的内存空间。这种设计使得 MATLAB 使用起来非常直观和灵活。 1234% 无需声明类型，MATLAB自动推断x &#x3D; 5;          % 自动识别为double类型name &#x3D; &#x27;Al">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MATLAB part3-数据类型与运算符">
+<meta property="og:url" content="https://ergou10086.github.io/posts/35680.html">
+<meta property="og:site_name" content="ErgouTree&#39;s Blog">
+<meta property="og:description" content="MATLAB 数据类型 MATLAB 采用了动态类型系统，这意味着您不需要像 C++ 或 Java 那样预先声明变量的类型。当您创建一个新变量时，MATLAB 会自动推断其类型并分配相应的内存空间。这种设计使得 MATLAB 使用起来非常直观和灵活。 1234% 无需声明类型，MATLAB自动推断x &#x3D; 5;          % 自动识别为double类型name &#x3D; &#x27;Al">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://ergou10086.github.io/images/posts/cover_matlab.jpg">
+<meta property="article:published_time" content="2025-06-03T12:31:45.000Z">
+<meta property="article:modified_time" content="2025-06-03T12:32:39.854Z">
+<meta property="article:author" content="ErgouTree">
+<meta property="article:tag" content="语法知识">
+<meta property="article:tag" content="学习">
+<meta property="article:tag" content="语言方面">
+<meta property="article:tag" content="数学">
+<meta property="article:tag" content="物理">
+<meta property="article:tag" content="数学建模">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ergou10086.github.io/images/posts/cover_matlab.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "MATLAB part3-数据类型与运算符",
+  "url": "https://ergou10086.github.io/posts/35680.html",
+  "image": "https://ergou10086.github.io/images/posts/cover_matlab.jpg",
+  "datePublished": "2025-06-03T12:31:45.000Z",
+  "dateModified": "2025-06-03T12:32:39.854Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "ErgouTree",
+      "url": "https://github.com/ergou10086"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/pi.ico"><link rel="canonical" href="https://ergou10086.github.io/posts/35680.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//hm.baidu.com"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!true && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?https://hm.baidu.com/hm.js?a6ab1b78e2c6320b664f31e8b9bf0e36";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+btf.addGlobalFn('pjaxComplete', () => {
+  _hmt.push(['_trackPageview',window.location.pathname])
+}, 'baidu_analytics')
+</script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.json","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":true},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: {"chs_to_cht":"已切换为繁体中文","cht_to_chs":"已切换为简体中文","day_to_night":"已切换为深色模式","night_to_day":"已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#1f1f1f","position":"bottom-left"},
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'MATLAB part3-数据类型与运算符',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css"><svg aria-hidden="true" style="position:absolute; overflow:hidden; width:0; height:0"><symbol id="icon-sun" viewBox="0 0 1024 1024"><path d="M960 512l-128 128v192h-192l-128 128-128-128H192v-192l-128-128 128-128V192h192l128-128 128 128h192v192z" fill="#FFD878" p-id="8420"></path><path d="M736 512a224 224 0 1 0-448 0 224 224 0 1 0 448 0z" fill="#FFE4A9" p-id="8421"></path><path d="M512 109.248L626.752 224H800v173.248L914.752 512 800 626.752V800h-173.248L512 914.752 397.248 800H224v-173.248L109.248 512 224 397.248V224h173.248L512 109.248M512 64l-128 128H192v192l-128 128 128 128v192h192l128 128 128-128h192v-192l128-128-128-128V192h-192l-128-128z" fill="#4D5152" p-id="8422"></path><path d="M512 320c105.888 0 192 86.112 192 192s-86.112 192-192 192-192-86.112-192-192 86.112-192 192-192m0-32a224 224 0 1 0 0 448 224 224 0 0 0 0-448z" fill="#4D5152" p-id="8423"></path></symbol><symbol id="icon-moon" viewBox="0 0 1024 1024"><path d="M611.370667 167.082667a445.013333 445.013333 0 0 1-38.4 161.834666 477.824 477.824 0 0 1-244.736 244.394667 445.141333 445.141333 0 0 1-161.109334 38.058667 85.077333 85.077333 0 0 0-65.066666 135.722666A462.08 462.08 0 1 0 747.093333 102.058667a85.077333 85.077333 0 0 0-135.722666 65.024z" fill="#FFB531" p-id="11345"></path><path d="M329.728 274.133333l35.157333-35.157333a21.333333 21.333333 0 1 0-30.165333-30.165333l-35.157333 35.157333-35.114667-35.157333a21.333333 21.333333 0 0 0-30.165333 30.165333l35.114666 35.157333-35.114666 35.157334a21.333333 21.333333 0 1 0 30.165333 30.165333l35.114667-35.157333 35.157333 35.157333a21.333333 21.333333 0 1 0 30.165333-30.165333z" fill="#030835" p-id="11346"></path></symbol></svg><link rel="stylesheet" href="/css/custom.css"><!-- hexo injector head_end start --><link rel="stylesheet" href="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiperstyle.css" media="print" onload="this.media='all'"><!-- hexo injector head_end end --><meta name="generator" content="Hexo 7.3.0"></head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js/pace.min.js"></script><div id="web_bg" style="background: linear-gradient(20deg, #0062be, #925696, #cc426e, #fb0347);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/arp.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">107</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">79</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">48</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-images"></i><span> Gallery</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/games/"><i class="fa-fw fas fa-game"></i><span> GalGame</span></a></li><li><a class="site-page child" href="/video/"><i class="fa-fw fas fa-video"></i><span> Video</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div><div class="menus_item"><a class="site-page" href="javascript:randomPost();"><span> Random</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/images/posts/cover_matlab.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">ErgouTree's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">MATLAB part3-数据类型与运算符</span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-images"></i><span> Gallery</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/games/"><i class="fa-fw fas fa-game"></i><span> GalGame</span></a></li><li><a class="site-page child" href="/video/"><i class="fa-fw fas fa-video"></i><span> Video</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div><div class="menus_item"><a class="site-page" href="javascript:randomPost();"><span> Random</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div><div id="randomPost"><a class="site-page social-icon search" href="javascript:;" onclick="randomPost()" title="随机访问一篇文章"><i class="fas fa-circle-notch fa-fw"></i></a></div></nav><div id="post-info"><h1 class="post-title">MATLAB part3-数据类型与运算符<a class="post-edit-link" href="https://github.com/ergou10086/ergou10086.github.io/edit/main/source/_posts/_posts/MATLAB-part3-数据类型与运算符.md" title="编辑" target="_blank"><i class="fas fa-pencil-alt"></i></a></h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2025-06-03T12:31:45.000Z" title="发表于 2025-06-03 20:31:45">2025-06-03</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2025-06-03T12:32:39.854Z" title="更新于 2025-06-03 20:32:39">2025-06-03</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%95%B0%E5%AD%A6%E7%B1%BB/">数学类</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%95%B0%E5%AD%A6%E7%B1%BB/MATLAB/">MATLAB</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">7.4k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>29分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span><span class="post-meta-separator">|</span><span class="post-meta-commentcount"><i class="far fa-comments fa-fw post-meta-icon"></i><span class="post-meta-label">评论数:</span><a href="/posts/35680.html#post-comment"><span class="gitalk-comment-count"><i class="fa-solid fa-spinner fa-spin"></i></span></a></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="matlab-数据类型">MATLAB 数据类型</h2>
+<p>MATLAB 采用了动态类型系统，这意味着您不需要像 C++ 或 Java
+那样预先声明变量的类型。当您创建一个新变量时，MATLAB
+会自动推断其类型并分配相应的内存空间。这种设计使得 MATLAB
+使用起来非常直观和灵活。</p>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">% 无需声明类型，MATLAB自动推断</span></span><br><span class="line">x = <span class="number">5</span>;          <span class="comment">% 自动识别为double类型</span></span><br><span class="line">name = <span class="string">&#x27;Alice&#x27;</span>; <span class="comment">% 自动识别为char类型</span></span><br><span class="line">flag = <span class="built_in">true</span>;    <span class="comment">% 自动识别为logical类型</span></span><br></pre></td></tr></table></figure>
+<p>MATLAB 不需要任何类型声明或维度语句。每当 MATLAB
+遇到一个新的变量名，它就创建变量并分配适当的内存空间。</p>
+<p>如果变量已经存在，那么MATLAB将用新内容替换原始内容，并在必要时分配新的存储空间。</p>
+<p>这种动态特性与Python非常相似，但MATLAB有其独特的矩阵导向设计。在MATLAB中，所有数据本质上都是矩阵或数组，即使是单个数字也被视为1×1的矩阵。</p>
+<p>例如</p>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Ergou = <span class="number">55464</span></span><br></pre></td></tr></table></figure>
+<p>上面的语句创建一个名为“Ergou”的1比1矩阵，并将值55464存储在其中。</p>
+<h3 id="matlab中可用的数据类型">MATLAB中可用的数据类型</h3>
+<p>MATLAB提供了15种基本数据类型。每种数据类型都存储矩阵或数组形式的数据。此矩阵或数组的大小最小为0×0，并且可以增长到任意大小的矩阵或数组。</p>
+<table>
+<colgroup>
+<col style="width: 6%">
+<col style="width: 93%">
+</colgroup>
+<thead>
+<tr>
+<th>序号</th>
+<th style="text-align: center;">数据类型和说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td style="text-align: center;"><strong>int8</strong>8位有符号整数</td>
+</tr>
+<tr>
+<td>2</td>
+<td style="text-align: center;"><strong>uint8</strong>8位无符号整数</td>
+</tr>
+<tr>
+<td>3</td>
+<td style="text-align: center;"><strong>int16</strong>16位有符号整数</td>
+</tr>
+<tr>
+<td>4</td>
+<td style="text-align: center;"><strong>uint16</strong>16位无符号整数</td>
+</tr>
+<tr>
+<td>5</td>
+<td style="text-align: center;"><strong>int32</strong>32位有符号整数</td>
+</tr>
+<tr>
+<td>6</td>
+<td style="text-align: center;"><strong>uint32</strong>32位无符号整数</td>
+</tr>
+<tr>
+<td>7</td>
+<td style="text-align: center;"><strong>int64</strong>64位有符号整数</td>
+</tr>
+<tr>
+<td>8</td>
+<td style="text-align: center;"><strong>uint64</strong>64位无符号整数</td>
+</tr>
+<tr>
+<td>9</td>
+<td style="text-align: center;"><strong>single</strong>单精度数值数据</td>
+</tr>
+<tr>
+<td>10</td>
+<td style="text-align: center;"><strong>double</strong>双精度数值数据</td>
+</tr>
+<tr>
+<td>11</td>
+<td style="text-align: center;"><strong>logical</strong>逻辑值1或0，分别表示true和false</td>
+</tr>
+<tr>
+<td>12</td>
+<td style="text-align: center;"><strong>char</strong>字符数据（字符串存储为字符向量）</td>
+</tr>
+<tr>
+<td>13</td>
+<td style="text-align: center;"><strong>cell
+array</strong>索引单元格数组，每个单元格能够存储不同维度和数据类型的数组</td>
+</tr>
+<tr>
+<td>14</td>
+<td style="text-align: center;"><strong>structure</strong>类似于C的结构，每个结构都具有能够存储不同维度和数据类型的数组的命名字段</td>
+</tr>
+<tr>
+<td>15</td>
+<td style="text-align: center;"><strong>function
+handle</strong>指向函数的指针</td>
+</tr>
+<tr>
+<td>16</td>
+<td style="text-align: center;"><strong>user
+classes</strong>从用户定义的类构造的对象</td>
+</tr>
+<tr>
+<td>17</td>
+<td style="text-align: center;"><strong>java
+classes</strong>从Java类构造的对象</td>
+</tr>
+</tbody>
+</table>
+<h3 id="整数类型">整数类型</h3>
+<p>MATLAB提供了8种不同的整数类型，分为有符号和无符号两大类：</p>
+<p><strong>有符号整数类型：</strong></p>
+<ul>
+<li><strong>int8</strong>: 8位有符号整数，取值范围：-128 到 127</li>
+<li><strong>int16</strong>: 16位有符号整数，取值范围：-32,768 到
+32,767</li>
+<li><strong>int32</strong>: 32位有符号整数，取值范围：-2,147,483,648 到
+2,147,483,647</li>
+<li><strong>int64</strong>:
+64位有符号整数，取值范围：-9,223,372,036,854,775,808 到
+9,223,372,036,854,775,807</li>
+</ul>
+<p><strong>无符号整数类型：</strong></p>
+<ul>
+<li><strong>uint8</strong>: 8位无符号整数，取值范围：0 到 255</li>
+<li><strong>uint16</strong>: 16位无符号整数，取值范围：0 到 65,535</li>
+<li><strong>uint32</strong>: 32位无符号整数，取值范围：0 到
+4,294,967,295</li>
+<li><strong>uint64</strong>: 64位无符号整数，取值范围：0 到
+18,446,744,073,709,551,615</li>
+</ul>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">% 整数类型示例</span></span><br><span class="line">small_int = int8(<span class="number">100</span>);        <span class="comment">% 创建8位有符号整数</span></span><br><span class="line">large_uint = uint64(<span class="number">123456</span>);  <span class="comment">% 创建64位无符号整数</span></span><br><span class="line"></span><br><span class="line"><span class="comment">% 查看变量信息</span></span><br><span class="line">whos small_int large_uint</span><br></pre></td></tr></table></figure>
+<h3 id="浮点数类型">浮点数类型</h3>
+<p><strong>single（单精度浮点数）：</strong></p>
+<ul>
+<li>32位IEEE 754标准</li>
+<li>大约7位十进制精度</li>
+<li>取值范围：约 ±1.18×10^-38 到 ±3.40×10^38</li>
+</ul>
+<p><strong>double（双精度浮点数）：</strong></p>
+<ul>
+<li>64位IEEE 754标准</li>
+<li>大约15-16位十进制精度</li>
+<li>取值范围：约 ±2.23×10^-308 到 ±1.80×10^308</li>
+<li><strong>MATLAB的默认数值类型</strong></li>
+</ul>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">% 浮点数示例</span></span><br><span class="line">single_num = single(<span class="number">3.14159</span>);  <span class="comment">% 单精度</span></span><br><span class="line">double_num = <span class="number">3.14159265359</span>;    <span class="comment">% 双精度（默认）</span></span><br><span class="line"></span><br><span class="line"><span class="comment">% 精度比较</span></span><br><span class="line">fprintf(<span class="string">&#x27;Single precision: %.10f\n&#x27;</span>, single_num);</span><br><span class="line">fprintf(<span class="string">&#x27;Double precision: %.15f\n&#x27;</span>, double_num);</span><br></pre></td></tr></table></figure>
+<h3 id="逻辑类型logical">逻辑类型（logical）</h3>
+<p>逻辑类型是MATLAB中的布尔类型，只能存储true(1)或false(0)值。它在条件判断、数组索引和逻辑运算中扮演重要角色。</p>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">% 逻辑类型示例</span></span><br><span class="line">is_positive = <span class="built_in">true</span>;</span><br><span class="line">is_negative = <span class="built_in">false</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">% 逻辑数组</span></span><br><span class="line">logic_array = [<span class="built_in">true</span>, <span class="built_in">false</span>, <span class="built_in">true</span>, <span class="built_in">false</span>];</span><br><span class="line"></span><br><span class="line"><span class="comment">% 用于数组索引</span></span><br><span class="line">numbers = [<span class="number">1</span>, <span class="number">-2</span>, <span class="number">3</span>, <span class="number">-4</span>, <span class="number">5</span>];</span><br><span class="line">positive_mask = numbers &gt; <span class="number">0</span>;  <span class="comment">% 返回逻辑数组</span></span><br><span class="line">positive_numbers = numbers(positive_mask);  <span class="comment">% 提取正数</span></span><br></pre></td></tr></table></figure>
+<h3 id="字符类型char">字符类型（char）</h3>
+<p>在MATLAB中，字符数据以字符数组的形式存储。每个字符占用16位（2字节），支持Unicode字符</p>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">% 字符类型示例</span></span><br><span class="line">single_char = <span class="string">&#x27;A&#x27;</span>;              <span class="comment">% 单个字符</span></span><br><span class="line">char_array = <span class="string">&#x27;Hello World&#x27;</span>;     <span class="comment">% 字符数组（字符串）</span></span><br><span class="line">chinese_chars = <span class="string">&#x27;你好，世界&#x27;</span>;    <span class="comment">% 支持中文</span></span><br><span class="line"></span><br><span class="line"><span class="comment">% 字符数组操作</span></span><br><span class="line">str1 = <span class="string">&#x27;Hello&#x27;</span>;</span><br><span class="line">str2 = <span class="string">&#x27;World&#x27;</span>;</span><br><span class="line">combined = [str1, <span class="string">&#x27; &#x27;</span>, str2];   <span class="comment">% 字符串连接</span></span><br></pre></td></tr></table></figure>
+<h3 id="复合数据类型">复合数据类型</h3>
+<h4 id="单元数组cell-array">单元数组（Cell Array）</h4>
+<p>单元数组是MATLAB中最灵活的数据结构，可以在同一个数组中存储不同类型和大小的数据。</p>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">% 单元数组示例</span></span><br><span class="line">mixed_cell = &#123;<span class="number">42</span>, <span class="string">&#x27;Hello&#x27;</span>, [<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>], <span class="built_in">true</span>&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">% 访问单元数组元素</span></span><br><span class="line">number = mixed_cell&#123;<span class="number">1</span>&#125;;      <span class="comment">% 获取数字42</span></span><br><span class="line">text = mixed_cell&#123;<span class="number">2</span>&#125;;        <span class="comment">% 获取字符串&#x27;Hello&#x27;</span></span><br><span class="line">array = mixed_cell&#123;<span class="number">3</span>&#125;;       <span class="comment">% 获取数组[1,2,3]</span></span><br><span class="line"></span><br><span class="line"><span class="comment">% 复杂单元数组</span></span><br><span class="line">student_data = &#123;</span><br><span class="line">    <span class="string">&#x27;Alice&#x27;</span>, <span class="number">25</span>, [<span class="number">85</span>, <span class="number">90</span>, <span class="number">88</span>], <span class="built_in">true</span>;</span><br><span class="line">    <span class="string">&#x27;Bob&#x27;</span>,   <span class="number">23</span>, [<span class="number">78</span>, <span class="number">82</span>, <span class="number">85</span>], <span class="built_in">false</span>;</span><br><span class="line">    <span class="string">&#x27;Carol&#x27;</span>, <span class="number">24</span>, [<span class="number">92</span>, <span class="number">89</span>, <span class="number">94</span>], <span class="built_in">true</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>结构体（Structure）</p>
+<p>结构体类似于其他编程语言中的记录或对象，通过字段名来访问数据。</p>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">% 结构体示例</span></span><br><span class="line">student.name = <span class="string">&#x27;Alice&#x27;</span>;</span><br><span class="line">student.age = <span class="number">20</span>;</span><br><span class="line">student.grades = [<span class="number">85</span>, <span class="number">90</span>, <span class="number">88</span>];</span><br><span class="line">student.is_graduate = <span class="built_in">false</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">% 结构体数组</span></span><br><span class="line">students(<span class="number">1</span>).name = <span class="string">&#x27;Alice&#x27;</span>;</span><br><span class="line">students(<span class="number">1</span>).age = <span class="number">20</span>;</span><br><span class="line">students(<span class="number">2</span>).name = <span class="string">&#x27;Bob&#x27;</span>;</span><br><span class="line">students(<span class="number">2</span>).age = <span class="number">22</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">% 访问结构体字段</span></span><br><span class="line">first_student_name = students(<span class="number">1</span>).name;</span><br><span class="line">all_names = &#123;students.name&#125;;  <span class="comment">% 提取所有姓名</span></span><br></pre></td></tr></table></figure>
+<h4 id="函数句柄function-handle">函数句柄（Function Handle）</h4>
+<p>函数句柄是指向函数的指针，允许您将函数作为变量传递。</p>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">% 函数句柄示例</span></span><br><span class="line">sqrt_handle = @<span class="built_in">sqrt</span>;          <span class="comment">% 内置函数句柄</span></span><br><span class="line">result = sqrt_handle(<span class="number">16</span>);     <span class="comment">% 调用函数，result = 4</span></span><br><span class="line"></span><br><span class="line"><span class="comment">% 匿名函数句柄</span></span><br><span class="line">square = @(x) x.^<span class="number">2</span>;</span><br><span class="line">squared_values = square([<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>]);  <span class="comment">% [1,4,9,16]</span></span><br><span class="line"></span><br><span class="line"><span class="comment">% 将函数句柄作为参数传递</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">result</span> = <span class="title">apply_function</span><span class="params">(func, data)</span></span></span><br><span class="line">    result = func(data);</span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">numbers = [<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>];</span><br><span class="line">squared = apply_function(@(x) x.^<span class="number">2</span>, numbers);</span><br></pre></td></tr></table></figure>
+<h3 id="数据类型转换">数据类型转换</h3>
+<p>MATLAB提供了用于将值从一种数据类型转换为另一种数据的各种函数。下表显示了数据类型转换函数</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">函数</th>
+<th style="text-align: center;">作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">char</td>
+<td style="text-align: center;">转换为字符数组（字符串）</td>
+</tr>
+<tr>
+<td style="text-align: center;">int2str</td>
+<td style="text-align: center;">将整数数据转换为字符串</td>
+</tr>
+<tr>
+<td style="text-align: center;">mat2str</td>
+<td style="text-align: center;">将矩阵转换为字符串</td>
+</tr>
+<tr>
+<td style="text-align: center;">num2str</td>
+<td style="text-align: center;">将数字转换为字符串</td>
+</tr>
+<tr>
+<td style="text-align: center;">str2double</td>
+<td style="text-align: center;">将字符串转换为双精度值</td>
+</tr>
+<tr>
+<td style="text-align: center;">str2num</td>
+<td style="text-align: center;">将字符串转换为数字</td>
+</tr>
+<tr>
+<td style="text-align: center;">native2unicode</td>
+<td style="text-align: center;">将数字字节转换为 Unicode 字符</td>
+</tr>
+<tr>
+<td style="text-align: center;">unicode2native</td>
+<td style="text-align: center;">将Unicode字符转换为数字字节</td>
+</tr>
+<tr>
+<td style="text-align: center;">base2dec</td>
+<td style="text-align: center;">将N进制数字符串转换为十进制数</td>
+</tr>
+<tr>
+<td style="text-align: center;">bin2dec</td>
+<td style="text-align: center;">将二进制数字符串转换为十进制数</td>
+</tr>
+<tr>
+<td style="text-align: center;">dec2base</td>
+<td style="text-align: center;">将十进制数转换为字符串中的N进制数</td>
+</tr>
+<tr>
+<td style="text-align: center;">dec2bin</td>
+<td style="text-align: center;">将十进制转换为字符串中的二进制数</td>
+</tr>
+<tr>
+<td style="text-align: center;">dec2hex</td>
+<td style="text-align: center;">将字符串中的十进制数转换为十六进制数</td>
+</tr>
+<tr>
+<td style="text-align: center;">hex2dec</td>
+<td style="text-align: center;">将十六进制数字字符串转换为十进制数字</td>
+</tr>
+<tr>
+<td style="text-align: center;">hex2num</td>
+<td style="text-align: center;">将十六进制数字字符串转换为双精度数字</td>
+</tr>
+<tr>
+<td style="text-align: center;">num2hex</td>
+<td style="text-align: center;">将单精度和双精度转换为IEEE十六进制字符串</td>
+</tr>
+<tr>
+<td style="text-align: center;">cell2mat</td>
+<td style="text-align: center;">将单元格数组转换为数值数组</td>
+</tr>
+<tr>
+<td style="text-align: center;">cell2struct</td>
+<td style="text-align: center;">将单元数组转换为结构数组</td>
+</tr>
+<tr>
+<td style="text-align: center;">cellstr</td>
+<td style="text-align: center;">从字符数组创建字符串的单元格数组</td>
+</tr>
+<tr>
+<td style="text-align: center;">mat2cell</td>
+<td style="text-align: center;">将数组转换为单元格大小可能不同的单元格</td>
+</tr>
+<tr>
+<td style="text-align: center;">num2cell</td>
+<td style="text-align: center;">将数组转换为大小一致的单元格数组</td>
+</tr>
+<tr>
+<td style="text-align: center;">struct2cell</td>
+<td style="text-align: center;">将结构转换为单元格数组</td>
+</tr>
+</tbody>
+</table>
+<h4 id="显式类型转换">显式类型转换</h4>
+<p>MATLAB提供了丰富的类型转换函数，能够在不同数据类型之间进行转换。</p>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">% 基本数值转换</span></span><br><span class="line">x = <span class="number">3.14159</span>;</span><br><span class="line">x_int = int32(x);           <span class="comment">% 转换为32位整数：3</span></span><br><span class="line">x_single = single(x);       <span class="comment">% 转换为单精度</span></span><br><span class="line">x_uint8 = uint8(x * <span class="number">100</span>);   <span class="comment">% 转换为无符号8位整数：314</span></span><br><span class="line"></span><br><span class="line"><span class="comment">% 处理溢出</span></span><br><span class="line">big_number = <span class="number">300</span>;</span><br><span class="line">small_int = int8(big_number);  <span class="comment">% 结果被截断为127（int8最大值）</span></span><br><span class="line"></span><br><span class="line"><span class="comment">% 数值转字符串</span></span><br><span class="line">number = <span class="number">42</span>;</span><br><span class="line">str_int = int2str(number);      <span class="comment">% &#x27;42&#x27;</span></span><br><span class="line">str_num = num2str(<span class="number">3.14159</span>);     <span class="comment">% &#x27;3.1416&#x27;</span></span><br><span class="line">str_mat = mat2str([<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>]);     <span class="comment">% &#x27;[1 2 3]&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">% 字符串转数值</span></span><br><span class="line">str = <span class="string">&#x27;123.45&#x27;</span>;</span><br><span class="line">num_double = str2double(str);   <span class="comment">% 123.45</span></span><br><span class="line">num_value = str2num(str);       <span class="comment">% 123.45</span></span><br><span class="line"></span><br><span class="line"><span class="comment">% 处理转换错误</span></span><br><span class="line">invalid_str = <span class="string">&#x27;abc&#x27;</span>;</span><br><span class="line">result = str2double(invalid_str);  <span class="comment">% 返回NaN</span></span><br><span class="line"></span><br><span class="line"><span class="comment">% 进制转换示例</span></span><br><span class="line">decimal_num = <span class="number">255</span>;</span><br><span class="line">binary_str = dec2bin(decimal_num);    <span class="comment">% &#x27;11111111&#x27;</span></span><br><span class="line">hex_str = dec2hex(decimal_num);       <span class="comment">% &#x27;FF&#x27;</span></span><br><span class="line">octal_str = dec2base(decimal_num, <span class="number">8</span>); <span class="comment">% &#x27;377&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">% 从其他进制转回十进制</span></span><br><span class="line">bin_str = <span class="string">&#x27;1010&#x27;</span>;</span><br><span class="line">decimal = bin2dec(bin_str);           <span class="comment">% 10</span></span><br><span class="line">hex_str = <span class="string">&#x27;FF&#x27;</span>;</span><br><span class="line">decimal = hex2dec(hex_str);           <span class="comment">% 255</span></span><br></pre></td></tr></table></figure>
+<p>隐式类型转换</p>
+<p>MATLAB在某些情况下会自动进行类型转换：</p>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">% 混合运算的隐式转换</span></span><br><span class="line">int_val = int8(<span class="number">10</span>);</span><br><span class="line">double_val = <span class="number">3.14</span>;</span><br><span class="line">result = int_val + double_val;  <span class="comment">% 结果为double类型</span></span><br><span class="line"></span><br><span class="line"><span class="comment">% 逻辑值在数值运算中的转换</span></span><br><span class="line">logical_val = <span class="built_in">true</span>;</span><br><span class="line">numeric_result = logical_val + <span class="number">5</span>;  <span class="comment">% 结果为6（true被转换为1）</span></span><br></pre></td></tr></table></figure>
+<p>数据类型的确定</p>
+<p>MATLAB提供了各种功能来识别变量的数据类型。</p>
+<p>下表提供了确定变量的数据类型的功能</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">函数</th>
+<th style="text-align: center;">作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">is</td>
+<td style="text-align: center;">检测状态</td>
+</tr>
+<tr>
+<td style="text-align: center;">isa</td>
+<td style="text-align: center;">确定输入是否为指定类的对象</td>
+</tr>
+<tr>
+<td style="text-align: center;">iscell</td>
+<td style="text-align: center;">确定输入是否为单元格数组</td>
+</tr>
+<tr>
+<td style="text-align: center;">iscellstr</td>
+<td style="text-align: center;">确定输入是否为字符串的单元格数组</td>
+</tr>
+<tr>
+<td style="text-align: center;">ischar</td>
+<td style="text-align: center;">确定项目是否为字符数组</td>
+</tr>
+<tr>
+<td style="text-align: center;">isfield</td>
+<td style="text-align: center;">确定输入是否为结构数组字段</td>
+</tr>
+<tr>
+<td style="text-align: center;">isfloat</td>
+<td style="text-align: center;">确定输入是否为浮点数组</td>
+</tr>
+<tr>
+<td style="text-align: center;">ishghandle</td>
+<td style="text-align: center;">适用于处理图形对象句柄</td>
+</tr>
+<tr>
+<td style="text-align: center;">isinteger</td>
+<td style="text-align: center;">确定输入是否为整数数组</td>
+</tr>
+<tr>
+<td style="text-align: center;">isjava</td>
+<td style="text-align: center;">确定输入是否为Java对象</td>
+</tr>
+<tr>
+<td style="text-align: center;">islogical</td>
+<td style="text-align: center;">确定输入是否为逻辑数组</td>
+</tr>
+<tr>
+<td style="text-align: center;">isnumeric</td>
+<td style="text-align: center;">确定输入是否为数值数组</td>
+</tr>
+<tr>
+<td style="text-align: center;">isobject</td>
+<td style="text-align: center;">确定输入是否为MATLAB对象</td>
+</tr>
+<tr>
+<td style="text-align: center;">isreal</td>
+<td style="text-align: center;">检查输入是否为实数数组</td>
+</tr>
+<tr>
+<td style="text-align: center;">isscalar</td>
+<td style="text-align: center;">确定输入是否为标量</td>
+</tr>
+<tr>
+<td style="text-align: center;">isstr</td>
+<td style="text-align: center;">确定输入是否为字符数组</td>
+</tr>
+<tr>
+<td style="text-align: center;">isstruct</td>
+<td style="text-align: center;">确定输入是否为结构数组</td>
+</tr>
+<tr>
+<td style="text-align: center;">isvector</td>
+<td style="text-align: center;">确定输入是否为向量</td>
+</tr>
+<tr>
+<td style="text-align: center;">class</td>
+<td style="text-align: center;">确定对象的类别</td>
+</tr>
+<tr>
+<td style="text-align: center;">validateattributes</td>
+<td style="text-align: center;">检查数组的有效性</td>
+</tr>
+<tr>
+<td style="text-align: center;">whos</td>
+<td style="text-align: center;">列出工作空间中的变量，包括大小和类型</td>
+</tr>
+</tbody>
+</table>
+<h4 id="基本类型检测函数">基本类型检测函数</h4>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">% 创建不同类型的数据</span></span><br><span class="line">num_data = <span class="number">42</span>;</span><br><span class="line">str_data = <span class="string">&#x27;Hello&#x27;</span>;</span><br><span class="line">cell_data = &#123;<span class="number">1</span>, <span class="string">&#x27;two&#x27;</span>, <span class="number">3</span>&#125;;</span><br><span class="line">struct_data = struct(<span class="string">&#x27;name&#x27;</span>, <span class="string">&#x27;Alice&#x27;</span>, <span class="string">&#x27;age&#x27;</span>, <span class="number">25</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">% 类型检测</span></span><br><span class="line">fprintf(<span class="string">&#x27;num_data是数值类型: %d\n&#x27;</span>, isnumeric(num_data));</span><br><span class="line">fprintf(<span class="string">&#x27;str_data是字符类型: %d\n&#x27;</span>, ischar(str_data));</span><br><span class="line">fprintf(<span class="string">&#x27;cell_data是单元数组: %d\n&#x27;</span>, iscell(cell_data));</span><br><span class="line">fprintf(<span class="string">&#x27;struct_data是结构体: %d\n&#x27;</span>, isstruct(struct_data));</span><br><span class="line"></span><br><span class="line"><span class="comment">% 获取具体类型</span></span><br><span class="line">fprintf(<span class="string">&#x27;num_data的具体类型: %s\n&#x27;</span>, class(num_data));</span><br><span class="line">fprintf(<span class="string">&#x27;str_data的具体类型: %s\n&#x27;</span>, class(str_data));</span><br></pre></td></tr></table></figure>
+<h4 id="高级类型检测">高级类型检测</h4>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">% 检测数组特性</span></span><br><span class="line">data = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>];</span><br><span class="line">fprintf(<span class="string">&#x27;是否为向量: %d\n&#x27;</span>, <span class="built_in">isvector</span>(data));</span><br><span class="line">fprintf(<span class="string">&#x27;是否为标量: %d\n&#x27;</span>, <span class="built_in">isscalar</span>(data));</span><br><span class="line">fprintf(<span class="string">&#x27;是否为实数: %d\n&#x27;</span>, <span class="built_in">isreal</span>(data));</span><br><span class="line"></span><br><span class="line"><span class="comment">% 检测复数</span></span><br><span class="line">complex_data = <span class="number">3</span> + <span class="number">4</span><span class="built_in">i</span>;</span><br><span class="line">fprintf(<span class="string">&#x27;是否为实数: %d\n&#x27;</span>, <span class="built_in">isreal</span>(complex_data));</span><br><span class="line">fprintf(<span class="string">&#x27;是否为复数: %d\n&#x27;</span>, ~<span class="built_in">isreal</span>(complex_data));</span><br><span class="line"></span><br><span class="line"><span class="comment">% 使用isa进行精确类型检测</span></span><br><span class="line">fprintf(<span class="string">&#x27;是否为double类型: %d\n&#x27;</span>, isa(data, <span class="string">&#x27;double&#x27;</span>));</span><br><span class="line">fprintf(<span class="string">&#x27;是否为数值类型: %d\n&#x27;</span>, isa(data, <span class="string">&#x27;numeric&#x27;</span>));</span><br></pre></td></tr></table></figure>
+<h3 id="常见问题">常见问题</h3>
+<ol type="1">
+<li><p>类型转换中的精度丢失</p>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">% 问题：精度丢失</span></span><br><span class="line">original = <span class="number">3.14159265359</span>;</span><br><span class="line">converted = single(original);</span><br><span class="line">fprintf(<span class="string">&#x27;原始值: %.15f\n&#x27;</span>, original);</span><br><span class="line">fprintf(<span class="string">&#x27;转换后: %.15f\n&#x27;</span>, double(converted));</span><br></pre></td></tr></table></figure></li>
+<li><p>整数溢出</p>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">% 问题：溢出</span></span><br><span class="line">small_int = int8(<span class="number">100</span>);</span><br><span class="line">overflow_result = small_int + int8(<span class="number">50</span>);  <span class="comment">% 结果被截断</span></span><br><span class="line">fprintf(<span class="string">&#x27;溢出结果: %d\n&#x27;</span>, overflow_result);</span><br><span class="line"></span><br><span class="line">safe_result = int16(small_int) + int16(<span class="number">50</span>);</span><br></pre></td></tr></table></figure></li>
+<li><p>逻辑索引的误用</p>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">% 问题：混淆逻辑索引和线性索引</span></span><br><span class="line">data = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>];</span><br><span class="line">logical_mask = data &gt; <span class="number">3</span>;        <span class="comment">% [false, false, false, true, true]</span></span><br><span class="line">linear_indices = <span class="built_in">find</span>(data &gt; <span class="number">3</span>); <span class="comment">% [4, 5]</span></span><br><span class="line"></span><br><span class="line"><span class="comment">% 正确使用</span></span><br><span class="line">filtered_data1 = data(logical_mask);    <span class="comment">% 使用逻辑索引</span></span><br><span class="line">filtered_data2 = data(linear_indices);  <span class="comment">% 使用线性索引</span></span><br></pre></td></tr></table></figure></li>
+</ol>
+<h3 id="数据类型实例">数据类型实例</h3>
+<ol type="1">
+<li><p>数据验证与错误处理</p>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">processed_data</span> = <span class="title">process_numeric_data</span><span class="params">(input_data)</span></span></span><br><span class="line">    <span class="comment">% 输入验证</span></span><br><span class="line">    <span class="keyword">if</span> ~isnumeric(input_data)</span><br><span class="line">        error(<span class="string">&#x27;输入必须是数值类型&#x27;</span>);</span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> ~<span class="built_in">isreal</span>(input_data)</span><br><span class="line">        warning(<span class="string">&#x27;输入包含复数，将只处理实部&#x27;</span>);</span><br><span class="line">        input_data = <span class="built_in">real</span>(input_data);</span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">% 数据处理</span></span><br><span class="line">    processed_data = input_data * <span class="number">2</span>;</span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure></li>
+<li><p>混合数据结构的使用</p>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">% 创建一个包含学生信息的复合数据结构</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">student_db</span> = <span class="title">create_student_database</span><span class="params">()</span></span></span><br><span class="line">    <span class="comment">% 使用结构体数组存储学生信息</span></span><br><span class="line">    students = struct();</span><br><span class="line">    </span><br><span class="line">    <span class="comment">% 学生1</span></span><br><span class="line">    students(<span class="number">1</span>).id = uint32(<span class="number">1001</span>);</span><br><span class="line">    students(<span class="number">1</span>).name = <span class="string">&#x27;Alice Johnson&#x27;</span>;</span><br><span class="line">    students(<span class="number">1</span>).age = uint8(<span class="number">20</span>);</span><br><span class="line">    students(<span class="number">1</span>).grades = single([<span class="number">85.5</span>, <span class="number">90.0</span>, <span class="number">88.3</span>]);</span><br><span class="line">    students(<span class="number">1</span>).is_active = <span class="built_in">true</span>;</span><br><span class="line">    students(<span class="number">1</span>).courses = &#123;<span class="string">&#x27;Math&#x27;</span>, <span class="string">&#x27;Physics&#x27;</span>, <span class="string">&#x27;Chemistry&#x27;</span>&#125;;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">% 学生2</span></span><br><span class="line">    students(<span class="number">2</span>).id = uint32(<span class="number">1002</span>);</span><br><span class="line">    students(<span class="number">2</span>).name = <span class="string">&#x27;Bob Smith&#x27;</span>;</span><br><span class="line">    students(<span class="number">2</span>).age = uint8(<span class="number">22</span>);</span><br><span class="line">    students(<span class="number">2</span>).grades = single([<span class="number">78.2</span>, <span class="number">82.7</span>, <span class="number">85.1</span>]);</span><br><span class="line">    students(<span class="number">2</span>).is_active = <span class="built_in">false</span>;</span><br><span class="line">    students(<span class="number">2</span>).courses = &#123;<span class="string">&#x27;Biology&#x27;</span>, <span class="string">&#x27;Chemistry&#x27;</span>, <span class="string">&#x27;English&#x27;</span>&#125;;</span><br><span class="line">    </span><br><span class="line">    student_db = students;</span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure></li>
+</ol>
+<h2 id="matlab-运算符">MATLAB 运算符</h2>
+<p>运算符是MATLAB编程语言的基础构建块，它们告诉MATLAB解释器如何执行特定的数学、逻辑或比较操作。MATLAB的设计理念是”一切皆矩阵”，因此其运算符既可以处理标量数据，也可以高效地处理矩阵和数组数据。这种设计使得MATLAB在科学计算和工程应用中表现出色。</p>
+<ul>
+<li>MATLAB中的运算符可以分为以下几个主要类别：
+<ul>
+<li><strong>算术运算符</strong>：执行基本的数学运算</li>
+<li><strong>关系运算符</strong>：进行比较操作</li>
+<li><strong>逻辑运算符</strong>：执行布尔逻辑运算</li>
+<li><strong>按位运算符</strong>：对数据的二进制位进行操作</li>
+<li><strong>集合运算符</strong>：处理集合间的关系</li>
+<li><strong>特殊运算符</strong>：包括索引、赋值等操作</li>
+</ul></li>
+</ul>
+<h3 id="算术运算符">算术运算符</h3>
+<p>MATLAB 提供了丰富的算术运算符，支持矩阵运算和元素级运算</p>
+<p>MATLAB 中的算术运算符分为两类：</p>
+<ol type="1">
+<li><strong>矩阵运算符</strong>：按照线性代数规则对矩阵进行运算。</li>
+<li><strong>数组运算符</strong>：对数组的对应元素进行运算，要求参与运算的数组具有相同的尺寸。</li>
+</ol>
+<p>矩阵运算符 vs 数组运算符</p>
+<ul>
+<li><strong>矩阵运算符</strong>遵循严格的线性代数规则：
+<ul>
+<li>矩阵乘法要求第一个矩阵的列数等于第二个矩阵的行数</li>
+<li>矩阵除法涉及求逆矩阵或解线性方程组</li>
+<li>矩阵幂运算是数学意义上的矩阵幂</li>
+</ul></li>
+<li><strong>数组运算符</strong>（带点号的运算符）对对应元素进行操作：
+<ul>
+<li>要求参与运算的数组具有相同的维度（或其中一个是标量）</li>
+<li>运算是逐元素进行的</li>
+<li>更直观，类似于其他编程语言中的数组操作</li>
+</ul></li>
+</ul>
+<table>
+<colgroup>
+<col style="width: 9%">
+<col style="width: 90%">
+</colgroup>
+<thead>
+<tr>
+<th>运算符</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>+</td>
+<td>加法或一元加号。A+B 将存储在变量 A 和 B 中的值相加。A 和 B
+必须具有相同的大小，除非其中一个是标量。标量可以添加到任何大小的矩阵中。</td>
+</tr>
+<tr>
+<td>-</td>
+<td>减法或一元减法。A - B 从 A 中减去 B 的值。A 和 B
+必须具有相同的大小，除非其中一个是标量。标量可以从任何大小的矩阵中减去。</td>
+</tr>
+<tr>
+<td>*</td>
+<td>矩阵乘法。C = A*B 是矩阵 A 和 B 的线性代数积。更准确地说，<span class="math inline">$C(i,j)=\sum_{k =
+1}^{n}A(i,k)B(k,j)$</span>。对于非标量 A 和 B，A 的列数必须等于 B
+的行数。标量可以与任意大小的矩阵相乘。</td>
+</tr>
+<tr>
+<td>.*</td>
+<td>数组乘法。A.*B 是数组 A 和 B 的逐元素乘积。A 和 B
+必须具有相同的大小，除非其中一个是标量。</td>
+</tr>
+<tr>
+<td>/</td>
+<td>斜杠或矩阵右除法。B/A 与 B*inv (A) 大致相同。更准确地说，B/A = (A’
+ B’)’ 。</td>
+</tr>
+<tr>
+<td>./</td>
+<td>数组右除法。A./B 是元素 A (i,j)/B (i,j) 的矩阵。A 和 B
+必须具有相同的大小，除非其中一个是标量。</td>
+</tr>
+<tr>
+<td>\</td>
+<td>反斜杠或矩阵左除法。如果 A 是方阵，则 A与 inv (A)*B
+大致相同，只是计算方式不同。如果 A 是一个 n 乘 n 的矩阵，而 B 是一个包含
+n 个分量的列向量，或者是一个包含多个这样的列的矩阵，那么 X = A是方程 AX
+= B 的解。如果 A 的比例严重或几乎是单数，则会显示一条警告消息。</td>
+</tr>
+<tr>
+<td>.\</td>
+<td>数组左除法。A.是元素 B (i,j)/A (i,j) 的矩阵。A 和 B
+必须具有相同的大小，除非其中一个是标量。</td>
+</tr>
+<tr>
+<td>^</td>
+<td>矩阵幂。如果 p 是标量，那么 X^p 是 p 的幂。如果 p
+是整数，则通过重复平方计算幂。如果整数是负数，则 X 先倒数。对于 p
+的其他值，计算涉及特征值和特征向量，因此如果 [V, D] = eig (X)，那么 X^p
+= V*D.^p/V 。</td>
+</tr>
+<tr>
+<td>.^</td>
+<td>数组幂。A.^B 是元素 A (i,j) 为 B (i,j) 次方的矩阵。A 和 B
+必须具有相同的大小，除非其中一个是标量。</td>
+</tr>
+<tr>
+<td>’</td>
+<td>矩阵转置。A’ 是 A 的线性代数转置。对于复矩阵，这是复共轭转置。</td>
+</tr>
+<tr>
+<td>.’</td>
+<td>数组转置。a.’ 是 a 的数组转置。对于复杂的矩阵，这不涉及共轭。</td>
+</tr>
+</tbody>
+</table>
+<p>示例</p>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">% 矩阵运算示例</span></span><br><span class="line">A = [<span class="number">1</span>, <span class="number">2</span>; <span class="number">3</span>, <span class="number">4</span>];</span><br><span class="line">B = [<span class="number">5</span>, <span class="number">6</span>; <span class="number">7</span>, <span class="number">8</span>];</span><br><span class="line"></span><br><span class="line"><span class="comment">% 矩阵乘法</span></span><br><span class="line">C_matrix = A * B;        <span class="comment">% 结果: [19, 22; 43, 50]</span></span><br><span class="line"></span><br><span class="line"><span class="comment">% 数组乘法（逐元素）</span></span><br><span class="line">C_element = A .* B;      <span class="comment">% 结果: [5, 12; 21, 32]</span></span><br><span class="line"></span><br><span class="line"><span class="comment">% 矩阵幂</span></span><br><span class="line">A_squared = A^<span class="number">2</span>;         <span class="comment">% 矩阵A的平方</span></span><br><span class="line">A_element_squared = A.^<span class="number">2</span>; <span class="comment">% A中每个元素的平方</span></span><br><span class="line"></span><br><span class="line"><span class="comment">% 复数转置示例</span></span><br><span class="line">complex_matrix = [<span class="number">1</span>+<span class="number">2</span><span class="built_in">i</span>, <span class="number">3</span>-<span class="built_in">i</span>; <span class="number">4</span>+<span class="built_in">i</span>, <span class="number">5</span>];</span><br><span class="line">conjugate_transpose = complex_matrix&#x27;;   <span class="comment">% 复共轭转置</span></span><br><span class="line">simple_transpose = complex_matrix.&#x27;;     <span class="comment">% 仅转置</span></span><br><span class="line"></span><br><span class="line"><span class="comment">% 除法运算示例</span></span><br><span class="line">vector1 = [<span class="number">10</span>, <span class="number">20</span>, <span class="number">30</span>];</span><br><span class="line">vector2 = [<span class="number">2</span>, <span class="number">4</span>, <span class="number">5</span>];</span><br><span class="line">division_result = vector1 ./ vector2;    <span class="comment">% [5, 5, 6]</span></span><br><span class="line"></span><br><span class="line"><span class="comment">% 标量与矩阵运算</span></span><br><span class="line">scalar = <span class="number">5</span>;</span><br><span class="line">matrix = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>; <span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>];</span><br><span class="line">scaled_matrix = scalar * matrix;         <span class="comment">% 标量乘法自动广播</span></span><br></pre></td></tr></table></figure>
+<h4 id="运算优先级">运算优先级</h4>
+<p>MATLAB 中的算术运算符优先级与数学中的基本一致：</p>
+<ol type="1">
+<li>括号 ()</li>
+<li>幂运算 ^ 和 .^</li>
+<li>乘法 <em>、除法 / 和 、数组乘 .</em>、数组除 ./ 和 .<br>
+</li>
+<li>加法 + 和减法 -</li>
+</ol>
+<h3 id="关系运算符">关系运算符</h3>
+<p>关系运算符还可以处理标量和非标量数据。数组的关系运算符执行两个数组之间的逐元素比较，并返回相同大小的逻辑数组，其中元素设置为逻辑1(true)，关系为true，元素设置为逻辑0(false)。</p>
+<table>
+<thead>
+<tr>
+<th>运算符</th>
+<th style="text-align: center;">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>&lt;</strong></td>
+<td style="text-align: center;">小于</td>
+</tr>
+<tr>
+<td><strong>&lt;=</strong></td>
+<td style="text-align: center;">小于或等于</td>
+</tr>
+<tr>
+<td><strong>&gt;</strong></td>
+<td style="text-align: center;">大于</td>
+</tr>
+<tr>
+<td><strong>&gt;=</strong></td>
+<td style="text-align: center;">大于或等于</td>
+</tr>
+<tr>
+<td><strong>==</strong></td>
+<td style="text-align: center;">等于</td>
+</tr>
+<tr>
+<td><strong>~=</strong></td>
+<td style="text-align: center;">不等于</td>
+</tr>
+</tbody>
+</table>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">% 标量比较</span></span><br><span class="line">a = <span class="number">10</span>;</span><br><span class="line">b = <span class="number">5</span>;</span><br><span class="line">result1 = a &gt; b;           <span class="comment">% true</span></span><br><span class="line">result2 = a == b;          <span class="comment">% false</span></span><br><span class="line">result3 = a ~= b;          <span class="comment">% true</span></span><br><span class="line"></span><br><span class="line"><span class="comment">% 数组比较</span></span><br><span class="line">array1 = [<span class="number">1</span>, <span class="number">5</span>, <span class="number">3</span>, <span class="number">8</span>, <span class="number">2</span>];</span><br><span class="line">array2 = [<span class="number">2</span>, <span class="number">4</span>, <span class="number">3</span>, <span class="number">6</span>, <span class="number">7</span>];</span><br><span class="line"></span><br><span class="line"><span class="comment">% 逐元素比较</span></span><br><span class="line">comparison = array1 &gt; array2;   <span class="comment">% [false, true, false, true, false]</span></span><br><span class="line">equal_elements = array1 == array2; <span class="comment">% [false, false, true, false, false]</span></span><br><span class="line"></span><br><span class="line"><span class="comment">% 与标量比较</span></span><br><span class="line">greater_than_3 = array1 &gt; <span class="number">3</span>;    <span class="comment">% [false, true, false, true, false]</span></span><br><span class="line"></span><br><span class="line"><span class="comment">% 在条件语句中使用</span></span><br><span class="line"><span class="keyword">if</span> a &gt; b</span><br><span class="line">    fprintf(<span class="string">&#x27;a (%d) 大于 b (%d)\n&#x27;</span>, a, b);</span><br><span class="line"><span class="keyword">else</span></span><br><span class="line">    fprintf(<span class="string">&#x27;a (%d) 不大于 b (%d)\n&#x27;</span>, a, b);</span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line"><span class="comment">% 复杂条件</span></span><br><span class="line">complex_condition = (a &gt; <span class="number">5</span>) &amp;&amp; (b &lt; <span class="number">10</span>);</span><br><span class="line">fprintf(<span class="string">&#x27;复杂条件结果: %d\n&#x27;</span>, complex_condition);</span><br></pre></td></tr></table></figure>
+<p>特殊比较情况</p>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">% NaN的比较</span></span><br><span class="line">nan_value = NaN;</span><br><span class="line">result_nan = nan_value == nan_value;  <span class="comment">% false! NaN不等于任何值，包括自己</span></span><br><span class="line">result_isnan = <span class="built_in">isnan</span>(nan_value);      <span class="comment">% true，使用isnan函数检测</span></span><br><span class="line"></span><br><span class="line"><span class="comment">% 浮点数比较的注意事项</span></span><br><span class="line">float1 = <span class="number">0.1</span> + <span class="number">0.2</span>;</span><br><span class="line">float2 = <span class="number">0.3</span>;</span><br><span class="line">direct_compare = float1 == float2;    <span class="comment">% 可能为false（浮点精度问题）</span></span><br><span class="line">safe_compare = <span class="built_in">abs</span>(float1 - float2) &lt; <span class="built_in">eps</span>; <span class="comment">% 安全的浮点比较</span></span><br><span class="line"></span><br><span class="line"><span class="comment">% 字符串比较</span></span><br><span class="line">str1 = <span class="string">&#x27;hello&#x27;</span>;</span><br><span class="line">str2 = <span class="string">&#x27;world&#x27;</span>;</span><br><span class="line">str_compare = str1 == str2;          <span class="comment">% 逐字符比较，返回逻辑数组</span></span><br><span class="line">str_equal = strcmp(str1, str2);      <span class="comment">% 整体字符串比较，返回标量</span></span><br></pre></td></tr></table></figure>
+<h3 id="逻辑运算符">逻辑运算符</h3>
+<p>逻辑运算符用于组合或修改逻辑条件。MATLAB提供两种类型的逻辑运算符：<strong>元素级运算符</strong>和<strong>短路运算符</strong>。</p>
+<p><strong>元素级逻辑运算符：</strong></p>
+<p>这些运算符对逻辑数组的每个元素进行操作，适用于数组处理。</p>
+<table>
+<thead>
+<tr>
+<th>运算符</th>
+<th>名称</th>
+<th>说明</th>
+<th>示例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>&amp;</strong></td>
+<td>逻辑与（AND）</td>
+<td>两个操作数都为真时结果为真</td>
+<td><code>A &amp; B</code></td>
+</tr>
+<tr>
+<td><strong>|</strong></td>
+<td>逻辑或（OR）</td>
+<td>至少一个操作数为真时结果为真</td>
+<td><code>A | B</code></td>
+</tr>
+<tr>
+<td><strong>~</strong></td>
+<td>逻辑非（NOT）</td>
+<td>取反操作，真变假，假变真</td>
+<td><code>~A</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>短路逻辑运算符</strong></p>
+<p>这些运算符只对标量逻辑值进行操作，具有短路特性（提前终止评估）。</p>
+<table>
+<thead>
+<tr>
+<th>运算符</th>
+<th>名称</th>
+<th>说明</th>
+<th>短路特性</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>&amp;&amp;</strong></td>
+<td>短路与</td>
+<td>标量逻辑与</td>
+<td>左操作数为假时，不评估右操作数</td>
+</tr>
+<tr>
+<td><strong>||</strong></td>
+<td>短路或</td>
+<td>标量逻辑或</td>
+<td>左操作数为真时，不评估右操作数</td>
+</tr>
+</tbody>
+</table>
+<p><strong>逻辑运算符详细用法</strong></p>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">% 元素级逻辑运算</span></span><br><span class="line">logical_array1 = [<span class="built_in">true</span>, <span class="built_in">false</span>, <span class="built_in">true</span>, <span class="built_in">false</span>];</span><br><span class="line">logical_array2 = [<span class="built_in">true</span>, <span class="built_in">true</span>, <span class="built_in">false</span>, <span class="built_in">false</span>];</span><br><span class="line"></span><br><span class="line"><span class="comment">% 逻辑与运算</span></span><br><span class="line">and_result = logical_array1 &amp; logical_array2;  <span class="comment">% [true, false, false, false]</span></span><br><span class="line"></span><br><span class="line"><span class="comment">% 逻辑或运算</span></span><br><span class="line">or_result = logical_array1 | logical_array2;   <span class="comment">% [true, true, true, false]</span></span><br><span class="line"></span><br><span class="line"><span class="comment">% 逻辑非运算</span></span><br><span class="line">not_result = ~logical_array1;                  <span class="comment">% [false, true, false, true]</span></span><br><span class="line"></span><br><span class="line"><span class="comment">% 短路逻辑运算（仅适用于标量）</span></span><br><span class="line">a = <span class="number">5</span>;</span><br><span class="line">b = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">% 短路与</span></span><br><span class="line"><span class="keyword">if</span> (b ~= <span class="number">0</span>) &amp;&amp; (a/b &gt; <span class="number">2</span>)  <span class="comment">% b为0时，不会计算a/b，避免除零错误</span></span><br><span class="line">    <span class="built_in">disp</span>(<span class="string">&#x27;条件成立&#x27;</span>);</span><br><span class="line"><span class="keyword">else</span></span><br><span class="line">    <span class="built_in">disp</span>(<span class="string">&#x27;条件不成立或发生短路&#x27;</span>);</span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line"><span class="comment">% 短路或</span></span><br><span class="line"><span class="keyword">if</span> (a &gt; <span class="number">0</span>) || (b &gt; <span class="number">0</span>)     <span class="comment">% a&gt;0为真，不再检查b&gt;0</span></span><br><span class="line">    <span class="built_in">disp</span>(<span class="string">&#x27;至少一个数为正&#x27;</span>);</span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+<p><strong>逻辑运算的高级应用</strong></p>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">% 使用逻辑运算进行数组过滤</span></span><br><span class="line">data = [<span class="number">1</span>, <span class="number">-2</span>, <span class="number">3</span>, <span class="number">-4</span>, <span class="number">5</span>, <span class="number">6</span>, <span class="number">-7</span>, <span class="number">8</span>];</span><br><span class="line"></span><br><span class="line"><span class="comment">% 找出正数</span></span><br><span class="line">positive_mask = data &gt; <span class="number">0</span>;</span><br><span class="line">positive_numbers = data(positive_mask);  <span class="comment">% [1, 3, 5, 6, 8]</span></span><br><span class="line"></span><br><span class="line"><span class="comment">% 复合条件：找出大于2且小于7的数</span></span><br><span class="line">compound_mask = (data &gt; <span class="number">2</span>) &amp; (data &lt; <span class="number">7</span>);</span><br><span class="line">filtered_data = data(compound_mask);     <span class="comment">% [3, 5, 6]</span></span><br><span class="line"></span><br><span class="line"><span class="comment">% 使用any和all函数</span></span><br><span class="line">has_negative = any(data &lt; <span class="number">0</span>);            <span class="comment">% true，存在负数</span></span><br><span class="line">all_positive = all(data &gt; <span class="number">0</span>);            <span class="comment">% false，不是所有数都为正</span></span><br><span class="line"></span><br><span class="line"><span class="comment">% 逻辑索引的实际应用</span></span><br><span class="line">matrix = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>; <span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>; <span class="number">7</span>, <span class="number">8</span>, <span class="number">9</span>];</span><br><span class="line"><span class="comment">% 将所有大于5的元素设为0</span></span><br><span class="line">matrix(matrix &gt; <span class="number">5</span>) = <span class="number">0</span>;</span><br></pre></td></tr></table></figure>
+<h3 id="按位运算">按位运算</h3>
+<p>按位运算符对整数的二进制表示进行位级操作。这些运算符主要用于底层编程、数据压缩、加密等应用。</p>
+<p>按位运算符对位进行运算并执行逐位运算。＆，|和^的真值表如下</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">p</th>
+<th style="text-align: center;">q</th>
+<th style="text-align: center;">p＆q</th>
+<th style="text-align: center;">p | q</th>
+<th style="text-align: center;">p ^ Q</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">0</td>
+</tr>
+<tr>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1</td>
+</tr>
+<tr>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">0</td>
+</tr>
+<tr>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1</td>
+</tr>
+</tbody>
+</table>
+<h4 id="完整按位运算符和函数列表">完整按位运算符和函数列表</h4>
+<table>
+<colgroup>
+<col style="width: 18%">
+<col style="width: 15%">
+<col style="width: 32%">
+<col style="width: 32%">
+</colgroup>
+<thead>
+<tr>
+<th>函数名</th>
+<th>说明</th>
+<th>语法</th>
+<th>示例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>bitand</strong></td>
+<td>按位与</td>
+<td><code>bitand(A, B)</code></td>
+<td><code>bitand(5, 3)</code> → 1</td>
+</tr>
+<tr>
+<td><strong>bitor</strong></td>
+<td>按位或</td>
+<td><code>bitor(A, B)</code></td>
+<td><code>bitor(5, 3)</code> → 7</td>
+</tr>
+<tr>
+<td><strong>bitxor</strong></td>
+<td>按位异或</td>
+<td><code>bitxor(A, B)</code></td>
+<td><code>bitxor(5, 3)</code> → 6</td>
+</tr>
+<tr>
+<td><strong>bitcmp</strong></td>
+<td>按位补码</td>
+<td><code>bitcmp(A, n)</code></td>
+<td><code>bitcmp(5, 8)</code> → 250</td>
+</tr>
+<tr>
+<td><strong>bitshift</strong></td>
+<td>位移</td>
+<td><code>bitshift(A, k)</code></td>
+<td><code>bitshift(5, 2)</code> → 20</td>
+</tr>
+<tr>
+<td><strong>bitget</strong></td>
+<td>获取指定位</td>
+<td><code>bitget(A, bit)</code></td>
+<td><code>bitget(5, 1)</code> → 1</td>
+</tr>
+<tr>
+<td><strong>bitset</strong></td>
+<td>设置指定位</td>
+<td><code>bitset(A, bit, val)</code></td>
+<td><code>bitset(5, 2, 0)</code> → 1</td>
+</tr>
+</tbody>
+</table>
+<h4 id="按位运算详细用法">按位运算详细用法</h4>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">% 按位运算基础示例</span></span><br><span class="line">a = uint8(<span class="number">5</span>);    <span class="comment">% 二进制: 00000101</span></span><br><span class="line">b = uint8(<span class="number">3</span>);    <span class="comment">% 二进制: 00000011</span></span><br><span class="line"></span><br><span class="line"><span class="comment">% 按位与运算</span></span><br><span class="line">and_result = bitand(a, b);    <span class="comment">% 结果: 1 (00000001)</span></span><br><span class="line"></span><br><span class="line"><span class="comment">% 按位或运算</span></span><br><span class="line">or_result = bitor(a, b);      <span class="comment">% 结果: 7 (00000111)</span></span><br><span class="line"></span><br><span class="line"><span class="comment">% 按位异或运算</span></span><br><span class="line">xor_result = bitxor(a, b);    <span class="comment">% 结果: 6 (00000110)</span></span><br><span class="line"></span><br><span class="line"><span class="comment">% 按位补码（取反）</span></span><br><span class="line">complement = bitcmp(a, <span class="number">8</span>);    <span class="comment">% 8位补码，结果: 250 (11111010)</span></span><br><span class="line"></span><br><span class="line"><span class="comment">% 位移操作</span></span><br><span class="line">left_shift = bitshift(a, <span class="number">2</span>);  <span class="comment">% 左移2位，结果: 20 (00010100)</span></span><br><span class="line">right_shift = bitshift(a, <span class="number">-2</span>); <span class="comment">% 右移2位，结果: 1 (00000001)</span></span><br><span class="line"></span><br><span class="line"><span class="comment">% 单个位操作</span></span><br><span class="line">bit_value = bitget(a, <span class="number">3</span>);     <span class="comment">% 获取第3位，结果: 1</span></span><br><span class="line">new_value = bitset(a, <span class="number">2</span>, <span class="number">0</span>);  <span class="comment">% 将第2位设为0，结果: 1</span></span><br></pre></td></tr></table></figure>
+<p>按位运算符对整数的二进制表示进行位级操作。这些运算符主要用于底层编程、数据压缩、加密等应用。</p>
+<h4 id="按位运算符列表">按位运算符列表</h4>
+<table>
+<colgroup>
+<col style="width: 18%">
+<col style="width: 15%">
+<col style="width: 32%">
+<col style="width: 32%">
+</colgroup>
+<thead>
+<tr>
+<th>函数名</th>
+<th>说明</th>
+<th>语法</th>
+<th>示例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>bitand</strong></td>
+<td>按位与</td>
+<td><code>bitand(A, B)</code></td>
+<td><code>bitand(5, 3)</code> → 1</td>
+</tr>
+<tr>
+<td><strong>bitor</strong></td>
+<td>按位或</td>
+<td><code>bitor(A, B)</code></td>
+<td><code>bitor(5, 3)</code> → 7</td>
+</tr>
+<tr>
+<td><strong>bitxor</strong></td>
+<td>按位异或</td>
+<td><code>bitxor(A, B)</code></td>
+<td><code>bitxor(5, 3)</code> → 6</td>
+</tr>
+<tr>
+<td><strong>bitcmp</strong></td>
+<td>按位补码</td>
+<td><code>bitcmp(A, n)</code></td>
+<td><code>bitcmp(5, 8)</code> → 250</td>
+</tr>
+<tr>
+<td><strong>bitshift</strong></td>
+<td>位移</td>
+<td><code>bitshift(A, k)</code></td>
+<td><code>bitshift(5, 2)</code> → 20</td>
+</tr>
+<tr>
+<td><strong>bitget</strong></td>
+<td>获取指定位</td>
+<td><code>bitget(A, bit)</code></td>
+<td><code>bitget(5, 1)</code> → 1</td>
+</tr>
+<tr>
+<td><strong>bitset</strong></td>
+<td>设置指定位</td>
+<td><code>bitset(A, bit, val)</code></td>
+<td><code>bitset(5, 2, 0)</code> → 1</td>
+</tr>
+</tbody>
+</table>
+<h4 id="按位运算详细用法-1">按位运算详细用法</h4>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">% 按位运算基础示例</span></span><br><span class="line">a = uint8(<span class="number">5</span>);    <span class="comment">% 二进制: 00000101</span></span><br><span class="line">b = uint8(<span class="number">3</span>);    <span class="comment">% 二进制: 00000011</span></span><br><span class="line"></span><br><span class="line"><span class="comment">% 按位与运算</span></span><br><span class="line">and_result = bitand(a, b);    <span class="comment">% 结果: 1 (00000001)</span></span><br><span class="line"></span><br><span class="line"><span class="comment">% 按位或运算</span></span><br><span class="line">or_result = bitor(a, b);      <span class="comment">% 结果: 7 (00000111)</span></span><br><span class="line"></span><br><span class="line"><span class="comment">% 按位异或运算</span></span><br><span class="line">xor_result = bitxor(a, b);    <span class="comment">% 结果: 6 (00000110)</span></span><br><span class="line"></span><br><span class="line"><span class="comment">% 按位补码（取反）</span></span><br><span class="line">complement = bitcmp(a, <span class="number">8</span>);    <span class="comment">% 8位补码，结果: 250 (11111010)</span></span><br><span class="line"></span><br><span class="line"><span class="comment">% 位移操作</span></span><br><span class="line">left_shift = bitshift(a, <span class="number">2</span>);  <span class="comment">% 左移2位，结果: 20 (00010100)</span></span><br><span class="line">right_shift = bitshift(a, <span class="number">-2</span>); <span class="comment">% 右移2位，结果: 1 (00000001)</span></span><br><span class="line"></span><br><span class="line"><span class="comment">% 单个位操作</span></span><br><span class="line">bit_value = bitget(a, <span class="number">3</span>);     <span class="comment">% 获取第3位，结果: 1</span></span><br><span class="line">new_value = bitset(a, <span class="number">2</span>, <span class="number">0</span>);  <span class="comment">% 将第2位设为0，结果: 1</span></span><br></pre></td></tr></table></figure>
+<h4 id="按位运算的实际应用">按位运算的实际应用</h4>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">% 权限系统示例（使用位标志）</span></span><br><span class="line">READ_PERMISSION = uint8(<span class="number">1</span>);      <span class="comment">% 00000001</span></span><br><span class="line">WRITE_PERMISSION = uint8(<span class="number">2</span>);     <span class="comment">% 00000010</span></span><br><span class="line">EXECUTE_PERMISSION = uint8(<span class="number">4</span>);   <span class="comment">% 00000100</span></span><br><span class="line"></span><br><span class="line"><span class="comment">% 设置多个权限</span></span><br><span class="line">user_permissions = bitor(READ_PERMISSION, bitor(WRITE_PERMISSION, EXECUTE_PERMISSION));</span><br><span class="line"></span><br><span class="line"><span class="comment">% 检查是否有读权限</span></span><br><span class="line">has_read = bitand(user_permissions, READ_PERMISSION) ~= <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">% 移除写权限</span></span><br><span class="line">user_permissions = bitand(user_permissions, bitcmp(WRITE_PERMISSION, <span class="number">8</span>));</span><br><span class="line"></span><br><span class="line"><span class="comment">% 数据压缩示例：将两个4位数合并为一个8位数</span></span><br><span class="line">high_nibble = uint8(<span class="number">12</span>);  <span class="comment">% 高4位</span></span><br><span class="line">low_nibble = uint8(<span class="number">5</span>);    <span class="comment">% 低4位</span></span><br><span class="line">combined = bitor(bitshift(high_nibble, <span class="number">4</span>), low_nibble);  <span class="comment">% 197</span></span><br><span class="line"></span><br><span class="line"><span class="comment">% 解压缩</span></span><br><span class="line">extracted_high = bitshift(combined, <span class="number">-4</span>);</span><br><span class="line">extracted_low = bitand(combined, <span class="number">15</span>);  <span class="comment">% 15 = 00001111</span></span><br></pre></td></tr></table></figure>
+<h3 id="集合运算符">集合运算符</h3>
+<p>集合运算符用于处理集合间的关系，如并集、交集、差集等。这些操作在数据分析和处理中非常有用。</p>
+<h4 id="集合运算函数列表">集合运算函数列表</h4>
+<table style="width:100%;">
+<colgroup>
+<col style="width: 18%">
+<col style="width: 11%">
+<col style="width: 23%">
+<col style="width: 47%">
+</colgroup>
+<thead>
+<tr>
+<th>函数名</th>
+<th>说明</th>
+<th>语法</th>
+<th>示例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>union</strong></td>
+<td>并集</td>
+<td><code>union(A, B)</code></td>
+<td>返回A和B的并集</td>
+</tr>
+<tr>
+<td><strong>intersect</strong></td>
+<td>交集</td>
+<td><code>intersect(A, B)</code></td>
+<td>返回A和B的交集</td>
+</tr>
+<tr>
+<td><strong>setdiff</strong></td>
+<td>差集</td>
+<td><code>setdiff(A, B)</code></td>
+<td>返回在A中但不在B中的元素</td>
+</tr>
+<tr>
+<td><strong>setxor</strong></td>
+<td>对称差集</td>
+<td><code>setxor(A, B)</code></td>
+<td>返回在A或B中但不在两者交集中的元素</td>
+</tr>
+<tr>
+<td><strong>ismember</strong></td>
+<td>成员检查</td>
+<td><code>ismember(A, B)</code></td>
+<td>检查A的元素是否在B中</td>
+</tr>
+<tr>
+<td><strong>unique</strong></td>
+<td>唯一元素</td>
+<td><code>unique(A)</code></td>
+<td>返回A中的唯一元素</td>
+</tr>
+<tr>
+<td><strong>issorted</strong></td>
+<td>排序检查</td>
+<td><code>issorted(A)</code></td>
+<td>检查A是否已排序</td>
+</tr>
+</tbody>
+</table>
+<h4 id="集合运算详细用法">集合运算详细用法</h4>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">% 定义两个集合</span></span><br><span class="line">set_A = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>];</span><br><span class="line">set_B = [<span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>, <span class="number">7</span>];</span><br><span class="line"></span><br><span class="line"><span class="comment">% 并集运算</span></span><br><span class="line">union_result = union(set_A, set_B);        <span class="comment">% [1, 2, 3, 4, 5, 6, 7]</span></span><br><span class="line"></span><br><span class="line"><span class="comment">% 交集运算</span></span><br><span class="line">intersect_result = <span class="built_in">intersect</span>(set_A, set_B); <span class="comment">% [3, 4, 5]</span></span><br><span class="line"></span><br><span class="line"><span class="comment">% 差集运算</span></span><br><span class="line">diff_A_B = setdiff(set_A, set_B);          <span class="comment">% [1, 2]</span></span><br><span class="line">diff_B_A = setdiff(set_B, set_A);          <span class="comment">% [6, 7]</span></span><br><span class="line"></span><br><span class="line"><span class="comment">% 对称差集</span></span><br><span class="line">symmetric_diff = setxor(set_A, set_B);     <span class="comment">% [1, 2, 6, 7]</span></span><br><span class="line"></span><br><span class="line"><span class="comment">% 成员检查</span></span><br><span class="line">membership = <span class="built_in">ismember</span>(set_A, set_B);       <span class="comment">% [0, 0, 1, 1, 1]</span></span><br><span class="line">is_member = <span class="built_in">ismember</span>(<span class="number">3</span>, set_A);            <span class="comment">% 1 (true)</span></span><br><span class="line"></span><br><span class="line"><span class="comment">% 唯一元素提取</span></span><br><span class="line">duplicate_array = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">3</span>, <span class="number">3</span>, <span class="number">4</span>];</span><br><span class="line">unique_elements = unique(duplicate_array); <span class="comment">% [1, 2, 3, 4]</span></span><br></pre></td></tr></table></figure>
+<h4 id="集合运算的高级应用">集合运算的高级应用</h4>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">% 处理字符串集合</span></span><br><span class="line">names_group1 = &#123;<span class="string">&#x27;Alice&#x27;</span>, <span class="string">&#x27;Bob&#x27;</span>, <span class="string">&#x27;Charlie&#x27;</span>&#125;;</span><br><span class="line">names_group2 = &#123;<span class="string">&#x27;Bob&#x27;</span>, <span class="string">&#x27;David&#x27;</span>, <span class="string">&#x27;Eve&#x27;</span>&#125;;</span><br><span class="line"></span><br><span class="line">common_names = <span class="built_in">intersect</span>(names_group1, names_group2);  <span class="comment">% &#123;&#x27;Bob&#x27;&#125;</span></span><br><span class="line">all_names = union(names_group1, names_group2);</span><br><span class="line">unique_to_group1 = setdiff(names_group1, names_group2); <span class="comment">% &#123;&#x27;Alice&#x27;, &#x27;Charlie&#x27;&#125;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">% 数据清洗应用</span></span><br><span class="line">survey_data = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">1</span>, <span class="number">4</span>, <span class="number">3</span>, <span class="number">2</span>, <span class="number">5</span>, <span class="number">1</span>];</span><br><span class="line">[unique_responses, ~, idx] = unique(survey_data);</span><br><span class="line">response_counts = <span class="built_in">accumarray</span>(idx, <span class="number">1</span>);</span><br><span class="line"></span><br><span class="line">fprintf(<span class="string">&#x27;调查结果统计:\n&#x27;</span>);</span><br><span class="line"><span class="keyword">for</span> <span class="built_in">i</span> = <span class="number">1</span>:<span class="built_in">length</span>(unique_responses)</span><br><span class="line">    fprintf(<span class="string">&#x27;选项 %d: %d 次\n&#x27;</span>, unique_responses(<span class="built_in">i</span>), response_counts(<span class="built_in">i</span>));</span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line"><span class="comment">% 多集合操作</span></span><br><span class="line">setA = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>];</span><br><span class="line">setB = [<span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>];</span><br><span class="line">setC = [<span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>];</span><br><span class="line"></span><br><span class="line"><span class="comment">% 三个集合的交集</span></span><br><span class="line">triple_intersect = <span class="built_in">intersect</span>(<span class="built_in">intersect</span>(setA, setB), setC);</span><br><span class="line"></span><br><span class="line"><span class="comment">% 至少在两个集合中出现的元素</span></span><br><span class="line">temp1 = <span class="built_in">intersect</span>(setA, setB);</span><br><span class="line">temp2 = <span class="built_in">intersect</span>(setA, setC);</span><br><span class="line">temp3 = <span class="built_in">intersect</span>(setB, setC);</span><br><span class="line">at_least_two = union(union(temp1, temp2), temp3);</span><br></pre></td></tr></table></figure>
+<h3 id="特殊运算符详解">特殊运算符详解</h3>
+<p>除了基本的算术、关系、逻辑运算符外，MATLAB还提供了一些特殊的运算符。</p>
+<h4 id="索引和赋值运算符">索引和赋值运算符</h4>
+<table>
+<colgroup>
+<col style="width: 9%">
+<col style="width: 22%">
+<col style="width: 36%">
+<col style="width: 31%">
+</colgroup>
+<thead>
+<tr>
+<th>运算符</th>
+<th>名称</th>
+<th>说明</th>
+<th>示例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>()</strong></td>
+<td>普通索引</td>
+<td>访问数组元素或调用函数</td>
+<td><code>A(1,2)</code>, <code>func(x)</code></td>
+</tr>
+<tr>
+<td><strong>{}</strong></td>
+<td>单元数组索引</td>
+<td>访问单元数组内容</td>
+<td><code>C&#123;1,2&#125;</code></td>
+</tr>
+<tr>
+<td><strong>.</strong></td>
+<td>结构体字段访问</td>
+<td>访问结构体字段</td>
+<td><code>student.name</code></td>
+</tr>
+<tr>
+<td><strong>=</strong></td>
+<td>赋值</td>
+<td>将值赋给变量</td>
+<td><code>x = 5</code></td>
+</tr>
+<tr>
+<td><strong>:</strong></td>
+<td>冒号运算符</td>
+<td>创建向量或全选索引</td>
+<td><code>1:10</code>, <code>A(:,2)</code></td>
+</tr>
+</tbody>
+</table>
+<h4 id="特殊运算符用法示例">特殊运算符用法示例</h4>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">% 冒号运算符的多种用法</span></span><br><span class="line">vector1 = <span class="number">1</span>:<span class="number">10</span>;              <span class="comment">% [1, 2, 3, ..., 10]</span></span><br><span class="line">vector2 = <span class="number">1</span>:<span class="number">2</span>:<span class="number">10</span>;            <span class="comment">% [1, 3, 5, 7, 9]</span></span><br><span class="line">vector3 = <span class="number">10</span>:<span class="number">-1</span>:<span class="number">1</span>;           <span class="comment">% [10, 9, 8, ..., 1]</span></span><br><span class="line"></span><br><span class="line"><span class="comment">% 在矩阵索引中使用冒号</span></span><br><span class="line">matrix = <span class="built_in">magic</span>(<span class="number">4</span>);</span><br><span class="line">row_2 = matrix(<span class="number">2</span>, :);        <span class="comment">% 第2行的所有元素</span></span><br><span class="line">col_3 = matrix(:, <span class="number">3</span>);        <span class="comment">% 第3列的所有元素</span></span><br><span class="line">submatrix = matrix(<span class="number">1</span>:<span class="number">2</span>, <span class="number">2</span>:<span class="number">3</span>); <span class="comment">% 子矩阵</span></span><br><span class="line"></span><br><span class="line"><span class="comment">% 单元数组操作</span></span><br><span class="line">cell_array = &#123;[<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>], <span class="string">&#x27;hello&#x27;</span>, <span class="built_in">true</span>, <span class="built_in">magic</span>(<span class="number">2</span>)&#125;;</span><br><span class="line">first_content = cell_array&#123;<span class="number">1</span>&#125;;     <span class="comment">% 获取第一个单元的内容</span></span><br><span class="line">cell_array&#123;<span class="number">2</span>&#125; = <span class="string">&#x27;world&#x27;</span>;           <span class="comment">% 修改第二个单元的内容</span></span><br><span class="line"></span><br><span class="line"><span class="comment">% 结构体操作</span></span><br><span class="line">person.name = <span class="string">&#x27;Alice&#x27;</span>;</span><br><span class="line">person.age = <span class="number">25</span>;</span><br><span class="line">person.scores = [<span class="number">85</span>, <span class="number">90</span>, <span class="number">88</span>];</span><br><span class="line">name = person.name;                <span class="comment">% 访问字段</span></span><br><span class="line">person.city = <span class="string">&#x27;Beijing&#x27;</span>;           <span class="comment">% 添加新字段</span></span><br></pre></td></tr></table></figure>
+<h3 id="运算符综合应用示例">运算符综合应用示例</h3>
+<h4 id="示例1数据分析与处理">示例1：数据分析与处理</h4>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">analyze_student_data</span><span class="params">()</span></span></span><br><span class="line">    <span class="comment">% 模拟学生成绩数据</span></span><br><span class="line">    students = struct(<span class="string">&#x27;name&#x27;</span>, &#123;&#125;, <span class="string">&#x27;math&#x27;</span>, &#123;&#125;, <span class="string">&#x27;english&#x27;</span>, &#123;&#125;, <span class="string">&#x27;science&#x27;</span>, &#123;&#125;);</span><br><span class="line">    </span><br><span class="line">    <span class="comment">% 添加学生数据</span></span><br><span class="line">    students(<span class="number">1</span>) = struct(<span class="string">&#x27;name&#x27;</span>, <span class="string">&#x27;Alice&#x27;</span>, <span class="string">&#x27;math&#x27;</span>, <span class="number">85</span>, <span class="string">&#x27;english&#x27;</span>, <span class="number">78</span>, <span class="string">&#x27;science&#x27;</span>, <span class="number">92</span>);</span><br><span class="line">    students(<span class="number">2</span>) = struct(<span class="string">&#x27;name&#x27;</span>, <span class="string">&#x27;Bob&#x27;</span>, <span class="string">&#x27;math&#x27;</span>, <span class="number">76</span>, <span class="string">&#x27;english&#x27;</span>, <span class="number">89</span>, <span class="string">&#x27;science&#x27;</span>, <span class="number">84</span>);</span><br><span class="line">    students(<span class="number">3</span>) = struct(<span class="string">&#x27;name&#x27;</span>, <span class="string">&#x27;Charlie&#x27;</span>, <span class="string">&#x27;math&#x27;</span>, <span class="number">92</span>, <span class="string">&#x27;english&#x27;</span>, <span class="number">85</span>, <span class="string">&#x27;science&#x27;</span>, <span class="number">88</span>);</span><br><span class="line">    students(<span class="number">4</span>) = struct(<span class="string">&#x27;name&#x27;</span>, <span class="string">&#x27;Diana&#x27;</span>, <span class="string">&#x27;math&#x27;</span>, <span class="number">88</span>, <span class="string">&#x27;english&#x27;</span>, <span class="number">92</span>, <span class="string">&#x27;science&#x27;</span>, <span class="number">90</span>);</span><br><span class="line">    </span><br><span class="line">    <span class="comment">% 提取所有成绩</span></span><br><span class="line">    math_scores = [students.math];</span><br><span class="line">    english_scores = [students.english];</span><br><span class="line">    science_scores = [students.science];</span><br><span class="line">    </span><br><span class="line">    <span class="comment">% 计算总分和平均分</span></span><br><span class="line">    total_scores = math_scores + english_scores + science_scores;</span><br><span class="line">    average_scores = total_scores / <span class="number">3</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">% 使用逻辑运算符找出优秀学生（平均分&gt;85）</span></span><br><span class="line">    excellent_mask = average_scores &gt; <span class="number">85</span>;</span><br><span class="line">    excellent_students = &#123;students(excellent_mask).name&#125;;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">% 使用关系运算符进行排名</span></span><br><span class="line">    [sorted_scores, sort_indices] = <span class="built_in">sort</span>(total_scores, <span class="string">&#x27;descend&#x27;</span>);</span><br><span class="line">    </span><br><span class="line">    fprintf(<span class="string">&#x27;学生成绩分析报告:\n&#x27;</span>);</span><br><span class="line">    fprintf(<span class="string">&#x27;==================\n&#x27;</span>);</span><br><span class="line">    <span class="keyword">for</span> <span class="built_in">i</span> = <span class="number">1</span>:<span class="built_in">length</span>(students)</span><br><span class="line">        idx = sort_indices(<span class="built_in">i</span>);</span><br><span class="line">        fprintf(<span class="string">&#x27;排名 %d: %s - 总分: %d, 平均分: %.1f\n&#x27;</span>, ...</span><br><span class="line">                <span class="built_in">i</span>, students(idx).name, sorted_scores(<span class="built_in">i</span>), average_scores(idx));</span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line">    </span><br><span class="line">    fprintf(<span class="string">&#x27;\n优秀学生 (平均分&gt;85): &#x27;</span>);</span><br><span class="line">    fprintf(<span class="string">&#x27;%s &#x27;</span>, excellent_students&#123;:&#125;);</span><br><span class="line">    fprintf(<span class="string">&#x27;\n&#x27;</span>);</span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+<h4 id="示例2图像处理应用">示例2：图像处理应用</h4>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">process_image_data</span><span class="params">()</span></span></span><br><span class="line">    <span class="comment">% 创建模拟图像数据（8位灰度图像）</span></span><br><span class="line">    image_data = uint8(randi([<span class="number">0</span>, <span class="number">255</span>], <span class="number">100</span>, <span class="number">100</span>));</span><br><span class="line">    </span><br><span class="line">    <span class="comment">% 使用按位运算进行图像处理</span></span><br><span class="line">    <span class="comment">% 提取高4位（粗量化）</span></span><br><span class="line">    high_bits = bitshift(image_data, <span class="number">-4</span>);</span><br><span class="line">    coarse_image = bitshift(high_bits, <span class="number">4</span>);</span><br><span class="line">    </span><br><span class="line">    <span class="comment">% 使用逻辑运算创建掩码</span></span><br><span class="line">    bright_mask = image_data &gt; <span class="number">128</span>;        <span class="comment">% 亮像素掩码</span></span><br><span class="line">    dark_mask = ~bright_mask;              <span class="comment">% 暗像素掩码</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">% 使用算术运算符进行图像增强</span></span><br><span class="line">    enhanced_image = image_data;</span><br><span class="line">    enhanced_image(bright_mask) = enhanced_image(bright_mask) * <span class="number">0.8</span>;  <span class="comment">% 降低亮部</span></span><br><span class="line">    enhanced_image(dark_mask) = enhanced_image(dark_mask) * <span class="number">1.2</span>;      <span class="comment">% 增强暗部</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">% 边界检查，避免溢出</span></span><br><span class="line">    enhanced_image = <span class="built_in">min</span>(enhanced_image, <span class="number">255</span>);</span><br><span class="line">    enhanced_image = <span class="built_in">max</span>(enhanced_image, <span class="number">0</span>);</span><br><span class="line">    </span><br><span class="line">    fprintf(<span class="string">&#x27;图像处理完成:\n&#x27;</span>);</span><br><span class="line">    fprintf(<span class="string">&#x27;原图像素值范围: %d - %d\n&#x27;</span>, <span class="built_in">min</span>(image_data(:)), <span class="built_in">max</span>(image_data(:)));</span><br><span class="line">    fprintf(<span class="string">&#x27;增强后像素值范围: %d - %d\n&#x27;</span>, <span class="built_in">min</span>(enhanced_image(:)), <span class="built_in">max</span>(enhanced_image(:)));</span><br><span class="line">    fprintf(<span class="string">&#x27;亮像素数量: %d\n&#x27;</span>, sum(bright_mask(:)));</span><br><span class="line">    fprintf(<span class="string">&#x27;暗像素数量: %d\n&#x27;</span>, sum(dark_mask(:)));</span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+<h4 id="示例3科学计算应用">示例3：科学计算应用</h4>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">scientific_computation_demo</span><span class="params">()</span></span></span><br><span class="line">    <span class="comment">% 使用复数运算符处理信号</span></span><br><span class="line">    t = <span class="number">0</span>:<span class="number">0.01</span>:<span class="number">2</span>*<span class="built_in">pi</span>;</span><br><span class="line">    signal1 = <span class="built_in">cos</span>(<span class="number">2</span>*<span class="built_in">pi</span>*t) + <span class="number">1</span><span class="built_in">i</span>*<span class="built_in">sin</span>(<span class="number">2</span>*<span class="built_in">pi</span>*t);  <span class="comment">% 复指数信号</span></span><br><span class="line">    signal2 = <span class="built_in">exp</span>(<span class="number">1</span><span class="built_in">i</span>*<span class="number">2</span>*<span class="built_in">pi</span>*t);                <span class="comment">% 等价表示</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">% 验证欧拉公式</span></span><br><span class="line">    euler_verification = <span class="built_in">abs</span>(signal1 - signal2) &lt; <span class="built_in">eps</span>;</span><br><span class="line">    all_equal = all(euler_verification);</span><br><span class="line">    </span><br><span class="line">    <span class="comment">% 矩阵运算在线性代数中的应用</span></span><br><span class="line">    A = [<span class="number">2</span>, <span class="number">1</span>; <span class="number">1</span>, <span class="number">3</span>];</span><br><span class="line">    b = [<span class="number">5</span>; <span class="number">7</span>];</span><br><span class="line">    </span><br><span class="line">    <span class="comment">% 解线性方程组 Ax = b</span></span><br><span class="line">    x_solution = A \ b;              <span class="comment">% 使用矩阵</span></span><br></pre></td></tr></table></figure>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a target="_blank" rel="noopener" href="https://github.com/ergou10086">ErgouTree</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://ergou10086.github.io/posts/35680.html">https://ergou10086.github.io/posts/35680.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://ergou10086.github.io" target="_blank">ErgouTree's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E8%AF%AD%E6%B3%95%E7%9F%A5%E8%AF%86/">语法知识</a><a class="post-meta__tags" href="/tags/%E5%AD%A6%E4%B9%A0/">学习</a><a class="post-meta__tags" href="/tags/%E8%AF%AD%E8%A8%80%E6%96%B9%E9%9D%A2/">语言方面</a><a class="post-meta__tags" href="/tags/%E6%95%B0%E5%AD%A6/">数学</a><a class="post-meta__tags" href="/tags/%E7%89%A9%E7%90%86/">物理</a><a class="post-meta__tags" href="/tags/%E6%95%B0%E5%AD%A6%E5%BB%BA%E6%A8%A1/">数学建模</a></div><div class="post-share"><div class="addtoany"><div class="a2a_kit a2a_kit_size_32 a2a_default_style"><a class="a2a_button_facebook"></a><a class="a2a_button_twitter"></a><a class="a2a_button_wechat"></a><a class="a2a_button_sina_weibo"></a><a class="a2a_button_facebook_messenger"></a><a class="a2a_button_email"></a><a class="a2a_button_copy_link"></a><a class="a2a_dd" target="_blank" rel="noopener" href="https://www.addtoany.com/share"></a></div></div><script async="async" src="https://static.addtoany.com/menu/page.js"></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/posts/13781.html" title="MATLAB part2-变量和命令.md"><img class="cover" src="/images/posts/cover_matlab.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">MATLAB part2-变量和命令.md</div></div><div class="info-2"><div class="info-item-1">MATLAB 变量 变量命名 在 MATLAB 环境中，每个变量都是一个数组或矩阵。MATLAB 变量命名规则：  必须以字母开头 可以包含字母、数字和下划线 区分大小写 长度不超过 63 个字符  可以通过简单的方式分配变量。 1x2 = 3;   thirus_normary = 19; 变量基础 在MATLAB环境中，每个变量都是一个数组或矩阵。 可以通过简单的方式分配变量。例如， 1x2 = 3;	       %定义x2并用值初始化它 MATLAB将执行上述语句并返回结果 x2 = 3 这个变量的含义是它创建一个名为x2的1乘1矩阵，并将值 3 存储在其元素中。 注意  将变量输入系统后，您以后可以参考它。 变量在使用前必须具有值。 当表达式返回未分配给任何变量的结果时，系统会将其分配给名为ans的变量，该变量可在以后使用。  1sqrt(78) MATLAB将执行上述语句并返回以下结果 1ans =  8.8318 多项分配 可以在同一行上进行多个分配（使用逗号分隔）： 1a = 12; b = 7; c...</div></div></div></a><a class="pagination-related" href="/posts/41860.html" title="MATLAB part4-条件语句和循环语句"><img class="cover" src="/images/posts/cover_matlab.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">MATLAB part4-条件语句和循环语句</div></div><div class="info-2"><div class="info-item-1">MATLAB 条件语句 决策结构要求程序员应指定一个或多个要由程序评估或测试的条件，如果确定条件为真，则应指定要执行的一个或多个语句，如果条件为真，则可以选择要执行的其他语句。条件确定为假。 以下是大多数编程语言中常见的典型决策结构的一般形式： flowchart TD     start[Start] --&gt; condition&#123;condition&#125;     condition --&gt;|condition is true| conditional_code[conditional code]     conditional_code --&gt; end[End]     condition --&gt;|condition is false| end 1. if 语句 if 语句是最基本的条件语句，用于在条件为真时执行特定的代码块。 基本语法 1234if condition    % 当条件为真时执行的代码   ...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/posts/null.html" title="MATLAB part1-入门介绍和基础语法"><img class="cover" src="/images/posts/cover_matlab.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-06-03</div><div class="info-item-2">MATLAB part1-入门介绍和基础语法</div></div><div class="info-2"><div class="info-item-1">MATLAB...</div></div></div></a><a class="pagination-related" href="/posts/13781.html" title="MATLAB part2-变量和命令.md"><img class="cover" src="/images/posts/cover_matlab.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-06-03</div><div class="info-item-2">MATLAB part2-变量和命令.md</div></div><div class="info-2"><div class="info-item-1">MATLAB 变量 变量命名 在 MATLAB 环境中，每个变量都是一个数组或矩阵。MATLAB 变量命名规则：  必须以字母开头 可以包含字母、数字和下划线 区分大小写 长度不超过 63 个字符  可以通过简单的方式分配变量。 1x2 = 3;   thirus_normary = 19; 变量基础 在MATLAB环境中，每个变量都是一个数组或矩阵。 可以通过简单的方式分配变量。例如， 1x2 = 3;	       %定义x2并用值初始化它 MATLAB将执行上述语句并返回结果 x2 = 3 这个变量的含义是它创建一个名为x2的1乘1矩阵，并将值 3 存储在其元素中。 注意  将变量输入系统后，您以后可以参考它。 变量在使用前必须具有值。 当表达式返回未分配给任何变量的结果时，系统会将其分配给名为ans的变量，该变量可在以后使用。  1sqrt(78) MATLAB将执行上述语句并返回以下结果 1ans =  8.8318 多项分配 可以在同一行上进行多个分配（使用逗号分隔）： 1a = 12; b = 7; c...</div></div></div></a><a class="pagination-related" href="/posts/39953.html" title="MATLAB part5-数据导入和数据输出"><img class="cover" src="/images/posts/cover_matlab.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-06-03</div><div class="info-item-2">MATLAB part5-数据导入和数据输出</div></div><div class="info-2"><div class="info-item-1">MATLAB 数据导入（ImportData） 数据导入是指将存储在外部文件中的数据加载到MATLAB工作空间中的过程。 MATLAB支持导入多种格式的数据文件，包括：  文本文件：.txt、.csv、.dat等 电子表格：.xlsx、.xls等 科学数据格式：.mat、.h5、.nc等 图像文件：.jpg、.png、.tiff等 音频文件：.wav、.mp3等  MATLAB 提供了丰富的数据 I/O 函数，支持多种文件格式，包括文本文件、Excel 文件、图像文件、音频文件等，方便用户根据不同的需求选择合适的导入方法。 importdata函数 importdata函数是MATLAB中最通用的数据导入函数，能够自动识别文件格式并采用相应的导入策略。这使得用户在导入数据时无需手动指定文件格式，大大提高了数据导入的效率。 该importdata功能允许加载不同格式的各种数据文件。它具有以下五种形式        功能 语句     从指定文件导入数据到数组A A =...</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="gitalk-container"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/arp.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">ErgouTree</div><div class="author-info-description">I start a brand-new life with you.</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">107</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">79</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">48</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/ergou10086"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/ergou10086" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="/zjm88822201@126.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a><a class="social-icon" href="https://space.bilibili.com/142045656?spm_id_from=333.1007.0.0" target="_blank" title="bilibili"><i class="fas fa-brands fa-bilibili" style="color: #4a72be;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">作者长期陷入galgame和osu!maina4k中 祝他好运吧 对了 如果图片加载过慢 建议科学上网进行使用</div></div><div class="card-widget"><div class="item-headline"><i></i><span></span></div><div class="item-content"></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#matlab-%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B"><span class="toc-number">1.</span> <span class="toc-text">MATLAB 数据类型</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#matlab%E4%B8%AD%E5%8F%AF%E7%94%A8%E7%9A%84%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B"><span class="toc-number">1.1.</span> <span class="toc-text">MATLAB中可用的数据类型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B4%E6%95%B0%E7%B1%BB%E5%9E%8B"><span class="toc-number">1.2.</span> <span class="toc-text">整数类型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B5%AE%E7%82%B9%E6%95%B0%E7%B1%BB%E5%9E%8B"><span class="toc-number">1.3.</span> <span class="toc-text">浮点数类型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%80%BB%E8%BE%91%E7%B1%BB%E5%9E%8Blogical"><span class="toc-number">1.4.</span> <span class="toc-text">逻辑类型（logical）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AD%97%E7%AC%A6%E7%B1%BB%E5%9E%8Bchar"><span class="toc-number">1.5.</span> <span class="toc-text">字符类型（char）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%8D%E5%90%88%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B"><span class="toc-number">1.6.</span> <span class="toc-text">复合数据类型</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%8D%95%E5%85%83%E6%95%B0%E7%BB%84cell-array"><span class="toc-number">1.6.1.</span> <span class="toc-text">单元数组（Cell Array）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%87%BD%E6%95%B0%E5%8F%A5%E6%9F%84function-handle"><span class="toc-number">1.6.2.</span> <span class="toc-text">函数句柄（Function Handle）</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B%E8%BD%AC%E6%8D%A2"><span class="toc-number">1.7.</span> <span class="toc-text">数据类型转换</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%98%BE%E5%BC%8F%E7%B1%BB%E5%9E%8B%E8%BD%AC%E6%8D%A2"><span class="toc-number">1.7.1.</span> <span class="toc-text">显式类型转换</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%9F%BA%E6%9C%AC%E7%B1%BB%E5%9E%8B%E6%A3%80%E6%B5%8B%E5%87%BD%E6%95%B0"><span class="toc-number">1.7.2.</span> <span class="toc-text">基本类型检测函数</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%AB%98%E7%BA%A7%E7%B1%BB%E5%9E%8B%E6%A3%80%E6%B5%8B"><span class="toc-number">1.7.3.</span> <span class="toc-text">高级类型检测</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98"><span class="toc-number">1.8.</span> <span class="toc-text">常见问题</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B%E5%AE%9E%E4%BE%8B"><span class="toc-number">1.9.</span> <span class="toc-text">数据类型实例</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#matlab-%E8%BF%90%E7%AE%97%E7%AC%A6"><span class="toc-number">2.</span> <span class="toc-text">MATLAB 运算符</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AE%97%E6%9C%AF%E8%BF%90%E7%AE%97%E7%AC%A6"><span class="toc-number">2.1.</span> <span class="toc-text">算术运算符</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%BF%90%E7%AE%97%E4%BC%98%E5%85%88%E7%BA%A7"><span class="toc-number">2.1.1.</span> <span class="toc-text">运算优先级</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B3%E7%B3%BB%E8%BF%90%E7%AE%97%E7%AC%A6"><span class="toc-number">2.2.</span> <span class="toc-text">关系运算符</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%80%BB%E8%BE%91%E8%BF%90%E7%AE%97%E7%AC%A6"><span class="toc-number">2.3.</span> <span class="toc-text">逻辑运算符</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8C%89%E4%BD%8D%E8%BF%90%E7%AE%97"><span class="toc-number">2.4.</span> <span class="toc-text">按位运算</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%8C%E6%95%B4%E6%8C%89%E4%BD%8D%E8%BF%90%E7%AE%97%E7%AC%A6%E5%92%8C%E5%87%BD%E6%95%B0%E5%88%97%E8%A1%A8"><span class="toc-number">2.4.1.</span> <span class="toc-text">完整按位运算符和函数列表</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8C%89%E4%BD%8D%E8%BF%90%E7%AE%97%E8%AF%A6%E7%BB%86%E7%94%A8%E6%B3%95"><span class="toc-number">2.4.2.</span> <span class="toc-text">按位运算详细用法</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8C%89%E4%BD%8D%E8%BF%90%E7%AE%97%E7%AC%A6%E5%88%97%E8%A1%A8"><span class="toc-number">2.4.3.</span> <span class="toc-text">按位运算符列表</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8C%89%E4%BD%8D%E8%BF%90%E7%AE%97%E8%AF%A6%E7%BB%86%E7%94%A8%E6%B3%95-1"><span class="toc-number">2.4.4.</span> <span class="toc-text">按位运算详细用法</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8C%89%E4%BD%8D%E8%BF%90%E7%AE%97%E7%9A%84%E5%AE%9E%E9%99%85%E5%BA%94%E7%94%A8"><span class="toc-number">2.4.5.</span> <span class="toc-text">按位运算的实际应用</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%9B%86%E5%90%88%E8%BF%90%E7%AE%97%E7%AC%A6"><span class="toc-number">2.5.</span> <span class="toc-text">集合运算符</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%9B%86%E5%90%88%E8%BF%90%E7%AE%97%E5%87%BD%E6%95%B0%E5%88%97%E8%A1%A8"><span class="toc-number">2.5.1.</span> <span class="toc-text">集合运算函数列表</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%9B%86%E5%90%88%E8%BF%90%E7%AE%97%E8%AF%A6%E7%BB%86%E7%94%A8%E6%B3%95"><span class="toc-number">2.5.2.</span> <span class="toc-text">集合运算详细用法</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%9B%86%E5%90%88%E8%BF%90%E7%AE%97%E7%9A%84%E9%AB%98%E7%BA%A7%E5%BA%94%E7%94%A8"><span class="toc-number">2.5.3.</span> <span class="toc-text">集合运算的高级应用</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%89%B9%E6%AE%8A%E8%BF%90%E7%AE%97%E7%AC%A6%E8%AF%A6%E8%A7%A3"><span class="toc-number">2.6.</span> <span class="toc-text">特殊运算符详解</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%B4%A2%E5%BC%95%E5%92%8C%E8%B5%8B%E5%80%BC%E8%BF%90%E7%AE%97%E7%AC%A6"><span class="toc-number">2.6.1.</span> <span class="toc-text">索引和赋值运算符</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%89%B9%E6%AE%8A%E8%BF%90%E7%AE%97%E7%AC%A6%E7%94%A8%E6%B3%95%E7%A4%BA%E4%BE%8B"><span class="toc-number">2.6.2.</span> <span class="toc-text">特殊运算符用法示例</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%90%E7%AE%97%E7%AC%A6%E7%BB%BC%E5%90%88%E5%BA%94%E7%94%A8%E7%A4%BA%E4%BE%8B"><span class="toc-number">2.7.</span> <span class="toc-text">运算符综合应用示例</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%A4%BA%E4%BE%8B1%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90%E4%B8%8E%E5%A4%84%E7%90%86"><span class="toc-number">2.7.1.</span> <span class="toc-text">示例1：数据分析与处理</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%A4%BA%E4%BE%8B2%E5%9B%BE%E5%83%8F%E5%A4%84%E7%90%86%E5%BA%94%E7%94%A8"><span class="toc-number">2.7.2.</span> <span class="toc-text">示例2：图像处理应用</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%A4%BA%E4%BE%8B3%E7%A7%91%E5%AD%A6%E8%AE%A1%E7%AE%97%E5%BA%94%E7%94%A8"><span class="toc-number">2.7.3.</span> <span class="toc-text">示例3：科学计算应用</span></a></li></ol></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/42454.html" title="MATLAB part6-向量和矩阵"><img src="/images/posts/cover_matlab.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="MATLAB part6-向量和矩阵"/></a><div class="content"><a class="title" href="/posts/42454.html" title="MATLAB part6-向量和矩阵">MATLAB part6-向量和矩阵</a><time datetime="2025-06-03T12:41:59.000Z" title="发表于 2025-06-03 20:41:59">2025-06-03</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/28372.html" title="简明的XML初步知识的教程"><div style="background: /images/posts/cover_实用"></div></a><div class="content"><a class="title" href="/posts/28372.html" title="简明的XML初步知识的教程">简明的XML初步知识的教程</a><time datetime="2025-06-03T12:36:15.000Z" title="发表于 2025-06-03 20:36:15">2025-06-03</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/39953.html" title="MATLAB part5-数据导入和数据输出"><img src="/images/posts/cover_matlab.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="MATLAB part5-数据导入和数据输出"/></a><div class="content"><a class="title" href="/posts/39953.html" title="MATLAB part5-数据导入和数据输出">MATLAB part5-数据导入和数据输出</a><time datetime="2025-06-03T12:33:10.000Z" title="发表于 2025-06-03 20:33:10">2025-06-03</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/41860.html" title="MATLAB part4-条件语句和循环语句"><img src="/images/posts/cover_matlab.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="MATLAB part4-条件语句和循环语句"/></a><div class="content"><a class="title" href="/posts/41860.html" title="MATLAB part4-条件语句和循环语句">MATLAB part4-条件语句和循环语句</a><time datetime="2025-06-03T12:32:57.000Z" title="发表于 2025-06-03 20:32:57">2025-06-03</time></div></div></div></div></div></div></main><div class="fps-display"><span id="fps">FPS: 60</span></div><footer id="footer" style="background-image: url(/images/posts/cover_matlab.jpg);"><div id="footer-wrap"><div class="copyright">&copy;2024 - 2025 By ErgouTree</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">忘れたくない思い、ありますか？ <br>,<span id="realtime_duration" style="font-family: monospace;"></span>,<br><a href="https://icp.gov.moe/?keyword=20257009" target="_blank">萌ICP备20257009号</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><a class="icon-V hidden" onclick="switchNightMode()" title="日间和夜间模式切换"><svg width="25" height="25" viewBox="0 0 1024 1024"><use id="modeicon" xlink:href="#icon-moon"></use></svg></a><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="chat-btn" type="button" title="聊天" style="display:none"><i class="fas fa-comment"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (true) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script><script>(() => {
+  const applyThemeDefaultsConfig = theme => {
+    if (theme === 'dark-mode') {
+      Chart.defaults.color = "rgba(255, 255, 255, 0.8)"
+      Chart.defaults.borderColor = "rgba(255, 255, 255, 0.2)"
+      Chart.defaults.scale.ticks.backdropColor = "transparent"
+    } else {
+      Chart.defaults.color = "rgba(0, 0, 0, 0.8)"
+      Chart.defaults.borderColor = "rgba(0, 0, 0, 0.1)"
+      Chart.defaults.scale.ticks.backdropColor = "transparent"
+    }
+  }
+
+  // Recursively traverse the config object and automatically apply theme-specific color schemes
+  const applyThemeConfig = (obj, theme) => {
+    if (typeof obj !== 'object' || obj === null) return
+
+    Object.keys(obj).forEach(key => {
+      const value = obj[key]
+      // If the property is an object and has theme-specific options, apply them
+      if (typeof value === 'object' && value !== null) {
+        if (value[theme]) {
+          obj[key] = value[theme] // Apply the value for the current theme
+        } else {
+          // Recursively process child objects
+          applyThemeConfig(value, theme)
+        }
+      }
+    })
+  }
+
+  const runChartJS = ele => {
+    window.loadChartJS = true
+
+    Array.from(ele).forEach((item, index) => {
+      const chartSrc = item.firstElementChild
+      const chartID = item.getAttribute('data-chartjs-id') || ('chartjs-' + index) // Use custom ID or default ID
+      const width = item.getAttribute('data-width')
+      const existingCanvas = document.getElementById(chartID)
+
+      // If a canvas already exists, remove it to avoid rendering duplicates
+      if (existingCanvas) {
+          existingCanvas.parentNode.remove()
+      }
+
+      const chartDefinition = chartSrc.textContent
+      const canvas = document.createElement('canvas')
+      canvas.id = chartID
+
+      const div = document.createElement('div')
+      div.className = 'chartjs-wrap'
+
+      if (width) {
+        div.style.width = width
+      }
+
+      div.appendChild(canvas)
+      chartSrc.insertAdjacentElement('afterend', div)
+
+      const ctx = document.getElementById(chartID).getContext('2d')
+
+      const config = JSON.parse(chartDefinition)
+
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark-mode' : 'light-mode'
+
+      // Set default styles (initial setup)
+      applyThemeDefaultsConfig(theme)
+
+      // Automatically traverse the config and apply dual-mode color schemes
+      applyThemeConfig(config, theme)
+
+      new Chart(ctx, config)
+    })
+  }
+
+  const loadChartJS = () => {
+    const chartJSEle = document.querySelectorAll('#article-container .chartjs-container')
+    if (chartJSEle.length === 0) return
+
+    window.loadChartJS ? runChartJS(chartJSEle) : btf.getScript('https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.min.js').then(() => runChartJS(chartJSEle))
+  }
+
+  // Listen for theme change events
+  btf.addGlobalFn('themeChange', loadChartJS, 'chartjs')
+  btf.addGlobalFn('encrypt', loadChartJS, 'chartjs')
+
+  window.pjax ? loadChartJS() : document.addEventListener('DOMContentLoaded', loadChartJS)
+})()</script><script>(function() {
+  const abcjsInit = function() {
+    const abcjsFn = function() {
+      setTimeout(function() {
+        const sheets = document.querySelectorAll(".abc-music-sheet")
+        for (let i = 0; i < sheets.length; i++) {
+          const ele = sheets[i]
+          if (ele.children.length > 0) continue
+
+          // Parse parameters from data-params attribute
+          let params = {}
+          const dp = ele.getAttribute("data-params")
+          if (dp) {
+            try {
+              params = JSON.parse(dp)
+            } catch (e) {
+              console.error("Failed to parse data-params:", e)
+            }
+          }
+
+          // Merge parsed parameters with the responsive option
+          // Ensures params content appears before responsive
+          const options = { ...params, responsive: "resize" }
+
+          // Render the music score using ABCJS.renderAbc
+          ABCJS.renderAbc(ele, ele.innerHTML, options)
+        }
+      }, 100)
+    }
+
+    if (typeof ABCJS === "object") {
+      abcjsFn()
+    } else {
+      btf.getScript("https://cdn.jsdelivr.net/npm/abcjs/dist/abcjs-basic-min.min.js").then(abcjsFn)
+    }
+  }
+
+  if (window.pjax) {
+    abcjsInit()
+  } else {
+    window.addEventListener("load", abcjsInit)
+  }
+
+  btf.addGlobalFn("encrypt", abcjsInit, "abcjs")
+})()</script><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = {"labels":["Gitalk","Comment"],"createIssueManually":false,"distractionFreeMode":false}
+
+  const commentCount = n => {
+    const isCommentCount = document.querySelector('#post-meta .gitalk-comment-count')
+    if (isCommentCount) {
+      isCommentCount.textContent= n
+    }
+  }
+
+  const initGitalk = (el, path) => {
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGitalk = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+
+    const gitalk = new Gitalk({
+      clientID: 'Ov23li3vDQANiUddL4XB',
+      clientSecret: '5c9a56d02995340fca117809cd414662aadce6ff',
+      repo: 'HexoComment',
+      owner: 'ergou10086',
+      admin: ['ergou10086'],
+      updateCountCallback: commentCount,
+      ...option,
+      id: isShuoshuo ? path : (option && option.id) || '28f4d9ca575c0b5b9b580c5f6177a93c'
+    })
+
+    gitalk.render('gitalk-container')
+  }
+
+  const loadGitalk = async(el, path) => {
+    if (typeof Gitalk === 'function') initGitalk(el, path)
+    else {
+      await btf.getCSS('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.css')
+      await btf.getScript('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.js')
+      initGitalk(el, path)
+    }
+  }
+
+  if (isShuoshuo) {
+    'Gitalk' === 'Gitalk'
+      ? window.shuoshuoComment = { loadComment: loadGitalk }
+      : window.loadOtherComment = loadGitalk
+    return
+  }
+
+  if ('Gitalk' === 'Gitalk' || !false) {
+    if (false) btf.loadComment(document.getElementById('gitalk-container'), loadGitalk)
+    else loadGitalk()
+  } else {
+    window.loadOtherComment = loadGitalk
+  }
+})()</script></div><div class="aplayer no-destroy" data-id="13587761608" data-server="netease" data-type="playlist" data-fixed="true" data-autoplay="false" data-lrcType="-1"> </div><script src="https://cdn.jsdelivr.net/npm/abcjs@7.1.2/dist/abcjs-basic-min.js"></script><script src="/js/sun_moon.js" async></script><script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.7/dayjs.min.js"></script><script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.7/plugin/duration.min.js"></script><script src="/scripts/realtime.js"></script><script src="/scripts/random.js"></script><script defer="defer" id="ribbon" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-ribbon.min.js" size="150" alpha="0.6" zIndex="-1" mobile="null" data-click="true"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = false;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><script id="click-heart" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/click-heart.min.js" async="async" mobile="false"></script><script>(() => {
+  window.ChatraID = '4bzb546NSBoJcrNyu'
+  window.Chatra = window.Chatra || function() {
+    (window.Chatra.q = window.Chatra.q || []).push(arguments)
+  }
+
+  btf.getScript('https://call.chatra.io/chatra.js').then(() => {
+    const isChatBtn = true
+    const isChatHideShow = true
+
+    if (isChatBtn) {
+      const close = () => {
+        Chatra('minimizeWidget')
+        Chatra('hide')
+      }
+
+      const open = () => {
+        Chatra('openChat', true)
+        Chatra('show')
+      }
+
+      window.ChatraSetup = { startHidden: true }
+    
+      window.chatBtnFn = () => document.getElementById('chatra').classList.contains('chatra--expanded') ? close() : open()
+
+      document.getElementById('chat-btn').style.display = 'block'
+    } else if (isChatHideShow) {
+      window.chatBtn = {
+        hide: () => Chatra('hide'),
+        show: () => Chatra('show')
+      }
+    }
+  })
+})()</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/metingjs/dist/Meting.min.js"></script><script>(() => {
+  const destroyAplayer = () => {
+    if (window.aplayers) {
+      for (let i = 0; i < window.aplayers.length; i++) {
+        if (!window.aplayers[i].options.fixed) {
+          window.aplayers[i].destroy()
+        }
+      }
+    }
+  }
+
+  const runMetingJS = () => {
+    typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+  }
+
+  btf.addGlobalFn('pjaxSend', destroyAplayer, 'destroyAplayer')
+  btf.addGlobalFn('pjaxComplete', loadMeting, 'runMetingJS')
+})()</script><script src="https://cdn.jsdelivr.net/npm/pjax/pjax.min.js"></script><script>(() => {
+  const pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+  window.pjax = new Pjax({
+    elements: 'a:not([target="_blank"]):not([href="/music/"])',
+    selectors: pjaxSelectors,
+    cacheBust: false,
+    analytics: false,
+    scrollRestoration: false
+  })
+
+  const triggerPjaxFn = (val) => {
+    if (!val) return
+    Object.values(val).forEach(fn => fn())
+  }
+
+  document.addEventListener('pjax:send', () => {
+    // removeEventListener
+    btf.removeGlobalFnEvent('pjaxSendOnce')
+    btf.removeGlobalFnEvent('themeChange')
+
+    // reset readmode
+    const $bodyClassList = document.body.classList
+    if ($bodyClassList.contains('read-mode')) $bodyClassList.remove('read-mode')
+
+    triggerPjaxFn(window.globalFn.pjaxSend)
+  })
+
+  document.addEventListener('pjax:complete', () => {
+    btf.removeGlobalFnEvent('pjaxCompleteOnce')
+    document.querySelectorAll('script[data-pjax]').forEach(item => {
+      const newScript = document.createElement('script')
+      const content = item.text || item.textContent || item.innerHTML || ""
+      Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+      newScript.appendChild(document.createTextNode(content))
+      item.parentNode.replaceChild(newScript, item)
+    })
+
+    triggerPjaxFn(window.globalFn.pjaxComplete)
+  })
+
+  document.addEventListener('pjax:error', e => {
+    if (e.request.status === 404) {
+      const usePjax = true
+      true 
+        ? (usePjax ? pjax.loadUrl('/404.html') : window.location.href = '/404.html')
+        : window.location.href = e.request.responseURL
+    }
+  })
+})()</script><script src="/js/fps-display.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><!-- hexo injector body_end start --><script data-pjax>
+  function butterfly_swiper_injector_config(){
+    var parent_div_git = document.getElementById('recent-posts');
+    var item_html = '<div class="recent-post-item" style="height: auto;width: 100%"><div class="blog-slider swiper-container-fade swiper-container-horizontal" id="swiper_container"><div class="blog-slider__wrp swiper-wrapper" style="transition-duration: 0ms;"><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_database.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-14</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt="">结构化查询语言SQL</a><div class="blog-slider__text">SQL基本很常用的语句都在这里了，本质上是当初为了应付数据库考试整理的，后来发现还蛮有用的很方便查常用的语句</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java4.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-22</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt="">SpringBoot part0?INF-SpringBoot这个框架都需要学习什么</a><div class="blog-slider__text">主要围绕Spring Boot中重要知识来简洁或详细的说明，其中部分不够完全，持续更新</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java11.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-15</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt="">关于Lombok在高版本IDEA中注解处理不生效的问题解决</a><div class="blog-slider__text">基本上是彻底的解决了用 IDEA 新建 Spring Boot 项目时候会产生的 Lombok 注解处理失效的各种问题</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_实用.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-05</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt="">个人向galgame原声带或相关音乐整理及其资源</a><div class="blog-slider__text">整理了我喜欢的galgame ost或者衍生的音乐专辑，部分资源是自己扒盘扒下来的，部分来自鸟白岛放映厅</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_math.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-17</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt="">对书上证明样本方差是总体方差的无偏估计量的解析</a><div class="blog-slider__text">对书上证明样本方差是总体方差的无偏估计量的解析，高等教育出版社-华科大版本</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_alog.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-04-24</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt="">第十五届蓝桥杯Java国赛B组D题-园丁题解</a><div class="blog-slider__text">第十五届蓝桥杯Java国赛B组D题-园丁题解，该题解已经发布到洛谷社区中并且被全站推荐</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java4.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-04-29</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt="">操作系统之处理机的死锁部分概述</a><div class="blog-slider__text">对操作系统之处理机的死锁部分知识的总结，包括代码复现</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_lb.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-09</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt="">Little Busters!EX游戏攻略</a><div class="blog-slider__text">整理了一份详细清晰的Little Busters！EX的游戏攻略，因为我自己也在推，就顺手整理了一份方便查阅的md文档</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java9.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-16</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt="">Spring Boot中使用Hibernate框架</a><div class="blog-slider__text">对学习完Hibernate的应用部分，主要围绕Spring Boot中使用Hibernate框架，建议学习完 Hibernate 框架再看</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div></div><div class="blog-slider__pagination swiper-pagination-clickable swiper-pagination-bullets"></div></div></div>';
+    console.log('已挂载butterfly_swiper')
+    parent_div_git.insertAdjacentHTML("afterbegin",item_html)
+    }
+  var elist = 'undefined'.split(',');
+  var cpage = location.pathname;
+  var epage = '/';
+  var flag = 0;
+
+  for (var i=0;i<elist.length;i++){
+    if (cpage.includes(elist[i])){
+      flag++;
+    }
+  }
+
+  if ((epage ==='all')&&(flag == 0)){
+    butterfly_swiper_injector_config();
+  }
+  else if (epage === cpage){
+    butterfly_swiper_injector_config();
+  }
+  </script><script defer src="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper.min.js"></script><script defer data-pjax src="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper_init.js"></script><!-- hexo injector body_end end --></body></html>
