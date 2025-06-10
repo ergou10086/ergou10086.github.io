@@ -1,0 +1,1142 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Spring Boot part9-路径匹配与内容协商 | ErgouTree's Blog</title><meta name="author" content="ErgouTree"><meta name="copyright" content="ErgouTree"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="路径匹配 路径匹配概述 在 Spring 框架（这里聚焦于 Spring5.3 及后续版本涉及的请求路径匹配相关内容 ）里，请求路径匹配是很关键的部分，是处理 Web 请求时确定 URL 路径与控制器方法映射关系的核心机制。 路径匹配是指框架如何将传入的 HTTP 请求 URL 映射到对应的控制器方法上。例如，当用户访问 &#x2F;users&#x2F;123 时，框架需要决定这个请求应该由哪个 @">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spring Boot part9-路径匹配与内容协商">
+<meta property="og:url" content="https://ergou10086.github.io/posts/60585.html">
+<meta property="og:site_name" content="ErgouTree&#39;s Blog">
+<meta property="og:description" content="路径匹配 路径匹配概述 在 Spring 框架（这里聚焦于 Spring5.3 及后续版本涉及的请求路径匹配相关内容 ）里，请求路径匹配是很关键的部分，是处理 Web 请求时确定 URL 路径与控制器方法映射关系的核心机制。 路径匹配是指框架如何将传入的 HTTP 请求 URL 映射到对应的控制器方法上。例如，当用户访问 &#x2F;users&#x2F;123 时，框架需要决定这个请求应该由哪个 @">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://ergou10086.github.io/images/posts/cover_front.jpg">
+<meta property="article:published_time" content="2025-06-08T09:36:51.000Z">
+<meta property="article:modified_time" content="2025-06-08T09:42:51.244Z">
+<meta property="article:author" content="ErgouTree">
+<meta property="article:tag" content="Java技术">
+<meta property="article:tag" content="JavaWeb">
+<meta property="article:tag" content="框架知识">
+<meta property="article:tag" content="学习">
+<meta property="article:tag" content="Spring系列">
+<meta property="article:tag" content="Spring Boot">
+<meta property="article:tag" content="Java框架">
+<meta property="article:tag" content="源码分析">
+<meta property="article:tag" content="配置文件">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ergou10086.github.io/images/posts/cover_front.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Spring Boot part9-路径匹配与内容协商",
+  "url": "https://ergou10086.github.io/posts/60585.html",
+  "image": "https://ergou10086.github.io/images/posts/cover_front.jpg",
+  "datePublished": "2025-06-08T09:36:51.000Z",
+  "dateModified": "2025-06-08T09:42:51.244Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "ErgouTree",
+      "url": "https://github.com/ergou10086"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/pi.ico"><link rel="canonical" href="https://ergou10086.github.io/posts/60585.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//hm.baidu.com"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!true && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?https://hm.baidu.com/hm.js?a6ab1b78e2c6320b664f31e8b9bf0e36";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+btf.addGlobalFn('pjaxComplete', () => {
+  _hmt.push(['_trackPageview',window.location.pathname])
+}, 'baidu_analytics')
+</script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.json","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":true},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: {"chs_to_cht":"已切换为繁体中文","cht_to_chs":"已切换为简体中文","day_to_night":"已切换为深色模式","night_to_day":"已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#1f1f1f","position":"bottom-left"},
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Spring Boot part9-路径匹配与内容协商',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css"><svg aria-hidden="true" style="position:absolute; overflow:hidden; width:0; height:0"><symbol id="icon-sun" viewBox="0 0 1024 1024"><path d="M960 512l-128 128v192h-192l-128 128-128-128H192v-192l-128-128 128-128V192h192l128-128 128 128h192v192z" fill="#FFD878" p-id="8420"></path><path d="M736 512a224 224 0 1 0-448 0 224 224 0 1 0 448 0z" fill="#FFE4A9" p-id="8421"></path><path d="M512 109.248L626.752 224H800v173.248L914.752 512 800 626.752V800h-173.248L512 914.752 397.248 800H224v-173.248L109.248 512 224 397.248V224h173.248L512 109.248M512 64l-128 128H192v192l-128 128 128 128v192h192l128 128 128-128h192v-192l128-128-128-128V192h-192l-128-128z" fill="#4D5152" p-id="8422"></path><path d="M512 320c105.888 0 192 86.112 192 192s-86.112 192-192 192-192-86.112-192-192 86.112-192 192-192m0-32a224 224 0 1 0 0 448 224 224 0 0 0 0-448z" fill="#4D5152" p-id="8423"></path></symbol><symbol id="icon-moon" viewBox="0 0 1024 1024"><path d="M611.370667 167.082667a445.013333 445.013333 0 0 1-38.4 161.834666 477.824 477.824 0 0 1-244.736 244.394667 445.141333 445.141333 0 0 1-161.109334 38.058667 85.077333 85.077333 0 0 0-65.066666 135.722666A462.08 462.08 0 1 0 747.093333 102.058667a85.077333 85.077333 0 0 0-135.722666 65.024z" fill="#FFB531" p-id="11345"></path><path d="M329.728 274.133333l35.157333-35.157333a21.333333 21.333333 0 1 0-30.165333-30.165333l-35.157333 35.157333-35.114667-35.157333a21.333333 21.333333 0 0 0-30.165333 30.165333l35.114666 35.157333-35.114666 35.157334a21.333333 21.333333 0 1 0 30.165333 30.165333l35.114667-35.157333 35.157333 35.157333a21.333333 21.333333 0 1 0 30.165333-30.165333z" fill="#030835" p-id="11346"></path></symbol></svg><link rel="stylesheet" href="/css/custom.css"><!-- hexo injector head_end start --><link rel="stylesheet" href="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiperstyle.css" media="print" onload="this.media='all'"><!-- hexo injector head_end end --><meta name="generator" content="Hexo 7.3.0"></head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js/pace.min.js"></script><div id="web_bg" style="background: linear-gradient(20deg, #0062be, #925696, #cc426e, #fb0347);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/arp.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">118</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">81</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">51</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-images"></i><span> Gallery</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/games/"><i class="fa-fw fas fa-game"></i><span> GalGame</span></a></li><li><a class="site-page child" href="/video/"><i class="fa-fw fas fa-video"></i><span> Video</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div><div class="menus_item"><a class="site-page" href="javascript:randomPost();"><span> Random</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/images/posts/cover_front.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">ErgouTree's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">Spring Boot part9-路径匹配与内容协商</span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-images"></i><span> Gallery</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/games/"><i class="fa-fw fas fa-game"></i><span> GalGame</span></a></li><li><a class="site-page child" href="/video/"><i class="fa-fw fas fa-video"></i><span> Video</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div><div class="menus_item"><a class="site-page" href="javascript:randomPost();"><span> Random</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div><div id="randomPost"><a class="site-page social-icon search" href="javascript:;" onclick="randomPost()" title="随机访问一篇文章"><i class="fas fa-circle-notch fa-fw"></i></a></div></nav><div id="post-info"><h1 class="post-title">Spring Boot part9-路径匹配与内容协商<a class="post-edit-link" href="https://github.com/ergou10086/ergou10086.github.io/edit/main/source/_posts/_posts/SpringBoot-part8-路径匹配与内容协商.md" title="编辑" target="_blank"><i class="fas fa-pencil-alt"></i></a></h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2025-06-08T09:36:51.000Z" title="发表于 2025-06-08 17:36:51">2025-06-08</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2025-06-08T09:42:51.244Z" title="更新于 2025-06-08 17:42:51">2025-06-08</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Java%E5%AD%A6%E4%B9%A0/">Java学习</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Java%E5%AD%A6%E4%B9%A0/Spring%E7%B3%BB%E5%88%97/">Spring系列</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Java%E5%AD%A6%E4%B9%A0/Spring%E7%B3%BB%E5%88%97/Spring-Boot/">Spring Boot</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">7.2k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>26分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span><span class="post-meta-separator">|</span><span class="post-meta-commentcount"><i class="far fa-comments fa-fw post-meta-icon"></i><span class="post-meta-label">评论数:</span><a href="/posts/60585.html#post-comment"><span class="gitalk-comment-count"><i class="fa-solid fa-spinner fa-spin"></i></span></a></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="路径匹配">路径匹配</h2>
+<h3 id="路径匹配概述">路径匹配概述</h3>
+<p>在 Spring 框架（这里聚焦于 Spring5.3
+及后续版本涉及的请求路径匹配相关内容
+）里，请求路径匹配是很关键的部分，是处理 Web 请求时确定 URL
+路径与控制器方法映射关系的核心机制。</p>
+<p>路径匹配是指框架如何将传入的 HTTP 请求 URL
+映射到对应的控制器方法上。例如，当用户访问 <code>/users/123</code>
+时，框架需要决定这个请求应该由哪个 <code>@GetMapping</code> 或
+<code>@RequestMapping</code> 注解的方法来处理。</p>
+<p>在 Spring Framework 5.3 及 Spring Boot 2.4
+之后，引入了一种新的路径匹配机制，这一变化在 Spring Boot 3
+中得到了保留和进一步的应用。这个新机制主要是通过 PathPattern
+代替了传统的 AntPathMatcher。</p>
+<p>AntPathMatcher 是基于 Ant 风格的路径匹配，而 PathPattern
+则是一个更高效、更精确的路径匹配方式，它是通过 PathPatternParser
+解析得到的。</p>
+<h3 id="路径匹配两大策略">路径匹配两大策略</h3>
+<p>Spring5.3 之后加入了更多的请求路径匹配的实现策略：</p>
+<p>以前只支持 AntPathMatcher 策略，现在提供了 PathPatternParser
+策略。并且可以让我们指定到底使用那种策略。</p>
+<p>Spring Boot 默认使用新版的路径匹配器，也就是 PathPatternParser
+，性能高，但是 <code>**</code> 不能写在中间</p>
+<p>使用 <code>spring.mvc.pathmath.macthing-strategy</code>
+改变匹配策略</p>
+<h4 id="具体策略说明">具体策略说明</h4>
+<ul>
+<li><strong>AntPathMatcher</strong>：是 Spring
+中传统的路径匹配策略，基于 Ant 风格的路径模式语法，在之前的 Spring
+版本中广泛使用，很多开发者对其规则比较熟悉，用于处理各种 Web
+请求路径与配置的映射关系，像在 Spring MVC
+里配置请求映射（<code>@RequestMapping</code>
+等注解配合路径规则）时，常基于它工作 。</li>
+<li><strong>PathPatternParser</strong>：Spring5.3
+之后新增的策略，它在一些场景下可能有更好的性能表现或者更灵活的特性，和
+Ant
+风格路径用法有一定关联但也有自身特点，也用于解析请求路径，确定是否匹配预设的路径模式，辅助完成请求的路由等操作
+。开发者可以根据项目实际需求，比如对路径匹配性能、规则灵活度等方面的要求，来指定使用哪种策略。</li>
+</ul>
+<h3 id="ant-风格路径">Ant 风格路径</h3>
+<p><code>AntPathMatcher</code> 是 Spring 框架中一个基于 Ant
+风格模式的路径匹配器，它支持使用 <code>?</code>、<code>*</code> 和
+<code>**</code> 等通配符进行匹配。</p>
+<p>Ant 风格的路径模式语法具有以下规则：</p>
+<ul>
+<li><code>*</code>（星号）
+<ul>
+<li>作用是匹配<strong>任意数量</strong>的字符，但不包含目录分隔符（<code>/</code>
+）。</li>
+<li>比如<code>*.html</code>
+，就是说不管前面的文件名是什么（像<code>a.html</code>、<code>abc.html</code>
+等），只要是以<code>.html</code>
+为后缀的文件路径，都能匹配上。常用于匹配同一层级下符合某种后缀特征的文件或路径片段。</li>
+</ul></li>
+<li><code>?</code>（问号）
+<ul>
+<li>代表匹配任意<strong>一个</strong>字符，同样不跨越目录分隔符。</li>
+<li>例如有路径<code>a?b</code> ，那么<code>aab</code>、<code>acb</code>
+等单字符差异的路径能匹配，而<code>aabb</code> （多了一个字符
+）就匹配不上。可以用于精确控制路径中某一位字符的不确定性场景。</li>
+</ul></li>
+<li><code>**</code>（两个星号）
+<ul>
+<li>强大之处在于能匹配任意数量的目录，包括多层嵌套的目录结构。</li>
+<li>像<code>folder2/**/*.jsp</code> ，不管<code>folder2</code>
+下面有多少级子目录，只要最终文件是<code>.jsp</code>
+后缀，就会被匹配到，比如<code>folder2/a/b/c.jsp</code>
+、<code>folder2/d.jsp</code>
+等情况都满足，在处理多层目录下的资源匹配时非常好用。</li>
+</ul></li>
+<li><code>&#123;&#125;</code>（花括号）
+<ul>
+<li>用于定义命名的模式<strong>占位符</strong>，路径变量，这在 RESTful
+风格的路径中很常用。</li>
+<li>比如<code>/&#123;type&#125;/id&#125;.html</code> ，这里的<code>&#123;type&#125;</code> 和
+<code>&#123;id&#125;</code>
+就是占位符，实际请求路径可能是<code>/user/123.html</code>
+，此时<code>type</code> 就对应<code>user</code> ，<code>id</code>
+对应<code>123</code> ，在 Spring MVC
+中，这些占位符的值可以被提取出来，作为方法参数使用（通过<code>@PathVariable</code>
+注解 ），方便进行动态的路径参数处理。</li>
+</ul></li>
+<li><code>[]</code>（方括号）
+<ul>
+<li>用来表示字符集合，限定匹配的字符范围。</li>
+<li>如<code>[a - z]</code> 就表示只能匹配小写字母 a 到 z
+中的一个字符，若路径规则是<code>[a - z]bc</code>
+，那么<code>abc</code>、<code>bbc</code>
+等符合字符范围的能匹配，而<code>1bc</code> （数字不在集合内
+）、<code>Abc</code> （大写字母不在集合内
+）就匹配失败，可用于对路径中特定位置字符进行精确范围限制的场景，比如某些有特定字符规范的编号路径等
+。</li>
+</ul></li>
+</ul>
+<p>注意：Ant 风格的路径模式语法中的特殊字符需要转义</p>
+<p><strong>转义说明</strong></p>
+<p>在 Ant 风格路径模式语法里，特殊字符（像<code>*</code>、<code>?</code>
+等本身具有特殊匹配含义的字符
+）如果是作为普通字符出现在路径中（比如路径里真的有一个<code>*</code>
+作为文件名的一部分
+），就需要进行转义，一般是通过在特殊字符前加反斜杠（<code>\</code>
+）等方式，让框架把它们当作普通字符对待，而不是执行匹配规则，否则框架会按照匹配规则去解析，导致路径匹配结果不符合预期
+。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@GetMapping(&quot;/files/\\*.txt&quot;)</span>  <span class="comment">// 匹配字面量 /files/*.txt</span></span><br><span class="line"><span class="keyword">public</span> String <span class="title function_">handleFile</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="string">&quot;file&quot;</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="pathpatternparser-风格路径">PathPatternParser 风格路径</h3>
+<p>PathPatternParser: 一个新的路径解析器，用于解析路径模式字符串，创建
+PathPattern
+对象。它引入了更严格的语法规则，并且设计了更高效的匹配算法。</p>
+<p>PathPattern: 由 PathPatternParser
+解析路径模式字符串得到的对象，代表了一种更加精确和高效的路径匹配方式。</p>
+<p>特点:</p>
+<ul>
+<li>性能: 相比 AntPathMatcher，PathPattern 提供了更高的性能。这是因为
+PathPattern 在匹配过程中采用了更加高效的算法，在 jmh 基准测试下，有 6~8
+倍吞吐量提升，降低 30%~40%空间分配率。</li>
+<li>精确性: PathPattern 的语法规则更严格，能够提供更精确的匹配结果。
+<ul>
+<li>路径变量语法更严格，必须明确指定变量名：<code>/&#123;name&#125;</code></li>
+</ul></li>
+<li>使用场景: 在 Spring Framework 5.3 及之后的版本中，默认使用
+PathPattern 进行路径匹配。如果你的应用是基于这些版本的 Spring Boot
+构建的，那么在处理路径匹配时，你将会默认使用 PathPattern。</li>
+<li>对 <code>**</code> 通配符的使用有限制（不能出现在路径中间）
+<ul>
+<li>有效：<code>/resources/**</code></li>
+<li>无效：<code>/resources/**/file</code></li>
+</ul></li>
+</ul>
+<h3 id="路径匹配示例">路径匹配示例</h3>
+<h4 id="控制器方法映射">控制器方法映射</h4>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RestController</span></span><br><span class="line"><span class="meta">@RequestMapping(&quot;/api&quot;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MyController</span> &#123;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 匹配 /api/users/123</span></span><br><span class="line">    <span class="meta">@GetMapping(&quot;/users/&#123;id&#125;&quot;)</span></span><br><span class="line">    <span class="keyword">public</span> User <span class="title function_">getUser</span><span class="params">(<span class="meta">@PathVariable</span> Long id)</span> &#123;</span><br><span class="line">        <span class="comment">// ...</span></span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 匹配 /api/files/2023/任何内容</span></span><br><span class="line">    <span class="meta">@GetMapping(&quot;/files/2023/**&quot;)</span></span><br><span class="line">    <span class="keyword">public</span> List&lt;File&gt; <span class="title function_">get2023Files</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="comment">// ...</span></span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 匹配 /api/products/abc123</span></span><br><span class="line">    <span class="meta">@GetMapping(&quot;/products/&#123;code:[a-z]+\\d+&#125;&quot;)</span></span><br><span class="line">    <span class="keyword">public</span> Product <span class="title function_">getProduct</span><span class="params">(<span class="meta">@PathVariable</span> String code)</span> &#123;</span><br><span class="line">        <span class="comment">// ...</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>解释一下<code>/products/&#123;code:[a-z]+\\d+&#125;</code>这段正则是如何匹配<code>/api/products/abc123</code>的</p>
+<ul>
+<li><code>&#123;code:[a-z]+\\d+&#125;</code> 这种形式定义了一个名为
+<code>code</code> 的路径变量，并且对它的值设定了正则表达式约束。</li>
+<li>其中，其中 <code>[a-z]+</code>
+表示这个部分必须由至少一个小写字母组成，<code>\\d+</code>
+表示这部分必须由至少一个数字组成</li>
+<li>所以说，整个正则表达式 <code>[a-z]+\\d+</code>
+的意思是，<code>code</code>
+的值要先有至少一个小写字母，接着有至少一个数字，而且字母和数字之间不能有其他字符，所以，<code>/api/products/a1</code>
+也能匹配，而 <code>/api/products/123abc</code> 就无法匹配</li>
+</ul>
+<h4 id="静态资源匹配">静态资源匹配</h4>
+<figure class="highlight properties"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 匹配所有静态html文件</span></span><br><span class="line"><span class="attr">spring.mvc.static-path-pattern</span>=<span class="string">/*.html</span></span><br></pre></td></tr></table></figure>
+<h4 id="拦截器路径配置">拦截器路径配置</h4>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">WebConfig</span> <span class="keyword">implements</span> <span class="title class_">WebMvcConfigurer</span> &#123;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">addInterceptors</span><span class="params">(InterceptorRegistry registry)</span> &#123;</span><br><span class="line">        registry.addInterceptor(<span class="keyword">new</span> <span class="title class_">MyInterceptor</span>())</span><br><span class="line">                .addPathPatterns(<span class="string">&quot;/admin/**&quot;</span>)  <span class="comment">// 拦截/admin下的所有路径</span></span><br><span class="line">                .excludePathPatterns(<span class="string">&quot;/admin/login&quot;</span>);  <span class="comment">// 排除登录页</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="内容协商">内容协商</h2>
+<p>注意这里多源码解读</p>
+<h3 id="什么是内容协商">什么是内容协商</h3>
+<p>在 Spring Boot 3 中，内容协商(Content
+Negotiation)是一个非常重要的概念，特别是在构建 RESTful API 时。</p>
+<p>内容协商机制允许客户端和服务器就如何交换资源的数据格式达成协议，允许同一资源URL根据客户端的偏好提供不同格式的表示。这一过程通常由服务器和客户端共同完成：客户端告知服务器它期望的内容类型，服务器根据自身能力选择最合适的表现形式返回。</p>
+<p>简单来说，它允许客户端通过请求头指定它们希望接收响应的格式（如
+JSON，XML 等），服务器基于这些信息来决定以什么格式返回数据。</p>
+<p>内容协商主要依靠媒体类型(Media
+Type)，也称为MIME类型，如<code>application/json</code>、<code>application/xml</code>、<code>text/html</code>等。</p>
+<p>也就是，一套系统适配多端数据返回。</p>
+<figure>
+<img src="/posts/60585/image-20250607143353192.png" alt="image-20250607143353192">
+<figcaption aria-hidden="true">image-20250607143353192</figcaption>
+</figure>
+<h3 id="spring-boot-中的内容协商架构">Spring Boot 中的内容协商架构</h3>
+<p>SpringBoot基于Spring MVC的内容协商机制，通过以下组件实现：</p>
+<ol type="1">
+<li><strong>ContentNegotiationManager</strong>:
+负责协调整个内容协商过程</li>
+<li><strong>ContentNegotiationStrategy</strong>:
+定义如何确定客户端请求的媒体类型</li>
+<li><strong>HttpMessageConverter</strong>:
+负责在Java对象和HTTP请求/响应体之间进行转换</li>
+</ol>
+<p>SpringBoot默认支持多种内容协商策略，可以根据需求进行配置和组合。</p>
+<h3 id="多端内容适配">多端内容适配</h3>
+<h4 id="基于请求头实现内容协商">基于请求头实现内容协商</h4>
+<p>基于请求头的内容协商是最符合HTTP规范的一种方式，它通过检查HTTP请求中的<code>Accept</code>头来确定客户端期望的响应格式。例如，当客户端发送<code>Accept: application/json</code>头时，服务器会优先返回JSON格式的数据。</p>
+<p>这种策略由<code>HeaderContentNegotiationStrategy</code>实现，是SpringBoot的<strong>默认</strong>内容协商策略。</p>
+<ul>
+<li>优先检查请求的<code>Accept</code>头</li>
+<li>其次检查URL路径扩展名(如<code>.json</code>)</li>
+<li>默认支持JSON格式(通过Jackson)，因为默认的 web 场景导入了 jackson
+的相关包</li>
+</ul>
+<p>这种行为有很多好处</p>
+<ul>
+<li>符合HTTP规范，是RESTful
+API的推荐实践，一般在面向程序化客户端的API接口，当多种客户端需要相同数据的不同表现形式时使用</li>
+<li>无需修改URL，保持URL的简洁性</li>
+<li>适用于所有HTTP客户端</li>
+<li>对缓存友好</li>
+</ul>
+<p>在SpringBoot中，默认已启用基于请求头的内容协商，无需额外配置。如果需要显式配置，可以在<code>application.properties</code>或<code>application.yml</code>中添加：</p>
+<figure class="highlight properties"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 启用/禁用基于后缀的内容协商</span></span><br><span class="line"><span class="attr">spring.mvc.contentnegotiation.favor-path-extension</span>=<span class="string">true</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment"># 启用/禁用请求参数内容协商</span></span><br><span class="line"><span class="attr">spring.mvc.contentnegotiation.favor-parameter</span>=<span class="string">true</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment"># 设置请求参数名称(默认为format)</span></span><br><span class="line"><span class="attr">spring.mvc.contentnegotiation.parameter-name</span>=<span class="string">format</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment"># 注册的媒体类型映射</span></span><br><span class="line"><span class="attr">spring.mvc.contentnegotiation.media-types.json</span>=<span class="string">application/json</span></span><br><span class="line"><span class="attr">spring.mvc.contentnegotiation.media-types.xml</span>=<span class="string">application/xml</span></span><br></pre></td></tr></table></figure>
+<p>或者</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">WebConfig</span> <span class="keyword">implements</span> <span class="title class_">WebMvcConfigurer</span> &#123;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">configureContentNegotiation</span><span class="params">(ContentNegotiationConfigurer configurer)</span> &#123;</span><br><span class="line">        configurer</span><br><span class="line">            .favorParameter(<span class="literal">true</span>)</span><br><span class="line">            .parameterName(<span class="string">&quot;mediaType&quot;</span>)</span><br><span class="line">            .ignoreAcceptHeader(<span class="literal">false</span>)</span><br><span class="line">            .useRegisteredExtensionsOnly(<span class="literal">true</span>)</span><br><span class="line">            .defaultContentType(MediaType.APPLICATION_JSON)</span><br><span class="line">            .mediaType(<span class="string">&quot;json&quot;</span>, MediaType.APPLICATION_JSON)</span><br><span class="line">            .mediaType(<span class="string">&quot;xml&quot;</span>, MediaType.APPLICATION_XML);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="基于请求参数的内容协商">基于请求参数的内容协商</h3>
+<p>基于请求参数的内容协商通过URL查询参数来确定客户端期望的响应格式。例如，<code>/api/products?format=json</code>请求JSON格式，而<code>/api/products?format=xml</code>请求XML格式。</p>
+<ul>
+<li>发送请求 <code>GET/projects/spring-boot?format=json</code></li>
+<li>匹配到 <code>@GetMapping("/projects/spring-boot")</code></li>
+<li>根据参数协商，优先返回 JSON 类型的数据，需要开启参数匹配设置</li>
+</ul>
+<p>这种策略由<code>ParameterContentNegotiationStrategy</code>实现，需要显式启用。</p>
+<p>配置方式如下</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">spring:</span></span><br><span class="line">  <span class="attr">mvc:</span></span><br><span class="line">    <span class="attr">contentnegotiation:</span></span><br><span class="line">      <span class="comment"># 启用基于请求参数的内容协商</span></span><br><span class="line">      <span class="attr">favor-parameter:</span> <span class="literal">true</span></span><br><span class="line">      <span class="comment"># 设置请求参数名称，默认为 &quot;format&quot;</span></span><br><span class="line">      <span class="attr">parameter-name:</span> <span class="string">format</span></span><br><span class="line">      <span class="comment"># 注册扩展名和媒体类型的映射</span></span><br><span class="line">      <span class="attr">media-types:</span></span><br><span class="line">        <span class="attr">json:</span> <span class="string">application/json</span></span><br><span class="line">        <span class="attr">xml:</span> <span class="string">application/xml</span></span><br><span class="line">        <span class="attr">html:</span> <span class="string">text/html</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">WebConfig</span> <span class="keyword">implements</span> <span class="title class_">WebMvcConfigurer</span> &#123;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">configureContentNegotiation</span><span class="params">(ContentNegotiationConfigurer configurer)</span> &#123;</span><br><span class="line">        configurer</span><br><span class="line">            .favorParameter(<span class="literal">true</span>)</span><br><span class="line">            .parameterName(<span class="string">&quot;format&quot;</span>)</span><br><span class="line">            .ignoreAcceptHeader(<span class="literal">false</span>)</span><br><span class="line">            .defaultContentType(MediaType.APPLICATION_JSON)</span><br><span class="line">            .mediaType(<span class="string">&quot;json&quot;</span>, MediaType.APPLICATION_JSON)</span><br><span class="line">            .mediaType(<span class="string">&quot;xml&quot;</span>, MediaType.APPLICATION_XML)</span><br><span class="line">            .mediaType(<span class="string">&quot;html&quot;</span>, MediaType.TEXT_HTML);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>注意相关实体类添加对应的注解</p>
+<h4 id="基于url路径扩展名实现内容协商">基于URL路径扩展名实现内容协商</h4>
+<p>基于URL路径扩展名的内容协商通过URL末尾的文件扩展名来确定客户端期望的响应格式。例如，<code>/api/products.json</code>请求JSON格式，而<code>/api/products.xml</code>请求XML格式。</p>
+<p>这种策略由<code>PathExtensionContentNegotiationStrategy</code>实现，需要特别注意的是，从Spring
+5.3开始，出于安全考虑，默认已禁用此策略。</p>
+<p>由于路径扩展策略可能导致路径遍历攻击，Spring
+5.3后默认禁用。如果必须使用，建议做好URL的安全配置</p>
+<p>配置方式如下</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">spring:</span></span><br><span class="line">  <span class="attr">mvc:</span></span><br><span class="line">    <span class="attr">contentnegotiation:</span></span><br><span class="line">      <span class="comment"># 启用基于 URL 路径扩展名的内容协商</span></span><br><span class="line">      <span class="attr">favor-path-extension:</span> <span class="literal">true</span></span><br><span class="line">      <span class="comment"># 明确指定路径扩展名与媒体类型的映射关系</span></span><br><span class="line">      <span class="attr">media-types:</span></span><br><span class="line">        <span class="attr">json:</span> <span class="string">application/json</span></span><br><span class="line">        <span class="attr">xml:</span> <span class="string">application/xml</span></span><br><span class="line">        <span class="attr">html:</span> <span class="string">text/html</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">WebConfig</span> <span class="keyword">implements</span> <span class="title class_">WebMvcConfigurer</span> &#123;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">configureContentNegotiation</span><span class="params">(ContentNegotiationConfigurer configurer)</span> &#123;</span><br><span class="line">        configurer</span><br><span class="line">            .favorPathExtension(<span class="literal">true</span>)</span><br><span class="line">            .ignoreAcceptHeader(<span class="literal">false</span>)</span><br><span class="line">            .defaultContentType(MediaType.APPLICATION_JSON)</span><br><span class="line">            .mediaType(<span class="string">&quot;json&quot;</span>, MediaType.APPLICATION_JSON)</span><br><span class="line">            .mediaType(<span class="string">&quot;xml&quot;</span>, MediaType.APPLICATION_XML)</span><br><span class="line">            .mediaType(<span class="string">&quot;html&quot;</span>, MediaType.TEXT_HTML);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="组合策略实现高级内容协商">组合策略实现高级内容协商</h3>
+<h4 id="如何进行策略组合的配置">如何进行策略组合的配置</h4>
+<p>在实际应用中，通常会组合多种策略实现提供最大的灵活性。可以通过
+<code>ContentNegotiationConfigurer</code> 来配置组合策略。</p>
+<p>例如如下配置组合了基于请求参数、<code>Accept</code> 请求头和 URL
+路径扩展名的内容协商策略，提供了更灵活的内容协商方式。</p>
+<p>没错，这个配置类来实现更复杂的配置，是通过实现
+<code>WebMvcConfigurer</code> 接口方法实现的</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> org.springframework.context.annotation.Configuration;</span><br><span class="line"><span class="keyword">import</span> org.springframework.http.MediaType;</span><br><span class="line"><span class="keyword">import</span> org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;</span><br><span class="line"><span class="keyword">import</span> org.springframework.web.servlet.config.annotation.WebMvcConfigurer;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">WebConfig</span> <span class="keyword">implements</span> <span class="title class_">WebMvcConfigurer</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">configureContentNegotiation</span><span class="params">(ContentNegotiationConfigurer configurer)</span> &#123;</span><br><span class="line">        <span class="comment">// 启用通过请求参数指定响应格式</span></span><br><span class="line">        configurer.favorParameter(<span class="literal">true</span>)</span><br><span class="line">                <span class="comment">// 设置请求参数名称，默认为 &quot;format&quot;</span></span><br><span class="line">               .parameterName(<span class="string">&quot;format&quot;</span>)</span><br><span class="line">                <span class="comment">// 不忽略 Accept 请求头</span></span><br><span class="line">               .ignoreAcceptHeader(<span class="literal">false</span>)</span><br><span class="line">                <span class="comment">// 启用基于 URL 路径扩展名的内容协商</span></span><br><span class="line">               .favorPathExtension(<span class="literal">true</span>)</span><br><span class="line">                <span class="comment">// 设置默认的内容类型为 JSON</span></span><br><span class="line">               .defaultContentType(MediaType.APPLICATION_JSON)</span><br><span class="line">                <span class="comment">// 注册扩展名和媒体类型的映射</span></span><br><span class="line">               .mediaType(<span class="string">&quot;json&quot;</span>, MediaType.APPLICATION_JSON)</span><br><span class="line">               .mediaType(<span class="string">&quot;xml&quot;</span>, MediaType.APPLICATION_XML)</span><br><span class="line">               .mediaType(<span class="string">&quot;html&quot;</span>, MediaType.TEXT_HTML);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="自定义内容协商策略">自定义内容协商策略</h3>
+<h4 id="简介">简介</h4>
+<p>自定义内容协商格式主要涉及到两个方面：一是自定义支持的媒体类型（Media
+Types），二是自定义对这些媒体类型的处理。</p>
+<p>在 Spring Boot 3 中，自定义内容协商格式通常需要以下几个步骤：</p>
+<ul>
+<li>注册自定义媒体类型：你可以通过配置类来注册自定义的媒体类型，让
+Spring MVC 知道你打算支持哪些额外的格式。</li>
+<li>实现 HttpMessageConverter
+接口：对于每种你想支持的媒体类型，你需要提供一个相应的HttpMessageConverter实现，用于序列化和反序列化数据。</li>
+<li>配置 Spring MVC 以使用你的自定义
+HttpMessageConverter：最后，你需要在 Spring MVC 配置中注册你的
+HttpMessageConverter 实现，以确保Spring MVC
+会使用它们进行请求和响应的处理。</li>
+</ul>
+<h4 id="contentnegotiationconfigurer接口">ContentNegotiationConfigurer接口</h4>
+<p><code>ContentNegotiationConfigurer</code> 是 Spring
+框架中的一个接口，用于自定义内容协商策略，主要通过以下几种方式来实现：</p>
+<ol type="1">
+<li><p><strong>URL参数</strong>: 通过 URL
+参数来指定响应格式，例如，<code>?format=json</code>。</p></li>
+<li><p><strong>Accept头</strong>：通过 <code>Accept</code>
+请求头来指定希望接收的响应类型，这是HTTP规范推荐的方式。</p></li>
+<li><p><strong>扩展名</strong>: 通过 URL
+的扩展名来指定响应的格式。例如，<code>.json</code> 表示希望响应为 JSON
+格式，<code>.xml</code> 表示希望响应为 XML 格式。</p></li>
+</ol>
+<h4 id="实现自定义内容协商-以实现-yaml-内容协商为例子">实现自定义内容协商-以实现
+yaml 内容协商为例子</h4>
+<p>首先是注册自定义媒体类型，假设你想添加对
+<code>application/yaml</code>
+这种媒体类型的支持，首先需要在配置类中注册这种媒体类型，注意别忘了引入可能需要的依赖，然后接下来，需要创建一个
+<code>WebMvcConfigurer</code>
+实例，重写其中的<code>configureContentNegotiation</code>内容，把消息转换器和注册器注册进去，用于处理
+YAML 格式的数据。</p>
+<h5 id="引入需要的依赖">引入需要的依赖</h5>
+<p>添加 Jackson 的 YAML 处理模块：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.fasterxml.jackson.dataformat<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>jackson-dataformat-yaml<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h5 id="创建-yaml-消息转换器">创建 YAML 消息转换器</h5>
+<p>实现<code>HttpMessageConverter</code>接口，用于处理 YAML
+格式的数据：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> com.fasterxml.jackson.databind.ObjectMapper;</span><br><span class="line"><span class="keyword">import</span> com.fasterxml.jackson.dataformat.yaml.YAMLFactory;</span><br><span class="line"><span class="keyword">import</span> org.springframework.http.HttpInputMessage;</span><br><span class="line"><span class="keyword">import</span> org.springframework.http.HttpOutputMessage;</span><br><span class="line"><span class="keyword">import</span> org.springframework.http.MediaType;</span><br><span class="line"><span class="keyword">import</span> org.springframework.http.converter.AbstractHttpMessageConverter;</span><br><span class="line"><span class="keyword">import</span> org.springframework.http.converter.HttpMessageNotReadableException;</span><br><span class="line"><span class="keyword">import</span> org.springframework.http.converter.HttpMessageNotWritableException;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.io.IOException;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * YAML格式消息转换器，用于处理application/x-yaml媒体类型</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">YamlHttpMessageConverter</span> <span class="keyword">extends</span> <span class="title class_">AbstractHttpMessageConverter</span>&lt;Object&gt; &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> ObjectMapper objectMapper;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">YamlHttpMessageConverter</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="comment">// 支持的媒体类型</span></span><br><span class="line">        <span class="built_in">super</span>(MediaType.valueOf(<span class="string">&quot;application/x-yaml&quot;</span>),</span><br><span class="line">              MediaType.valueOf(<span class="string">&quot;text/yaml&quot;</span>),</span><br><span class="line">              MediaType.valueOf(<span class="string">&quot;text/x-yaml&quot;</span>));</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 创建YAML格式的ObjectMapper</span></span><br><span class="line">        <span class="built_in">this</span>.objectMapper = <span class="keyword">new</span> <span class="title class_">ObjectMapper</span>(<span class="keyword">new</span> <span class="title class_">YAMLFactory</span>());</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="type">boolean</span> <span class="title function_">supports</span><span class="params">(Class&lt;?&gt; clazz)</span> &#123;</span><br><span class="line">        <span class="comment">// 支持所有类型，由ObjectMapper处理具体序列化/反序列化</span></span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">protected</span> Object <span class="title function_">readInternal</span><span class="params">(Class&lt;?&gt; clazz, HttpInputMessage inputMessage)</span></span><br><span class="line">            <span class="keyword">throws</span> IOException, HttpMessageNotReadableException &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="comment">// 从输入流读取并反序列化为对象</span></span><br><span class="line">            <span class="keyword">return</span> objectMapper.readValue(inputMessage.getBody(), clazz);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">HttpMessageNotReadableException</span>(<span class="string">&quot;Failed to read YAML: &quot;</span> + e.getMessage(), e, inputMessage);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">void</span> <span class="title function_">writeInternal</span><span class="params">(Object obj, HttpOutputMessage outputMessage)</span></span><br><span class="line">            <span class="keyword">throws</span> IOException, HttpMessageNotWritableException &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="comment">// 将对象序列化为YAML并写入输出流</span></span><br><span class="line">            objectMapper.writeValue(outputMessage.getBody(), obj);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">HttpMessageNotWritableException</span>(<span class="string">&quot;Failed to write YAML: &quot;</span> + e.getMessage(), e);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h5 id="配置内容协商策略">配置内容协商策略</h5>
+<p>注册自定义媒体类型并配置消息转换器：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> org.springframework.context.annotation.Bean;</span><br><span class="line"><span class="keyword">import</span> org.springframework.context.annotation.Configuration;</span><br><span class="line"><span class="keyword">import</span> org.springframework.http.MediaType;</span><br><span class="line"><span class="keyword">import</span> org.springframework.web.accept.ContentNegotiationManager;</span><br><span class="line"><span class="keyword">import</span> org.springframework.web.accept.HeaderContentNegotiationStrategy;</span><br><span class="line"><span class="keyword">import</span> org.springframework.web.accept.ParameterContentNegotiationStrategy;</span><br><span class="line"><span class="keyword">import</span> org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;</span><br><span class="line"><span class="keyword">import</span> org.springframework.web.servlet.config.annotation.WebMvcConfigurer;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.util.HashMap;</span><br><span class="line"><span class="keyword">import</span> java.util.Map;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Web MVC配置，用于自定义内容协商策略</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">WebConfig</span> <span class="keyword">implements</span> <span class="title class_">WebMvcConfigurer</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">configureContentNegotiation</span><span class="params">(ContentNegotiationConfigurer configurer)</span> &#123;</span><br><span class="line">        <span class="comment">// 配置支持的媒体类型映射</span></span><br><span class="line">        Map&lt;String, MediaType&gt; mediaTypes = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">        mediaTypes.put(<span class="string">&quot;json&quot;</span>, MediaType.APPLICATION_JSON);</span><br><span class="line">        mediaTypes.put(<span class="string">&quot;yaml&quot;</span>, MediaType.valueOf(<span class="string">&quot;application/x-yaml&quot;</span>));</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 配置内容协商策略</span></span><br><span class="line">        configurer</span><br><span class="line">            .favorParameter(<span class="literal">true</span>)  <span class="comment">// 支持通过URL参数指定格式</span></span><br><span class="line">            .parameterName(<span class="string">&quot;format&quot;</span>)  <span class="comment">// 参数名：format=yaml</span></span><br><span class="line">            .ignoreAcceptHeader(<span class="literal">false</span>)  <span class="comment">// 不忽略Accept请求头</span></span><br><span class="line">            .useRegisteredExtensionsOnly(<span class="literal">false</span>)  <span class="comment">// 允许未注册的扩展名</span></span><br><span class="line">            .defaultContentType(MediaType.APPLICATION_JSON)  <span class="comment">// 默认返回JSON</span></span><br><span class="line">            .mediaType(<span class="string">&quot;json&quot;</span>, MediaType.APPLICATION_JSON)  <span class="comment">// JSON格式</span></span><br><span class="line">            .mediaType(<span class="string">&quot;yaml&quot;</span>, MediaType.valueOf(<span class="string">&quot;application/x-yaml&quot;</span>));  <span class="comment">// YAML格式</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 注册自定义消息转换器</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">extendMessageConverters</span><span class="params">(List&lt;HttpMessageConverter&lt;?&gt;&gt; converters)</span> &#123;</span><br><span class="line">        <span class="comment">// 将YAML转换器添加到列表开头，优先使用</span></span><br><span class="line">        converters.add(<span class="number">0</span>, <span class="keyword">new</span> <span class="title class_">YamlHttpMessageConverter</span>());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h5 id="创建示例实体类">创建示例实体类</h5>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> com.fasterxml.jackson.annotation.JsonInclude;</span><br><span class="line"><span class="keyword">import</span> lombok.AllArgsConstructor;</span><br><span class="line"><span class="keyword">import</span> lombok.Data;</span><br><span class="line"><span class="keyword">import</span> lombok.NoArgsConstructor;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 用户实体类</span></span><br><span class="line"><span class="meta">@Data</span></span><br><span class="line"><span class="meta">@NoArgsConstructor</span></span><br><span class="line"><span class="meta">@AllArgsConstructor</span></span><br><span class="line"><span class="meta">@JsonInclude(JsonInclude.Include.NON_NULL)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">User</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> Long id;         <span class="comment">// 用户ID</span></span><br><span class="line">    <span class="keyword">private</span> String name;     <span class="comment">// 用户名</span></span><br><span class="line">    <span class="keyword">private</span> Integer age;     <span class="comment">// 年龄</span></span><br><span class="line">    <span class="keyword">private</span> String email;    <span class="comment">// 邮箱</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h5 id="创建-rest-控制器">创建 REST 控制器</h5>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> org.springframework.web.bind.annotation.*;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.util.Arrays;</span><br><span class="line"><span class="keyword">import</span> java.util.List;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 用户控制器，演示内容协商的使用</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@RestController</span></span><br><span class="line"><span class="meta">@RequestMapping(&quot;/api/users&quot;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">UserController</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 获取所有用户</span></span><br><span class="line"><span class="comment">     * 支持根据请求协商返回JSON或YAML格式</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@GetMapping</span></span><br><span class="line">    <span class="keyword">public</span> List&lt;User&gt; <span class="title function_">getAllUsers</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> Arrays.asList(</span><br><span class="line">            <span class="keyword">new</span> <span class="title class_">User</span>(<span class="number">1L</span>, <span class="string">&quot;Alice&quot;</span>, <span class="number">30</span>, <span class="string">&quot;alice@example.com&quot;</span>),</span><br><span class="line">            <span class="keyword">new</span> <span class="title class_">User</span>(<span class="number">2L</span>, <span class="string">&quot;Bob&quot;</span>, <span class="number">25</span>, <span class="string">&quot;bob@example.com&quot;</span>),</span><br><span class="line">            <span class="keyword">new</span> <span class="title class_">User</span>(<span class="number">3L</span>, <span class="string">&quot;Charlie&quot;</span>, <span class="number">35</span>, <span class="string">&quot;charlie@example.com&quot;</span>)</span><br><span class="line">        );</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 根据ID获取用户</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@GetMapping(&quot;/&#123;id&#125;&quot;)</span></span><br><span class="line">    <span class="keyword">public</span> User <span class="title function_">getUserById</span><span class="params">(<span class="meta">@PathVariable</span> Long id)</span> &#123;</span><br><span class="line">        <span class="comment">// 模拟根据ID查找用户</span></span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">User</span>(id, <span class="string">&quot;User&quot;</span> + id, id.intValue() + <span class="number">20</span>, <span class="string">&quot;user&quot;</span> + id + <span class="string">&quot;@example.com&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 创建新用户</span></span><br><span class="line"><span class="comment">     * 支持处理JSON或YAML格式的请求体</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@PostMapping</span></span><br><span class="line">    <span class="keyword">public</span> User <span class="title function_">createUser</span><span class="params">(<span class="meta">@RequestBody</span> User user)</span> &#123;</span><br><span class="line">        <span class="comment">// 模拟创建用户，实际应用中会保存到数据库</span></span><br><span class="line">        user.setId(<span class="number">4L</span>);</span><br><span class="line">        <span class="keyword">return</span> user;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h5 id="测试">测试</h5>
+<p>下面通过几种方式测试 YAML 格式的内容协商：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 请求JSON格式</span></span><br><span class="line">curl -X GET http://localhost:8080/api/users</span><br><span class="line"></span><br><span class="line"><span class="comment"># 请求YAML格式</span></span><br><span class="line">curl -X GET -H <span class="string">&quot;Accept: application/x-yaml&quot;</span> http://localhost:8080/api/users</span><br></pre></td></tr></table></figure>
+<p>发送 YAML 格式的请求体</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">curl -X POST -H <span class="string">&quot;Content-Type: application/x-yaml&quot;</span> -d <span class="string">&#x27;</span></span><br><span class="line"><span class="string">id: 5</span></span><br><span class="line"><span class="string">name: David</span></span><br><span class="line"><span class="string">age: 40</span></span><br><span class="line"><span class="string">email: david@example.com</span></span><br><span class="line"><span class="string">&#x27;</span> http://localhost:8080/api/users</span><br></pre></td></tr></table></figure>
+<h3 id="内容协商原理---httpmessageconverter">内容协商原理 -
+<code>HttpMessageConverter</code></h3>
+<p>基于上述我们的自定义内容协商的内容，我们可以知道，实现自定义内容协商的配置关键在于，编写<code>WebMvcConfigurer</code>提供的<code>configureMessageConverters</code>底层，修改底层的<code>MessageConverters</code></p>
+<p>这里就讲一下是如何实现的和其中的实现原理</p>
+<h4 id="内容协商的完整流程">内容协商的完整流程</h4>
+<p>当客户端发起请求时，内容协商的执行流程如下：</p>
+<ol type="1">
+<li><strong>请求到达 DispatcherServlet</strong>：Spring MVC
+的前端控制器接收请求</li>
+<li><strong>HandlerMapping 确定处理器</strong>：找到处理该请求的
+Controller 方法</li>
+<li><strong>内容协商启动</strong>：
+<ul>
+<li>检查请求的 <code>Accept</code> 头（如
+<code>Accept: application/json</code>）</li>
+<li>检查 URL 参数（如 <code>?format=json</code>）</li>
+<li>检查 URL 扩展名（如 <code>.json</code>）</li>
+</ul></li>
+<li><strong>选择合适的 Converter</strong>：
+<ul>
+<li>根据协商结果（如 JSON、XML），从 <code>HttpMessageConverter</code>
+列表中选择支持该媒体类型的转换器</li>
+<li>排序规则：优先使用用户自定义的 Converter（通过
+<code>extendMessageConverters</code> 添加），再使用默认的</li>
+</ul></li>
+<li><strong>执行转换</strong>：
+<ul>
+<li><strong>请求处理</strong>：读取请求体并转换为 Controller
+方法的参数</li>
+<li><strong>响应处理</strong>：将 Controller 返回值序列化为响应格式</li>
+</ul></li>
+</ol>
+<h4 id="核心接口httpmessageconverter">核心接口：<code>HttpMessageConverter</code></h4>
+<p>在 Spring MVC 中，内容协商是将 HTTP 请求和响应与特定格式（如
+JSON、XML、YAML 等）进行匹配的过程。这一过程的核心在于
+<code>HttpMessageConverter</code> 接口，它负责处理 HTTP
+请求和响应的序列化与反序列化。</p>
+<p><code>HttpMessageConverter</code> 是一个策略接口，负责：</p>
+<ul>
+<li><strong>读取</strong> HTTP 请求体并将其转换为 Java
+对象（反序列化）</li>
+<li><strong>写入</strong> Java 对象到 HTTP 响应体（序列化）</li>
+</ul>
+<p>其核心方法包括：</p>
+<ul>
+<li><code>canRead(Class clazz, MediaType mediaType)</code>：判断是否能将请求转换为指定类型</li>
+<li><code>canWrite(Class clazz, MediaType mediaType)</code>：判断是否能将对象序列化为指定媒体类型</li>
+<li><code>read(Class clazz, HttpInputMessage inputMessage)</code>：从请求中读取并转换为对象</li>
+<li><code>write(T t, MediaType contentType, HttpOutputMessage outputMessage)</code>：将对象写入响应</li>
+</ul>
+<h4 id="内容协商的具体实现">内容协商的具体实现</h4>
+<p>内容协商是确定响应格式的过程，主要由
+<code>ContentNegotiationManager</code> 负责：</p>
+<ol type="1">
+<li><strong>确定客户端期望的媒体类型</strong>
+<ul>
+<li>检查 <code>Accept</code> 请求头</li>
+<li>检查 URL 参数（如 <code>?format=json</code>）</li>
+<li>检查 URL 扩展名（如 <code>.json</code>）</li>
+</ul></li>
+<li><strong>选择合适的 HttpMessageConverter</strong>
+<ul>
+<li>遍历所有注册的 <code>HttpMessageConverter</code></li>
+<li>调用 <code>canWrite()</code>
+方法判断转换器是否支持该类型和媒体类型</li>
+<li>选择第一个匹配的转换器</li>
+</ul></li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> List&lt;MediaType&gt; <span class="title function_">resolveMediaTypes</span><span class="params">(NativeWebRequest request)</span> <span class="keyword">throws</span> HttpMediaTypeNotAcceptableException &#123;</span><br><span class="line">        <span class="type">Iterator</span> <span class="variable">var2</span> <span class="operator">=</span> <span class="built_in">this</span>.strategies.iterator();</span><br><span class="line">		<span class="comment">// 遍历所有注册的协商策略</span></span><br><span class="line">        List mediaTypes;</span><br><span class="line">        <span class="keyword">do</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (!var2.hasNext()) &#123;</span><br><span class="line">                <span class="keyword">return</span> MEDIA_TYPE_ALL_LIST;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="type">ContentNegotiationStrategy</span> <span class="variable">strategy</span> <span class="operator">=</span> (ContentNegotiationStrategy)var2.next();</span><br><span class="line">            mediaTypes = strategy.resolveMediaTypes(request);</span><br><span class="line">        &#125; <span class="keyword">while</span>(mediaTypes.equals(MEDIA_TYPE_ALL_LIST));</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> mediaTypes;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<h4 id="responsebody-由-httpmessgaeconverter处理"><code>@ResponseBody</code>
+由 <code>HttpMessgaeConverter</code>处理</h4>
+<p><code>@ResponseBody</code> 注解的作用是：<strong>将 Controller
+方法的返回值直接写入 HTTP
+响应体</strong>，而不是转发到视图页面，当方法或类标注了
+<code>@ResponseBody</code>（<code>@RestController</code> 等价于类上标注
+<code>@Controller</code> + <code>@ResponseBody</code>）时，Spring MVC
+会启用特殊的返回值处理逻辑。</p>
+<p><code>@ResponseBody</code> 注解是内容协商机制的关键触发点：</p>
+<ul>
+<li><p>当 Controller 方法被 <code>@ResponseBody</code> 注解时（或类被
+<code>@RestController</code> 注解），Spring MVC 会：</p>
+<ul>
+<li><p>步骤层次</p>
+<ul>
+<li>通过内容协商确定响应的媒体类型</li>
+<li>找到支持该媒体类型的 <code>HttpMessageConverter</code></li>
+<li>使用该 Converter 将返回值序列化为响应体</li>
+</ul></li>
+<li><p>源码层次</p>
+<ul>
+<li><p>请求进来先来到<code>DispatcherServlet</code>类中的<code>doDispatch()</code>方法处理</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// DispatcherServlet.java</span></span><br><span class="line"><span class="comment">// 这里是简化的源码流程</span></span><br><span class="line"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title function_">doDispatch</span><span class="params">(HttpServletRequest request, HttpServletResponse response)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">    <span class="comment">// 1. 找到处理请求的 Handler</span></span><br><span class="line">    <span class="comment">// 其实一上来这里是空的，一点点补充的</span></span><br><span class="line">    <span class="type">HandlerExecutionChain</span> <span class="variable">mappedHandler</span> <span class="operator">=</span> getHandler(request);</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 2. 找到执行 Handler 的 Adapter</span></span><br><span class="line">    <span class="type">HandlerAdapter</span> <span class="variable">ha</span> <span class="operator">=</span> getHandlerAdapter(mappedHandler.getHandler());</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 3. 执行 Handler</span></span><br><span class="line">    <span class="type">ModelAndView</span> <span class="variable">mv</span> <span class="operator">=</span> ha.handle(processedRequest, response, mappedHandler.getHandler());</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 4. 处理返回值</span></span><br><span class="line">    processDispatchResult(processedRequest, response, mappedHandler, mv, dispatchException);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>找到了一个<code>HandlerAdapter</code>适配器，利用适配器执行目标方法</p>
+<figure>
+<img src="/posts/60585/image-20250607154029850.png" alt="image-20250607154029850">
+<figcaption aria-hidden="true">image-20250607154029850</figcaption>
+</figure></li>
+<li><p><code>RequestMappingHandlerAdapter</code>来执行，最终会调用<code>invokeHandlerMethod()</code>来执行目标方法</p>
+<figure>
+<img src="/posts/60585/image-20250607160624189.png" alt="image-20250607160624189">
+<figcaption aria-hidden="true">image-20250607160624189</figcaption>
+</figure></li>
+<li><p>目标方法执行之前，准备好两个东西</p>
+<ul>
+<li><code>HandlerMethodArgumentResolver</code>：参数解析器，确定目标方法每个参数值</li>
+<li><code>HandlerMethodReturnValueHandler</code>：返回值处理器，确定目标方法的返回值改怎么处理</li>
+</ul></li>
+<li><p><code>RequestMappingHandlerAdapter</code>里面的<code>invokeAndHandle()</code>真正执行目标方法</p></li>
+<li><p>目标方法执行完成，会返回返回值对象</p></li>
+<li><p>找到一个合适的返回值处理器<code>HandlerMethodReturnValueHandler</code></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// HandlerMethodReturnValueHandlerComposite.java</span></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">handleReturnValue</span><span class="params">(<span class="meta">@Nullable</span> Object returnValue, MethodParameter returnType,</span></span><br><span class="line"><span class="params">        ModelAndViewContainer mavContainer, NativeWebRequest webRequest)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 查找能处理该返回值的处理器</span></span><br><span class="line">    <span class="type">HandlerMethodReturnValueHandler</span> <span class="variable">handler</span> <span class="operator">=</span> selectHandler(returnValue, returnType);</span><br><span class="line">    <span class="keyword">if</span> (handler == <span class="literal">null</span>) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">IllegalArgumentException</span>(<span class="string">&quot;Unknown return value type: &quot;</span> + returnType.getParameterType().getName());</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 使用处理器处理返回值</span></span><br><span class="line">    handler.handleReturnValue(returnValue, returnType, mavContainer, webRequest);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> HandlerMethodReturnValueHandler <span class="title function_">selectHandler</span><span class="params">(<span class="meta">@Nullable</span> Object returnValue, MethodParameter returnType)</span> &#123;</span><br><span class="line">    <span class="comment">// 是否是异步返回值</span></span><br><span class="line">    <span class="type">boolean</span> <span class="variable">isAsyncValue</span> <span class="operator">=</span> isAsyncReturnValue(returnValue, returnType);</span><br><span class="line">    <span class="keyword">for</span> (HandlerMethodReturnValueHandler handler : <span class="built_in">this</span>.returnValueHandlers) &#123;</span><br><span class="line">        <span class="keyword">if</span> (isAsyncValue &amp;&amp; !(handler <span class="keyword">instanceof</span> AsyncHandlerMethodReturnValueHandler)) &#123;</span><br><span class="line">            <span class="keyword">continue</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 判断处理器是否支持该返回值类型</span></span><br><span class="line">        <span class="keyword">if</span> (handler.supportsReturnType(returnType)) &#123;</span><br><span class="line">            <span class="keyword">return</span> handler;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>最终找到<code>RequestResponseBodyMethodProcessor</code>能处理标注了<code>@ResponseBody</code>注解的方法</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">handleReturnValue</span><span class="params">(<span class="meta">@Nullable</span> Object returnValue, MethodParameter returnType, ModelAndViewContainer mavContainer, NativeWebRequest webRequest)</span> <span class="keyword">throws</span> IOException, HttpMediaTypeNotAcceptableException, HttpMessageNotWritableException &#123;</span><br><span class="line">        mavContainer.setRequestHandled(<span class="literal">true</span>);</span><br><span class="line">        <span class="type">ServletServerHttpRequest</span> <span class="variable">inputMessage</span> <span class="operator">=</span> <span class="built_in">this</span>.createInputMessage(webRequest);</span><br><span class="line">        <span class="type">ServletServerHttpResponse</span> <span class="variable">outputMessage</span> <span class="operator">=</span> <span class="built_in">this</span>.createOutputMessage(webRequest);</span><br><span class="line">        <span class="keyword">if</span> (returnValue <span class="keyword">instanceof</span> ProblemDetail detail) &#123;</span><br><span class="line">            outputMessage.setStatusCode(HttpStatusCode.valueOf(detail.getStatus()));</span><br><span class="line">            <span class="keyword">if</span> (detail.getInstance() == <span class="literal">null</span>) &#123;</span><br><span class="line">                <span class="type">URI</span> <span class="variable">path</span> <span class="operator">=</span> URI.create(inputMessage.getServletRequest().getRequestURI());</span><br><span class="line">                detail.setInstance(path);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="built_in">this</span>.invokeErrorResponseInterceptors(detail, (ErrorResponse)<span class="literal">null</span>);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="built_in">this</span>.writeWithMessageConverters(returnValue, returnType, inputMessage, outputMessage);</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure></li>
+<li><p><code>RequestResponseBodyMethodProcessor</code>调用<code>writeWithMessageConverters</code>，利用<code>MessageConverter</code>把返回值进行序列化然后写出去</p></li>
+</ul>
+<p>上述的源码内容都在说一个事：<code>@ResponseBody</code> 由
+<code>HttpMessgaeConverter</code>处理的</p></li>
+<li><p>而<code>HttpMessageConverter</code>会进行内容协商</p>
+<ul>
+<li>遍历所有的<code>MessageConverter</code>，看谁支持这种内容类型的数据</li>
+<li>默认的<code>MessageConverter</code>有以下：</li>
+<li>最终因为要
+json，所以<code>MappingJackson2HttpMessageConverter</code>支持写出
+JSON</li>
+<li>Jackson 用<code>ObjectMapper</code>把对象写出去</li>
+</ul></li>
+</ul></li>
+<li><p><code>@ResponseBody</code> 与 <code>HttpMessageConverter</code>
+的协作流程可以概括为：</p>
+<ol type="1">
+<li><strong>请求处理</strong>：DispatcherServlet
+接收请求并找到处理方法</li>
+<li><strong>方法执行</strong>：HandlerAdapter 执行目标方法</li>
+<li><strong>返回值处理</strong>：通过 HandlerMethodReturnValueHandler
+找到 RequestResponseBodyMethodProcessor</li>
+<li><strong>内容协商</strong>：确定响应的媒体类型</li>
+<li><strong>转换器选择</strong>：遍历 HttpMessageConverter
+列表，找到第一个支持该类型和媒体类型的转换器</li>
+<li><strong>序列化输出</strong>：使用选定的转换器将返回值序列化为响应体</li>
+</ol></li>
+</ul>
+<p>所以请求处理的整体流程就很清晰了，当客户端发送 HTTP 请求到 Spring MVC
+应用时，整个处理流程可以概括为：</p>
+<ol type="1">
+<li><strong>请求进入 DispatcherServlet</strong>：Spring MVC
+的前端控制器接收所有请求</li>
+<li><strong>HandlerMapping 确定处理器</strong>：找到处理该请求的
+Controller 方法</li>
+<li><strong>HandlerAdapter
+执行方法</strong>：通过适配器执行目标方法</li>
+<li><strong>返回值处理</strong>：将方法返回值转换为 HTTP 响应</li>
+<li><strong>响应输出</strong>：将处理结果返回给客户端</li>
+</ol>
+<p>例如</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@GetMapping(&quot;/users&quot;)</span></span><br><span class="line"><span class="meta">@ResponseBody</span>  <span class="comment">// 可省略，@RestController 已隐含此注解</span></span><br><span class="line"><span class="keyword">public</span> List&lt;User&gt; <span class="title function_">getUsers</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> Arrays.asList(<span class="keyword">new</span> <span class="title class_">User</span>(<span class="number">1L</span>, <span class="string">&quot;Alice&quot;</span>, <span class="number">30</span>));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Spring MVC 会根据协商结果选择：</p>
+<ul>
+<li><code>MappingJackson2HttpMessageConverter</code> 处理 JSON</li>
+<li><code>Jaxb2RootElementHttpMessageConverter</code> 处理 XML</li>
+<li>自定义的 <code>YamlHttpMessageConverter</code> 处理 YAML</li>
+</ul>
+<h4 id="webmvcautoconfiguration提供几种默认的httpmessageconverters"><code>WebMvcAutoConfiguration</code>提供几种默认的<code>HttpMessageConverters</code></h4>
+<p>Spring MVC 默认注册了多种
+<code>HttpMessageConverter</code>，按顺序排列如下：</p>
+<ol type="1">
+<li><strong>ByteArrayHttpMessageConverter</strong>：处理二进制数据，支持
+<code>application/octet-stream</code></li>
+<li><strong>StringHttpMessageConverter</strong>：处理字符串，支持
+<code>text/plain</code></li>
+<li><strong>ResourceHttpMessageConverter</strong>：处理资源文件，支持
+<code>application/octet-stream</code></li>
+<li><strong>ResourceRegionHttpMessageConverter</strong>：处理部分资源，支持媒体类型范围请求</li>
+<li><strong>SourceHttpMessageConverter</strong>：处理
+javax.xml.transform.Source，支持 XML</li>
+<li><strong>AllEncompassingFormHttpMessageConverter</strong>：处理表单数据，支持
+<code>application/x-www-form-urlencoded</code></li>
+<li><strong>Jaxb2RootElementHttpMessageConverter</strong>：处理 JAXB
+注解的对象，支持 XML</li>
+<li><strong>MappingJackson2HttpMessageConverter</strong>：处理
+JSON，支持 <code>application/json</code></li>
+<li><strong>MappingJackson2XmlHttpMessageConverter</strong>：处理
+XML，支持 <code>application/xml</code></li>
+<li><strong>AtomFeedHttpMessageConverter</strong>：处理 Atom 格式，支持
+<code>application/atom+xml</code></li>
+<li><strong>RssChannelHttpMessageConverter</strong>：处理 RSS 格式，支持
+<code>application/rss+xml</code></li>
+</ol>
+<p>注意这里需要添加可能需要的注解才可能在适配器遍历的时候被选中为有效的</p>
+<p>而其中，我们可以知道：</p>
+<ul>
+<li>系统提供的默认的 MessageConverter的功能很有限，仅适用于 json
+或者普通的数据返回</li>
+<li>需要增加额外的内容协商功能，必须添加新的<code>HttpMessageConverters</code></li>
+</ul>
+<h4 id="自定义-httpmessageconverter-的优先级">自定义
+HttpMessageConverter 的优先级</h4>
+<p>当添加自定义 <code>HttpMessageConverter</code>
+时，注册顺序非常重要：</p>
+<ul>
+<li><p><strong>替换默认转换器</strong>：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">configureMessageConverters</span><span class="params">(List&lt;HttpMessageConverter&lt;?&gt;&gt; converters)</span> &#123;</span><br><span class="line">    converters.clear(); <span class="comment">// 移除所有默认转换器</span></span><br><span class="line">    converters.add(<span class="keyword">new</span> <span class="title class_">YamlHttpMessageConverter</span>()); <span class="comment">// 添加自定义转换器</span></span><br><span class="line">    <span class="comment">// 添加其他必要的转换器</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>注意</strong>：这种方式会完全替换默认转换器，需谨慎使用</p></li>
+<li><p><strong>扩展默认转换器</strong>（推荐方式）：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">extendMessageConverters</span><span class="params">(List&lt;HttpMessageConverter&lt;?&gt;&gt; converters)</span> &#123;</span><br><span class="line">    converters.add(<span class="number">0</span>, <span class="keyword">new</span> <span class="title class_">YamlHttpMessageConverter</span>()); <span class="comment">// 添加到列表开头，优先使用</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>原理</strong>：Spring MVC
+按顺序遍历转换器列表，选择第一个支持的转换器</p></li>
+</ul>
+<h4 id="常见的内置-httpmessageconverter">常见的内置
+HttpMessageConverter</h4>
+<p>Spring MVC 默认提供了多种转换器：</p>
+<table>
+<colgroup>
+<col style="width: 43%">
+<col style="width: 40%">
+<col style="width: 15%">
+</colgroup>
+<thead>
+<tr>
+<th>转换器</th>
+<th>支持的媒体类型</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MappingJackson2HttpMessageConverter</td>
+<td>application/json, application/*+json</td>
+<td>JSON 处理</td>
+</tr>
+<tr>
+<td>MappingJackson2XmlHttpMessageConverter</td>
+<td>application/xml, text/xml</td>
+<td>XML 处理</td>
+</tr>
+<tr>
+<td>StringHttpMessageConverter</td>
+<td>text/plain</td>
+<td>字符串处理</td>
+</tr>
+<tr>
+<td>FormHttpMessageConverter</td>
+<td>application/x-www-form-urlencoded</td>
+<td>表单数据处理</td>
+</tr>
+<tr>
+<td>ByteArrayHttpMessageConverter</td>
+<td>application/octet-stream</td>
+<td>二进制数据处理</td>
+</tr>
+</tbody>
+</table>
+<h4 id="总结">总结</h4>
+<p>内容协商是 Spring MVC 处理不同格式数据的核心机制，其关键点在于：</p>
+<ol type="1">
+<li><strong>HttpMessageConverter</strong> 是实现格式转换的核心接口</li>
+<li><strong>内容协商策略</strong>决定了如何选择合适的转换器</li>
+<li><strong>注册顺序</strong>影响转换器的优先级</li>
+<li><strong><span class="citation" data-cites="ResponseBody">@ResponseBody</span></strong>
+注解触发自动内容协商</li>
+</ol>
+<p>通过自定义 <code>HttpMessageConverter</code>
+和内容协商策略，可以轻松支持 JSON、XML、YAML 甚至自定义格式，实现灵活的
+API 设计。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a target="_blank" rel="noopener" href="https://github.com/ergou10086">ErgouTree</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://ergou10086.github.io/posts/60585.html">https://ergou10086.github.io/posts/60585.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://ergou10086.github.io" target="_blank">ErgouTree's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Java%E6%8A%80%E6%9C%AF/">Java技术</a><a class="post-meta__tags" href="/tags/JavaWeb/">JavaWeb</a><a class="post-meta__tags" href="/tags/%E6%A1%86%E6%9E%B6%E7%9F%A5%E8%AF%86/">框架知识</a><a class="post-meta__tags" href="/tags/%E5%AD%A6%E4%B9%A0/">学习</a><a class="post-meta__tags" href="/tags/Spring%E7%B3%BB%E5%88%97/">Spring系列</a><a class="post-meta__tags" href="/tags/Spring-Boot/">Spring Boot</a><a class="post-meta__tags" href="/tags/Java%E6%A1%86%E6%9E%B6/">Java框架</a><a class="post-meta__tags" href="/tags/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">源码分析</a><a class="post-meta__tags" href="/tags/%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6/">配置文件</a></div><div class="post-share"><div class="addtoany"><div class="a2a_kit a2a_kit_size_32 a2a_default_style"><a class="a2a_button_facebook"></a><a class="a2a_button_twitter"></a><a class="a2a_button_wechat"></a><a class="a2a_button_sina_weibo"></a><a class="a2a_button_facebook_messenger"></a><a class="a2a_button_email"></a><a class="a2a_button_copy_link"></a><a class="a2a_dd" target="_blank" rel="noopener" href="https://www.addtoany.com/share"></a></div></div><script async="async" src="https://static.addtoany.com/menu/page.js"></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/posts/20127.html" title="Spring Boot part8-自定义WebmvcConfigurer实现管理配置及其机制的剖析"><img class="cover" src="/images/posts/cover_error.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">Spring Boot part8-自定义WebmvcConfigurer实现管理配置及其机制的剖析</div></div><div class="info-2"><div class="info-item-1">自定义WebmvcConfigurer能实现管理什么 在 Spring 框架中，WebMvcConfigurer接口是一个非常重要的配置接口，它允许开发者通过自定义配置来扩展和定制 Spring MVC 的默认行为。通过实现WebMvcConfigurer接口（或继承WebMvcConfigurationSupport类），可以对 Spring MVC 的多个核心功能进行灵活配置。 以下是自定义WebMvcConfigurer能实现的主要功能及详细说明： 请求映射与处理器配置  自定义处理器映射（HandlerMapping）和适配器（HandlerAdapter）  可以注册自定义的HandlerMapping（如基于注解的RequestMappingHandlerMapping）或HandlerAdapter（如RequestMappingHandlerAdapter），用于处理不同类型的请求映射逻辑。 场景：自定义 URL 匹配规则、处理特殊请求格式（如 RESTful API...</div></div></div></a><a class="pagination-related" href="/posts/62445.html" title="Spring Boot part10-Thymeleaf模板引擎"><img class="cover" src="/images/posts/cover_java2.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Spring Boot part10-Thymeleaf模板引擎</div></div><div class="info-2"><div class="info-item-1">Thymeleaf引擎 Thymeleaf 简介 什么是 Thymeleaf：Thymeleaf是适用于Web和独立环境的现代服务器端Java模板引擎 由于 Spring Boot 使用了嵌入式 Servlet 容器，所以 JSP 默认是不能使用的 如果依旧需要服务端进行页面渲染，优先考虑使用模板引擎   image-20250607192416710  模板引擎页面默认放在 src/main/resources/templates SpringBoot 包含以下模板引擎的自动配置  FreeMarker Groovy Thymeleaf Thymeleaf官⽹：https://www.thymeleaf.org/ Mustache  Thymeleaf 是一个现代化的服务器端 Java 模板引擎，专为 Web 和独立环境而设计。与传统模板引擎相比，它具有以下核心优势：  开箱即用的 HTML...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/posts/62445.html" title="Spring Boot part10-Thymeleaf模板引擎"><img class="cover" src="/images/posts/cover_java2.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-06-08</div><div class="info-item-2">Spring Boot part10-Thymeleaf模板引擎</div></div><div class="info-2"><div class="info-item-1">Thymeleaf引擎 Thymeleaf 简介 什么是 Thymeleaf：Thymeleaf是适用于Web和独立环境的现代服务器端Java模板引擎 由于 Spring Boot 使用了嵌入式 Servlet 容器，所以 JSP 默认是不能使用的 如果依旧需要服务端进行页面渲染，优先考虑使用模板引擎   image-20250607192416710  模板引擎页面默认放在 src/main/resources/templates SpringBoot 包含以下模板引擎的自动配置  FreeMarker Groovy Thymeleaf Thymeleaf官⽹：https://www.thymeleaf.org/ Mustache  Thymeleaf 是一个现代化的服务器端 Java 模板引擎，专为 Web 和独立环境而设计。与传统模板引擎相比，它具有以下核心优势：  开箱即用的 HTML...</div></div></div></a><a class="pagination-related" href="/posts/35587.html" title="Spring Boot part11-错误处理"><img class="cover" src="/images/posts/cover_spring2.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-06-08</div><div class="info-item-2">Spring Boot part11-错误处理</div></div><div class="info-2"><div class="info-item-1">前言 在项目开发的过程中， 不管是对底层数据库的操作过程， 还是业务层的处理过程， 还是控制层的处理过程， 都不可避免会遇到各种可预知的、 不可预知的异常需要处理。 如果对每个过程都单独作异常处理， 代码耦合度会比较高，开发工作量也会加大而且不好统一， 这也增加了代码的维护成本。 针对这种实际情况， 我们需要将所有类型的异常处理从各处理过程中解耦出来， 这样既保证了相关处理过程的功能单一， 也实现了异常信息的统一处理和维护。 同时， 我们也不希望直接把异常抛给用户， 应该对异常进行处理， 对错误信息进行封装， 然后返回一个友好的信息给用户。 自定义异常类相关知识回顾   img  异常的分类  Throwable 类是 Java 异常类型的顶层父类，一个对象只有是 Throwable类的实例，才是一个异常对象，才能被异常处理机制识别。 按照错误严重性，从 Throwale 类中衍生出 Error 和 Exception...</div></div></div></a><a class="pagination-related" href="/posts/24419.html" title="Spring Boot part4-yaml语法及其配置文件的管理和比较"><img class="cover" src="/images/posts/cover_springboot.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-05-27</div><div class="info-item-2">Spring Boot part4-yaml语法及其配置文件的管理和比较</div></div><div class="info-2"><div class="info-item-1">Yaml 语法  该部分基于菜鸟教程 https://www.runoob.com/w3cnote/yaml-intro.html  yaml 概述 YAML 是 “YAML Ain’t a Markup Language”（YAML 不是一种标记语言）的递归缩写。在开发的这种语言时，YAML 的意思其实是：“Yet Another Markup Language”（仍是一种标记语言）。 YAML 是一种人类可读的数据序列化标准，常用于配置文件、数据交换、API规范等场景。它的设计目标是既能被人类轻松阅读和编写，又能被机器有效解析。 YAML 的语法和其他高级语言类似，并且可以简单表达清单、散列表，标量等数据形态。它使用空白符号缩进和大量依赖外观的特色，特别适合用来表达或编辑数据结构、各种配置文件、倾印调试内容、文件大纲（例如：许多电子邮件标题格式和YAML非常接近）。 YAML 的配置文件后缀为 .yml，如：application.yml 。 YAML...</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="gitalk-container"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/arp.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">ErgouTree</div><div class="author-info-description">I start a brand-new life with you.</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">118</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">81</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">51</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/ergou10086"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/ergou10086" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="/zjm88822201@126.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a><a class="social-icon" href="https://space.bilibili.com/142045656?spm_id_from=333.1007.0.0" target="_blank" title="bilibili"><i class="fas fa-brands fa-bilibili" style="color: #4a72be;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">作者长期陷入galgame和osu!maina4k中 祝他好运吧 对了 如果图片加载过慢 建议科学上网进行使用</div></div><div class="card-widget"><div class="item-headline"><i></i><span></span></div><div class="item-content"></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%B7%AF%E5%BE%84%E5%8C%B9%E9%85%8D"><span class="toc-number">1.</span> <span class="toc-text">路径匹配</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%B7%AF%E5%BE%84%E5%8C%B9%E9%85%8D%E6%A6%82%E8%BF%B0"><span class="toc-number">1.1.</span> <span class="toc-text">路径匹配概述</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%B7%AF%E5%BE%84%E5%8C%B9%E9%85%8D%E4%B8%A4%E5%A4%A7%E7%AD%96%E7%95%A5"><span class="toc-number">1.2.</span> <span class="toc-text">路径匹配两大策略</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%85%B7%E4%BD%93%E7%AD%96%E7%95%A5%E8%AF%B4%E6%98%8E"><span class="toc-number">1.2.1.</span> <span class="toc-text">具体策略说明</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ant-%E9%A3%8E%E6%A0%BC%E8%B7%AF%E5%BE%84"><span class="toc-number">1.3.</span> <span class="toc-text">Ant 风格路径</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#pathpatternparser-%E9%A3%8E%E6%A0%BC%E8%B7%AF%E5%BE%84"><span class="toc-number">1.4.</span> <span class="toc-text">PathPatternParser 风格路径</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%B7%AF%E5%BE%84%E5%8C%B9%E9%85%8D%E7%A4%BA%E4%BE%8B"><span class="toc-number">1.5.</span> <span class="toc-text">路径匹配示例</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8E%A7%E5%88%B6%E5%99%A8%E6%96%B9%E6%B3%95%E6%98%A0%E5%B0%84"><span class="toc-number">1.5.1.</span> <span class="toc-text">控制器方法映射</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%9D%99%E6%80%81%E8%B5%84%E6%BA%90%E5%8C%B9%E9%85%8D"><span class="toc-number">1.5.2.</span> <span class="toc-text">静态资源匹配</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8B%A6%E6%88%AA%E5%99%A8%E8%B7%AF%E5%BE%84%E9%85%8D%E7%BD%AE"><span class="toc-number">1.5.3.</span> <span class="toc-text">拦截器路径配置</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%86%85%E5%AE%B9%E5%8D%8F%E5%95%86"><span class="toc-number">2.</span> <span class="toc-text">内容协商</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E5%86%85%E5%AE%B9%E5%8D%8F%E5%95%86"><span class="toc-number">2.1.</span> <span class="toc-text">什么是内容协商</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#spring-boot-%E4%B8%AD%E7%9A%84%E5%86%85%E5%AE%B9%E5%8D%8F%E5%95%86%E6%9E%B6%E6%9E%84"><span class="toc-number">2.2.</span> <span class="toc-text">Spring Boot 中的内容协商架构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%9A%E7%AB%AF%E5%86%85%E5%AE%B9%E9%80%82%E9%85%8D"><span class="toc-number">2.3.</span> <span class="toc-text">多端内容适配</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%9F%BA%E4%BA%8E%E8%AF%B7%E6%B1%82%E5%A4%B4%E5%AE%9E%E7%8E%B0%E5%86%85%E5%AE%B9%E5%8D%8F%E5%95%86"><span class="toc-number">2.3.1.</span> <span class="toc-text">基于请求头实现内容协商</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9F%BA%E4%BA%8E%E8%AF%B7%E6%B1%82%E5%8F%82%E6%95%B0%E7%9A%84%E5%86%85%E5%AE%B9%E5%8D%8F%E5%95%86"><span class="toc-number">2.4.</span> <span class="toc-text">基于请求参数的内容协商</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%9F%BA%E4%BA%8Eurl%E8%B7%AF%E5%BE%84%E6%89%A9%E5%B1%95%E5%90%8D%E5%AE%9E%E7%8E%B0%E5%86%85%E5%AE%B9%E5%8D%8F%E5%95%86"><span class="toc-number">2.4.1.</span> <span class="toc-text">基于URL路径扩展名实现内容协商</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BB%84%E5%90%88%E7%AD%96%E7%95%A5%E5%AE%9E%E7%8E%B0%E9%AB%98%E7%BA%A7%E5%86%85%E5%AE%B9%E5%8D%8F%E5%95%86"><span class="toc-number">2.5.</span> <span class="toc-text">组合策略实现高级内容协商</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%A6%82%E4%BD%95%E8%BF%9B%E8%A1%8C%E7%AD%96%E7%95%A5%E7%BB%84%E5%90%88%E7%9A%84%E9%85%8D%E7%BD%AE"><span class="toc-number">2.5.1.</span> <span class="toc-text">如何进行策略组合的配置</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%87%AA%E5%AE%9A%E4%B9%89%E5%86%85%E5%AE%B9%E5%8D%8F%E5%95%86%E7%AD%96%E7%95%A5"><span class="toc-number">2.6.</span> <span class="toc-text">自定义内容协商策略</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%AE%80%E4%BB%8B"><span class="toc-number">2.6.1.</span> <span class="toc-text">简介</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#contentnegotiationconfigurer%E6%8E%A5%E5%8F%A3"><span class="toc-number">2.6.2.</span> <span class="toc-text">ContentNegotiationConfigurer接口</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%9E%E7%8E%B0%E8%87%AA%E5%AE%9A%E4%B9%89%E5%86%85%E5%AE%B9%E5%8D%8F%E5%95%86-%E4%BB%A5%E5%AE%9E%E7%8E%B0-yaml-%E5%86%85%E5%AE%B9%E5%8D%8F%E5%95%86%E4%B8%BA%E4%BE%8B%E5%AD%90"><span class="toc-number">2.6.3.</span> <span class="toc-text">实现自定义内容协商-以实现
+yaml 内容协商为例子</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%BC%95%E5%85%A5%E9%9C%80%E8%A6%81%E7%9A%84%E4%BE%9D%E8%B5%96"><span class="toc-number">2.6.3.1.</span> <span class="toc-text">引入需要的依赖</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%88%9B%E5%BB%BA-yaml-%E6%B6%88%E6%81%AF%E8%BD%AC%E6%8D%A2%E5%99%A8"><span class="toc-number">2.6.3.2.</span> <span class="toc-text">创建 YAML 消息转换器</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E9%85%8D%E7%BD%AE%E5%86%85%E5%AE%B9%E5%8D%8F%E5%95%86%E7%AD%96%E7%95%A5"><span class="toc-number">2.6.3.3.</span> <span class="toc-text">配置内容协商策略</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%88%9B%E5%BB%BA%E7%A4%BA%E4%BE%8B%E5%AE%9E%E4%BD%93%E7%B1%BB"><span class="toc-number">2.6.3.4.</span> <span class="toc-text">创建示例实体类</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%88%9B%E5%BB%BA-rest-%E6%8E%A7%E5%88%B6%E5%99%A8"><span class="toc-number">2.6.3.5.</span> <span class="toc-text">创建 REST 控制器</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E6%B5%8B%E8%AF%95"><span class="toc-number">2.6.3.6.</span> <span class="toc-text">测试</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%85%E5%AE%B9%E5%8D%8F%E5%95%86%E5%8E%9F%E7%90%86---httpmessageconverter"><span class="toc-number">2.7.</span> <span class="toc-text">内容协商原理 -
+HttpMessageConverter</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%86%85%E5%AE%B9%E5%8D%8F%E5%95%86%E7%9A%84%E5%AE%8C%E6%95%B4%E6%B5%81%E7%A8%8B"><span class="toc-number">2.7.1.</span> <span class="toc-text">内容协商的完整流程</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E6%8E%A5%E5%8F%A3httpmessageconverter"><span class="toc-number">2.7.2.</span> <span class="toc-text">核心接口：HttpMessageConverter</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%86%85%E5%AE%B9%E5%8D%8F%E5%95%86%E7%9A%84%E5%85%B7%E4%BD%93%E5%AE%9E%E7%8E%B0"><span class="toc-number">2.7.3.</span> <span class="toc-text">内容协商的具体实现</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#responsebody-%E7%94%B1-httpmessgaeconverter%E5%A4%84%E7%90%86"><span class="toc-number">2.7.4.</span> <span class="toc-text">@ResponseBody
+由 HttpMessgaeConverter处理</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#webmvcautoconfiguration%E6%8F%90%E4%BE%9B%E5%87%A0%E7%A7%8D%E9%BB%98%E8%AE%A4%E7%9A%84httpmessageconverters"><span class="toc-number">2.7.5.</span> <span class="toc-text">WebMvcAutoConfiguration提供几种默认的HttpMessageConverters</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%87%AA%E5%AE%9A%E4%B9%89-httpmessageconverter-%E7%9A%84%E4%BC%98%E5%85%88%E7%BA%A7"><span class="toc-number">2.7.6.</span> <span class="toc-text">自定义
+HttpMessageConverter 的优先级</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%B8%B8%E8%A7%81%E7%9A%84%E5%86%85%E7%BD%AE-httpmessageconverter"><span class="toc-number">2.7.7.</span> <span class="toc-text">常见的内置
+HttpMessageConverter</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">2.7.8.</span> <span class="toc-text">总结</span></a></li></ol></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/23249.html" title="为typora更换更新版本的mermaid避免图表无法加载"><div style="background: /images/posts/"></div></a><div class="content"><a class="title" href="/posts/23249.html" title="为typora更换更新版本的mermaid避免图表无法加载">为typora更换更新版本的mermaid避免图表无法加载</a><time datetime="2025-06-08T10:03:02.000Z" title="发表于 2025-06-08 18:03:02">2025-06-08</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/52250.html" title="君と彼女と彼女の恋全周目攻略指南"><img src="/images/posts/cover_jbn.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="君と彼女と彼女の恋全周目攻略指南"/></a><div class="content"><a class="title" href="/posts/52250.html" title="君と彼女と彼女の恋全周目攻略指南">君と彼女と彼女の恋全周目攻略指南</a><time datetime="2025-06-08T09:51:01.000Z" title="发表于 2025-06-08 17:51:01">2025-06-08</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/12758.html" title="深入探索C#事件机制"><img src="/images/posts/cover_teach2.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="深入探索C#事件机制"/></a><div class="content"><a class="title" href="/posts/12758.html" title="深入探索C#事件机制">深入探索C#事件机制</a><time datetime="2025-06-08T09:46:11.000Z" title="发表于 2025-06-08 17:46:11">2025-06-08</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/35587.html" title="Spring Boot part11-错误处理"><img src="/images/posts/cover_spring2.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Spring Boot part11-错误处理"/></a><div class="content"><a class="title" href="/posts/35587.html" title="Spring Boot part11-错误处理">Spring Boot part11-错误处理</a><time datetime="2025-06-08T09:44:07.000Z" title="发表于 2025-06-08 17:44:07">2025-06-08</time></div></div></div></div></div></div></main><div class="fps-display"><span id="fps">FPS: 60</span></div><footer id="footer" style="background-image: url(/images/posts/cover_front.jpg);"><div id="footer-wrap"><div class="copyright">&copy;2024 - 2025 By ErgouTree</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">忘れたくない思い、ありますか？ <br>,<span id="realtime_duration" style="font-family: monospace;"></span>,<br><a href="https://icp.gov.moe/?keyword=20257009" target="_blank">萌ICP备20257009号</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><a class="icon-V hidden" onclick="switchNightMode()" title="日间和夜间模式切换"><svg width="25" height="25" viewBox="0 0 1024 1024"><use id="modeicon" xlink:href="#icon-moon"></use></svg></a><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="chat-btn" type="button" title="聊天" style="display:none"><i class="fas fa-comment"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (true) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script><script>(() => {
+  const applyThemeDefaultsConfig = theme => {
+    if (theme === 'dark-mode') {
+      Chart.defaults.color = "rgba(255, 255, 255, 0.8)"
+      Chart.defaults.borderColor = "rgba(255, 255, 255, 0.2)"
+      Chart.defaults.scale.ticks.backdropColor = "transparent"
+    } else {
+      Chart.defaults.color = "rgba(0, 0, 0, 0.8)"
+      Chart.defaults.borderColor = "rgba(0, 0, 0, 0.1)"
+      Chart.defaults.scale.ticks.backdropColor = "transparent"
+    }
+  }
+
+  // Recursively traverse the config object and automatically apply theme-specific color schemes
+  const applyThemeConfig = (obj, theme) => {
+    if (typeof obj !== 'object' || obj === null) return
+
+    Object.keys(obj).forEach(key => {
+      const value = obj[key]
+      // If the property is an object and has theme-specific options, apply them
+      if (typeof value === 'object' && value !== null) {
+        if (value[theme]) {
+          obj[key] = value[theme] // Apply the value for the current theme
+        } else {
+          // Recursively process child objects
+          applyThemeConfig(value, theme)
+        }
+      }
+    })
+  }
+
+  const runChartJS = ele => {
+    window.loadChartJS = true
+
+    Array.from(ele).forEach((item, index) => {
+      const chartSrc = item.firstElementChild
+      const chartID = item.getAttribute('data-chartjs-id') || ('chartjs-' + index) // Use custom ID or default ID
+      const width = item.getAttribute('data-width')
+      const existingCanvas = document.getElementById(chartID)
+
+      // If a canvas already exists, remove it to avoid rendering duplicates
+      if (existingCanvas) {
+          existingCanvas.parentNode.remove()
+      }
+
+      const chartDefinition = chartSrc.textContent
+      const canvas = document.createElement('canvas')
+      canvas.id = chartID
+
+      const div = document.createElement('div')
+      div.className = 'chartjs-wrap'
+
+      if (width) {
+        div.style.width = width
+      }
+
+      div.appendChild(canvas)
+      chartSrc.insertAdjacentElement('afterend', div)
+
+      const ctx = document.getElementById(chartID).getContext('2d')
+
+      const config = JSON.parse(chartDefinition)
+
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark-mode' : 'light-mode'
+
+      // Set default styles (initial setup)
+      applyThemeDefaultsConfig(theme)
+
+      // Automatically traverse the config and apply dual-mode color schemes
+      applyThemeConfig(config, theme)
+
+      new Chart(ctx, config)
+    })
+  }
+
+  const loadChartJS = () => {
+    const chartJSEle = document.querySelectorAll('#article-container .chartjs-container')
+    if (chartJSEle.length === 0) return
+
+    window.loadChartJS ? runChartJS(chartJSEle) : btf.getScript('https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.min.js').then(() => runChartJS(chartJSEle))
+  }
+
+  // Listen for theme change events
+  btf.addGlobalFn('themeChange', loadChartJS, 'chartjs')
+  btf.addGlobalFn('encrypt', loadChartJS, 'chartjs')
+
+  window.pjax ? loadChartJS() : document.addEventListener('DOMContentLoaded', loadChartJS)
+})()</script><script>(function() {
+  const abcjsInit = function() {
+    const abcjsFn = function() {
+      setTimeout(function() {
+        const sheets = document.querySelectorAll(".abc-music-sheet")
+        for (let i = 0; i < sheets.length; i++) {
+          const ele = sheets[i]
+          if (ele.children.length > 0) continue
+
+          // Parse parameters from data-params attribute
+          let params = {}
+          const dp = ele.getAttribute("data-params")
+          if (dp) {
+            try {
+              params = JSON.parse(dp)
+            } catch (e) {
+              console.error("Failed to parse data-params:", e)
+            }
+          }
+
+          // Merge parsed parameters with the responsive option
+          // Ensures params content appears before responsive
+          const options = { ...params, responsive: "resize" }
+
+          // Render the music score using ABCJS.renderAbc
+          ABCJS.renderAbc(ele, ele.innerHTML, options)
+        }
+      }, 100)
+    }
+
+    if (typeof ABCJS === "object") {
+      abcjsFn()
+    } else {
+      btf.getScript("https://cdn.jsdelivr.net/npm/abcjs/dist/abcjs-basic-min.min.js").then(abcjsFn)
+    }
+  }
+
+  if (window.pjax) {
+    abcjsInit()
+  } else {
+    window.addEventListener("load", abcjsInit)
+  }
+
+  btf.addGlobalFn("encrypt", abcjsInit, "abcjs")
+})()</script><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = {"labels":["Gitalk","Comment"],"createIssueManually":false,"distractionFreeMode":false}
+
+  const commentCount = n => {
+    const isCommentCount = document.querySelector('#post-meta .gitalk-comment-count')
+    if (isCommentCount) {
+      isCommentCount.textContent= n
+    }
+  }
+
+  const initGitalk = (el, path) => {
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGitalk = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+
+    const gitalk = new Gitalk({
+      clientID: 'Ov23li3vDQANiUddL4XB',
+      clientSecret: '5c9a56d02995340fca117809cd414662aadce6ff',
+      repo: 'HexoComment',
+      owner: 'ergou10086',
+      admin: ['ergou10086'],
+      updateCountCallback: commentCount,
+      ...option,
+      id: isShuoshuo ? path : (option && option.id) || 'a1071691ccda47544fdeec0f659144f9'
+    })
+
+    gitalk.render('gitalk-container')
+  }
+
+  const loadGitalk = async(el, path) => {
+    if (typeof Gitalk === 'function') initGitalk(el, path)
+    else {
+      await btf.getCSS('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.css')
+      await btf.getScript('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.js')
+      initGitalk(el, path)
+    }
+  }
+
+  if (isShuoshuo) {
+    'Gitalk' === 'Gitalk'
+      ? window.shuoshuoComment = { loadComment: loadGitalk }
+      : window.loadOtherComment = loadGitalk
+    return
+  }
+
+  if ('Gitalk' === 'Gitalk' || !false) {
+    if (false) btf.loadComment(document.getElementById('gitalk-container'), loadGitalk)
+    else loadGitalk()
+  } else {
+    window.loadOtherComment = loadGitalk
+  }
+})()</script></div><div class="aplayer no-destroy" data-id="13587761608" data-server="netease" data-type="playlist" data-fixed="true" data-autoplay="false" data-lrcType="-1"> </div><script src="https://cdn.jsdelivr.net/npm/abcjs@7.1.2/dist/abcjs-basic-min.js"></script><script src="/js/sun_moon.js" async></script><script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.7/dayjs.min.js"></script><script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.7/plugin/duration.min.js"></script><script src="/scripts/realtime.js"></script><script src="/scripts/random.js"></script><script defer="defer" id="ribbon" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-ribbon.min.js" size="150" alpha="0.6" zIndex="-1" mobile="null" data-click="true"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = false;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><script id="click-heart" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/click-heart.min.js" async="async" mobile="false"></script><script>(() => {
+  window.ChatraID = '4bzb546NSBoJcrNyu'
+  window.Chatra = window.Chatra || function() {
+    (window.Chatra.q = window.Chatra.q || []).push(arguments)
+  }
+
+  btf.getScript('https://call.chatra.io/chatra.js').then(() => {
+    const isChatBtn = true
+    const isChatHideShow = true
+
+    if (isChatBtn) {
+      const close = () => {
+        Chatra('minimizeWidget')
+        Chatra('hide')
+      }
+
+      const open = () => {
+        Chatra('openChat', true)
+        Chatra('show')
+      }
+
+      window.ChatraSetup = { startHidden: true }
+    
+      window.chatBtnFn = () => document.getElementById('chatra').classList.contains('chatra--expanded') ? close() : open()
+
+      document.getElementById('chat-btn').style.display = 'block'
+    } else if (isChatHideShow) {
+      window.chatBtn = {
+        hide: () => Chatra('hide'),
+        show: () => Chatra('show')
+      }
+    }
+  })
+})()</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/metingjs/dist/Meting.min.js"></script><script>(() => {
+  const destroyAplayer = () => {
+    if (window.aplayers) {
+      for (let i = 0; i < window.aplayers.length; i++) {
+        if (!window.aplayers[i].options.fixed) {
+          window.aplayers[i].destroy()
+        }
+      }
+    }
+  }
+
+  const runMetingJS = () => {
+    typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+  }
+
+  btf.addGlobalFn('pjaxSend', destroyAplayer, 'destroyAplayer')
+  btf.addGlobalFn('pjaxComplete', loadMeting, 'runMetingJS')
+})()</script><script src="https://cdn.jsdelivr.net/npm/pjax/pjax.min.js"></script><script>(() => {
+  const pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+  window.pjax = new Pjax({
+    elements: 'a:not([target="_blank"]):not([href="/music/"])',
+    selectors: pjaxSelectors,
+    cacheBust: false,
+    analytics: false,
+    scrollRestoration: false
+  })
+
+  const triggerPjaxFn = (val) => {
+    if (!val) return
+    Object.values(val).forEach(fn => fn())
+  }
+
+  document.addEventListener('pjax:send', () => {
+    // removeEventListener
+    btf.removeGlobalFnEvent('pjaxSendOnce')
+    btf.removeGlobalFnEvent('themeChange')
+
+    // reset readmode
+    const $bodyClassList = document.body.classList
+    if ($bodyClassList.contains('read-mode')) $bodyClassList.remove('read-mode')
+
+    triggerPjaxFn(window.globalFn.pjaxSend)
+  })
+
+  document.addEventListener('pjax:complete', () => {
+    btf.removeGlobalFnEvent('pjaxCompleteOnce')
+    document.querySelectorAll('script[data-pjax]').forEach(item => {
+      const newScript = document.createElement('script')
+      const content = item.text || item.textContent || item.innerHTML || ""
+      Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+      newScript.appendChild(document.createTextNode(content))
+      item.parentNode.replaceChild(newScript, item)
+    })
+
+    triggerPjaxFn(window.globalFn.pjaxComplete)
+  })
+
+  document.addEventListener('pjax:error', e => {
+    if (e.request.status === 404) {
+      const usePjax = true
+      true 
+        ? (usePjax ? pjax.loadUrl('/404.html') : window.location.href = '/404.html')
+        : window.location.href = e.request.responseURL
+    }
+  })
+})()</script><script src="/js/fps-display.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><!-- hexo injector body_end start --><script data-pjax>
+  function butterfly_swiper_injector_config(){
+    var parent_div_git = document.getElementById('recent-posts');
+    var item_html = '<div class="recent-post-item" style="height: auto;width: 100%"><div class="blog-slider swiper-container-fade swiper-container-horizontal" id="swiper_container"><div class="blog-slider__wrp swiper-wrapper" style="transition-duration: 0ms;"><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_database.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-14</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt="">结构化查询语言SQL</a><div class="blog-slider__text">SQL基本很常用的语句都在这里了，本质上是当初为了应付数据库考试整理的，后来发现还蛮有用的很方便查常用的语句</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java4.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-22</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt="">SpringBoot part0?INF-SpringBoot这个框架都需要学习什么</a><div class="blog-slider__text">主要围绕Spring Boot中重要知识来简洁或详细的说明，其中部分不够完全，持续更新</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java11.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-15</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt="">关于Lombok在高版本IDEA中注解处理不生效的问题解决</a><div class="blog-slider__text">基本上是彻底的解决了用 IDEA 新建 Spring Boot 项目时候会产生的 Lombok 注解处理失效的各种问题</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_实用.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-05</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt="">个人向galgame原声带或相关音乐整理及其资源</a><div class="blog-slider__text">整理了我喜欢的galgame ost或者衍生的音乐专辑，部分资源是自己扒盘扒下来的，部分来自鸟白岛放映厅</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_math.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-17</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt="">对书上证明样本方差是总体方差的无偏估计量的解析</a><div class="blog-slider__text">对书上证明样本方差是总体方差的无偏估计量的解析，高等教育出版社-华科大版本</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_alog.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-04-24</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt="">第十五届蓝桥杯Java国赛B组D题-园丁题解</a><div class="blog-slider__text">第十五届蓝桥杯Java国赛B组D题-园丁题解，该题解已经发布到洛谷社区中并且被全站推荐</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java4.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-04-29</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt="">操作系统之处理机的死锁部分概述</a><div class="blog-slider__text">对操作系统之处理机的死锁部分知识的总结，包括代码复现</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_lb.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-09</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt="">Little Busters!EX游戏攻略</a><div class="blog-slider__text">整理了一份详细清晰的Little Busters！EX的游戏攻略，因为我自己也在推，就顺手整理了一份方便查阅的md文档</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java9.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-16</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt="">Spring Boot中使用Hibernate框架</a><div class="blog-slider__text">对学习完Hibernate的应用部分，主要围绕Spring Boot中使用Hibernate框架，建议学习完 Hibernate 框架再看</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div></div><div class="blog-slider__pagination swiper-pagination-clickable swiper-pagination-bullets"></div></div></div>';
+    console.log('已挂载butterfly_swiper')
+    parent_div_git.insertAdjacentHTML("afterbegin",item_html)
+    }
+  var elist = 'undefined'.split(',');
+  var cpage = location.pathname;
+  var epage = '/';
+  var flag = 0;
+
+  for (var i=0;i<elist.length;i++){
+    if (cpage.includes(elist[i])){
+      flag++;
+    }
+  }
+
+  if ((epage ==='all')&&(flag == 0)){
+    butterfly_swiper_injector_config();
+  }
+  else if (epage === cpage){
+    butterfly_swiper_injector_config();
+  }
+  </script><script defer src="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper.min.js"></script><script defer data-pjax src="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper_init.js"></script><!-- hexo injector body_end end --></body></html>

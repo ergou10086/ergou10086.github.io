@@ -1,0 +1,1085 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Spring Boot part11-错误处理 | ErgouTree's Blog</title><meta name="author" content="ErgouTree"><meta name="copyright" content="ErgouTree"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="前言 在项目开发的过程中， 不管是对底层数据库的操作过程， 还是业务层的处理过程， 还是控制层的处理过程， 都不可避免会遇到各种可预知的、 不可预知的异常需要处理。 如果对每个过程都单独作异常处理， 代码耦合度会比较高，开发工作量也会加大而且不好统一， 这也增加了代码的维护成本。 针对这种实际情况， 我们需要将所有类型的异常处理从各处理过程中解耦出来， 这样既保证了相关处理过程的">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spring Boot part11-错误处理">
+<meta property="og:url" content="https://ergou10086.github.io/posts/35587.html">
+<meta property="og:site_name" content="ErgouTree&#39;s Blog">
+<meta property="og:description" content="前言 在项目开发的过程中， 不管是对底层数据库的操作过程， 还是业务层的处理过程， 还是控制层的处理过程， 都不可避免会遇到各种可预知的、 不可预知的异常需要处理。 如果对每个过程都单独作异常处理， 代码耦合度会比较高，开发工作量也会加大而且不好统一， 这也增加了代码的维护成本。 针对这种实际情况， 我们需要将所有类型的异常处理从各处理过程中解耦出来， 这样既保证了相关处理过程的">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://ergou10086.github.io/images/posts/cover_spring2.jpg">
+<meta property="article:published_time" content="2025-06-08T09:44:07.000Z">
+<meta property="article:modified_time" content="2025-06-08T09:45:25.408Z">
+<meta property="article:author" content="ErgouTree">
+<meta property="article:tag" content="Java技术">
+<meta property="article:tag" content="JavaWeb">
+<meta property="article:tag" content="框架知识">
+<meta property="article:tag" content="学习">
+<meta property="article:tag" content="Spring系列">
+<meta property="article:tag" content="Spring Boot">
+<meta property="article:tag" content="Java框架">
+<meta property="article:tag" content="源码分析">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ergou10086.github.io/images/posts/cover_spring2.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Spring Boot part11-错误处理",
+  "url": "https://ergou10086.github.io/posts/35587.html",
+  "image": "https://ergou10086.github.io/images/posts/cover_spring2.jpg",
+  "datePublished": "2025-06-08T09:44:07.000Z",
+  "dateModified": "2025-06-08T09:45:25.408Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "ErgouTree",
+      "url": "https://github.com/ergou10086"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/pi.ico"><link rel="canonical" href="https://ergou10086.github.io/posts/35587.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//hm.baidu.com"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!true && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?https://hm.baidu.com/hm.js?a6ab1b78e2c6320b664f31e8b9bf0e36";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+btf.addGlobalFn('pjaxComplete', () => {
+  _hmt.push(['_trackPageview',window.location.pathname])
+}, 'baidu_analytics')
+</script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.json","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":true},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: {"chs_to_cht":"已切换为繁体中文","cht_to_chs":"已切换为简体中文","day_to_night":"已切换为深色模式","night_to_day":"已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#1f1f1f","position":"bottom-left"},
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Spring Boot part11-错误处理',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css"><svg aria-hidden="true" style="position:absolute; overflow:hidden; width:0; height:0"><symbol id="icon-sun" viewBox="0 0 1024 1024"><path d="M960 512l-128 128v192h-192l-128 128-128-128H192v-192l-128-128 128-128V192h192l128-128 128 128h192v192z" fill="#FFD878" p-id="8420"></path><path d="M736 512a224 224 0 1 0-448 0 224 224 0 1 0 448 0z" fill="#FFE4A9" p-id="8421"></path><path d="M512 109.248L626.752 224H800v173.248L914.752 512 800 626.752V800h-173.248L512 914.752 397.248 800H224v-173.248L109.248 512 224 397.248V224h173.248L512 109.248M512 64l-128 128H192v192l-128 128 128 128v192h192l128 128 128-128h192v-192l128-128-128-128V192h-192l-128-128z" fill="#4D5152" p-id="8422"></path><path d="M512 320c105.888 0 192 86.112 192 192s-86.112 192-192 192-192-86.112-192-192 86.112-192 192-192m0-32a224 224 0 1 0 0 448 224 224 0 0 0 0-448z" fill="#4D5152" p-id="8423"></path></symbol><symbol id="icon-moon" viewBox="0 0 1024 1024"><path d="M611.370667 167.082667a445.013333 445.013333 0 0 1-38.4 161.834666 477.824 477.824 0 0 1-244.736 244.394667 445.141333 445.141333 0 0 1-161.109334 38.058667 85.077333 85.077333 0 0 0-65.066666 135.722666A462.08 462.08 0 1 0 747.093333 102.058667a85.077333 85.077333 0 0 0-135.722666 65.024z" fill="#FFB531" p-id="11345"></path><path d="M329.728 274.133333l35.157333-35.157333a21.333333 21.333333 0 1 0-30.165333-30.165333l-35.157333 35.157333-35.114667-35.157333a21.333333 21.333333 0 0 0-30.165333 30.165333l35.114666 35.157333-35.114666 35.157334a21.333333 21.333333 0 1 0 30.165333 30.165333l35.114667-35.157333 35.157333 35.157333a21.333333 21.333333 0 1 0 30.165333-30.165333z" fill="#030835" p-id="11346"></path></symbol></svg><link rel="stylesheet" href="/css/custom.css"><!-- hexo injector head_end start --><link rel="stylesheet" href="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiperstyle.css" media="print" onload="this.media='all'"><!-- hexo injector head_end end --><meta name="generator" content="Hexo 7.3.0"></head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js/pace.min.js"></script><div id="web_bg" style="background: linear-gradient(20deg, #0062be, #925696, #cc426e, #fb0347);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/arp.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">118</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">81</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">51</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-images"></i><span> Gallery</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/games/"><i class="fa-fw fas fa-game"></i><span> GalGame</span></a></li><li><a class="site-page child" href="/video/"><i class="fa-fw fas fa-video"></i><span> Video</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div><div class="menus_item"><a class="site-page" href="javascript:randomPost();"><span> Random</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/images/posts/cover_spring2.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">ErgouTree's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">Spring Boot part11-错误处理</span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-images"></i><span> Gallery</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/games/"><i class="fa-fw fas fa-game"></i><span> GalGame</span></a></li><li><a class="site-page child" href="/video/"><i class="fa-fw fas fa-video"></i><span> Video</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div><div class="menus_item"><a class="site-page" href="javascript:randomPost();"><span> Random</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div><div id="randomPost"><a class="site-page social-icon search" href="javascript:;" onclick="randomPost()" title="随机访问一篇文章"><i class="fas fa-circle-notch fa-fw"></i></a></div></nav><div id="post-info"><h1 class="post-title">Spring Boot part11-错误处理<a class="post-edit-link" href="https://github.com/ergou10086/ergou10086.github.io/edit/main/source/_posts/_posts/SpringBootpart11-错误处理.md" title="编辑" target="_blank"><i class="fas fa-pencil-alt"></i></a></h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2025-06-08T09:44:07.000Z" title="发表于 2025-06-08 17:44:07">2025-06-08</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2025-06-08T09:45:25.408Z" title="更新于 2025-06-08 17:45:25">2025-06-08</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Java%E5%AD%A6%E4%B9%A0/">Java学习</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Java%E5%AD%A6%E4%B9%A0/Spring%E7%B3%BB%E5%88%97/">Spring系列</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Java%E5%AD%A6%E4%B9%A0/Spring%E7%B3%BB%E5%88%97/Spring-Boot/">Spring Boot</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">8k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>33分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span><span class="post-meta-separator">|</span><span class="post-meta-commentcount"><i class="far fa-comments fa-fw post-meta-icon"></i><span class="post-meta-label">评论数:</span><a href="/posts/35587.html#post-comment"><span class="gitalk-comment-count"><i class="fa-solid fa-spinner fa-spin"></i></span></a></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="前言">前言</h2>
+<p>在项目开发的过程中， 不管是对底层数据库的操作过程，
+还是业务层的处理过程， 还是控制层的处理过程，
+都不可避免会遇到各种可预知的、 不可预知的异常需要处理。
+如果对每个过程都单独作异常处理，
+代码耦合度会比较高，开发工作量也会加大而且不好统一，
+这也增加了代码的维护成本。</p>
+<p>针对这种实际情况，
+我们需要将所有类型的异常处理从各处理过程中解耦出来，
+这样既保证了相关处理过程的功能单一，
+也实现了异常信息的统一处理和维护。</p>
+<p>同时， 我们也不希望直接把异常抛给用户， 应该对异常进行处理，
+对错误信息进行封装， 然后返回一个友好的信息给用户。</p>
+<h2 id="自定义异常类相关知识回顾">自定义异常类相关知识回顾</h2>
+<figure>
+<img src="/posts/35587/ce8232709bb34dadb0c36b48aac8815e-1749368625474.png" alt="img">
+<figcaption aria-hidden="true">img</figcaption>
+</figure>
+<p>异常的分类</p>
+<ul>
+<li>Throwable 类是 Java 异常类型的顶层父类，一个对象只有是
+Throwable类的实例，才是一个异常对象，才能被异常处理机制识别。</li>
+<li>按照错误严重性，从 Throwale 类中衍生出 Error 和 Exception 两大派系
+<ul>
+<li><p>Error（错误）：程序在执行过程中所遇到的硬件或系统的错误。错误对程序而言是致命的，将导致程序无法运行。不允许捕获。当发生
+Error 时，只能依靠外界干预。比如：内存溢出。</p></li>
+<li><p>Exception（异常）：是程序运行过程中，可以预料的意外情况。比如空指针，数组下标越界。异常出现可以被捕获处理掉，使程序继续运行。</p></li>
+</ul></li>
+<li>Exception：又分为编译时异常和运行时异常。
+<ul>
+<li>运行时异常都是 RuntimeException 类及其子类, 这些异常是不检查的异常,
+是在程序运行的时候可能会发生的, 所以程序可以捕捉,
+也可以不捕捉。程序应该从逻辑角度去尽量避免。如：空指针、数组下标越界等。</li>
+<li>编译时异常也叫检查异常，是运行时异常以外的异常, 也是 Exception
+及其子类, 这些异常从程序的角度来说是必须经过捕捉检查处理的,
+否则不能通过编译. 如 IOException、SQLException 等。</li>
+</ul></li>
+</ul>
+<figure>
+<img src="/posts/35587/e7e6ccacf7e74701825337b9a63d5e71.png" alt="img">
+<figcaption aria-hidden="true">img</figcaption>
+</figure>
+<p>上面的异常体系结构图都是系统自带的，系统自己处理，但是很多时候项目会出现特有问题，而这些问题并未被
+Java
+所描述并封装成对象，所以对于这些特有的问题可以按照封装的思想，将特有的问题进行自定义异常封装。要想创建自定义异常，需要继承
+Throwable 或者他的子类 Exception。</p>
+<p>使用自定义异常类的步骤</p>
+<figure>
+<img src="/posts/35587/6ec6dc5eae7543578f91d7e289375c39.png" alt="img">
+<figcaption aria-hidden="true">img</figcaption>
+</figure>
+<h2 id="错误处理机制的默认机制">错误处理机制的默认机制</h2>
+<h3 id="默认机制流程">默认机制流程</h3>
+<p>Spring Boot 对异常的处理有一套默认的机制</p>
+<ul>
+<li>当程序产生异常时，根据请求头中的 Content-Type
+包含的内容来返回不同的响应信息。如果 Content-Type 是”text/html”,则以
+HTML 格式返回，如果 Content-Type 是”application/json”,则以 JSON
+格式返回。</li>
+</ul>
+<p>错误处理的⾃动配置都在 <code>ErrorMvcAutoConfiguration</code>
+中，两⼤核⼼机制：</p>
+<ul>
+<li><p>SpringBoot 会自适应处理错误，响应页面或JSON数据</p></li>
+<li><p>SpringMVC的错误处理机制依然保留，MVC处理不了，才会交给boot进行处理</p></li>
+</ul>
+<p>如下，这张图将是整个默认处理机制的核心步骤总结</p>
+<figure>
+<img src="/posts/35587/image-20250608153602955.png" alt="image-20250608153602955">
+<figcaption aria-hidden="true">image-20250608153602955</figcaption>
+</figure>
+<p>如果你使用了以前 Spring MVC
+错误处理的方式，那么就按照你的来，没有就按照默认的来</p>
+<ul>
+<li><p>这里就是使用的<code>@ExceptionHandler</code>，用于标记一个方法，该方法将处理特定类型的异常。默认情况下，它只处理
+<strong>当前控制器类</strong> 中发生的异常</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RestController</span></span><br><span class="line"><span class="meta">@RequestMapping(&quot;/api&quot;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">UserController</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@GetMapping(&quot;/users/&#123;id&#125;&quot;)</span></span><br><span class="line">    <span class="keyword">public</span> User <span class="title function_">getUser</span><span class="params">(<span class="meta">@PathVariable</span> Long id)</span> &#123;</span><br><span class="line">        <span class="comment">// 可能抛出 UserNotFoundException</span></span><br><span class="line">        <span class="keyword">return</span> userService.getUserById(id);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 处理当前控制器中的 UserNotFoundException</span></span><br><span class="line">    <span class="meta">@ExceptionHandler(UserNotFoundException.class)</span></span><br><span class="line">    <span class="keyword">public</span> ResponseEntity&lt;String&gt; <span class="title function_">handleUserNotFound</span><span class="params">(UserNotFoundException ex)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> ResponseEntity.status(HttpStatus.NOT_FOUND)</span><br><span class="line">                .body(<span class="string">&quot;User not found: &quot;</span> + ex.getMessage());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>而<code>@ControllerAdvice</code>统一处理所有错误，通常用在全局错误处理器，一般是集中处理所有
+Controller 发生的错误</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@ControllerAdvice</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">GlobalExceptionHandler</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 处理所有控制器中的 NullPointerException</span></span><br><span class="line">    <span class="meta">@ExceptionHandler(NullPointerException.class)</span></span><br><span class="line">    <span class="keyword">public</span> ResponseEntity&lt;String&gt; <span class="title function_">handleNullPointerException</span><span class="params">(NullPointerException ex)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)</span><br><span class="line">                .body(<span class="string">&quot;Internal server error: &quot;</span> + ex.getMessage());</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 处理所有控制器中的 MethodArgumentNotValidException（验证失败）</span></span><br><span class="line">    <span class="meta">@ExceptionHandler(MethodArgumentNotValidException.class)</span></span><br><span class="line">    <span class="keyword">public</span> ResponseEntity&lt;Map&lt;String, String&gt;&gt; <span class="title function_">handleValidationErrors</span><span class="params">(MethodArgumentNotValidException ex)</span> &#123;</span><br><span class="line">        Map&lt;String, String&gt; errors = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">        ex.getBindingResult().getFieldErrors()</span><br><span class="line">                .forEach(error -&gt; errors.put(error.getField(), error.getDefaultMessage()));</span><br><span class="line">        <span class="keyword">return</span> ResponseEntity.badRequest().body(errors);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<p>而在这里，可以实现可以通过自定义异常类和 <code>@ResponseStatus</code>
+注解来简化异常处理</p>
+<p>如果你使用自定义 Spring MVC 的错误，注意，Spring MVC 的异常处理遵循
+<strong>就近原则</strong></p>
+<ol type="1">
+<li><strong>局部处理</strong>：优先使用控制器内部的
+<code>@ExceptionHandler</code>。</li>
+<li><strong>全局处理</strong>：如果控制器内部没有匹配的处理方法，则使用
+<code>@ControllerAdvice</code> 中的全局处理方法。</li>
+</ol>
+<p>这部分就是在这里提一下，下面在说Spring Boot
+中的异常处理方案时候还是会继续说的。</p>
+<p>所以Spring boot 在什么都不写的时候，会默认就有一个
+<code>/error</code>目录。因为 Spring MVC
+如果没有错误请求处理，就处理不了，就得转发到 Spring boot
+处理错误的请求路径。</p>
+<figure>
+<img src="/posts/35587/22847346a718454faa88bed9f9e899da.png" alt="img">
+<figcaption aria-hidden="true">img</figcaption>
+</figure>
+<p>如果用 Postman 访问，则以 JSON 的格式返回异常信息</p>
+<figure>
+<img src="/posts/35587/image-20250608154906069.png" alt="image-20250608154906069">
+<figcaption aria-hidden="true">image-20250608154906069</figcaption>
+</figure>
+<p>发⽣错误以后，转发给<code>/error</code>路径，SpringBoot在底层写好⼀个
+<code>BasicErrorController</code>的组件，专⻔ 处理这个请求</p>
+<p>这个路径是可以设置的，配置文件中通过<code>server.error.path=/error</code>，表示错误发生后，错误请求将转发到这个路径进行处理</p>
+<p>默认错误处理机制的实现：关键点在 BasicErrorController 这个类中</p>
+<h3 id="basicerrorcontroller-类">BasicErrorController 类</h3>
+<ul>
+<li>这是 Spring Boot
+默认的错误处理控制器，负责处理所有未被应用程序其他控制器处理的异常请求（默认映射到
+<code>/error</code> 路径）</li>
+<li>它提供了两种错误响应方式：HTML 格式（<code>errorHtml</code> 方法）和
+JSON 格式（<code>error</code> 方法）</li>
+<li>在处理 HTML 错误视图时，它依赖于 <code>ErrorViewResolver</code>
+接口的实现来确定具体使用哪个视图模板</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 处理HTML格式的错误请求，返回错误页面视图</span></span><br><span class="line"><span class="comment"> * </span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> request  HTTP请求对象</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> response HTTP响应对象</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@return</span> 错误视图模型，如果未找到特定视图则返回默认&quot;error&quot;视图</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@RequestMapping(</span></span><br><span class="line"><span class="meta">        produces = &#123;&quot;text/html&quot;&#125;</span></span><br><span class="line"><span class="meta">    )</span></span><br><span class="line">    <span class="keyword">public</span> ModelAndView <span class="title function_">errorHtml</span><span class="params">(HttpServletRequest request, HttpServletResponse response)</span> &#123;</span><br><span class="line">        <span class="comment">// 获取请求对应的HTTP状态码</span></span><br><span class="line">        <span class="type">HttpStatus</span> <span class="variable">status</span> <span class="operator">=</span> <span class="built_in">this</span>.getStatus(request);</span><br><span class="line">        <span class="comment">// 获取错误属性并封装到不可修改的Map中</span></span><br><span class="line">        Map&lt;String, Object&gt; model = Collections.unmodifiableMap(<span class="built_in">this</span>.getErrorAttributes(request, <span class="built_in">this</span>.getErrorAttributeOptions(request, MediaType.TEXT_HTML)));</span><br><span class="line">        <span class="comment">// 设置响应状态码</span></span><br><span class="line">        response.setStatus(status.value());</span><br><span class="line">        <span class="comment">// 尝试解析错误视图</span></span><br><span class="line">        <span class="type">ModelAndView</span> <span class="variable">modelAndView</span> <span class="operator">=</span> <span class="built_in">this</span>.resolveErrorView(request, response, status, model);</span><br><span class="line">        <span class="comment">// 如果未找到特定视图则返回默认&quot;error&quot;视图</span></span><br><span class="line">        <span class="keyword">return</span> modelAndView != <span class="literal">null</span> ? modelAndView : <span class="keyword">new</span> <span class="title class_">ModelAndView</span>(<span class="string">&quot;error&quot;</span>, model);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 处理非HTML格式的错误请求，返回JSON格式错误响应</span></span><br><span class="line"><span class="comment"> * </span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> request HTTP请求对象</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@return</span> 包含错误信息的响应实体</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@RequestMapping</span>      <span class="comment">// 返回ResponseEntity, JSON</span></span><br><span class="line">    <span class="keyword">public</span> ResponseEntity&lt;Map&lt;String, Object&gt;&gt; <span class="title function_">error</span><span class="params">(HttpServletRequest request)</span> &#123;</span><br><span class="line">        <span class="comment">// 获取请求对应的HTTP状态码</span></span><br><span class="line">        <span class="type">HttpStatus</span> <span class="variable">status</span> <span class="operator">=</span> <span class="built_in">this</span>.getStatus(request);</span><br><span class="line">        <span class="comment">// 处理无内容状态码的特殊情况</span></span><br><span class="line">        <span class="keyword">if</span> (status == HttpStatus.NO_CONTENT) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">ResponseEntity</span>(status);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="comment">// 获取错误属性并封装到响应体中</span></span><br><span class="line">            Map&lt;String, Object&gt; body = <span class="built_in">this</span>.getErrorAttributes(request, <span class="built_in">this</span>.getErrorAttributeOptions(request, MediaType.ALL));</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">ResponseEntity</span>(body, status);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>所以说，错误页面和错误信息是这么解析到的</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">ModelAndView</span> <span class="variable">modelAndView</span> <span class="operator">=</span> <span class="built_in">this</span>.resolveErrorView(request, response, status, model);</span><br><span class="line">       <span class="comment">// 如果未找到特定视图则返回默认&quot;error&quot;视图</span></span><br><span class="line">       <span class="keyword">return</span> modelAndView != <span class="literal">null</span> ? modelAndView : <span class="keyword">new</span> <span class="title class_">ModelAndView</span>(<span class="string">&quot;error&quot;</span>, model);</span><br></pre></td></tr></table></figure>
+<p>容器中专门的有⼀个错误视图解析器，在<code>public class ErrorMvcAutoConfiguration</code>，就是去哪个错误页面是这个方法解析器来决定的，其中涉及到的关键类
+<code>DefaultErrorViewResolver</code>，会在下面说</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Bean</span></span><br><span class="line"><span class="meta">@ConditionalOnBean(&#123;DispatcherServlet.class&#125;)</span></span><br><span class="line"><span class="meta">@ConditionalOnMissingBean(&#123;ErrorViewResolver.class&#125;)</span></span><br><span class="line">DefaultErrorViewResolver <span class="title function_">conventionErrorViewResolver</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">DefaultErrorViewResolver</span>(<span class="built_in">this</span>.applicationContext, <span class="built_in">this</span>.resources);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>看一下
+<code>BasicErrorController</code>类的关系，<code>BasicErrorController</code>类本身就是一个控制器，这个类是默认处理/error
+请求的。那么响应页面的时候是怎么找到页面的呢？这里有一个关键类
+<code>DefaultErrorViewResolver</code>。</p>
+<figure>
+<img src="/posts/35587/image-20250608155228098.png" alt="image-20250608155228098">
+<figcaption aria-hidden="true">image-20250608155228098</figcaption>
+</figure>
+<h3 id="defaulterrorviewresolver-类">DefaultErrorViewResolver 类：</h3>
+<ul>
+<li>这是 <code>ErrorViewResolver</code> 接口的默认实现类，负责根据 HTTP
+状态码解析对应的错误视图</li>
+<li>它尝试从模板引擎（如
+Thymeleaf、FreeMarker）或静态资源目录中查找匹配的错误页面</li>
+<li>如果找不到精确匹配的错误页面（如
+<code>error/404.html</code>），则尝试使用系列错误页面（如
+<code>error/4xx.html</code> 或 <code>error/5xx.html</code>）</li>
+</ul>
+<p>响应页面时如何找到默认处理 /error
+请求的呢，可以发现，页面当应用程序抛出异常时，Spring Boot
+的错误处理流程大致如下：</p>
+<ul>
+<li><p><strong>异常捕获</strong>：DispatcherServlet
+捕获到未处理的异常，将请求转发到 <code>/error</code> 路径</p></li>
+<li><p><strong>请求处理</strong>：<code>BasicErrorController</code>
+接收到 <code>/error</code> 请求，并根据请求的 Accept 头决定返回 HTML
+还是 JSON 格式的响应</p></li>
+<li><p><strong>视图解析</strong>：在处理 HTML
+响应时，<code>BasicErrorController</code> 调用
+<code>DefaultErrorViewResolver</code> 的 <code>resolveErrorView</code>
+方法来确定使用哪个视图模板</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> ModelAndView <span class="title function_">resolveErrorView</span><span class="params">(HttpServletRequest request, HttpStatus status, Map&lt;String, Object&gt; model)</span> &#123;</span><br><span class="line">    <span class="comment">// 尝试解析精确匹配的状态码视图（如 error/404）</span></span><br><span class="line">    <span class="type">ModelAndView</span> <span class="variable">modelAndView</span> <span class="operator">=</span> <span class="built_in">this</span>.resolve(String.valueOf(status.value()), model);</span><br><span class="line">    <span class="comment">// 如果找不到精确匹配的视图，则尝试解析系列视图（如 error/4xx）</span></span><br><span class="line">    <span class="keyword">if</span> (modelAndView == <span class="literal">null</span> &amp;&amp; SERIES_VIEWS.containsKey(status.series())) &#123;</span><br><span class="line">        modelAndView = <span class="built_in">this</span>.resolve((String)SERIES_VIEWS.get(status.series()), model);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> modelAndView;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<p>视图解析的流程大概如下：</p>
+<p><code>resolveErrorView</code>中，调用了<code>reslove</code>去解析精确匹配的状态码，然后尝试构建视图，然后<code>resolve</code>方法中会调用<code>resolveResource</code>获取静态资源</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> ModelAndView <span class="title function_">resolve</span><span class="params">(String viewName, Map&lt;String, Object&gt; model)</span> &#123;</span><br><span class="line">    <span class="comment">// 构建错误视图名称，格式为 &quot;error/&#123;statusCode&#125;&quot; 或 &quot;error/&#123;series&#125;&quot;</span></span><br><span class="line">    <span class="type">String</span> <span class="variable">errorViewName</span> <span class="operator">=</span> <span class="string">&quot;error/&quot;</span> + viewName;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 检查是否存在可用的模板引擎来处理该视图</span></span><br><span class="line">    <span class="type">TemplateAvailabilityProvider</span> <span class="variable">provider</span> <span class="operator">=</span> <span class="built_in">this</span>.templateAvailabilityProviders.getProvider(errorViewName, <span class="built_in">this</span>.applicationContext);</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 如果存在模板引擎支持，则使用模板引擎渲染视图</span></span><br><span class="line">    <span class="comment">// 否则尝试从静态资源中查找对应的 HTML 文件</span></span><br><span class="line">    <span class="keyword">return</span> provider != <span class="literal">null</span> ? <span class="keyword">new</span> <span class="title class_">ModelAndView</span>(errorViewName, model) : <span class="built_in">this</span>.resolveResource(errorViewName, model);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> ModelAndView <span class="title function_">resolveResource</span><span class="params">(String viewName, Map&lt;String, Object&gt; model)</span> &#123;</span><br><span class="line">    <span class="comment">// 遍历所有静态资源位置</span></span><br><span class="line">    String[] locations = <span class="built_in">this</span>.resources.getStaticLocations();</span><br><span class="line">    <span class="keyword">for</span> (String location : locations) &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="comment">// 尝试加载资源</span></span><br><span class="line">            <span class="type">Resource</span> <span class="variable">resource</span> <span class="operator">=</span> <span class="built_in">this</span>.applicationContext.getResource(location);</span><br><span class="line">            resource = resource.createRelative(viewName + <span class="string">&quot;.html&quot;</span>);</span><br><span class="line">            <span class="keyword">if</span> (resource.exists()) &#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">ModelAndView</span>(<span class="keyword">new</span> <span class="title class_">HtmlResourceView</span>(resource), model);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">            <span class="comment">// 忽略异常，继续检查下一个位置</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>所以，我们可以得到详细的规则，如下：</p>
+<ul>
+<li><p>解析⼀个错误⻚</p>
+<ul>
+<li><p>如果发⽣了500、404、503、403 这些错误</p>
+<ul>
+<li><p>如果有模板引擎，默认在
+<code>classpath:/templates/error/ 精确码 .html</code></p></li>
+<li><p>如果没有模板引擎，在静态资源⽂件夹下找
+<code>精确码 .html</code></p></li>
+</ul></li>
+<li><p>如果匹配不到 <code>精确码 .html</code> 这些精确的错误⻚，就去找
+<code>5xx.html</code> ， <code>4xx.html</code>模糊匹配</p>
+<ul>
+<li><p>如果有模板引擎，默认在
+<code>classpath:/templates/error/5xx.html</code></p></li>
+<li><p>如果没有模板引擎，在静态资源⽂件夹下找
+<code>5xx.html</code></p></li>
+</ul></li>
+<li><p>如果模板引擎路径 templates 下有 <code>error.html</code>
+⻚⾯，就直接渲染</p></li>
+</ul></li>
+<li><p>如果你需要定制错误页面，这个类的步骤很重要</p></li>
+<li><p>因为，这种机制使得开发者可以通过在 <code>templates/error/</code>
+或 <code>static/error/</code> 目录下放置相应的 HTML
+文件来自定义错误页面，同时保持了 Spring Boot
+错误处理的默认行为。</p></li>
+</ul>
+<p>而容器中有⼀个默认的名为 error 的 view； 提供了默认⽩⻚功能</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Bean(</span></span><br><span class="line"><span class="meta">        name = &#123;&quot;error&quot;&#125;</span></span><br><span class="line"><span class="meta">    )</span></span><br><span class="line">    <span class="meta">@ConditionalOnMissingBean(</span></span><br><span class="line"><span class="meta">        name = &#123;&quot;error&quot;&#125;</span></span><br><span class="line"><span class="meta">    )</span></span><br><span class="line">    <span class="keyword">public</span> View <span class="title function_">defaultErrorView</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">this</span>.defaultErrorView;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>封装了JSON格式的错误信息</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Bean</span></span><br><span class="line"><span class="meta">@ConditionalOnMissingBean(</span></span><br><span class="line"><span class="meta">    value = &#123;ErrorAttributes.class&#125;,</span></span><br><span class="line"><span class="meta">    search = SearchStrategy.CURRENT</span></span><br><span class="line"><span class="meta">)</span></span><br><span class="line"><span class="keyword">public</span> DefaultErrorAttributes <span class="title function_">errorAttributes</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">DefaultErrorAttributes</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>所以如何自定义一个异常的界面，这很有说法了</p>
+<h2 id="spring-boot-中的异常处理方案">Spring Boot 中的异常处理方案</h2>
+<h3 id="spring-boot中自定义异常">Spring Boot中自定义异常</h3>
+<p><strong>全局异常处理</strong>：通过实现<code>HandlerExceptionResolver</code>接口或扩展<code>ResponseEntityExceptionHandler</code>类，实现全局的异常处理。</p>
+<h4 id="实现handlerexceptionresolver">实现<code>HandlerExceptionResolver</code></h4>
+<p>Spring提供了<code>HandlerExceptionResolver</code>接口，用于定义全局的异常处理逻辑。可以通过实现该接口，来自定义异常处理策略。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> org.springframework.web.servlet.HandlerExceptionResolver;</span><br><span class="line"><span class="keyword">import</span> org.springframework.web.servlet.ModelAndView;</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">CustomExceptionResolver</span> <span class="keyword">implements</span> <span class="title class_">HandlerExceptionResolver</span> &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> ModelAndView <span class="title function_">resolveException</span><span class="params">(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex)</span> &#123;</span><br><span class="line">        <span class="type">ModelAndView</span> <span class="variable">modelAndView</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ModelAndView</span>();</span><br><span class="line">        modelAndView.addObject(<span class="string">&quot;message&quot;</span>, ex.getMessage());</span><br><span class="line">        modelAndView.setViewName(<span class="string">&quot;error&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> modelAndView;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="扩展responseentityexceptionhandler">扩展<code>ResponseEntityExceptionHandler</code></h4>
+<p><code>ResponseEntityExceptionHandler</code>是Spring提供的一个基类，包含了一些常见异常的处理逻辑。可以通过扩展该类，来实现自定义的异常处理逻辑。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> org.springframework.http.ResponseEntity;</span><br><span class="line"><span class="keyword">import</span> org.springframework.web.bind.annotation.ControllerAdvice;</span><br><span class="line"><span class="keyword">import</span> org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;</span><br><span class="line"><span class="meta">@ControllerAdvice</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">CustomResponseEntityExceptionHandler</span> <span class="keyword">extends</span> <span class="title class_">ResponseEntityExceptionHandler</span> &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">protected</span> ResponseEntity&lt;Object&gt; <span class="title function_">handleMethodArgumentNotValid</span><span class="params">(MethodArgumentNotValidException ex,</span></span><br><span class="line"><span class="params">                                                                  HttpHeaders headers,</span></span><br><span class="line"><span class="params">                                                                  HttpStatus status,</span></span><br><span class="line"><span class="params">                                                                  WebRequest request)</span> &#123;</span><br><span class="line">        <span class="type">ErrorDetails</span> <span class="variable">errorDetails</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ErrorDetails</span>(<span class="keyword">new</span> <span class="title class_">Date</span>(), <span class="string">&quot;Validation Failed&quot;</span>, ex.getBindingResult().toString());</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">ResponseEntity</span>&lt;&gt;(errorDetails, HttpStatus.BAD_REQUEST);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="常见异常的处理方法">常见异常的处理方法</h4>
+<h5 id="处理资源未找到异常">处理资源未找到异常</h5>
+<p>资源未找到异常（ResourceNotFoundException）是指请求的资源不存在，通常在RESTful
+API中较为常见。可以通过自定义异常类和异常处理方法来处理这种异常。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ResourceNotFoundException</span> <span class="keyword">extends</span> <span class="title class_">RuntimeException</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">ResourceNotFoundException</span><span class="params">(String message)</span> &#123;</span><br><span class="line">        <span class="built_in">super</span>(message);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在全局异常处理类中处理该异常：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@ExceptionHandler(ResourceNotFoundException.class)</span></span><br><span class="line"><span class="keyword">public</span> ResponseEntity&lt;?&gt; handleResourceNotFoundException(ResourceNotFoundException ex, WebRequest request) &#123;</span><br><span class="line">    <span class="type">ErrorDetails</span> <span class="variable">errorDetails</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ErrorDetails</span>(<span class="keyword">new</span> <span class="title class_">Date</span>(), ex.getMessage(), request.getDescription(<span class="literal">false</span>));</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">ResponseEntity</span>&lt;&gt;(errorDetails, HttpStatus.NOT_FOUND);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h5 id="处理数据验证异常">处理数据验证异常</h5>
+<p>数据验证异常（ValidationException）通常在对输入数据进行验证时出现。可以通过在Controller中使用<code>@Valid</code>注解，对输入数据进行验证，并在全局异常处理类中处理验证异常。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> javax.validation.constraints.NotNull;</span><br><span class="line"><span class="keyword">import</span> javax.validation.constraints.Size;</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">User</span> &#123;</span><br><span class="line">    <span class="meta">@NotNull</span></span><br><span class="line">    <span class="keyword">private</span> Long id;</span><br><span class="line">    <span class="meta">@Size(min = 2, message = &quot;Name should have at least 2 characters&quot;)</span></span><br><span class="line">    <span class="keyword">private</span> String name;</span><br><span class="line">    <span class="comment">// Getters and Setters</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在Controller中使用<code>@Valid</code>注解：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> org.springframework.web.bind.annotation.*;</span><br><span class="line"><span class="keyword">import</span> javax.validation.Valid;</span><br><span class="line"><span class="meta">@RestController</span></span><br><span class="line"><span class="meta">@RequestMapping(&quot;/api/users&quot;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">UserController</span> &#123;</span><br><span class="line">    <span class="meta">@PostMapping</span></span><br><span class="line">    <span class="keyword">public</span> ResponseEntity&lt;User&gt; <span class="title function_">createUser</span><span class="params">(<span class="meta">@Valid</span> <span class="meta">@RequestBody</span> User user)</span> &#123;</span><br><span class="line">        <span class="comment">// Save user to database</span></span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">ResponseEntity</span>&lt;&gt;(user, HttpStatus.CREATED);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在全局异常处理类中处理验证异常</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> org.springframework.validation.FieldError;</span><br><span class="line"><span class="keyword">import</span> org.springframework.web.bind.MethodArgumentNotValidException;</span><br><span class="line"><span class="meta">@ExceptionHandler(MethodArgumentNotValidException.class)</span></span><br><span class="line"><span class="keyword">public</span> ResponseEntity&lt;?&gt; handleMethodArgumentNotValidException(MethodArgumentNotValidException ex, WebRequest request) &#123;</span><br><span class="line">    Map&lt;String, String&gt; errors = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">    ex.getBindingResult().getAllErrors().forEach((error) -&gt; &#123;</span><br><span class="line">        <span class="type">String</span> <span class="variable">fieldName</span> <span class="operator">=</span> ((FieldError) error).getField();</span><br><span class="line">        <span class="type">String</span> <span class="variable">errorMessage</span> <span class="operator">=</span> error.getDefaultMessage();</span><br><span class="line">        errors.put(fieldName, errorMessage);</span><br><span class="line">    &#125;);</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">ResponseEntity</span>&lt;&gt;(errors, HttpStatus.BAD_REQUEST);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h5 id="处理数据库异常">处理数据库异常</h5>
+<p>数据库异常（DatabaseException）通常在与数据库交互时出现。例如，违反唯一性约束、外键约束等。可以通过自定义异常类和异常处理方法来处理这种异常。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">DatabaseException</span> <span class="keyword">extends</span> <span class="title class_">RuntimeException</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">DatabaseException</span><span class="params">(String message)</span> &#123;</span><br><span class="line">        <span class="built_in">super</span>(message);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在全局异常处理类中处理数据库异常：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@ExceptionHandler(DatabaseException.class)</span></span><br><span class="line"><span class="keyword">public</span> ResponseEntity&lt;?&gt; handleDatabaseException(DatabaseException ex, WebRequest request) &#123;</span><br><span class="line">    <span class="type">ErrorDetails</span> <span class="variable">errorDetails</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ErrorDetails</span>(<span class="keyword">new</span> <span class="title class_">Date</span>(), ex.getMessage(), request.getDescription(<span class="literal">false</span>));</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">ResponseEntity</span>&lt;&gt;(errorDetails, HttpStatus.INTERNAL_SERVER_ERROR);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="自定义json响应">自定义json响应</h3>
+<h4 id="简介">简介</h4>
+<p>在现代前后端分离的架构中，RESTful API 通常需要返回结构化的 JSON
+错误响应，而不是 HTML 页面。Spring Boot 提供了多种方式来实现自定义 JSON
+错误响应，使前端能够以统一的方式处理错误。</p>
+<p>Spring 提供了一个非常方便的异常处理方案：控制器通知
+(<code>@ControllerAdvice</code>
+或<code>@RestControllerAdvice</code>)，它将所有控制器作为一个
+切面，利用切面技术来实现异常的通知。处理Controller层的异常处理就是通过<code>@ControllerAdvice</code>和<code>@ExceptionHandler</code>注解，集中处理Controller层的异常。这两个注解的使用我在上面已经说过了，在这里就是扩展讲一下了</p>
+<h4 id="相关注解">相关注解</h4>
+<h5 id="exceptionhandler"><code>@ExceptionHandler</code></h5>
+<p><code>@ExceptionHandler</code>，用于标记一个方法，该方法将处理特定类型的异常。默认情况下，它只处理
+<strong>当前控制器类</strong> 中发生的异常</p>
+<ol type="1">
+<li><p><strong>作用范围</strong>：仅处理当前控制器类中抛出的异常。</p></li>
+<li><p><strong>异常类型匹配</strong>：通过 <code>value</code>
+属性指定要处理的异常类型。</p></li>
+<li><p><strong>返回值</strong>：可以返回视图名称（如
+<code>String</code>）、<code>ModelAndView</code> 或直接返回响应体（如
+<code>@ResponseBody</code>）。</p></li>
+</ol>
+<h5 id="controlleradvice"><code>@ControllerAdvice</code></h5>
+<p><code>@ControllerAdvice</code> 是一个特殊的
+<code>@Component</code>，用于定义
+<code>@ExceptionHandler</code>、<code>@InitBinder</code> 和
+<code>@ModelAttribute</code> 方法，这些方法将应用于
+<strong>所有控制器</strong>。</p>
+<h4 id="核心特性"><strong>核心特性</strong></h4>
+<ol type="1">
+<li><p><strong>全局作用域</strong>：处理所有控制器中抛出的异常。</p></li>
+<li><p><strong>选择性应用</strong>：可通过
+<code>annotations</code>、<code>basePackages</code>
+等属性指定要应用的控制器范围。</p></li>
+<li><p><strong>与 <code>@ExceptionHandler</code> 结合</strong>：在
+<code>@ControllerAdvice</code> 类中定义 <code>@ExceptionHandler</code>
+方法，实现全局异常处理。</p></li>
+<li><p>如果<strong>组合使用 <code>@ExceptionHandler</code> 和
+<code>@ControllerAdvice</code></strong>，注意Spring MVC 的异常处理遵循
+<strong>就近原则</strong>：</p>
+<ol type="1">
+<li><strong>局部处理</strong>：优先使用控制器内部的
+<code>@ExceptionHandler</code>。</li>
+<li><strong>全局处理</strong>：如果控制器内部没有匹配的处理方法，则使用
+<code>@ControllerAdvice</code> 中的全局处理方法。</li>
+</ol>
+<p>例如，<strong>处理流程示例</strong></p>
+<ol type="1">
+<li><p>控制器抛出<code>UserNotFoundException</code></p>
+<ul>
+<li>首先查找当前控制器中是否有
+<code>@ExceptionHandler(UserNotFoundException.class)</code>。</li>
+<li>如果没有，则查找 <code>@ControllerAdvice</code>
+类中是否有匹配的处理方法。</li>
+<li>如果仍没有，则由 Spring MVC 的默认异常处理器处理。</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 全局异常处理器</span></span><br><span class="line"><span class="meta">@ControllerAdvice</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">GlobalExceptionHandler</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 全局处理 RuntimeException</span></span><br><span class="line">    <span class="meta">@ExceptionHandler(RuntimeException.class)</span></span><br><span class="line">    <span class="keyword">public</span> ResponseEntity&lt;String&gt; <span class="title function_">handleRuntimeException</span><span class="params">(RuntimeException ex)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)</span><br><span class="line">                .body(<span class="string">&quot;Runtime error: &quot;</span> + ex.getMessage());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 特定控制器</span></span><br><span class="line"><span class="meta">@RestController</span></span><br><span class="line"><span class="meta">@RequestMapping(&quot;/api&quot;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">OrderController</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@PostMapping(&quot;/orders&quot;)</span></span><br><span class="line">    <span class="keyword">public</span> Order <span class="title function_">createOrder</span><span class="params">(<span class="meta">@RequestBody</span> Order order)</span> &#123;</span><br><span class="line">        <span class="comment">// 可能抛出 BusinessException</span></span><br><span class="line">        <span class="keyword">return</span> orderService.createOrder(order);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 仅处理当前控制器中的 BusinessException</span></span><br><span class="line">    <span class="meta">@ExceptionHandler(BusinessException.class)</span></span><br><span class="line">    <span class="keyword">public</span> ResponseEntity&lt;String&gt; <span class="title function_">handleBusinessException</span><span class="params">(BusinessException ex)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> ResponseEntity.status(HttpStatus.BAD_REQUEST)</span><br><span class="line">                .body(<span class="string">&quot;Business error: &quot;</span> + ex.getMessage());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ol></li>
+</ol>
+<h5 id="restcontrolleradvice"><code>@RestControllerAdvice</code></h5>
+<p><code>@RestControllerAdvice</code> 是 <code>@ControllerAdvice</code>
+的特殊版本，是专门为 RESTful
+控制器设计的全局异常处理器，它的方法返回值将自动转换为JSON响应体。它是
+<code>@ControllerAdvice</code> 和 <code>@ResponseBody</code>
+的结合体。</p>
+<p>当 Spring Boot 应用启动时，Spring 容器会自动扫描并加载带有
+<code>@RestControllerAdvice</code>
+注解的类，将其实例化并纳入管理。一旦控制器层在处理请求时抛出异常，Spring
+MVC 的异常处理机制就会被触发。</p>
+<p>在标注了 <code>@RestControllerAdvice</code>
+的类中，我们可以定义若干个 <code>@ExceptionHandler</code>
+方法，这些方法会根据其参数类型与抛出的异常类型进行匹配</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RestControllerAdvice</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">GlobalExceptionHandler</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@ExceptionHandler(YourSelfException.class)</span></span><br><span class="line">    <span class="keyword">public</span> ResponseEntity&lt;ErrorResponse&gt; <span class="title function_">handleAllExceptions</span><span class="params">(Exception ex)</span> &#123;</span><br><span class="line">        <span class="type">ErrorResponse</span> <span class="variable">errorResponse</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ErrorResponse</span>(</span><br><span class="line">            HttpStatus.INTERNAL_SERVER_ERROR.value(),</span><br><span class="line">            <span class="string">&quot;Internal Server Error&quot;</span>,</span><br><span class="line">            ex.getMessage()</span><br><span class="line">        );</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">ResponseEntity</span>&lt;&gt;(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@ExceptionHandler(value = NullPointerException.class)</span></span><br><span class="line">    <span class="keyword">public</span> ResponseEntity&lt;ErrorResponse&gt; <span class="title function_">handleNullPointerException</span><span class="params">(NullPointerException ex)</span> &#123;</span><br><span class="line">        <span class="comment">// 对空指针异常的处理逻辑</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@ExceptionHandler(value = MyCustomException.class)</span></span><br><span class="line">    <span class="keyword">public</span> ResponseEntity&lt;ErrorResponse&gt; <span class="title function_">handleMyCustomException</span><span class="params">(MyCustomException ex)</span> &#123;</span><br><span class="line">        <span class="comment">// 对自定义异常 MyCustomException 的处理逻辑</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@ExceptionHandler(value = Exception.class)</span></span><br><span class="line">    <span class="keyword">public</span> ResponseEntity&lt;ErrorResponse&gt; <span class="title function_">handleAllExceptions</span><span class="params">(Exception ex)</span> &#123;</span><br><span class="line">        <span class="comment">// 对所有未特别处理的异常的通用处理逻辑</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>由于 <span class="citation" data-cites="RestControllerAdvice">@RestControllerAdvice</span>
+类型的处理器返回值带有 <span class="citation" data-cites="ResponseBody">@ResponseBody</span> 效果，因此，这些 <span class="citation" data-cites="ExceptionHandler">@ExceptionHandler</span>
+方法的返回值会被自动转换为 HTTP
+响应体的内容。常见的做法是返回一个自定义的错误响应实体，如
+ErrorResponse，包含错误代码、消息等信息，方便客户端理解和处理，自定义的错误响应实体示例如下</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Data</span></span><br><span class="line"><span class="meta">@AllArgsConstructor</span></span><br><span class="line"><span class="meta">@NoArgsConstructor</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ErrorResponse</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> status;</span><br><span class="line">    <span class="keyword">private</span> String error;</span><br><span class="line">    <span class="keyword">private</span> String message;</span><br><span class="line">    <span class="keyword">private</span> String path;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">long</span> timestamp;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">ErrorResponse</span><span class="params">(<span class="type">int</span> status, String error, String message)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.status = status;</span><br><span class="line">        <span class="built_in">this</span>.error = error;</span><br><span class="line">        <span class="built_in">this</span>.message = message;</span><br><span class="line">        <span class="built_in">this</span>.timestamp = System.currentTimeMillis();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h5 id="responsestatus"><code>@ResponseStatus</code></h5>
+<p><code>@ResponseStatus</code>注解是<code>spring-web</code>包中提供的一个注解，其主要作用就是为了<strong>改变HTTP响应的状态码</strong></p>
+<p>有两种用法</p>
+<ul>
+<li><p>一种是加载自定义异常类上</p></li>
+<li><p>一种是加在目标方法中，当修饰一个类的时候，通常修饰的是一个异常类。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RequestMapping(path = &quot;/401&quot;)</span></span><br><span class="line"><span class="meta">@ResponseStatus(value = HttpStatus.CREATED)</span></span><br><span class="line"><span class="keyword">public</span> Response <span class="title function_">unauthorized</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Response</span>(<span class="number">401</span>, <span class="string">&quot;Unauthorized&quot;</span>, <span class="literal">null</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>HttpStatus.CREATED 状态码为201，将原来请求状态码200改为201。</p>
+<figure>
+<img src="/posts/35587/1158910-20210722223604523-1859048750.png" alt="img">
+<figcaption aria-hidden="true">img</figcaption>
+</figure></li>
+</ul>
+<p><span class="citation" data-cites="ResponseStatus注释可指定下表所示属性">@ResponseStatus注释可指定下表所示属性</span>：</p>
+<table>
+<colgroup>
+<col style="width: 8%">
+<col style="width: 14%">
+<col style="width: 11%">
+<col style="width: 65%">
+</colgroup>
+<thead>
+<tr>
+<th>属性</th>
+<th>类型</th>
+<th>是否必要</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>code</td>
+<td>HttpStatus</td>
+<td>否</td>
+<td>http状态码，如HttpStatus.CREATED,HttpStatus.OK</td>
+</tr>
+<tr>
+<td>value</td>
+<td>String</td>
+<td>否</td>
+<td>同code属性</td>
+</tr>
+<tr>
+<td>reason</td>
+<td>HttpStatus</td>
+<td>否</td>
+<td>错误信息</td>
+</tr>
+</tbody>
+</table>
+<p>如果<code>@ResponseStatus</code>有<code>reason</code>属性，<code>@RequestMapping</code>方法返回值都不处理了，直接返回服务器自带的
+<code>ERROR</code>页面，交互体验比较差，建议不要使用。而且当<code>@ResponseStatus</code>用在方法上，如果添加了<code>reason</code>属性，且<code>reason</code>不为”“，且code
+&gt; 0(哪怕状态码是200)，也会对当前请求走错误处理。</p>
+<p>响应状态的覆盖顺序</p>
+<ol type="1">
+<li>方法级<code>@ResponseStatus</code></li>
+<li>异常类级<code>@ResponseStatus</code></li>
+<li><code>ResponseEntity</code>设置的状态码</li>
+<li>Spring默认状态码</li>
+</ol>
+<p>可以通过自定义异常类和 <code>@ResponseStatus</code>
+注解来简化异常处理：</p>
+<p>使用时，先声明一个自定义异常类，在自定义异常类上面加上<code>@ResponseStatus</code>注释表示系统运行期间，当抛出自定义异常的时候，使用<code>@ResponseStatus</code>注解中声明的属性和reason属性将异常信息返回给客户端，提高可读性。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> org.springframework.web.bind.annotation.ResponseStatus;</span><br><span class="line"></span><br><span class="line"><span class="meta">@ResponseStatus(reason=&quot;The system is exception！&quot;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">BusinessException</span> <span class="keyword">extends</span> <span class="title class_">RuntimeException</span></span><br><span class="line">&#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RequestMapping(value = &quot;/helloResponseStatus2&quot;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">helloResponseStatus2</span><span class="params">(<span class="meta">@RequestParam(value = &quot;name&quot;)</span> String name)</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (StringUtils.isBlank(name)) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">BusinessException</span>();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>响应结果可以看到：</p>
+<figure>
+<img src="/posts/35587/d8a1e044f7c196e035de17fd962ef861.png" alt="img">
+<figcaption aria-hidden="true">img</figcaption>
+</figure>
+<p>而<code>@ResponseStatus</code>注解配合<code>@ExceptionHandler</code>注解使用会更好</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RestControllerAdvice</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">GlobalExceptionHandler</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@ExceptionHandler(ValidationException.class)</span></span><br><span class="line">    <span class="meta">@ResponseStatus(HttpStatus.BAD_REQUEST)</span></span><br><span class="line">    <span class="keyword">public</span> ErrorResponse <span class="title function_">handleValidationException</span><span class="params">(ValidationException ex)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">ErrorResponse</span>(</span><br><span class="line">            <span class="string">&quot;VALIDATION_FAILED&quot;</span>,</span><br><span class="line">            ex.getFieldErrors()</span><br><span class="line">        );</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><strong><code>@ExceptionHandler(ValidationException.class)</code></strong>指定该方法处理
+<code>ValidationException</code> 类型的异常。当任何控制器抛出
+<code>ValidationException</code>
+时，此方法会被调用，<strong><code>@ResponseStatus(HttpStatus.BAD_REQUEST)</code></strong>将
+HTTP 状态码设置为 400（Bad Request）</li>
+<li>这种组合无需在每个异常处理方法中手动设置
+<code>HttpServletResponse</code> 的状态码，代码更简洁，符合 RESTful API
+设计原则。</li>
+</ul>
+<p>而且还可以实现组合状态码与自定义响应</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@ExceptionHandler(PaymentRequiredException.class)</span></span><br><span class="line"><span class="meta">@ResponseStatus(HttpStatus.PAYMENT_REQUIRED)</span></span><br><span class="line"><span class="keyword">public</span> ApiResponse&lt;Void&gt; <span class="title function_">handlePaymentRequired</span><span class="params">(PaymentRequiredException ex)</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> ApiResponse.fail(</span><br><span class="line">        <span class="string">&quot;PAYMENT_REQUIRED&quot;</span>,</span><br><span class="line">        ex.getOrderId(),</span><br><span class="line">        <span class="string">&quot;Please complete payment for order &quot;</span> + ex.getOrderId()</span><br><span class="line">    );</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>但是会覆盖异常类的注解</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@ExceptionHandler(ResourceNotFoundException.class)</span></span><br><span class="line"><span class="meta">@ResponseStatus(HttpStatus.GONE)</span> <span class="comment">// 覆盖原NOT_FOUND定义</span></span><br><span class="line"><span class="keyword">public</span> ErrorResponse <span class="title function_">handleResourceNotFound</span><span class="params">(ResourceNotFoundException ex)</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">ErrorResponse</span>(</span><br><span class="line">        <span class="string">&quot;RESOURCE_EXPIRED&quot;</span>,</span><br><span class="line">        <span class="string">&quot;Resource was permanently removed&quot;</span></span><br><span class="line">    );</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="自定义页面响应">自定义页面响应</h3>
+<p>在Web应用中，除了常见的JSON格式错误响应外，很多时候我们还需要返回自定义的错误页面，特别是在传统的服务端渲染(SSR)应用中。Spring
+Boot提供了多种方式来实现自定义错误页面，让用户获得更友好的错误提示体验。</p>
+<p>实现自定义异常页面主要通过以下两种方式：<strong>基于静态资源的简单实现</strong>和<strong>基于模板引擎的动态实现</strong>。</p>
+<p>但是我们需要先知道定制错误处理逻辑异常页面的资源加载过程</p>
+<p>假设我们拥有自定义的异常页面，如下图结构</p>
+<figure>
+<img src="/posts/35587/fc43737a10d14e76aec4842f81230cc6.png" alt="img">
+<figcaption aria-hidden="true">img</figcaption>
+</figure>
+<p>如上图定义一个 404 的异常界面。查找顺序如下</p>
+<ul>
+<li>有模板引擎的情况下：<code>templates/error/状态码</code>，将错误页面命名为
+<code>错误状态码.html</code>放在模板引擎文件夹里面的 <code>error</code>
+文件夹下， 发生此状态码的错误就会来到对应的页面。</li>
+<li>没有模板引擎或者模板引擎找不到错误页面，静态资源
+<code>static</code>文件 夹下找：<code>static/error/状态</code></li>
+<li>以上都没有，默认来到 Spring Boot 默认的错误提示页面</li>
+</ul>
+<p>也就是说，根据默认错误页面机制，Spring Boot
+默认会在以下路径查找错误页面：</p>
+<ul>
+<li><code>/error/404.html</code> (针对404错误)</li>
+<li><code>/error/5xx.html</code> (针对5xx系列错误)</li>
+<li><code>/error/error.html</code> (通用错误页面)</li>
+</ul>
+<p>如果需要修改默认的错误页面路径，可以在<code>application.properties</code>中配置：</p>
+<figure class="highlight properties"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">server.error.path</span>=<span class="string">/my-error</span></span><br><span class="line"><span class="attr">spring.mvc.static-path-pattern</span>=<span class="string">/static/**</span></span><br></pre></td></tr></table></figure>
+<p>对于更复杂的场景，我们可以使用模板引擎动态渲染错误页面。</p>
+<p>以使用Thymeleaf模板引擎为例子</p>
+<p><strong>实现步骤：</strong></p>
+<ol type="1">
+<li>在<code>resources/templates/error/</code>目录下创建模板文件</li>
+<li>模板中可以访问错误信息变量</li>
+</ol>
+<p>而 Spring Boot 会自动向错误页面提供以下属性：</p>
+<ul>
+<li><code>timestamp</code>：错误发生的时间戳</li>
+<li><code>status</code>：HTTP状态码</li>
+<li><code>error</code>：错误原因</li>
+<li><code>exception</code>：异常类名</li>
+<li><code>message</code>：异常消息</li>
+<li><code>path</code>：请求路径</li>
+</ul>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!-- resources/templates/error/error.html --&gt;</span></span><br><span class="line"><span class="meta">&lt;!DOCTYPE <span class="keyword">html</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">html</span> <span class="attr">xmlns:th</span>=<span class="string">&quot;http://www.thymeleaf.org&quot;</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">head</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">title</span> <span class="attr">th:text</span>=<span class="string">&quot;$&#123;status&#125; + &#x27; &#x27; + $&#123;error&#125;&quot;</span>&gt;</span>Error<span class="tag">&lt;/<span class="name">title</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">head</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">h1</span> <span class="attr">th:text</span>=<span class="string">&quot;$&#123;status&#125; + &#x27; &#x27; + $&#123;error&#125;&quot;</span>&gt;</span>Error<span class="tag">&lt;/<span class="name">h1</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">p</span> <span class="attr">th:text</span>=<span class="string">&quot;$&#123;message&#125;&quot;</span>&gt;</span>Error message<span class="tag">&lt;/<span class="name">p</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">p</span> <span class="attr">th:text</span>=<span class="string">&quot;$&#123;timestamp&#125;&quot;</span>&gt;</span>Timestamp<span class="tag">&lt;/<span class="name">p</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">p</span> <span class="attr">th:text</span>=<span class="string">&quot;$&#123;path&#125;&quot;</span>&gt;</span>Path<span class="tag">&lt;/<span class="name">p</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>如果需要更灵活的错误页面解析逻辑，可以自定义
+<code>ErrorViewResolver</code>。</p>
+<ul>
+<li><strong>创建自定义 ErrorViewResolver</strong> 实现
+<code>ErrorViewResolver</code> 接口，并重写
+<code>resolveErrorView</code> 方法。</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> org.springframework.boot.web.servlet.error.ErrorViewResolver;</span><br><span class="line"><span class="keyword">import</span> org.springframework.http.HttpStatus;</span><br><span class="line"><span class="keyword">import</span> org.springframework.stereotype.Component;</span><br><span class="line"><span class="keyword">import</span> org.springframework.web.servlet.ModelAndView;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> javax.servlet.http.HttpServletRequest;</span><br><span class="line"><span class="keyword">import</span> java.util.Map;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">CustomErrorViewResolver</span> <span class="keyword">implements</span> <span class="title class_">ErrorViewResolver</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> ModelAndView <span class="title function_">resolveErrorView</span><span class="params">(HttpServletRequest request, HttpStatus status, Map&lt;String, Object&gt; model)</span> &#123;</span><br><span class="line">        <span class="comment">// 根据不同的状态码返回不同的视图</span></span><br><span class="line">        <span class="keyword">if</span> (status == HttpStatus.NOT_FOUND) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">ModelAndView</span>(<span class="string">&quot;custom/404&quot;</span>, model); <span class="comment">// 指向 templates/custom/404.html</span></span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (status == HttpStatus.INTERNAL_SERVER_ERROR) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">ModelAndView</span>(<span class="string">&quot;custom/500&quot;</span>, model); <span class="comment">// 指向 templates/custom/500.html</span></span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">null</span>; <span class="comment">// 返回 null 让默认解析器处理其他情况</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>如果需要完全控制错误处理逻辑，可以自定义
+<code>ErrorController</code>。</p>
+<ul>
+<li><p><strong>创建自定义 ErrorController</strong> 实现
+<code>ErrorController</code> 接口，处理 <code>/error</code> 路径。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Controller</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">EnhancedErrorController</span> <span class="keyword">implements</span> <span class="title class_">ErrorController</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@RequestMapping(&quot;/error&quot;)</span></span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">handleError</span><span class="params">(HttpServletRequest request, Model model)</span> &#123;</span><br><span class="line">        <span class="comment">// 收集错误信息</span></span><br><span class="line">        <span class="type">Object</span> <span class="variable">status</span> <span class="operator">=</span> request.getAttribute(RequestDispatcher.ERROR_STATUS_CODE);</span><br><span class="line">        <span class="type">Object</span> <span class="variable">exception</span> <span class="operator">=</span> request.getAttribute(RequestDispatcher.ERROR_EXCEPTION);</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 设置模型数据</span></span><br><span class="line">        model.addAttribute(<span class="string">&quot;timestamp&quot;</span>, <span class="keyword">new</span> <span class="title class_">Date</span>());</span><br><span class="line">        model.addAttribute(<span class="string">&quot;status&quot;</span>, status);</span><br><span class="line">        model.addAttribute(<span class="string">&quot;error&quot;</span>, HttpStatus.valueOf(Integer.valueOf(status.toString())).getReasonPhrase());</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">if</span> (exception != <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="type">Throwable</span> <span class="variable">ex</span> <span class="operator">=</span> (Throwable) exception;</span><br><span class="line">            model.addAttribute(<span class="string">&quot;message&quot;</span>, ex.getMessage());</span><br><span class="line">            model.addAttribute(<span class="string">&quot;exception&quot;</span>, ex.getClass().getName());</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="type">Object</span> <span class="variable">path</span> <span class="operator">=</span> request.getAttribute(RequestDispatcher.ERROR_REQUEST_URI);</span><br><span class="line">        <span class="keyword">if</span> (path != <span class="literal">null</span>) &#123;</span><br><span class="line">            model.addAttribute(<span class="string">&quot;path&quot;</span>, path);</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">return</span> <span class="string">&quot;error/custom-error&quot;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<p>虽然<code>@ControllerAdvice</code>通常用于返回JSON响应，但也可以用来返回错误页面。算是冷知识了。</p>
+<p>需要针对特定异常特殊处理时，可以使用<code>@ControllerAdvice</code></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@ControllerAdvice</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">GlobalExceptionHandler</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@ExceptionHandler(ResourceNotFoundException.class)</span></span><br><span class="line">    <span class="keyword">public</span> ModelAndView <span class="title function_">handleResourceNotFound</span><span class="params">(ResourceNotFoundException ex)</span> &#123;</span><br><span class="line">        <span class="type">ModelAndView</span> <span class="variable">mav</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ModelAndView</span>();</span><br><span class="line">        mav.addObject(<span class="string">&quot;message&quot;</span>, ex.getMessage());</span><br><span class="line">        mav.addObject(<span class="string">&quot;status&quot;</span>, HttpStatus.NOT_FOUND.value());</span><br><span class="line">        mav.setViewName(<span class="string">&quot;error/resource-not-found&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> mav;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@ExceptionHandler(Exception.class)</span></span><br><span class="line">    <span class="keyword">public</span> ModelAndView <span class="title function_">handleAllExceptions</span><span class="params">(Exception ex)</span> &#123;</span><br><span class="line">        <span class="type">ModelAndView</span> <span class="variable">mav</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ModelAndView</span>();</span><br><span class="line">        mav.addObject(<span class="string">&quot;message&quot;</span>, <span class="string">&quot;An unexpected error occurred&quot;</span>);</span><br><span class="line">        mav.addObject(<span class="string">&quot;status&quot;</span>, HttpStatus.INTERNAL_SERVER_ERROR.value());</span><br><span class="line">        mav.setViewName(<span class="string">&quot;error/generic-error&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> mav;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="spring-boot-异常处理实战">Spring Boot 异常处理实战</h2>
+<h3 id="前后分离场景">前后分离场景</h3>
+<ul>
+<li><strong>核心手段</strong>：利用
+<code>@ControllerAdvice + @ExceptionHandler</code>
+组合，对后台产生的所有错误，执行统一异常处理流程，将异常信息以合适格式（如
+JSON）返回给前端，便于前端做错误提示等处理。</li>
+</ul>
+<h3 id="服务端页面渲染场景">服务端页面渲染场景</h3>
+<h4 id="不可预知的-http-码错误服务器或客户端错误">不可预知的 HTTP
+码错误（服务器或客户端错误 ）</h4>
+<ul>
+<li><strong>精确匹配</strong>：在
+<code>classpath:/templates/error/</code> 路径下，放置像
+<code>500.html</code>（处理 500 错误 ）、<code>404.html</code>（处理 404
+错误 ）这类，与具体 HTTP
+错误码<strong>精准对应</strong>的错误页面。</li>
+<li><strong>模糊匹配</strong>：同样在
+<code>classpath:/templates/error/</code> 路径下，放
+<code>5xx.html</code>（匹配所有 5 开头的服务器错误
+）、<code>4xx.html</code>（匹配所有 4 开头的客户端错误
+）这类<strong>通用错误页面</strong>，作为精确匹配未命中时的兜底。</li>
+</ul>
+<h4 id="业务错误">业务错误</h4>
+<ul>
+<li><strong>核心业务错误</strong>：针对核心业务里的各类错误，通过代码主动控制跳转，导向专门定制的专属错误页，保证核心业务错误提示精准、贴合业务逻辑。</li>
+<li><strong>通用业务错误</strong>：借助
+<code>classpath:/templates/error.html</code>
+页面，在通用业务出错时，展示错误信息，作为通用业务错误的统一展示入口
+。</li>
+</ul>
+<p>所以就是整体是在 Spring Boot
+框架下，依据不同的开发场景（前后端交互形式、错误类型），规划对应的错误处理与页面
+/ 信息返回策略，让错误处理更规范、体验更优 。</p>
+<h2 id="httpstatus">HttpStatus</h2>
+<p>文章末尾，贴一下<code>org.springframework</code>包内的
+<code>HttpStatus</code>状态码的枚举类</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="comment">// Source code recreated from a .class file by IntelliJ IDEA</span></span><br><span class="line"><span class="comment">// (powered by FernFlower decompiler)</span></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">package</span> org.springframework.http;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.springframework.lang.Nullable;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">enum</span> <span class="title class_">HttpStatus</span> <span class="keyword">implements</span> <span class="title class_">HttpStatusCode</span> &#123;</span><br><span class="line">    CONTINUE(<span class="number">100</span>, HttpStatus.Series.INFORMATIONAL, <span class="string">&quot;Continue&quot;</span>),</span><br><span class="line">    SWITCHING_PROTOCOLS(<span class="number">101</span>, HttpStatus.Series.INFORMATIONAL, <span class="string">&quot;Switching Protocols&quot;</span>),</span><br><span class="line">    PROCESSING(<span class="number">102</span>, HttpStatus.Series.INFORMATIONAL, <span class="string">&quot;Processing&quot;</span>),</span><br><span class="line">    EARLY_HINTS(<span class="number">103</span>, HttpStatus.Series.INFORMATIONAL, <span class="string">&quot;Early Hints&quot;</span>),</span><br><span class="line">    <span class="comment">/** <span class="doctag">@deprecated</span> */</span></span><br><span class="line">    <span class="meta">@Deprecated(</span></span><br><span class="line"><span class="meta">        since = &quot;6.0.5&quot;</span></span><br><span class="line"><span class="meta">    )</span></span><br><span class="line">    CHECKPOINT(<span class="number">103</span>, HttpStatus.Series.INFORMATIONAL, <span class="string">&quot;Checkpoint&quot;</span>),</span><br><span class="line">    OK(<span class="number">200</span>, HttpStatus.Series.SUCCESSFUL, <span class="string">&quot;OK&quot;</span>),</span><br><span class="line">    CREATED(<span class="number">201</span>, HttpStatus.Series.SUCCESSFUL, <span class="string">&quot;Created&quot;</span>),</span><br><span class="line">    ACCEPTED(<span class="number">202</span>, HttpStatus.Series.SUCCESSFUL, <span class="string">&quot;Accepted&quot;</span>),</span><br><span class="line">    NON_AUTHORITATIVE_INFORMATION(<span class="number">203</span>, HttpStatus.Series.SUCCESSFUL, <span class="string">&quot;Non-Authoritative Information&quot;</span>),</span><br><span class="line">    NO_CONTENT(<span class="number">204</span>, HttpStatus.Series.SUCCESSFUL, <span class="string">&quot;No Content&quot;</span>),</span><br><span class="line">    RESET_CONTENT(<span class="number">205</span>, HttpStatus.Series.SUCCESSFUL, <span class="string">&quot;Reset Content&quot;</span>),</span><br><span class="line">    PARTIAL_CONTENT(<span class="number">206</span>, HttpStatus.Series.SUCCESSFUL, <span class="string">&quot;Partial Content&quot;</span>),</span><br><span class="line">    MULTI_STATUS(<span class="number">207</span>, HttpStatus.Series.SUCCESSFUL, <span class="string">&quot;Multi-Status&quot;</span>),</span><br><span class="line">    ALREADY_REPORTED(<span class="number">208</span>, HttpStatus.Series.SUCCESSFUL, <span class="string">&quot;Already Reported&quot;</span>),</span><br><span class="line">    IM_USED(<span class="number">226</span>, HttpStatus.Series.SUCCESSFUL, <span class="string">&quot;IM Used&quot;</span>),</span><br><span class="line">    MULTIPLE_CHOICES(<span class="number">300</span>, HttpStatus.Series.REDIRECTION, <span class="string">&quot;Multiple Choices&quot;</span>),</span><br><span class="line">    MOVED_PERMANENTLY(<span class="number">301</span>, HttpStatus.Series.REDIRECTION, <span class="string">&quot;Moved Permanently&quot;</span>),</span><br><span class="line">    FOUND(<span class="number">302</span>, HttpStatus.Series.REDIRECTION, <span class="string">&quot;Found&quot;</span>),</span><br><span class="line">    <span class="comment">/** <span class="doctag">@deprecated</span> */</span></span><br><span class="line">    <span class="meta">@Deprecated</span></span><br><span class="line">    MOVED_TEMPORARILY(<span class="number">302</span>, HttpStatus.Series.REDIRECTION, <span class="string">&quot;Moved Temporarily&quot;</span>),</span><br><span class="line">    SEE_OTHER(<span class="number">303</span>, HttpStatus.Series.REDIRECTION, <span class="string">&quot;See Other&quot;</span>),</span><br><span class="line">    NOT_MODIFIED(<span class="number">304</span>, HttpStatus.Series.REDIRECTION, <span class="string">&quot;Not Modified&quot;</span>),</span><br><span class="line">    <span class="comment">/** <span class="doctag">@deprecated</span> */</span></span><br><span class="line">    <span class="meta">@Deprecated</span></span><br><span class="line">    USE_PROXY(<span class="number">305</span>, HttpStatus.Series.REDIRECTION, <span class="string">&quot;Use Proxy&quot;</span>),</span><br><span class="line">    TEMPORARY_REDIRECT(<span class="number">307</span>, HttpStatus.Series.REDIRECTION, <span class="string">&quot;Temporary Redirect&quot;</span>),</span><br><span class="line">    PERMANENT_REDIRECT(<span class="number">308</span>, HttpStatus.Series.REDIRECTION, <span class="string">&quot;Permanent Redirect&quot;</span>),</span><br><span class="line">    BAD_REQUEST(<span class="number">400</span>, HttpStatus.Series.CLIENT_ERROR, <span class="string">&quot;Bad Request&quot;</span>),</span><br><span class="line">    UNAUTHORIZED(<span class="number">401</span>, HttpStatus.Series.CLIENT_ERROR, <span class="string">&quot;Unauthorized&quot;</span>),</span><br><span class="line">    PAYMENT_REQUIRED(<span class="number">402</span>, HttpStatus.Series.CLIENT_ERROR, <span class="string">&quot;Payment Required&quot;</span>),</span><br><span class="line">    FORBIDDEN(<span class="number">403</span>, HttpStatus.Series.CLIENT_ERROR, <span class="string">&quot;Forbidden&quot;</span>),</span><br><span class="line">    NOT_FOUND(<span class="number">404</span>, HttpStatus.Series.CLIENT_ERROR, <span class="string">&quot;Not Found&quot;</span>),</span><br><span class="line">    METHOD_NOT_ALLOWED(<span class="number">405</span>, HttpStatus.Series.CLIENT_ERROR, <span class="string">&quot;Method Not Allowed&quot;</span>),</span><br><span class="line">    NOT_ACCEPTABLE(<span class="number">406</span>, HttpStatus.Series.CLIENT_ERROR, <span class="string">&quot;Not Acceptable&quot;</span>),</span><br><span class="line">    PROXY_AUTHENTICATION_REQUIRED(<span class="number">407</span>, HttpStatus.Series.CLIENT_ERROR, <span class="string">&quot;Proxy Authentication Required&quot;</span>),</span><br><span class="line">    REQUEST_TIMEOUT(<span class="number">408</span>, HttpStatus.Series.CLIENT_ERROR, <span class="string">&quot;Request Timeout&quot;</span>),</span><br><span class="line">    CONFLICT(<span class="number">409</span>, HttpStatus.Series.CLIENT_ERROR, <span class="string">&quot;Conflict&quot;</span>),</span><br><span class="line">    GONE(<span class="number">410</span>, HttpStatus.Series.CLIENT_ERROR, <span class="string">&quot;Gone&quot;</span>),</span><br><span class="line">    LENGTH_REQUIRED(<span class="number">411</span>, HttpStatus.Series.CLIENT_ERROR, <span class="string">&quot;Length Required&quot;</span>),</span><br><span class="line">    PRECONDITION_FAILED(<span class="number">412</span>, HttpStatus.Series.CLIENT_ERROR, <span class="string">&quot;Precondition Failed&quot;</span>),</span><br><span class="line">    PAYLOAD_TOO_LARGE(<span class="number">413</span>, HttpStatus.Series.CLIENT_ERROR, <span class="string">&quot;Payload Too Large&quot;</span>),</span><br><span class="line">    <span class="comment">/** <span class="doctag">@deprecated</span> */</span></span><br><span class="line">    <span class="meta">@Deprecated</span></span><br><span class="line">    REQUEST_ENTITY_TOO_LARGE(<span class="number">413</span>, HttpStatus.Series.CLIENT_ERROR, <span class="string">&quot;Request Entity Too Large&quot;</span>),</span><br><span class="line">    URI_TOO_LONG(<span class="number">414</span>, HttpStatus.Series.CLIENT_ERROR, <span class="string">&quot;URI Too Long&quot;</span>),</span><br><span class="line">    <span class="comment">/** <span class="doctag">@deprecated</span> */</span></span><br><span class="line">    <span class="meta">@Deprecated</span></span><br><span class="line">    REQUEST_URI_TOO_LONG(<span class="number">414</span>, HttpStatus.Series.CLIENT_ERROR, <span class="string">&quot;Request-URI Too Long&quot;</span>),</span><br><span class="line">    UNSUPPORTED_MEDIA_TYPE(<span class="number">415</span>, HttpStatus.Series.CLIENT_ERROR, <span class="string">&quot;Unsupported Media Type&quot;</span>),</span><br><span class="line">    REQUESTED_RANGE_NOT_SATISFIABLE(<span class="number">416</span>, HttpStatus.Series.CLIENT_ERROR, <span class="string">&quot;Requested range not satisfiable&quot;</span>),</span><br><span class="line">    EXPECTATION_FAILED(<span class="number">417</span>, HttpStatus.Series.CLIENT_ERROR, <span class="string">&quot;Expectation Failed&quot;</span>),</span><br><span class="line">    I_AM_A_TEAPOT(<span class="number">418</span>, HttpStatus.Series.CLIENT_ERROR, <span class="string">&quot;I&#x27;m a teapot&quot;</span>),</span><br><span class="line">    <span class="comment">/** <span class="doctag">@deprecated</span> */</span></span><br><span class="line">    <span class="meta">@Deprecated</span></span><br><span class="line">    INSUFFICIENT_SPACE_ON_RESOURCE(<span class="number">419</span>, HttpStatus.Series.CLIENT_ERROR, <span class="string">&quot;Insufficient Space On Resource&quot;</span>),</span><br><span class="line">    <span class="comment">/** <span class="doctag">@deprecated</span> */</span></span><br><span class="line">    <span class="meta">@Deprecated</span></span><br><span class="line">    METHOD_FAILURE(<span class="number">420</span>, HttpStatus.Series.CLIENT_ERROR, <span class="string">&quot;Method Failure&quot;</span>),</span><br><span class="line">    <span class="comment">/** <span class="doctag">@deprecated</span> */</span></span><br><span class="line">    <span class="meta">@Deprecated</span></span><br><span class="line">    DESTINATION_LOCKED(<span class="number">421</span>, HttpStatus.Series.CLIENT_ERROR, <span class="string">&quot;Destination Locked&quot;</span>),</span><br><span class="line">    UNPROCESSABLE_ENTITY(<span class="number">422</span>, HttpStatus.Series.CLIENT_ERROR, <span class="string">&quot;Unprocessable Entity&quot;</span>),</span><br><span class="line">    LOCKED(<span class="number">423</span>, HttpStatus.Series.CLIENT_ERROR, <span class="string">&quot;Locked&quot;</span>),</span><br><span class="line">    FAILED_DEPENDENCY(<span class="number">424</span>, HttpStatus.Series.CLIENT_ERROR, <span class="string">&quot;Failed Dependency&quot;</span>),</span><br><span class="line">    TOO_EARLY(<span class="number">425</span>, HttpStatus.Series.CLIENT_ERROR, <span class="string">&quot;Too Early&quot;</span>),</span><br><span class="line">    UPGRADE_REQUIRED(<span class="number">426</span>, HttpStatus.Series.CLIENT_ERROR, <span class="string">&quot;Upgrade Required&quot;</span>),</span><br><span class="line">    PRECONDITION_REQUIRED(<span class="number">428</span>, HttpStatus.Series.CLIENT_ERROR, <span class="string">&quot;Precondition Required&quot;</span>),</span><br><span class="line">    TOO_MANY_REQUESTS(<span class="number">429</span>, HttpStatus.Series.CLIENT_ERROR, <span class="string">&quot;Too Many Requests&quot;</span>),</span><br><span class="line">    REQUEST_HEADER_FIELDS_TOO_LARGE(<span class="number">431</span>, HttpStatus.Series.CLIENT_ERROR, <span class="string">&quot;Request Header Fields Too Large&quot;</span>),</span><br><span class="line">    UNAVAILABLE_FOR_LEGAL_REASONS(<span class="number">451</span>, HttpStatus.Series.CLIENT_ERROR, <span class="string">&quot;Unavailable For Legal Reasons&quot;</span>),</span><br><span class="line">    INTERNAL_SERVER_ERROR(<span class="number">500</span>, HttpStatus.Series.SERVER_ERROR, <span class="string">&quot;Internal Server Error&quot;</span>),</span><br><span class="line">    NOT_IMPLEMENTED(<span class="number">501</span>, HttpStatus.Series.SERVER_ERROR, <span class="string">&quot;Not Implemented&quot;</span>),</span><br><span class="line">    BAD_GATEWAY(<span class="number">502</span>, HttpStatus.Series.SERVER_ERROR, <span class="string">&quot;Bad Gateway&quot;</span>),</span><br><span class="line">    SERVICE_UNAVAILABLE(<span class="number">503</span>, HttpStatus.Series.SERVER_ERROR, <span class="string">&quot;Service Unavailable&quot;</span>),</span><br><span class="line">    GATEWAY_TIMEOUT(<span class="number">504</span>, HttpStatus.Series.SERVER_ERROR, <span class="string">&quot;Gateway Timeout&quot;</span>),</span><br><span class="line">    HTTP_VERSION_NOT_SUPPORTED(<span class="number">505</span>, HttpStatus.Series.SERVER_ERROR, <span class="string">&quot;HTTP Version not supported&quot;</span>),</span><br><span class="line">    VARIANT_ALSO_NEGOTIATES(<span class="number">506</span>, HttpStatus.Series.SERVER_ERROR, <span class="string">&quot;Variant Also Negotiates&quot;</span>),</span><br><span class="line">    INSUFFICIENT_STORAGE(<span class="number">507</span>, HttpStatus.Series.SERVER_ERROR, <span class="string">&quot;Insufficient Storage&quot;</span>),</span><br><span class="line">    LOOP_DETECTED(<span class="number">508</span>, HttpStatus.Series.SERVER_ERROR, <span class="string">&quot;Loop Detected&quot;</span>),</span><br><span class="line">    BANDWIDTH_LIMIT_EXCEEDED(<span class="number">509</span>, HttpStatus.Series.SERVER_ERROR, <span class="string">&quot;Bandwidth Limit Exceeded&quot;</span>),</span><br><span class="line">    NOT_EXTENDED(<span class="number">510</span>, HttpStatus.Series.SERVER_ERROR, <span class="string">&quot;Not Extended&quot;</span>),</span><br><span class="line">    NETWORK_AUTHENTICATION_REQUIRED(<span class="number">511</span>, HttpStatus.Series.SERVER_ERROR, <span class="string">&quot;Network Authentication Required&quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> HttpStatus[] VALUES = values();</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">int</span> value;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Series series;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> String reasonPhrase;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="title function_">HttpStatus</span><span class="params">(<span class="type">int</span> value, Series series, String reasonPhrase)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.value = value;</span><br><span class="line">        <span class="built_in">this</span>.series = series;</span><br><span class="line">        <span class="built_in">this</span>.reasonPhrase = reasonPhrase;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">value</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">this</span>.value;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> Series <span class="title function_">series</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">this</span>.series;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">getReasonPhrase</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">this</span>.reasonPhrase;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">is1xxInformational</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">this</span>.series() == HttpStatus.Series.INFORMATIONAL;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">is2xxSuccessful</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">this</span>.series() == HttpStatus.Series.SUCCESSFUL;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">is3xxRedirection</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">this</span>.series() == HttpStatus.Series.REDIRECTION;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">is4xxClientError</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">this</span>.series() == HttpStatus.Series.CLIENT_ERROR;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">is5xxServerError</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">this</span>.series() == HttpStatus.Series.SERVER_ERROR;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">isError</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">this</span>.is4xxClientError() || <span class="built_in">this</span>.is5xxServerError();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">toString</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">var10000</span> <span class="operator">=</span> <span class="built_in">this</span>.value;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">&quot;&quot;</span> + var10000 + <span class="string">&quot; &quot;</span> + <span class="built_in">this</span>.name();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> HttpStatus <span class="title function_">valueOf</span><span class="params">(<span class="type">int</span> statusCode)</span> &#123;</span><br><span class="line">        <span class="type">HttpStatus</span> <span class="variable">status</span> <span class="operator">=</span> resolve(statusCode);</span><br><span class="line">        <span class="keyword">if</span> (status == <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">IllegalArgumentException</span>(<span class="string">&quot;No matching constant for [&quot;</span> + statusCode + <span class="string">&quot;]&quot;</span>);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> status;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Nullable</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> HttpStatus <span class="title function_">resolve</span><span class="params">(<span class="type">int</span> statusCode)</span> &#123;</span><br><span class="line">        HttpStatus[] var1 = VALUES;</span><br><span class="line">        <span class="type">int</span> <span class="variable">var2</span> <span class="operator">=</span> var1.length;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span>(<span class="type">int</span> <span class="variable">var3</span> <span class="operator">=</span> <span class="number">0</span>; var3 &lt; var2; ++var3) &#123;</span><br><span class="line">            <span class="type">HttpStatus</span> <span class="variable">status</span> <span class="operator">=</span> var1[var3];</span><br><span class="line">            <span class="keyword">if</span> (status.value == statusCode) &#123;</span><br><span class="line">                <span class="keyword">return</span> status;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">enum</span> <span class="title class_">Series</span> &#123;</span><br><span class="line">        INFORMATIONAL(<span class="number">1</span>),</span><br><span class="line">        SUCCESSFUL(<span class="number">2</span>),</span><br><span class="line">        REDIRECTION(<span class="number">3</span>),</span><br><span class="line">        CLIENT_ERROR(<span class="number">4</span>),</span><br><span class="line">        SERVER_ERROR(<span class="number">5</span>);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">int</span> value;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">private</span> <span class="title function_">Series</span><span class="params">(<span class="type">int</span> value)</span> &#123;</span><br><span class="line">            <span class="built_in">this</span>.value = value;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">value</span><span class="params">()</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="built_in">this</span>.value;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">/** <span class="doctag">@deprecated</span> */</span></span><br><span class="line">        <span class="meta">@Deprecated</span></span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">static</span> Series <span class="title function_">valueOf</span><span class="params">(HttpStatus status)</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> status.series;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">static</span> Series <span class="title function_">valueOf</span><span class="params">(<span class="type">int</span> statusCode)</span> &#123;</span><br><span class="line">            <span class="type">Series</span> <span class="variable">series</span> <span class="operator">=</span> resolve(statusCode);</span><br><span class="line">            <span class="keyword">if</span> (series == <span class="literal">null</span>) &#123;</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">IllegalArgumentException</span>(<span class="string">&quot;No matching constant for [&quot;</span> + statusCode + <span class="string">&quot;]&quot;</span>);</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="keyword">return</span> series;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Nullable</span></span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">static</span> Series <span class="title function_">resolve</span><span class="params">(<span class="type">int</span> statusCode)</span> &#123;</span><br><span class="line">            <span class="type">int</span> <span class="variable">seriesCode</span> <span class="operator">=</span> statusCode / <span class="number">100</span>;</span><br><span class="line">            Series[] var2 = values();</span><br><span class="line">            <span class="type">int</span> <span class="variable">var3</span> <span class="operator">=</span> var2.length;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">for</span>(<span class="type">int</span> <span class="variable">var4</span> <span class="operator">=</span> <span class="number">0</span>; var4 &lt; var3; ++var4) &#123;</span><br><span class="line">                <span class="type">Series</span> <span class="variable">series</span> <span class="operator">=</span> var2[var4];</span><br><span class="line">                <span class="keyword">if</span> (series.value == seriesCode) &#123;</span><br><span class="line">                    <span class="keyword">return</span> series;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a target="_blank" rel="noopener" href="https://github.com/ergou10086">ErgouTree</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://ergou10086.github.io/posts/35587.html">https://ergou10086.github.io/posts/35587.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://ergou10086.github.io" target="_blank">ErgouTree's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Java%E6%8A%80%E6%9C%AF/">Java技术</a><a class="post-meta__tags" href="/tags/JavaWeb/">JavaWeb</a><a class="post-meta__tags" href="/tags/%E6%A1%86%E6%9E%B6%E7%9F%A5%E8%AF%86/">框架知识</a><a class="post-meta__tags" href="/tags/%E5%AD%A6%E4%B9%A0/">学习</a><a class="post-meta__tags" href="/tags/Spring%E7%B3%BB%E5%88%97/">Spring系列</a><a class="post-meta__tags" href="/tags/Spring-Boot/">Spring Boot</a><a class="post-meta__tags" href="/tags/Java%E6%A1%86%E6%9E%B6/">Java框架</a><a class="post-meta__tags" href="/tags/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">源码分析</a></div><div class="post-share"><div class="addtoany"><div class="a2a_kit a2a_kit_size_32 a2a_default_style"><a class="a2a_button_facebook"></a><a class="a2a_button_twitter"></a><a class="a2a_button_wechat"></a><a class="a2a_button_sina_weibo"></a><a class="a2a_button_facebook_messenger"></a><a class="a2a_button_email"></a><a class="a2a_button_copy_link"></a><a class="a2a_dd" target="_blank" rel="noopener" href="https://www.addtoany.com/share"></a></div></div><script async="async" src="https://static.addtoany.com/menu/page.js"></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/posts/62445.html" title="Spring Boot part10-Thymeleaf模板引擎"><img class="cover" src="/images/posts/cover_java2.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">Spring Boot part10-Thymeleaf模板引擎</div></div><div class="info-2"><div class="info-item-1">Thymeleaf引擎 Thymeleaf 简介 什么是 Thymeleaf：Thymeleaf是适用于Web和独立环境的现代服务器端Java模板引擎 由于 Spring Boot 使用了嵌入式 Servlet 容器，所以 JSP 默认是不能使用的 如果依旧需要服务端进行页面渲染，优先考虑使用模板引擎   image-20250607192416710  模板引擎页面默认放在 src/main/resources/templates SpringBoot 包含以下模板引擎的自动配置  FreeMarker Groovy Thymeleaf Thymeleaf官⽹：https://www.thymeleaf.org/ Mustache  Thymeleaf 是一个现代化的服务器端 Java 模板引擎，专为 Web 和独立环境而设计。与传统模板引擎相比，它具有以下核心优势：  开箱即用的 HTML...</div></div></div></a><a class="pagination-related" href="/posts/12758.html" title="深入探索C#事件机制"><img class="cover" src="/images/posts/cover_teach2.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">深入探索C#事件机制</div></div><div class="info-2"><div class="info-item-1">什么是事件 在软件开发中，事件是一种用于在对象之间传递信息的机制。当一个对象的状态发生变化时，它可以通过触发事件来通知其他对象。事件机制广泛应用于GUI编程、游戏开发、网络编程等领域。 事件的基本概念和语法 委托与事件的关系 在C#中，事件是基于委托实现的。委托是一种类型安全的函数指针，用于引用具有特定签名的方法。事件通过委托来管理其订阅者，并在事件触发时调用这些订阅者的方法。 事件的声明与使用 声明事件的语法如下： 123456789101112public class Publisher&#123;    public delegate void NotifyEventHandler(object sender, EventArgs e);    public event NotifyEventHandler Notify;    public void RaiseEvent()    &#123;        if (Notify != null)        &#123;            Notify(this,...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/posts/60585.html" title="Spring Boot part9-路径匹配与内容协商"><img class="cover" src="/images/posts/cover_front.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-06-08</div><div class="info-item-2">Spring Boot part9-路径匹配与内容协商</div></div><div class="info-2"><div class="info-item-1">路径匹配 路径匹配概述 在 Spring 框架（这里聚焦于 Spring5.3 及后续版本涉及的请求路径匹配相关内容 ）里，请求路径匹配是很关键的部分，是处理 Web 请求时确定 URL 路径与控制器方法映射关系的核心机制。 路径匹配是指框架如何将传入的 HTTP 请求 URL 映射到对应的控制器方法上。例如，当用户访问 /users/123 时，框架需要决定这个请求应该由哪个 @GetMapping 或 @RequestMapping 注解的方法来处理。 在 Spring Framework 5.3 及 Spring Boot 2.4 之后，引入了一种新的路径匹配机制，这一变化在 Spring Boot 3 中得到了保留和进一步的应用。这个新机制主要是通过 PathPattern 代替了传统的 AntPathMatcher。 AntPathMatcher 是基于 Ant 风格的路径匹配，而 PathPattern 则是一个更高效、更精确的路径匹配方式，它是通过...</div></div></div></a><a class="pagination-related" href="/posts/62445.html" title="Spring Boot part10-Thymeleaf模板引擎"><img class="cover" src="/images/posts/cover_java2.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-06-08</div><div class="info-item-2">Spring Boot part10-Thymeleaf模板引擎</div></div><div class="info-2"><div class="info-item-1">Thymeleaf引擎 Thymeleaf 简介 什么是 Thymeleaf：Thymeleaf是适用于Web和独立环境的现代服务器端Java模板引擎 由于 Spring Boot 使用了嵌入式 Servlet 容器，所以 JSP 默认是不能使用的 如果依旧需要服务端进行页面渲染，优先考虑使用模板引擎   image-20250607192416710  模板引擎页面默认放在 src/main/resources/templates SpringBoot 包含以下模板引擎的自动配置  FreeMarker Groovy Thymeleaf Thymeleaf官⽹：https://www.thymeleaf.org/ Mustache  Thymeleaf 是一个现代化的服务器端 Java 模板引擎，专为 Web 和独立环境而设计。与传统模板引擎相比，它具有以下核心优势：  开箱即用的 HTML...</div></div></div></a><a class="pagination-related" href="/posts/10985.html" title="Spring Boot part6-Web开发之Web场景与静态资源"><img class="cover" src="/images/posts/cover_teach2.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-05-28</div><div class="info-item-2">Spring Boot part6-Web开发之Web场景与静态资源</div></div><div class="info-2"><div class="info-item-1">该文章较多源码分析）） Web 场景中的自动配置 如何使用 Spring Boot，进行 web 开发 Spring Boot 的 Web 开发能力，由 SpringMVC 提供，给予了 Spring MVC 自动配置的能力 一般来说，在 Spring Initliazer 中，勾选一个web starter 场景，再选上一个 Lombok 就可以了。 前面说过，Spring Boot 将会帮我们自动配置好 web 开发场景中需要的相关配置，只需要在配置文件中指定少量配置就可以运行起来了，我们只需要注意在业务代码中就可以了。 自动配置 Spring Boot 的自动配置类是其核心特性之一，通过 @EnableAutoConfiguration 注解和 AutoConfigurationImportSelector...</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="gitalk-container"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/arp.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">ErgouTree</div><div class="author-info-description">I start a brand-new life with you.</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">118</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">81</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">51</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/ergou10086"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/ergou10086" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="/zjm88822201@126.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a><a class="social-icon" href="https://space.bilibili.com/142045656?spm_id_from=333.1007.0.0" target="_blank" title="bilibili"><i class="fas fa-brands fa-bilibili" style="color: #4a72be;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">作者长期陷入galgame和osu!maina4k中 祝他好运吧 对了 如果图片加载过慢 建议科学上网进行使用</div></div><div class="card-widget"><div class="item-headline"><i></i><span></span></div><div class="item-content"></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%87%AA%E5%AE%9A%E4%B9%89%E5%BC%82%E5%B8%B8%E7%B1%BB%E7%9B%B8%E5%85%B3%E7%9F%A5%E8%AF%86%E5%9B%9E%E9%A1%BE"><span class="toc-number">2.</span> <span class="toc-text">自定义异常类相关知识回顾</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%94%99%E8%AF%AF%E5%A4%84%E7%90%86%E6%9C%BA%E5%88%B6%E7%9A%84%E9%BB%98%E8%AE%A4%E6%9C%BA%E5%88%B6"><span class="toc-number">3.</span> <span class="toc-text">错误处理机制的默认机制</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%BB%98%E8%AE%A4%E6%9C%BA%E5%88%B6%E6%B5%81%E7%A8%8B"><span class="toc-number">3.1.</span> <span class="toc-text">默认机制流程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#basicerrorcontroller-%E7%B1%BB"><span class="toc-number">3.2.</span> <span class="toc-text">BasicErrorController 类</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#defaulterrorviewresolver-%E7%B1%BB"><span class="toc-number">3.3.</span> <span class="toc-text">DefaultErrorViewResolver 类：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#spring-boot-%E4%B8%AD%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86%E6%96%B9%E6%A1%88"><span class="toc-number">4.</span> <span class="toc-text">Spring Boot 中的异常处理方案</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#spring-boot%E4%B8%AD%E8%87%AA%E5%AE%9A%E4%B9%89%E5%BC%82%E5%B8%B8"><span class="toc-number">4.1.</span> <span class="toc-text">Spring Boot中自定义异常</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%9E%E7%8E%B0handlerexceptionresolver"><span class="toc-number">4.1.1.</span> <span class="toc-text">实现HandlerExceptionResolver</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%89%A9%E5%B1%95responseentityexceptionhandler"><span class="toc-number">4.1.2.</span> <span class="toc-text">扩展ResponseEntityExceptionHandler</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%B8%B8%E8%A7%81%E5%BC%82%E5%B8%B8%E7%9A%84%E5%A4%84%E7%90%86%E6%96%B9%E6%B3%95"><span class="toc-number">4.1.3.</span> <span class="toc-text">常见异常的处理方法</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%A4%84%E7%90%86%E8%B5%84%E6%BA%90%E6%9C%AA%E6%89%BE%E5%88%B0%E5%BC%82%E5%B8%B8"><span class="toc-number">4.1.3.1.</span> <span class="toc-text">处理资源未找到异常</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%A4%84%E7%90%86%E6%95%B0%E6%8D%AE%E9%AA%8C%E8%AF%81%E5%BC%82%E5%B8%B8"><span class="toc-number">4.1.3.2.</span> <span class="toc-text">处理数据验证异常</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%A4%84%E7%90%86%E6%95%B0%E6%8D%AE%E5%BA%93%E5%BC%82%E5%B8%B8"><span class="toc-number">4.1.3.3.</span> <span class="toc-text">处理数据库异常</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%87%AA%E5%AE%9A%E4%B9%89json%E5%93%8D%E5%BA%94"><span class="toc-number">4.2.</span> <span class="toc-text">自定义json响应</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%AE%80%E4%BB%8B"><span class="toc-number">4.2.1.</span> <span class="toc-text">简介</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%9B%B8%E5%85%B3%E6%B3%A8%E8%A7%A3"><span class="toc-number">4.2.2.</span> <span class="toc-text">相关注解</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#exceptionhandler"><span class="toc-number">4.2.2.1.</span> <span class="toc-text">@ExceptionHandler</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#controlleradvice"><span class="toc-number">4.2.2.2.</span> <span class="toc-text">@ControllerAdvice</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E7%89%B9%E6%80%A7"><span class="toc-number">4.2.3.</span> <span class="toc-text">核心特性</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#restcontrolleradvice"><span class="toc-number">4.2.3.1.</span> <span class="toc-text">@RestControllerAdvice</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#responsestatus"><span class="toc-number">4.2.3.2.</span> <span class="toc-text">@ResponseStatus</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%87%AA%E5%AE%9A%E4%B9%89%E9%A1%B5%E9%9D%A2%E5%93%8D%E5%BA%94"><span class="toc-number">4.3.</span> <span class="toc-text">自定义页面响应</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#spring-boot-%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86%E5%AE%9E%E6%88%98"><span class="toc-number">5.</span> <span class="toc-text">Spring Boot 异常处理实战</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%89%8D%E5%90%8E%E5%88%86%E7%A6%BB%E5%9C%BA%E6%99%AF"><span class="toc-number">5.1.</span> <span class="toc-text">前后分离场景</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9C%8D%E5%8A%A1%E7%AB%AF%E9%A1%B5%E9%9D%A2%E6%B8%B2%E6%9F%93%E5%9C%BA%E6%99%AF"><span class="toc-number">5.2.</span> <span class="toc-text">服务端页面渲染场景</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%8D%E5%8F%AF%E9%A2%84%E7%9F%A5%E7%9A%84-http-%E7%A0%81%E9%94%99%E8%AF%AF%E6%9C%8D%E5%8A%A1%E5%99%A8%E6%88%96%E5%AE%A2%E6%88%B7%E7%AB%AF%E9%94%99%E8%AF%AF"><span class="toc-number">5.2.1.</span> <span class="toc-text">不可预知的 HTTP
+码错误（服务器或客户端错误 ）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%9A%E5%8A%A1%E9%94%99%E8%AF%AF"><span class="toc-number">5.2.2.</span> <span class="toc-text">业务错误</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#httpstatus"><span class="toc-number">6.</span> <span class="toc-text">HttpStatus</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/23249.html" title="为typora更换更新版本的mermaid避免图表无法加载"><div style="background: /images/posts/"></div></a><div class="content"><a class="title" href="/posts/23249.html" title="为typora更换更新版本的mermaid避免图表无法加载">为typora更换更新版本的mermaid避免图表无法加载</a><time datetime="2025-06-08T10:03:02.000Z" title="发表于 2025-06-08 18:03:02">2025-06-08</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/52250.html" title="君と彼女と彼女の恋全周目攻略指南"><img src="/images/posts/cover_jbn.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="君と彼女と彼女の恋全周目攻略指南"/></a><div class="content"><a class="title" href="/posts/52250.html" title="君と彼女と彼女の恋全周目攻略指南">君と彼女と彼女の恋全周目攻略指南</a><time datetime="2025-06-08T09:51:01.000Z" title="发表于 2025-06-08 17:51:01">2025-06-08</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/12758.html" title="深入探索C#事件机制"><img src="/images/posts/cover_teach2.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="深入探索C#事件机制"/></a><div class="content"><a class="title" href="/posts/12758.html" title="深入探索C#事件机制">深入探索C#事件机制</a><time datetime="2025-06-08T09:46:11.000Z" title="发表于 2025-06-08 17:46:11">2025-06-08</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/35587.html" title="Spring Boot part11-错误处理"><img src="/images/posts/cover_spring2.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Spring Boot part11-错误处理"/></a><div class="content"><a class="title" href="/posts/35587.html" title="Spring Boot part11-错误处理">Spring Boot part11-错误处理</a><time datetime="2025-06-08T09:44:07.000Z" title="发表于 2025-06-08 17:44:07">2025-06-08</time></div></div></div></div></div></div></main><div class="fps-display"><span id="fps">FPS: 60</span></div><footer id="footer" style="background-image: url(/images/posts/cover_spring2.jpg);"><div id="footer-wrap"><div class="copyright">&copy;2024 - 2025 By ErgouTree</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">忘れたくない思い、ありますか？ <br>,<span id="realtime_duration" style="font-family: monospace;"></span>,<br><a href="https://icp.gov.moe/?keyword=20257009" target="_blank">萌ICP备20257009号</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><a class="icon-V hidden" onclick="switchNightMode()" title="日间和夜间模式切换"><svg width="25" height="25" viewBox="0 0 1024 1024"><use id="modeicon" xlink:href="#icon-moon"></use></svg></a><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="chat-btn" type="button" title="聊天" style="display:none"><i class="fas fa-comment"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (true) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script><script>(() => {
+  const applyThemeDefaultsConfig = theme => {
+    if (theme === 'dark-mode') {
+      Chart.defaults.color = "rgba(255, 255, 255, 0.8)"
+      Chart.defaults.borderColor = "rgba(255, 255, 255, 0.2)"
+      Chart.defaults.scale.ticks.backdropColor = "transparent"
+    } else {
+      Chart.defaults.color = "rgba(0, 0, 0, 0.8)"
+      Chart.defaults.borderColor = "rgba(0, 0, 0, 0.1)"
+      Chart.defaults.scale.ticks.backdropColor = "transparent"
+    }
+  }
+
+  // Recursively traverse the config object and automatically apply theme-specific color schemes
+  const applyThemeConfig = (obj, theme) => {
+    if (typeof obj !== 'object' || obj === null) return
+
+    Object.keys(obj).forEach(key => {
+      const value = obj[key]
+      // If the property is an object and has theme-specific options, apply them
+      if (typeof value === 'object' && value !== null) {
+        if (value[theme]) {
+          obj[key] = value[theme] // Apply the value for the current theme
+        } else {
+          // Recursively process child objects
+          applyThemeConfig(value, theme)
+        }
+      }
+    })
+  }
+
+  const runChartJS = ele => {
+    window.loadChartJS = true
+
+    Array.from(ele).forEach((item, index) => {
+      const chartSrc = item.firstElementChild
+      const chartID = item.getAttribute('data-chartjs-id') || ('chartjs-' + index) // Use custom ID or default ID
+      const width = item.getAttribute('data-width')
+      const existingCanvas = document.getElementById(chartID)
+
+      // If a canvas already exists, remove it to avoid rendering duplicates
+      if (existingCanvas) {
+          existingCanvas.parentNode.remove()
+      }
+
+      const chartDefinition = chartSrc.textContent
+      const canvas = document.createElement('canvas')
+      canvas.id = chartID
+
+      const div = document.createElement('div')
+      div.className = 'chartjs-wrap'
+
+      if (width) {
+        div.style.width = width
+      }
+
+      div.appendChild(canvas)
+      chartSrc.insertAdjacentElement('afterend', div)
+
+      const ctx = document.getElementById(chartID).getContext('2d')
+
+      const config = JSON.parse(chartDefinition)
+
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark-mode' : 'light-mode'
+
+      // Set default styles (initial setup)
+      applyThemeDefaultsConfig(theme)
+
+      // Automatically traverse the config and apply dual-mode color schemes
+      applyThemeConfig(config, theme)
+
+      new Chart(ctx, config)
+    })
+  }
+
+  const loadChartJS = () => {
+    const chartJSEle = document.querySelectorAll('#article-container .chartjs-container')
+    if (chartJSEle.length === 0) return
+
+    window.loadChartJS ? runChartJS(chartJSEle) : btf.getScript('https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.min.js').then(() => runChartJS(chartJSEle))
+  }
+
+  // Listen for theme change events
+  btf.addGlobalFn('themeChange', loadChartJS, 'chartjs')
+  btf.addGlobalFn('encrypt', loadChartJS, 'chartjs')
+
+  window.pjax ? loadChartJS() : document.addEventListener('DOMContentLoaded', loadChartJS)
+})()</script><script>(function() {
+  const abcjsInit = function() {
+    const abcjsFn = function() {
+      setTimeout(function() {
+        const sheets = document.querySelectorAll(".abc-music-sheet")
+        for (let i = 0; i < sheets.length; i++) {
+          const ele = sheets[i]
+          if (ele.children.length > 0) continue
+
+          // Parse parameters from data-params attribute
+          let params = {}
+          const dp = ele.getAttribute("data-params")
+          if (dp) {
+            try {
+              params = JSON.parse(dp)
+            } catch (e) {
+              console.error("Failed to parse data-params:", e)
+            }
+          }
+
+          // Merge parsed parameters with the responsive option
+          // Ensures params content appears before responsive
+          const options = { ...params, responsive: "resize" }
+
+          // Render the music score using ABCJS.renderAbc
+          ABCJS.renderAbc(ele, ele.innerHTML, options)
+        }
+      }, 100)
+    }
+
+    if (typeof ABCJS === "object") {
+      abcjsFn()
+    } else {
+      btf.getScript("https://cdn.jsdelivr.net/npm/abcjs/dist/abcjs-basic-min.min.js").then(abcjsFn)
+    }
+  }
+
+  if (window.pjax) {
+    abcjsInit()
+  } else {
+    window.addEventListener("load", abcjsInit)
+  }
+
+  btf.addGlobalFn("encrypt", abcjsInit, "abcjs")
+})()</script><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = {"labels":["Gitalk","Comment"],"createIssueManually":false,"distractionFreeMode":false}
+
+  const commentCount = n => {
+    const isCommentCount = document.querySelector('#post-meta .gitalk-comment-count')
+    if (isCommentCount) {
+      isCommentCount.textContent= n
+    }
+  }
+
+  const initGitalk = (el, path) => {
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGitalk = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+
+    const gitalk = new Gitalk({
+      clientID: 'Ov23li3vDQANiUddL4XB',
+      clientSecret: '5c9a56d02995340fca117809cd414662aadce6ff',
+      repo: 'HexoComment',
+      owner: 'ergou10086',
+      admin: ['ergou10086'],
+      updateCountCallback: commentCount,
+      ...option,
+      id: isShuoshuo ? path : (option && option.id) || '316d72a6cece44cd6bd80dc7508c2dd8'
+    })
+
+    gitalk.render('gitalk-container')
+  }
+
+  const loadGitalk = async(el, path) => {
+    if (typeof Gitalk === 'function') initGitalk(el, path)
+    else {
+      await btf.getCSS('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.css')
+      await btf.getScript('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.js')
+      initGitalk(el, path)
+    }
+  }
+
+  if (isShuoshuo) {
+    'Gitalk' === 'Gitalk'
+      ? window.shuoshuoComment = { loadComment: loadGitalk }
+      : window.loadOtherComment = loadGitalk
+    return
+  }
+
+  if ('Gitalk' === 'Gitalk' || !false) {
+    if (false) btf.loadComment(document.getElementById('gitalk-container'), loadGitalk)
+    else loadGitalk()
+  } else {
+    window.loadOtherComment = loadGitalk
+  }
+})()</script></div><div class="aplayer no-destroy" data-id="13587761608" data-server="netease" data-type="playlist" data-fixed="true" data-autoplay="false" data-lrcType="-1"> </div><script src="https://cdn.jsdelivr.net/npm/abcjs@7.1.2/dist/abcjs-basic-min.js"></script><script src="/js/sun_moon.js" async></script><script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.7/dayjs.min.js"></script><script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.7/plugin/duration.min.js"></script><script src="/scripts/realtime.js"></script><script src="/scripts/random.js"></script><script defer="defer" id="ribbon" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-ribbon.min.js" size="150" alpha="0.6" zIndex="-1" mobile="null" data-click="true"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = false;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><script id="click-heart" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/click-heart.min.js" async="async" mobile="false"></script><script>(() => {
+  window.ChatraID = '4bzb546NSBoJcrNyu'
+  window.Chatra = window.Chatra || function() {
+    (window.Chatra.q = window.Chatra.q || []).push(arguments)
+  }
+
+  btf.getScript('https://call.chatra.io/chatra.js').then(() => {
+    const isChatBtn = true
+    const isChatHideShow = true
+
+    if (isChatBtn) {
+      const close = () => {
+        Chatra('minimizeWidget')
+        Chatra('hide')
+      }
+
+      const open = () => {
+        Chatra('openChat', true)
+        Chatra('show')
+      }
+
+      window.ChatraSetup = { startHidden: true }
+    
+      window.chatBtnFn = () => document.getElementById('chatra').classList.contains('chatra--expanded') ? close() : open()
+
+      document.getElementById('chat-btn').style.display = 'block'
+    } else if (isChatHideShow) {
+      window.chatBtn = {
+        hide: () => Chatra('hide'),
+        show: () => Chatra('show')
+      }
+    }
+  })
+})()</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/metingjs/dist/Meting.min.js"></script><script>(() => {
+  const destroyAplayer = () => {
+    if (window.aplayers) {
+      for (let i = 0; i < window.aplayers.length; i++) {
+        if (!window.aplayers[i].options.fixed) {
+          window.aplayers[i].destroy()
+        }
+      }
+    }
+  }
+
+  const runMetingJS = () => {
+    typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+  }
+
+  btf.addGlobalFn('pjaxSend', destroyAplayer, 'destroyAplayer')
+  btf.addGlobalFn('pjaxComplete', loadMeting, 'runMetingJS')
+})()</script><script src="https://cdn.jsdelivr.net/npm/pjax/pjax.min.js"></script><script>(() => {
+  const pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+  window.pjax = new Pjax({
+    elements: 'a:not([target="_blank"]):not([href="/music/"])',
+    selectors: pjaxSelectors,
+    cacheBust: false,
+    analytics: false,
+    scrollRestoration: false
+  })
+
+  const triggerPjaxFn = (val) => {
+    if (!val) return
+    Object.values(val).forEach(fn => fn())
+  }
+
+  document.addEventListener('pjax:send', () => {
+    // removeEventListener
+    btf.removeGlobalFnEvent('pjaxSendOnce')
+    btf.removeGlobalFnEvent('themeChange')
+
+    // reset readmode
+    const $bodyClassList = document.body.classList
+    if ($bodyClassList.contains('read-mode')) $bodyClassList.remove('read-mode')
+
+    triggerPjaxFn(window.globalFn.pjaxSend)
+  })
+
+  document.addEventListener('pjax:complete', () => {
+    btf.removeGlobalFnEvent('pjaxCompleteOnce')
+    document.querySelectorAll('script[data-pjax]').forEach(item => {
+      const newScript = document.createElement('script')
+      const content = item.text || item.textContent || item.innerHTML || ""
+      Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+      newScript.appendChild(document.createTextNode(content))
+      item.parentNode.replaceChild(newScript, item)
+    })
+
+    triggerPjaxFn(window.globalFn.pjaxComplete)
+  })
+
+  document.addEventListener('pjax:error', e => {
+    if (e.request.status === 404) {
+      const usePjax = true
+      true 
+        ? (usePjax ? pjax.loadUrl('/404.html') : window.location.href = '/404.html')
+        : window.location.href = e.request.responseURL
+    }
+  })
+})()</script><script src="/js/fps-display.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><!-- hexo injector body_end start --><script data-pjax>
+  function butterfly_swiper_injector_config(){
+    var parent_div_git = document.getElementById('recent-posts');
+    var item_html = '<div class="recent-post-item" style="height: auto;width: 100%"><div class="blog-slider swiper-container-fade swiper-container-horizontal" id="swiper_container"><div class="blog-slider__wrp swiper-wrapper" style="transition-duration: 0ms;"><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_database.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-14</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt="">结构化查询语言SQL</a><div class="blog-slider__text">SQL基本很常用的语句都在这里了，本质上是当初为了应付数据库考试整理的，后来发现还蛮有用的很方便查常用的语句</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java4.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-22</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt="">SpringBoot part0?INF-SpringBoot这个框架都需要学习什么</a><div class="blog-slider__text">主要围绕Spring Boot中重要知识来简洁或详细的说明，其中部分不够完全，持续更新</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java11.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-15</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt="">关于Lombok在高版本IDEA中注解处理不生效的问题解决</a><div class="blog-slider__text">基本上是彻底的解决了用 IDEA 新建 Spring Boot 项目时候会产生的 Lombok 注解处理失效的各种问题</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_实用.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-05</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt="">个人向galgame原声带或相关音乐整理及其资源</a><div class="blog-slider__text">整理了我喜欢的galgame ost或者衍生的音乐专辑，部分资源是自己扒盘扒下来的，部分来自鸟白岛放映厅</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_math.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-17</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt="">对书上证明样本方差是总体方差的无偏估计量的解析</a><div class="blog-slider__text">对书上证明样本方差是总体方差的无偏估计量的解析，高等教育出版社-华科大版本</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_alog.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-04-24</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt="">第十五届蓝桥杯Java国赛B组D题-园丁题解</a><div class="blog-slider__text">第十五届蓝桥杯Java国赛B组D题-园丁题解，该题解已经发布到洛谷社区中并且被全站推荐</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java4.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-04-29</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt="">操作系统之处理机的死锁部分概述</a><div class="blog-slider__text">对操作系统之处理机的死锁部分知识的总结，包括代码复现</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_lb.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-09</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt="">Little Busters!EX游戏攻略</a><div class="blog-slider__text">整理了一份详细清晰的Little Busters！EX的游戏攻略，因为我自己也在推，就顺手整理了一份方便查阅的md文档</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java9.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-16</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt="">Spring Boot中使用Hibernate框架</a><div class="blog-slider__text">对学习完Hibernate的应用部分，主要围绕Spring Boot中使用Hibernate框架，建议学习完 Hibernate 框架再看</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div></div><div class="blog-slider__pagination swiper-pagination-clickable swiper-pagination-bullets"></div></div></div>';
+    console.log('已挂载butterfly_swiper')
+    parent_div_git.insertAdjacentHTML("afterbegin",item_html)
+    }
+  var elist = 'undefined'.split(',');
+  var cpage = location.pathname;
+  var epage = '/';
+  var flag = 0;
+
+  for (var i=0;i<elist.length;i++){
+    if (cpage.includes(elist[i])){
+      flag++;
+    }
+  }
+
+  if ((epage ==='all')&&(flag == 0)){
+    butterfly_swiper_injector_config();
+  }
+  else if (epage === cpage){
+    butterfly_swiper_injector_config();
+  }
+  </script><script defer src="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper.min.js"></script><script defer data-pjax src="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper_init.js"></script><!-- hexo injector body_end end --></body></html>
