@@ -1,0 +1,976 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>mapStruct对象转换相关注解的使用 | ErgouTree's Blog</title><meta name="author" content="ErgouTree"><meta name="copyright" content="ErgouTree"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="理解 @Mapper 注解的核心功能 @Mapper 注解是现代 Java 开发中用于简化对象转换的重要工具，最著名的实现是 MapStruct 框架，它是 Java 中最流行的对象映射框架。它的设计理念是通过编译时代码生成来替代传统的反射机制，从而实现高性能的对象映射转换。 所以，我们从 MapStruct 使用来讲 @Mapper 注解的使用及其对象转换方案。 MapStruct">
+<meta property="og:type" content="article">
+<meta property="og:title" content="mapStruct对象转换相关注解的使用">
+<meta property="og:url" content="https://ergou10086.github.io/posts/13973.html">
+<meta property="og:site_name" content="ErgouTree&#39;s Blog">
+<meta property="og:description" content="理解 @Mapper 注解的核心功能 @Mapper 注解是现代 Java 开发中用于简化对象转换的重要工具，最著名的实现是 MapStruct 框架，它是 Java 中最流行的对象映射框架。它的设计理念是通过编译时代码生成来替代传统的反射机制，从而实现高性能的对象映射转换。 所以，我们从 MapStruct 使用来讲 @Mapper 注解的使用及其对象转换方案。 MapStruct">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://ergou10086.github.io/images/posts/cover_4x.jpg">
+<meta property="article:published_time" content="2025-06-19T10:09:46.000Z">
+<meta property="article:modified_time" content="2025-06-19T10:12:29.571Z">
+<meta property="article:author" content="ErgouTree">
+<meta property="article:tag" content="实用知识">
+<meta property="article:tag" content="JavaWeb">
+<meta property="article:tag" content="框架知识">
+<meta property="article:tag" content="常用知识">
+<meta property="article:tag" content="学习">
+<meta property="article:tag" content="JavaEE">
+<meta property="article:tag" content="Java框架">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ergou10086.github.io/images/posts/cover_4x.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "mapStruct对象转换相关注解的使用",
+  "url": "https://ergou10086.github.io/posts/13973.html",
+  "image": "https://ergou10086.github.io/images/posts/cover_4x.jpg",
+  "datePublished": "2025-06-19T10:09:46.000Z",
+  "dateModified": "2025-06-19T10:12:29.571Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "ErgouTree",
+      "url": "https://github.com/ergou10086"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/pi.ico"><link rel="canonical" href="https://ergou10086.github.io/posts/13973.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//hm.baidu.com"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!true && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?https://hm.baidu.com/hm.js?a6ab1b78e2c6320b664f31e8b9bf0e36";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+btf.addGlobalFn('pjaxComplete', () => {
+  _hmt.push(['_trackPageview',window.location.pathname])
+}, 'baidu_analytics')
+</script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.json","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":true},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: {"chs_to_cht":"已切换为繁体中文","cht_to_chs":"已切换为简体中文","day_to_night":"已切换为深色模式","night_to_day":"已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#1f1f1f","position":"bottom-left"},
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'mapStruct对象转换相关注解的使用',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css"><svg aria-hidden="true" style="position:absolute; overflow:hidden; width:0; height:0"><symbol id="icon-sun" viewBox="0 0 1024 1024"><path d="M960 512l-128 128v192h-192l-128 128-128-128H192v-192l-128-128 128-128V192h192l128-128 128 128h192v192z" fill="#FFD878" p-id="8420"></path><path d="M736 512a224 224 0 1 0-448 0 224 224 0 1 0 448 0z" fill="#FFE4A9" p-id="8421"></path><path d="M512 109.248L626.752 224H800v173.248L914.752 512 800 626.752V800h-173.248L512 914.752 397.248 800H224v-173.248L109.248 512 224 397.248V224h173.248L512 109.248M512 64l-128 128H192v192l-128 128 128 128v192h192l128 128 128-128h192v-192l128-128-128-128V192h-192l-128-128z" fill="#4D5152" p-id="8422"></path><path d="M512 320c105.888 0 192 86.112 192 192s-86.112 192-192 192-192-86.112-192-192 86.112-192 192-192m0-32a224 224 0 1 0 0 448 224 224 0 0 0 0-448z" fill="#4D5152" p-id="8423"></path></symbol><symbol id="icon-moon" viewBox="0 0 1024 1024"><path d="M611.370667 167.082667a445.013333 445.013333 0 0 1-38.4 161.834666 477.824 477.824 0 0 1-244.736 244.394667 445.141333 445.141333 0 0 1-161.109334 38.058667 85.077333 85.077333 0 0 0-65.066666 135.722666A462.08 462.08 0 1 0 747.093333 102.058667a85.077333 85.077333 0 0 0-135.722666 65.024z" fill="#FFB531" p-id="11345"></path><path d="M329.728 274.133333l35.157333-35.157333a21.333333 21.333333 0 1 0-30.165333-30.165333l-35.157333 35.157333-35.114667-35.157333a21.333333 21.333333 0 0 0-30.165333 30.165333l35.114666 35.157333-35.114666 35.157334a21.333333 21.333333 0 1 0 30.165333 30.165333l35.114667-35.157333 35.157333 35.157333a21.333333 21.333333 0 1 0 30.165333-30.165333z" fill="#030835" p-id="11346"></path></symbol></svg><link rel="stylesheet" href="/css/custom.css"><!-- hexo injector head_end start --><link rel="stylesheet" href="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiperstyle.css" media="print" onload="this.media='all'"><!-- hexo injector head_end end --><meta name="generator" content="Hexo 7.3.0"></head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js/pace.min.js"></script><div id="web_bg" style="background: linear-gradient(20deg, #0062be, #925696, #cc426e, #fb0347);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/arp.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">125</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">80</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">55</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-images"></i><span> Gallery</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/games/"><i class="fa-fw fas fa-game"></i><span> GalGame</span></a></li><li><a class="site-page child" href="/video/"><i class="fa-fw fas fa-video"></i><span> Video</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div><div class="menus_item"><a class="site-page" href="javascript:randomPost();"><span> Random</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/images/posts/cover_4x.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">ErgouTree's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">mapStruct对象转换相关注解的使用</span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-images"></i><span> Gallery</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/games/"><i class="fa-fw fas fa-game"></i><span> GalGame</span></a></li><li><a class="site-page child" href="/video/"><i class="fa-fw fas fa-video"></i><span> Video</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div><div class="menus_item"><a class="site-page" href="javascript:randomPost();"><span> Random</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div><div id="randomPost"><a class="site-page social-icon search" href="javascript:;" onclick="randomPost()" title="随机访问一篇文章"><i class="fas fa-circle-notch fa-fw"></i></a></div></nav><div id="post-info"><h1 class="post-title">mapStruct对象转换相关注解的使用<a class="post-edit-link" href="https://github.com/ergou10086/ergou10086.github.io/edit/main/source/_posts/_posts/mapStruct对象转换相关注解的使用.md" title="编辑" target="_blank"><i class="fas fa-pencil-alt"></i></a></h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2025-06-19T10:09:46.000Z" title="发表于 2025-06-19 18:09:46">2025-06-19</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2025-06-19T10:12:29.571Z" title="更新于 2025-06-19 18:12:29">2025-06-19</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Java%E7%9B%B8%E5%85%B3/">Java相关</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Java%E7%9B%B8%E5%85%B3/%E6%A1%86%E6%9E%B6%E7%9B%B8%E5%85%B3%E5%B0%8F%E7%9F%A5%E8%AF%86/">框架相关小知识</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Java%E7%9B%B8%E5%85%B3/%E6%A1%86%E6%9E%B6%E7%9B%B8%E5%85%B3%E5%B0%8F%E7%9F%A5%E8%AF%86/%E5%85%B6%E4%BB%96%E5%AE%9E%E7%94%A8%E7%9F%A5%E8%AF%86/">其他实用知识</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">8.1k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>32分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span><span class="post-meta-separator">|</span><span class="post-meta-commentcount"><i class="far fa-comments fa-fw post-meta-icon"></i><span class="post-meta-label">评论数:</span><a href="/posts/13973.html#post-comment"><span class="gitalk-comment-count"><i class="fa-solid fa-spinner fa-spin"></i></span></a></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h3 id="理解-mapper-注解的核心功能">理解 <span class="citation" data-cites="Mapper">@Mapper</span> 注解的核心功能</h3>
+<p><code>@Mapper</code> 注解是现代 Java
+开发中用于简化对象转换的重要工具，最著名的实现是 MapStruct 框架，它是
+Java
+中最流行的对象映射框架。它的设计理念是通过编译时代码生成来替代传统的反射机制，从而实现高性能的对象映射转换。</p>
+<p>所以，我们从 MapStruct 使用来讲 <code>@Mapper</code>
+注解的使用及其对象转换方案。</p>
+<p>MapStruct
+是一个代码生成器，它的主要功能是在编译时根据注解配置自动生成高性能的映射实现代码，避免了手写转换代码的繁琐和运行时反射的性能损耗。这个工具基于“约定优于配置”的原则，极大地简化了
+Java Bean 类型之间的映射实现过程。</p>
+<p>在多层架构的应用中，经常需要在不同的对象模型之间进行转换，例如在持久层的实体和传输层的
+DTO（Data Transfer
+Object，数据传输对象）之间。手动编写这种映射代码是一项繁琐且容易出错的任务。MapStruct通过自动化的方式解决了这个问题，它可以在编译时生成映射代码，从而保证了高性能、快速的开发反馈以及严格的错误检查。</p>
+<p><code>@Mapper</code> 注解用于标记一个
+<strong>接口或抽象类</strong>，声明它是一个对象转换器（Mapper），其核心功能是：<strong>自动生成代码，将一种对象（如
+DTO、VO、Entity）的字段值映射到另一种对象</strong>，避免手动编写重复的
+<code>setter/getter</code> 逻辑。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 1. 定义Mapper接口</span></span><br><span class="line"><span class="meta">@Mapper</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">UserMapper</span> &#123;</span><br><span class="line">    UserDTO <span class="title function_">toDto</span><span class="params">(UserEntity entity)</span>;  <span class="comment">// Entity → DTO</span></span><br><span class="line">    UserEntity <span class="title function_">toEntity</span><span class="params">(UserDTO dto)</span>;  <span class="comment">// DTO → Entity</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 2. 编译后，MapStruct自动生成实现类（如UserMapperImpl）</span></span><br><span class="line"><span class="type">UserDTO</span> <span class="variable">userDTO</span> <span class="operator">=</span> userMapper.toDto(userEntity); <span class="comment">// 自动映射同名字段</span></span><br></pre></td></tr></table></figure>
+<p>具体来说，使用MapStruct时，开发者只需要定义一个接口，并在接口中定义转换方法。然后，MapStruct会自动生成实现这些方法的代码。这些生成的代码使用纯方法调用，因此速度快、类型安全且易于理解。</p>
+<h3 id="不同对象之间都是什么意思">不同对象之间都是什么意思</h3>
+<p>相信看到这个文章的应该都知道，但是我还是说一下，我记得我写过全面的文章</p>
+<ul>
+<li><p>POJO（Plian Ordinary Java
+Object）：简单普通的Java对象，就是最简单的Java对象，最基本的Java
+Bean只是在属性上加上 get 和 set
+方法，POJO可转化为以下的PO、DTO、VO等，比如说：在service中传递的Java
+Bean就叫DTO。</p></li>
+<li><p>Entity：Entity就是模型类，通常定义在 model
+层里面，相当于MVC的M层，属于数据模型层，一个 Entity
+实体类代表一个数据库的一张表。其中的属性定义数据表中的字段，实体类的字段数量
+&gt;= 数据库表中需要操作的字段数量，其中，也有另一种叫法PO(Persistent
+Object) 持久对象，本质上并无差别</p></li>
+<li><p>DTO（Data Transfer
+Object）：数据传输对象，这个概念来源于J2EE的设计模式，原来的目的是为了EJB的分布式应用提供粗粒度的数据实体，以减少分布式调用的次数，从而提高分布式调用的性能和降低网络负载，但在这里，泛指用于展示层与服务层之间的数据传输对象。属于一种比较底层基础得操作，具体到对某个表得增删改查，换句话说，某个dao一定是和数据库中的某一张表一一对应的，而且其中也只是封装了增删改查得方法。</p></li>
+<li><p>VO(View Object)：VO有人理解为Value Object，也有人理解为View
+Object，我是理解为后者，因为更偏向与表达的意思是表现层对象，用于业务层之间的数据传递，但是是在前端页面层展示被封装的VO数据。</p></li>
+<li><p>DO（Domain
+Object）：领域对象，就是从现实世界中抽象出来的有形或无形的业务实体。</p></li>
+<li><p>DAO（Data Assess Object）：数据访问对象，相当于DAO层，mapper
+层直接与数据库打交道(执行SQL语句)，接口提供给 service
+层。一般写在业务层，当业务逻辑比较复杂时，可能会用到比较多的业务对象，这样就可以将多个PO、VO封装成一个BO对象用于数据传递。</p></li>
+</ul>
+<h3 id="核心特性与原理">核心特性与原理</h3>
+<h4 id="自动字段映射">自动字段映射</h4>
+<ul>
+<li><p><strong>同名匹配</strong>：默认按字段名自动映射（如
+<code>entity.name</code> → <code>dto.name</code>）。</p></li>
+<li><p><strong>类型兼容</strong>：支持基本类型、包装类、String、集合等常见类型的转换。</p></li>
+<li><p><strong>嵌套对象</strong>：可递归映射嵌套对象（如
+<code>UserDTO.department</code> ←→
+<code>UserEntity.department</code>）。</p></li>
+</ul>
+<h4 id="编译时生成代码">编译时生成代码</h4>
+<ul>
+<li><strong>原理</strong>：MapStruct 在编译期（非运行时反射）生成高效的
+Java 映射代码，运行时无需通过反射进行属性拷贝，性能接近手写
+<code>setter/getter</code>。</li>
+<li><strong>优势</strong>：
+<ul>
+<li><p><strong>零运行时开销</strong>：生成的代码直接调用字段赋值，无反射或代理。</p></li>
+<li><p><strong>易调试</strong>：生成的代码可见，便于排查问题。</p></li>
+</ul></li>
+</ul>
+<h4 id="类型安全">类型安全</h4>
+<ul>
+<li><p>MapStruct
+在编译时生成映射代码并进行类型检查，如果源对象和目标对象的属性不匹配，会在编译阶段就报错。</p></li>
+<li><p>而且MapStruct不依赖于任何第三方库，可以很容易地集成到任何项目中。</p></li>
+<li><p><strong>支持 Spring</strong>：通过
+<code>@Mapper(componentModel = "spring")</code> 生成 Spring
+Bean。</p></li>
+<li><p><strong>组合其他工具</strong>：可结合 Lombok、JPA
+等使用。</p></li>
+</ul>
+<h4 id="基本工作原理">基本工作原理</h4>
+<p>MapStruct 的核心工作流程是：</p>
+<ol type="1">
+<li>定义接口并使用 <code>@Mapper</code> 注解标记</li>
+<li>在接口中声明映射方法</li>
+<li>在编译时，MapStruct 处理器会生成实现这些方法的具体类</li>
+<li>这些生成的类执行实际的对象转换操作</li>
+</ol>
+<p>MapStruct 生成的代码高效且类型安全，通常比手动编写的代码更高效。</p>
+<h4 id="mapstruct-的类型转换">MapStruct 的类型转换</h4>
+<p>MapStruct 支持多种类型转换方式：</p>
+<ol type="1">
+<li><strong>内置转换</strong>：自动处理基本类型及其包装类之间的转换</li>
+<li><strong>字符串转换</strong>：自动处理字符串与基本类型之间的转换</li>
+<li><strong>枚举转换</strong>：自动处理名称相同的枚举值转换</li>
+<li><strong>日期转换</strong>：通过 <code>@Mapping</code> 的
+<code>dateFormat</code> 属性指定格式</li>
+<li><strong>自定义转换</strong>：通过 <code>@Named</code>
+注解定义自定义转换方法</li>
+<li><strong>使用其他映射器</strong>：通过 <code>uses</code>
+属性引入其他映射器</li>
+</ol>
+<h3 id="使用">使用</h3>
+<h4 id="导入依赖">导入依赖</h4>
+<p>在你的pom.xml文件中添加MapStruct的依赖：</p>
+<ul>
+<li><code>org.mapstruct:mapstruct</code>：包含了一些必要的注解，例如@Mapping。若我们使用的JDK版本高于1.8，当我们在pom里面导入依赖时候，建议使用坐标是：<code>org.mapstruct:mapstruct-jdk8</code>，这可以帮助我们利用一些Java8的新特性。</li>
+<li><code>org.mapstruct:mapstruct-processor</code>：注解处理器，根据注解自动生成mapper的实现。</li>
+</ul>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!--mapstruct核心--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.mapstruct<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">  	<span class="comment">&lt;!-- jdk8以下就使用mapstruct --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>mapstruct-jdk8<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.5.5.Final<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="comment">&lt;!--mapstruct编译--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.mapstruct<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>mapstruct-processor<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.5.5.Final<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h4 id="一些配置">一些配置</h4>
+<h3 id="其中注解的基本使用">其中注解的基本使用</h3>
+<h4 id="mapper-基础接口的定义"><span class="citation" data-cites="Mapper">@Mapper</span> 基础接口的定义</h4>
+<p><code>@Mapper</code> 是 MapStruct
+的核心注解，用于标记接口或抽象类作为映射器。MapStruct
+会在编译时为这些接口生成实现类，自动生成实现类代码，支持配置全局映射策略。它会定义所有映射方法的入口，适用于任何需要对象转换的场景。</p>
+<p><strong>关键属性</strong>：</p>
+<ul>
+<li><code>componentModel</code>：指定组件模型（如
+<code>spring</code>、<code>cdi</code>），用于依赖注入。</li>
+<li><code>uses</code>：引入其他映射器或工具类。</li>
+<li><code>unmappedTargetPolicy</code>：未映射字段的处理策略（如
+<code>IGNORE</code> 或 <code>ERROR</code>）。</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 用户实体类 - 通常对应数据库表结构</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">User</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> Long id;</span><br><span class="line">    <span class="keyword">private</span> String username;</span><br><span class="line">    <span class="keyword">private</span> String email;</span><br><span class="line">    <span class="keyword">private</span> String phone;</span><br><span class="line">    <span class="keyword">private</span> Date createTime;</span><br><span class="line">    <span class="keyword">private</span> Boolean isActive;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 构造方法、getter、setter 省略...</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 用户DTO类 - 用于数据传输，通常会隐藏一些敏感字段</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">UserDto</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> Long id;</span><br><span class="line">    <span class="keyword">private</span> String username;</span><br><span class="line">    <span class="keyword">private</span> String email;</span><br><span class="line">    <span class="keyword">private</span> String phone;</span><br><span class="line">    <span class="keyword">private</span> String createTime; <span class="comment">// 注意：这里是String类型，与实体类不同</span></span><br><span class="line">    <span class="keyword">private</span> Boolean isActive;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 构造方法、getter、setter 省略...</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 定义映射器接口</span></span><br><span class="line"><span class="meta">@Mapper</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">UserMapper</span> &#123;</span><br><span class="line">    <span class="comment">// 将User实体转换为UserDto</span></span><br><span class="line">    <span class="comment">// MapStruct会自动匹配同名字段进行映射</span></span><br><span class="line">    UserDto <span class="title function_">toDto</span><span class="params">(User user)</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 将UserDto转换为User实体</span></span><br><span class="line">    <span class="comment">// 支持双向转换，方便在不同层之间传递数据</span></span><br><span class="line">    User <span class="title function_">toEntity</span><span class="params">(UserDto userDto)</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 批量转换：将User列表转换为UserDto列表</span></span><br><span class="line">    <span class="comment">// MapStruct自动支持集合类型的转换</span></span><br><span class="line">    List&lt;UserDto&gt; <span class="title function_">toDtoList</span><span class="params">(List&lt;User&gt; users)</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 批量转换：将UserDto列表转换为User列表</span></span><br><span class="line">    List&lt;User&gt; <span class="title function_">toEntityList</span><span class="params">(List&lt;UserDto&gt; dtos)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这是最基本的使用方式，MapStruct
+会根据字段名自动匹配并生成转换代码。当源对象和目标对象的字段名完全一致时，会自动进行映射。</p>
+<p>映射出的代码示例如下，相当于</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">UserMapperImpl</span> <span class="keyword">implements</span> <span class="title class_">UserMapper</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">AddressMapper</span> <span class="variable">addressMapper</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">AddressMapperImpl</span>();</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> UserDto <span class="title function_">toDto</span><span class="params">(User user)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (user == <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="type">UserDto</span> <span class="variable">userDto</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">UserDto</span>();</span><br><span class="line">        userDto.setId(user.getId());</span><br><span class="line">        userDto.setUsername(user.getUsername());</span><br><span class="line">        userDto.setPhone(user.getPhone());</span><br><span class="line">        userDto.setEmail(user.getEmail());</span><br><span class="line">        userDto.setCreateTime(user.getCreateTime());</span><br><span class="line">        userDto.setIsActive(user.getIsActive());</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">return</span> userDto;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 其他方法实现...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在生成的方法实现中，源类型（例如Person）的所有可读属性都将被复制到目标类型（例如PersonDto）的相应属性中：</p>
+<ul>
+<li>当一个属性与其目标实体对应的名称相同时，它将被隐式映射。</li>
+<li>当属性在目标实体中具有不同的名称时，可以通过@Mapping注释指定其名称。</li>
+</ul>
+<p>默认方式获取映射器实例</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"></span><br></pre></td></tr></table></figure>
+<h4 id="mapping-基础接口的定义"><span class="citation" data-cites="Mapping">@Mapping</span> 基础接口的定义</h4>
+<p>当源对象和目标对象的字段名不一致，或者需要特殊处理时，使用
+<code>@Mapping</code>
+注解。它只会定义单个字段的映射规则，支持属性名转换、表达式、常量等。在字段名不一致、类型转换、动态赋值时使用</p>
+<p><strong>关键属性</strong>：</p>
+<ul>
+<li><code>source</code>：源对象属性名（支持嵌套路径，如
+<code>user.address.city</code>）。</li>
+<li><code>target</code>：目标对象属性名。</li>
+<li><code>expression</code>：自定义转换逻辑（如调用方法）。</li>
+<li><code>constant</code>：固定值映射。</li>
+<li><code>ignore</code>：忽略该字段。</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Mapper</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">UserMapper</span> &#123;</span><br><span class="line">    <span class="meta">@Mapping(source = &quot;userName&quot;, target = &quot;name&quot;)</span></span><br><span class="line">    <span class="meta">@Mapping(source = &quot;userAddress&quot;, target = &quot;address&quot;)</span></span><br><span class="line">    <span class="meta">@Mapping(target = &quot;createTime&quot;, expression = &quot;java(new java.util.Date())&quot;)</span></span><br><span class="line">    <span class="meta">@Mapping(target = &quot;status&quot;, constant = &quot;ACTIVE&quot;)</span></span><br><span class="line">    <span class="meta">@Mapping(target = &quot;password&quot;, ignore = true)</span></span><br><span class="line">    UserDTO <span class="title function_">toUserDTO</span><span class="params">(User user)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上述代码的映射相当于如下代码的实现</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> UserDTO <span class="title function_">toUserDTO</span><span class="params">(User user)</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (user == <span class="literal">null</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="type">UserDTO</span> <span class="variable">userDTO</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">UserDTO</span>();</span><br><span class="line">    userDTO.setName(user.getUserName());  <span class="comment">// 字段名映射</span></span><br><span class="line">    userDTO.setAddress(user.getUserAddress());  <span class="comment">// 字段名映射</span></span><br><span class="line">    userDTO.setCreateTime(<span class="keyword">new</span> <span class="title class_">java</span>.util.Date());  <span class="comment">// 表达式映射</span></span><br><span class="line">    userDTO.setStatus(<span class="string">&quot;ACTIVE&quot;</span>);  <span class="comment">// 常量映射</span></span><br><span class="line">    <span class="comment">// password 字段被忽略，不会被映射</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> userDTO;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这个注解可以使用<code>@Mappings</code>进行多个 <code>@Mapping</code>
+注解的组合，用于定义多个字段映射规则。当需要
+需要同时配置多个字段的映射关系时，这么写比较整洁</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Mapper</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">UserMapper</span> &#123;</span><br><span class="line">    <span class="meta">@Mappings(&#123;</span></span><br><span class="line"><span class="meta">        @Mapping(source = &quot;id&quot;, target = &quot;userId&quot;),</span></span><br><span class="line"><span class="meta">        @Mapping(source = &quot;email&quot;, target = &quot;contactInfo&quot;),</span></span><br><span class="line"><span class="meta">        @Mapping(source = &quot;birthDate&quot;, target = &quot;age&quot;, qualifiedByName = &quot;BirthDateToAge&quot;)</span></span><br><span class="line"><span class="meta">    &#125;)</span></span><br><span class="line">    UserDTO <span class="title function_">toUserDTO</span><span class="params">(User user)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="beanmapping"><span class="citation" data-cites="BeanMapping">@BeanMapping</span></h4>
+<p>用于配置整个方法的映射行为。如忽略未映射字段或空值处理。</p>
+<p><strong>关键属性</strong>：</p>
+<ul>
+<li><code>ignoreByDefault</code>：忽略所有未明确映射的字段</li>
+<li><code>nullValuePropertyMappingStrategy</code>：处理 null
+值的策略</li>
+<li><code>nullValueCheckStrategy</code>：null 值检查策略</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Mapper</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">UserMapper</span> &#123;</span><br><span class="line">    <span class="meta">@BeanMapping(ignoreByDefault = true)</span>  <span class="comment">// 忽略所有未明确映射的字段</span></span><br><span class="line">    <span class="meta">@Mapping(source = &quot;id&quot;, target = &quot;userId&quot;)</span></span><br><span class="line">    <span class="meta">@Mapping(source = &quot;name&quot;, target = &quot;fullName&quot;)</span></span><br><span class="line">    UserDTO <span class="title function_">toUserDTO</span><span class="params">(User user)</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)</span></span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">updateUserFromDto</span><span class="params">(UserDTO dto, <span class="meta">@MappingTarget</span> User user)</span>;  <span class="comment">// 更新现有对象</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="beforemapping-aftermapping"><strong><span class="citation" data-cites="BeforeMapping">@BeforeMapping</span> / <span class="citation" data-cites="AfterMapping">@AfterMapping</span></strong></h4>
+<p>允许在映射前后执行自定义逻辑。在动态修改源/目标对象、填充额外字段、调用外部服务时候使用，一般用于格式化日期</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Mapper</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">UserMapper</span> &#123;</span><br><span class="line">    <span class="meta">@BeforeMapping</span></span><br><span class="line">    <span class="keyword">default</span> <span class="keyword">void</span> <span class="title function_">mapBefore</span><span class="params">(User user, <span class="meta">@MappingTarget</span> UserDTO dto)</span> &#123;</span><br><span class="line">        <span class="comment">// 在映射前执行</span></span><br><span class="line">        <span class="keyword">if</span> (user.getStatus() == UserStatus.INACTIVE) &#123;</span><br><span class="line">            dto.setInactive(<span class="literal">true</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@AfterMapping</span></span><br><span class="line">    <span class="keyword">default</span> <span class="keyword">void</span> <span class="title function_">mapAfter</span><span class="params">(User user, <span class="meta">@MappingTarget</span> UserDTO dto)</span> &#123;</span><br><span class="line">        <span class="comment">// 在映射后执行</span></span><br><span class="line">        <span class="keyword">if</span> (dto.getAge() &gt; <span class="number">18</span>) &#123;</span><br><span class="line">            dto.setAdult(<span class="literal">true</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    UserDTO <span class="title function_">toUserDTO</span><span class="params">(User user)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="iterablemapping"><strong><span class="citation" data-cites="IterableMapping">@IterableMapping</span></strong></h4>
+<p>定义集合类型（如
+<code>List</code>、<code>Set</code>）元素的映射规则。集合元素类型转换或批量映射时候进行使用</p>
+<p><strong>关键属性</strong>：</p>
+<ul>
+<li><code>elementTargetType</code>：目标元素类型。</li>
+<li><code>dateFormat</code>：日期格式化。</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Mapper</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">UserMapper</span> &#123;</span><br><span class="line">    <span class="meta">@IterableMapping(qualifiedByName = &quot;userToDto&quot;)</span></span><br><span class="line">    List&lt;UserDTO&gt; <span class="title function_">toDtoList</span><span class="params">(List&lt;User&gt; users)</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Named(&quot;userToDto&quot;)</span></span><br><span class="line">    <span class="keyword">default</span> UserDTO <span class="title function_">userToDto</span><span class="params">(User user)</span> &#123;</span><br><span class="line">        <span class="comment">// 自定义映射逻辑</span></span><br><span class="line">        <span class="type">UserDTO</span> <span class="variable">dto</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">UserDTO</span>();</span><br><span class="line">        dto.setId(user.getId());</span><br><span class="line">        dto.setName(user.getName() + <span class="string">&quot; (DTO)&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> dto;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="mapmapping"><strong><span class="citation" data-cites="MapMapping">@MapMapping</span></strong></h4>
+<p>用于配置 Map
+类型的映射。使用起来和上述<code>@IterableMapping</code>并无明显差距</p>
+<p>关键属性：</p>
+<ul>
+<li><code>keyDateFormat</code> /
+<code>valueDateFormat</code>：键或值的日期格式。</li>
+<li><code>mapNullToEmpty</code>：空 <code>Map</code> 处理。</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Mapper</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">UserMapper</span> &#123;</span><br><span class="line">    <span class="meta">@MapMapping(keyDateFormat = &quot;yyyy-MM-dd&quot;, valueDateFormat = &quot;HH:mm:ss&quot;)</span></span><br><span class="line">    Map&lt;String, String&gt; <span class="title function_">mapToStringMap</span><span class="params">(Map&lt;Date, Date&gt; dateMap)</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@MapMapping(valueTransformation = &quot;toString&quot;)</span></span><br><span class="line">    Map&lt;String, String&gt; <span class="title function_">toStringMap</span><span class="params">(Map&lt;String, Integer&gt; intMap)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="mapperconfig"><strong><span class="citation" data-cites="MapperConfig">@MapperConfig</span></strong></h4>
+<p>定义可重用的映射配置，供多个映射器继承。便于统一配置公共策略（如日期格式、空值处理）。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@MapperConfig(</span></span><br><span class="line"><span class="meta">    componentModel = &quot;spring&quot;,</span></span><br><span class="line"><span class="meta">    unmappedTargetPolicy = ReportingPolicy.IGNORE,</span></span><br><span class="line"><span class="meta">    uses = &#123;AddressMapper.class&#125;</span></span><br><span class="line"><span class="meta">)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">MyMapperConfig</span> &#123;&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Mapper(config = MyMapperConfig.class)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">UserMapper</span> &#123;</span><br><span class="line">    <span class="comment">// 使用共享配置的映射器</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="inheritconfiguration-inheritinverseconfiguration"><strong><span class="citation" data-cites="InheritConfiguration">@InheritConfiguration</span> / <span class="citation" data-cites="InheritInverseConfiguration">@InheritInverseConfiguration</span></strong></h4>
+<p>重用现有映射配置。继承正向或逆向映射规则，避免重复配置。</p>
+<ul>
+<li><code>@InheritConfiguration</code>：正向转换，原mapper →
+转换后类型的mapper</li>
+<li><code>@InheritInverseConfiguration</code>：逆向转换，转换后类型的mapper
+→ 原mapper</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Mapper</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">UserMapper</span> &#123;</span><br><span class="line">    <span class="meta">@Mapping(source = &quot;id&quot;, target = &quot;userId&quot;)</span></span><br><span class="line">    <span class="meta">@Mapping(source = &quot;email&quot;, target = &quot;contactInfo&quot;)</span></span><br><span class="line">    UserDTO <span class="title function_">toUserDTO</span><span class="params">(User user)</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@InheritConfiguration(name = &quot;toUserDTO&quot;)</span></span><br><span class="line">    List&lt;UserDTO&gt; <span class="title function_">toUserDTOList</span><span class="params">(List&lt;User&gt; users)</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@InheritInverseConfiguration(name = &quot;toUserDTO&quot;)</span></span><br><span class="line">    User <span class="title function_">toUser</span><span class="params">(UserDTO dto)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="valuemapping"><strong><span class="citation" data-cites="ValueMapping">@ValueMapping</span></strong></h4>
+<p>配置枚举类型的映射。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Mapper</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">StatusMapper</span> &#123;</span><br><span class="line">    <span class="meta">@ValueMapping(source = &quot;INACTIVE&quot;, target = &quot;DISABLED&quot;)</span></span><br><span class="line">    <span class="meta">@ValueMapping(source = &quot;ACTIVE&quot;, target = &quot;ENABLED&quot;)</span></span><br><span class="line">    <span class="meta">@ValueMapping(source = &quot;PENDING&quot;, target = &quot;ON_HOLD&quot;)</span></span><br><span class="line">    <span class="meta">@ValueMapping(source = &quot;DELETED&quot;, target = &quot;NULL&quot;)</span></span><br><span class="line">    <span class="meta">@ValueMapping(source = &quot;NULL&quot;, target = &quot;DEFAULT&quot;)</span></span><br><span class="line">    UserStatusDto <span class="title function_">toDto</span><span class="params">(UserStatus status)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>此外，MapStruct 还提供了特殊的源/目标值 NULL 和
+ANY，可以用于处理源枚举值为 null 或未映射的情况。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Mapper</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">EnumMapper</span> &#123;</span><br><span class="line">    <span class="meta">@ValueMappings(&#123;</span></span><br><span class="line"><span class="meta">        @ValueMapping(source = &quot;TYPE_A&quot;, target = &quot;TYPE_X&quot;),</span></span><br><span class="line"><span class="meta">        @ValueMapping(source = &quot;TYPE_B&quot;, target = &quot;TYPE_Y&quot;),</span></span><br><span class="line"><span class="meta">        @ValueMapping(source = &quot;TYPE_C&quot;, target = &quot;TYPE_Z&quot;),</span></span><br><span class="line"><span class="meta">        @ValueMapping(source = &quot;NULL&quot;, target = &quot;TYPE_Z&quot;),</span></span><br><span class="line"><span class="meta">        @ValueMapping(source = &quot;ANY&quot;, target = &quot;TYPE_X&quot;)</span></span><br><span class="line"><span class="meta">    &#125;)</span></span><br><span class="line">    TargetEnum <span class="title function_">sourceToTarget</span><span class="params">(SourceEnum sourceEnum)</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<h4 id="context"><strong><span class="citation" data-cites="Context">@Context</span></strong></h4>
+<p>在映射过程中传递上下文信息。
+需要外部数据参与映射逻辑（如权限校验）时候使用。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Mapper</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">UserMapper</span> &#123;</span><br><span class="line">    UserDTO <span class="title function_">toDto</span><span class="params">(User user, <span class="meta">@Context</span> Locale locale)</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">default</span> String <span class="title function_">formatDate</span><span class="params">(Date date, <span class="meta">@Context</span> Locale locale)</span> &#123;</span><br><span class="line">        <span class="comment">// 使用上下文信息进行格式化</span></span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">SimpleDateFormat</span>(<span class="string">&quot;yyyy-MM-dd&quot;</span>, locale).format(date);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="named"><strong><span class="citation" data-cites="Named">@Named</span></strong></h4>
+<p>为映射方法命名，便于在其他地方引用。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Mapper</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">UserMapper</span> &#123;</span><br><span class="line">    <span class="meta">@Mapping(source = &quot;birthDate&quot;, target = &quot;age&quot;, qualifiedByName = &quot;BirthDateToAge&quot;)</span></span><br><span class="line">    UserDTO <span class="title function_">toDto</span><span class="params">(User user)</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Named(&quot;BirthDateToAge&quot;)</span></span><br><span class="line">    <span class="keyword">default</span> Integer <span class="title function_">birthDateToAge</span><span class="params">(Date birthDate)</span> &#123;</span><br><span class="line">        <span class="comment">// 计算年龄的逻辑</span></span><br><span class="line">        <span class="keyword">if</span> (birthDate == <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="type">Calendar</span> <span class="variable">birth</span> <span class="operator">=</span> Calendar.getInstance();</span><br><span class="line">        birth.setTime(birthDate);</span><br><span class="line">        <span class="type">Calendar</span> <span class="variable">now</span> <span class="operator">=</span> Calendar.getInstance();</span><br><span class="line">        <span class="type">int</span> <span class="variable">age</span> <span class="operator">=</span> now.get(Calendar.YEAR) - birth.get(Calendar.YEAR);</span><br><span class="line">        <span class="keyword">if</span> (now.get(Calendar.DAY_OF_YEAR) &lt; birth.get(Calendar.DAY_OF_YEAR)) &#123;</span><br><span class="line">            age--;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> age;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="属性讲解">属性讲解</h3>
+<h4 id="componentmodel-属性">componentModel 属性</h4>
+<p><code>@Mapper</code> 注解的 <code>componentModel</code>
+属性用于指定自动生成的接口实现类的组件类型，这个属性支持四个值：</p>
+<ul>
+<li><p><code>default</code>: 这是默认的情况，mapstruct
+不使用任何组件类型,
+可以通过<code>Mappers.getMapper(Class)</code>方式获取自动生成的实例对象。</p></li>
+<li><p><code>spring</code>:
+生成的实现类上面会自动添加一个<code>@Component</code>注解，可以通过Spring的
+<code>@Autowired</code>或者<code>@Resource</code>方式进行注入</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Mapper(componentModel = &quot;spring&quot;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">PersonMapper</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Mapping(source = &quot;name&quot;, target = &quot;fullName&quot;)</span></span><br><span class="line">    PersonDto <span class="title function_">personToPersonDto</span><span class="params">(Person person)</span>;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Service</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">PersonService</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">  	<span class="keyword">private</span> PersonMapper personMapper;</span><br><span class="line">    </span><br><span class="line">  	<span class="keyword">public</span> PersonDto <span class="title function_">convert</span><span class="params">(Person person)</span>&#123;</span><br><span class="line">      <span class="type">PersonDto</span> <span class="variable">dto</span> <span class="operator">=</span> personMapper.personToPersonDto(person);</span><br><span class="line">      <span class="keyword">return</span> dto;</span><br><span class="line">    &#125;</span><br><span class="line">   </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p><code>jsr330</code>:
+生成的实现类上会添加<code>@javax.inject.Named</code>
+和<code>@Singleton注解</code>，可以通过
+<code>@Inject</code>注解获取</p></li>
+</ul>
+<h4 id="nullvaluecheckstrategy-属性">nullValueCheckStrategy 属性</h4>
+<p>是否在生成的实现类中，对每一个属性进行null检查，可选值有两个：<code>ON_IMPLICIT_CONVERSION</code>（默认值）和
+<code>ALWAYS</code> 。</p>
+<h4 id="always">ALWAYS</h4>
+<p><code>ALWAYS</code> 表示在赋值之前，对每一个属性进行!=
+null的检查。</p>
+<h4 id="on_implicit_conversion">ON_IMPLICIT_CONVERSION</h4>
+<p><code>ON_IMPLICIT_CONVERSION</code>则表示直接进行赋值，不进行 != null
+判断。</p>
+<h4 id="nullvaluepropertymappingstrategy属性">nullValuePropertyMappingStrategy属性</h4>
+<p>指定当源属性为null或者不存在时目标属性生成值的策略，可选值有：</p>
+<ul>
+<li><p><strong>SET_TO_NULL（默认值）</strong></p>
+<p>当源属性为null或者不存在时，设置目标属性的值为null。</p></li>
+<li><p><strong>SET_TO_DEFAULT</strong></p>
+<p>根据源属性的类型，设置指定的默认值。</p>
+<ul>
+<li>源属性是List，则默认值是ArrayList；</li>
+<li>源属性是String，则默认值是”“；</li>
+<li>源属性是基本类型，则默认值是0或者false；</li>
+<li>源属性是Map，则默认值是LinkedHashMap；</li>
+<li>源属性是数组，则默认值是空数组。</li>
+</ul></li>
+<li><p><strong>IGNORE</strong></p>
+<p>如果源属性是null或者不存在，则不会将null赋值给目标属性，目标属性是什么值就保持什么值。</p></li>
+</ul>
+<h4 id="指定默认值">指定默认值</h4>
+<p>在<code>@Mapper</code>接口类里面的转换方法上添加<code>@Mapping</code>注解的时候，如果需要指定默认值</p>
+<p><code>target()</code>
+必须添加，<code>source()</code>可以不添加，则直接使用<code>defaultValue</code></p>
+<p><code>MapStruct</code>也支持默认值映射，你可以使用<code>@Mapping</code>注解的<code>defaultValue</code>参数来实现这一点：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Mapping(target = &quot;describe&quot;, defaultValue = &quot;默认值&quot;)</span></span><br><span class="line">PersonDTO <span class="title function_">conver</span><span class="params">(Person person)</span>;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<h4 id="自定义映射">自定义映射</h4>
+<p>在某些情况下，可能需要自定义字段映射。可以通过在@Mapping注解中使用<code>expression</code>或<code>qualifiedByName</code>参数来实现这一点。</p>
+<p><code>qualifiedByName</code>这个参数允许你引用一个具有<code>@Named</code>注解的方法作为自定义的映射逻辑</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Mapper</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">OrderMapper</span> &#123;</span><br><span class="line">  </span><br><span class="line">    <span class="meta">@Mapping(target = &quot;customerName&quot;, source = &quot;customer&quot;, qualifiedByName = &quot;fullName&quot;)</span></span><br><span class="line">    OrderDto <span class="title function_">orderToOrderDto</span><span class="params">(Order order)</span>;</span><br><span class="line"></span><br><span class="line">		<span class="meta">@Named(&quot;fullName&quot;)</span></span><br><span class="line">		<span class="keyword">default</span> String <span class="title function_">customerToString</span><span class="params">(Customer customer)</span> &#123;</span><br><span class="line">    		<span class="keyword">return</span> customer.getFirstName() + <span class="string">&quot; &quot;</span> + customer.getLastName();</span><br><span class="line">		&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在这个例子中，<code>orderToOrderDto</code>方法将<code>Order</code>的<code>customer</code>字段（类型为<code>Customer</code>）转换为<code>OrderDto</code>的<code>customerName</code>字段（类型为<code>String</code>），并且使用了<code>customerToString</code>方法来获取全名。</p>
+<h4 id="experssion">experssion</h4>
+<p><code>expression</code>这个参数允许你使用Java表达式来定义字段映射。这在源和目标字段之间需要一些特定逻辑时非常有用。</p>
+<p><strong>注意</strong>：
+这个属性不能与<code>source()</code>、<code>defaultValue()</code>、<code>defaultExpression()</code>、<code>qualifiedBy()</code>、<code>qualifiedByName()</code>或<code>constant()</code>一起使用。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Mapper</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">OrderMapper</span> &#123;</span><br><span class="line">    <span class="meta">@Mapping(target = &quot;orderDate&quot;, expression = &quot;java(new java.text.SimpleDateFormat(\&quot;yyyy-MM-dd\&quot;).format(order.getCreationDate()))&quot;)</span></span><br><span class="line">    OrderDto <span class="title function_">orderToOrderDto</span><span class="params">(Order order)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在这个例子中，<code>orderToOrderDto</code>方法将<code>Order</code>的<code>creationDate</code>字段（类型为Date）转换为<code>OrderDto的orderDate</code>字段（类型为String），并且使用了特定的日期格式。</p>
+<h4 id="beanmapping在映射方法级别提供更详细的配置"><code>@BeanMapping</code>在映射方法级别提供更详细的配置</h4>
+<p>从MapStruct
+1.5开始，可以使用<code>@BeanMapping</code>注解在MapStruct中用于在映射方法级别提供更详细的配置。这个注解有许多参数可以使用。</p>
+<ul>
+<li><p><code>resultType</code>:
+这个参数允许你指定映射方法的返回类型。这在目标类型可以是多个实现类时非常有用。
+如果目标类型有多个实现类，并且你希望在映射时使用特定的实现类。通过指定resultType，你可以确保生成的映射代码使用正确的目标类型</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@BeanMapping(resultType = CarDto.class)</span></span><br><span class="line">CarDto <span class="title function_">map</span><span class="params">(Car car)</span>;</span><br><span class="line"></span><br></pre></td></tr></table></figure></li>
+<li><p><code>qualifiedBy</code>和<code>qualifiedByName</code>:
+这两个参数允许你引用一个具有<code>@Qualifier</code>或<code>@Named</code>注解的方法作为自定义的映射逻辑。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@BeanMapping(qualifiedByName = &quot;fullName&quot;)</span></span><br><span class="line">PersonDto <span class="title function_">personToPersonDto</span><span class="params">(Person person)</span>;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Named(&quot;fullName&quot;)</span></span><br><span class="line"><span class="keyword">default</span> String <span class="title function_">customerToString</span><span class="params">(Customer customer)</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> customer.getFirstName() + <span class="string">&quot; &quot;</span> + customer.getLastName();</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure></li>
+<li><p><code>ignoreByDefault</code>:
+这个参数允许你忽略所有未明确映射的属性。然后，你可以使用<code>@Mapping</code>注解来明确需要映射的属性。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@BeanMapping(ignoreByDefault = true)</span></span><br><span class="line"><span class="meta">@Mapping(target = &quot;name&quot;, source = &quot;fullName&quot;)</span></span><br><span class="line">PersonDto <span class="title function_">personToPersonDto</span><span class="params">(Person person)</span>;</span><br><span class="line"></span><br></pre></td></tr></table></figure></li>
+<li><p><code>nullValuePropertyMappingStrategy</code>:
+这个参数允许你指定当源属性为null时应如何处理目标属性。例如，你可以选择是否在源属性为null时调用目标的setter方法。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)</span></span><br><span class="line">PersonDto <span class="title function_">personToPersonDto</span><span class="params">(Person person)</span>;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h4 id="使用装饰器增强mapper">使用装饰器增强Mapper</h4>
+<p>你可以使用装饰器来增强你的Mapper。</p>
+<p>MapStruct
+装饰器是一种强大的机制，允许你在生成的映射代码基础上添加自定义逻辑，而不需要完全重写映射方法。这在需要处理复杂业务逻辑、添加额外验证或执行副作用操作时特别有用。</p>
+<p>装饰器本质上是一个抽象类或接口，它实现了你的映射器接口，并在映射方法执行前后添加自定义逻辑。MapStruct
+会在生成的代码中自动调用这些装饰器方法。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">UserMapperDecorator</span> <span class="keyword">implements</span> <span class="title class_">UserMapper</span> &#123;</span><br><span class="line">    <span class="comment">// 注入原始的映射器实现</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> UserMapper delegate;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">UserMapperDecorator</span><span class="params">(UserMapper delegate)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.delegate = delegate;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 重写需要增强的方法</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> UserDto <span class="title function_">toDto</span><span class="params">(User user)</span> &#123;</span><br><span class="line">        <span class="comment">// 映射前的逻辑</span></span><br><span class="line">        System.out.println(<span class="string">&quot;开始映射用户: &quot;</span> + (user != <span class="literal">null</span> ? user.getId() : <span class="string">&quot;null&quot;</span>));</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 调用委托实现进行实际映射</span></span><br><span class="line">        <span class="type">UserDto</span> <span class="variable">dto</span> <span class="operator">=</span> delegate.toDto(user);</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 映射后的逻辑</span></span><br><span class="line">        <span class="keyword">if</span> (dto != <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="comment">// 增强映射结果</span></span><br><span class="line">            dto.setDisplayName(dto.getName() + <span class="string">&quot; (已映射)&quot;</span>);</span><br><span class="line">            <span class="comment">// 可以添加业务逻辑，如计算派生字段</span></span><br><span class="line">            dto.setAge(calculateAge(user.getBirthDate()));</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">return</span> dto;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 自定义方法</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> <span class="title function_">calculateAge</span><span class="params">(Date birthDate)</span> &#123;</span><br><span class="line">        <span class="comment">// 计算年龄的逻辑</span></span><br><span class="line">        <span class="keyword">if</span> (birthDate == <span class="literal">null</span>) <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">        </span><br><span class="line">        <span class="type">Calendar</span> <span class="variable">birth</span> <span class="operator">=</span> Calendar.getInstance();</span><br><span class="line">        birth.setTime(birthDate);</span><br><span class="line">        <span class="type">Calendar</span> <span class="variable">now</span> <span class="operator">=</span> Calendar.getInstance();</span><br><span class="line">        </span><br><span class="line">        <span class="type">int</span> <span class="variable">age</span> <span class="operator">=</span> now.get(Calendar.YEAR) - birth.get(Calendar.YEAR);</span><br><span class="line">        <span class="keyword">if</span> (now.get(Calendar.DAY_OF_YEAR) &lt; birth.get(Calendar.DAY_OF_YEAR)) &#123;</span><br><span class="line">            age--;</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">return</span> age;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>当 MapStruct 生成代码时，它会创建一个 <code>UserMapper</code>
+的实现类，这个实现类会委托给 <code>UserMapperDecorator</code>
+处理。装饰器类中没有重写的方法会由 MapStruct 自动生成。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Mapper(componentModel = &quot;spring&quot;)</span></span><br><span class="line"><span class="meta">@DecoratedWith(UserMapperDecorator.class)</span> <span class="comment">// 指定装饰器</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">UserMapper</span> &#123;</span><br><span class="line">    UserDto <span class="title function_">toDto</span><span class="params">(User user)</span>;</span><br><span class="line">    User <span class="title function_">toEntity</span><span class="params">(UserDto dto)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="常量映射">常量映射</h4>
+<p><code>@Mapping</code>注解<code>constant</code>属性可以用于将源对象的某个固定值映射到目标对象的属性：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Mapper</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">CarMapper</span> &#123;</span><br><span class="line">    <span class="meta">@Mapping(target = &quot;carType&quot;, constant = &quot;SEDAN&quot;)</span></span><br><span class="line">    CarDto <span class="title function_">carToCarDto</span><span class="params">(Car car)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在这个例子中，<code>carToCarDto</code>方法将会把<code>CarDto</code>的<code>carType</code>字段设置为<code>SEDAN</code>，无论<code>Car</code>对象的实际内容如何。</p>
+<h3 id="转换情景与规则">转换情景与规则</h3>
+<h4 id="默认方式获取映射器实例">默认方式获取映射器实例</h4>
+<p>在实现类的时候， 如果属性名称相同，
+则会进行对应的转化。通过此种方式，
+我们可以快速的编写出转换的方法。、</p>
+<p>适用于 Source 和 Target
+需要转化的属性是完全相同的，也就是说转换前后不会出现不同的字段</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 用户实体类 - 通常对应数据库表结构</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">User</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> Long id;</span><br><span class="line">    <span class="keyword">private</span> String username;</span><br><span class="line">    <span class="keyword">private</span> String email;</span><br><span class="line">    <span class="keyword">private</span> String phone;</span><br><span class="line">    <span class="keyword">private</span> Date createTime;</span><br><span class="line">    <span class="keyword">private</span> Boolean isActive;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 构造方法、getter、setter 省略...</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 用户DTO类 - 用于数据传输，通常会隐藏一些敏感字段</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">UserDto</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> Long id;</span><br><span class="line">    <span class="keyword">private</span> String username;</span><br><span class="line">    <span class="keyword">private</span> String email;</span><br><span class="line">    <span class="keyword">private</span> String phone;</span><br><span class="line">    <span class="keyword">private</span> String createTime; <span class="comment">// 注意：这里是String类型，与实体类不同</span></span><br><span class="line">    <span class="keyword">private</span> Boolean isActive;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 构造方法、getter、setter 省略...</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 定义映射器接口</span></span><br><span class="line"><span class="meta">@Mapper</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">UserMapper</span> &#123;</span><br><span class="line">    <span class="comment">// 将User实体转换为UserDto</span></span><br><span class="line">    <span class="comment">// MapStruct会自动匹配同名字段进行映射</span></span><br><span class="line">    UserDto <span class="title function_">toDto</span><span class="params">(User user)</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 将UserDto转换为User实体</span></span><br><span class="line">    <span class="comment">// 支持双向转换，方便在不同层之间传递数据</span></span><br><span class="line">    User <span class="title function_">toEntity</span><span class="params">(UserDto userDto)</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 批量转换：将User列表转换为UserDto列表</span></span><br><span class="line">    <span class="comment">// MapStruct自动支持集合类型的转换</span></span><br><span class="line">    List&lt;UserDto&gt; <span class="title function_">toDtoList</span><span class="params">(List&lt;User&gt; users)</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 批量转换：将UserDto列表转换为User列表</span></span><br><span class="line">    List&lt;User&gt; <span class="title function_">toEntityList</span><span class="params">(List&lt;UserDto&gt; dtos)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在需要进行类型转换的地方，使用在<code>@Mapper</code>映射器接口中定义的方法就会自动进行转换</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Service</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">UserService</span> &#123;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 通过Mappers.getMapper()获取自动生成的实例</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">UserMapper</span> <span class="variable">userMapper</span> <span class="operator">=</span> Mappers.getMapper(UserMapper.class);</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> UserDto <span class="title function_">getUserById</span><span class="params">(Long id)</span> &#123;</span><br><span class="line">        <span class="comment">// 假设从数据库查询到User实体</span></span><br><span class="line">        <span class="type">User</span> <span class="variable">user</span> <span class="operator">=</span> userRepository.findById(id);</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 使用映射器将实体转换为DTO</span></span><br><span class="line">        <span class="comment">// 编译后生成的代码会直接调用setter/getter方法，性能接近手写代码</span></span><br><span class="line">        <span class="keyword">return</span> userMapper.toDto(user);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> List&lt;UserDto&gt; <span class="title function_">getAllUsers</span><span class="params">()</span> &#123;</span><br><span class="line">        List&lt;User&gt; users = userRepository.findAll();</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 批量转换，MapStruct会自动处理集合中的每个元素</span></span><br><span class="line">        <span class="keyword">return</span> userMapper.toDtoList(users);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>编译后，MapStruct 会生成类似以下的实现代码：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 这是MapStruct自动生成的实现类，开发者无需编写</span></span><br><span class="line"><span class="meta">@Generated(</span></span><br><span class="line"><span class="meta">    value = &quot;org.mapstruct.ap.MappingProcessor&quot;,</span></span><br><span class="line"><span class="meta">    date = &quot;2024-01-01T10:00:00+0800&quot;,</span></span><br><span class="line"><span class="meta">    comments = &quot;version: 1.5.5.Final, compiler: javac, environment: Java 11&quot;</span></span><br><span class="line"><span class="meta">)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">UserMapperImpl</span> <span class="keyword">implements</span> <span class="title class_">UserMapper</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> UserDto <span class="title function_">toDto</span><span class="params">(User user)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (user == <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">null</span>; <span class="comment">// 自动进行null检查</span></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="type">UserDto</span> <span class="variable">userDto</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">UserDto</span>();</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 直接调用getter/setter方法，无反射开销</span></span><br><span class="line">        userDto.setId(user.getId());</span><br><span class="line">        userDto.setUsername(user.getUsername());</span><br><span class="line">        userDto.setEmail(user.getEmail());</span><br><span class="line">        userDto.setPhone(user.getPhone());</span><br><span class="line">        userDto.setIsActive(user.getIsActive());</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 对于Date到String的转换，MapStruct会自动处理</span></span><br><span class="line">        <span class="keyword">if</span> (user.getCreateTime() != <span class="literal">null</span>) &#123;</span><br><span class="line">            userDto.setCreateTime(user.getCreateTime().toString());</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> userDto;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> User <span class="title function_">toEntity</span><span class="params">(UserDto userDto)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (userDto == <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="type">User</span> <span class="variable">user</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">User</span>();</span><br><span class="line">        </span><br><span class="line">        user.setId(userDto.getId());</span><br><span class="line">        user.setUsername(userDto.getUsername());</span><br><span class="line">        user.setEmail(userDto.getEmail());</span><br><span class="line">        user.setPhone(userDto.getPhone());</span><br><span class="line">        user.setIsActive(userDto.getIsActive());</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// String到Date的转换需要特殊处理（后面会介绍如何配置）</span></span><br><span class="line">        <span class="comment">// 这里简化处理...</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> user;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> List&lt;UserDto&gt; <span class="title function_">toDtoList</span><span class="params">(List&lt;User&gt; users)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (users == <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        List&lt;UserDto&gt; list = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;UserDto&gt;(users.size());</span><br><span class="line">        <span class="comment">// 遍历集合，逐个转换</span></span><br><span class="line">        <span class="keyword">for</span> (User user : users) &#123;</span><br><span class="line">            list.add(toDto(user));</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> list;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// toEntityList方法实现类似...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="字段映射配置">字段映射配置</h4>
+<p>属性名不相同， 在需要进行互相转化的时候， 则我们可以通过
+<code>@Mapping</code> 注解来进行转化.</p>
+<p>这适用于当源对象和目标对象的字段名不一致，或者需要特殊的转换逻辑时</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Mapper</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">ProductMapper</span> &#123;</span><br><span class="line">    <span class="meta">@Mapping(source = &quot;productName&quot;, target = &quot;name&quot;)</span></span><br><span class="line">    <span class="meta">@Mapping(source = &quot;productPrice&quot;, target = &quot;price&quot;)</span></span><br><span class="line">    <span class="meta">@Mapping(source = &quot;createdTime&quot;, target = &quot;createDate&quot;, dateFormat = &quot;yyyy-MM-dd HH:mm:ss&quot;)</span></span><br><span class="line">    ProductDto <span class="title function_">toDto</span><span class="params">(Product product)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>有时候我们不希望某些字段参与映射，可以使用 <code>ignore = true</code>
+来忽略它们：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 订单实体类</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Order</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> Long orderId;</span><br><span class="line">    <span class="keyword">private</span> String orderNumber;</span><br><span class="line">    <span class="keyword">private</span> BigDecimal totalAmount;</span><br><span class="line">    <span class="keyword">private</span> Date createTime;</span><br><span class="line">    <span class="keyword">private</span> String internalNotes;  <span class="comment">// 内部备注，不对外暴露</span></span><br><span class="line">    <span class="keyword">private</span> Integer version;       <span class="comment">// 版本号，乐观锁字段</span></span><br><span class="line">    <span class="keyword">private</span> String auditLog;       <span class="comment">// 审计日志，敏感信息</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">// getter、setter省略...</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 订单DTO类</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">OrderDto</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> Long orderId;</span><br><span class="line">    <span class="keyword">private</span> String orderNumber;</span><br><span class="line">    <span class="keyword">private</span> BigDecimal totalAmount;</span><br><span class="line">    <span class="keyword">private</span> String createTime;</span><br><span class="line">    <span class="comment">// 注意：没有internalNotes、version、auditLog字段</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">// getter、setter省略...</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Mapper</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">OrderMapper</span> &#123;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 忽略敏感字段和内部字段</span></span><br><span class="line">    <span class="meta">@Mapping(target = &quot;internalNotes&quot;, ignore = true)</span>  <span class="comment">// 忽略内部备注</span></span><br><span class="line">    <span class="meta">@Mapping(target = &quot;version&quot;, ignore = true)</span>        <span class="comment">// 忽略版本字段</span></span><br><span class="line">    <span class="meta">@Mapping(target = &quot;auditLog&quot;, ignore = true)</span>       <span class="comment">// 忽略审计日志</span></span><br><span class="line">    <span class="meta">@Mapping(source = &quot;createTime&quot;, target = &quot;createTime&quot;, dateFormat = &quot;yyyy-MM-dd HH:mm:ss&quot;)</span></span><br><span class="line">    OrderDto <span class="title function_">toDto</span><span class="params">(Order order)</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// DTO转实体时，被忽略的字段不会被设置，保持默认值或null</span></span><br><span class="line">    <span class="meta">@Mapping(source = &quot;createTime&quot;, target = &quot;createTime&quot;, dateFormat = &quot;yyyy-MM-dd HH:mm:ss&quot;)</span></span><br><span class="line">    Order <span class="title function_">toEntity</span><span class="params">(OrderDto dto)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="嵌套对象映射">嵌套对象映射</h4>
+<p>这是比较复杂的映射场景，MapStruct
+支持嵌套对象的自动映射，当对象包含其他对象时，会递归进行映射：</p>
+<p>当源对象和目标对象都包含嵌套结构时，MapStruct
+会自动递归处理这些嵌套对象</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 部门实体</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Department</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> Long deptId;</span><br><span class="line">    <span class="keyword">private</span> String deptName;</span><br><span class="line">    <span class="keyword">private</span> String location;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// getter、setter省略...</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 部门DTO</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">DepartmentDto</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> Long deptId;</span><br><span class="line">    <span class="keyword">private</span> String deptName;</span><br><span class="line">    <span class="keyword">private</span> String location;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// getter、setter省略...</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 员工实体 - 包含部门对象</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Employee</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> Long empId;</span><br><span class="line">    <span class="keyword">private</span> String empName;</span><br><span class="line">    <span class="keyword">private</span> String email;</span><br><span class="line">    <span class="keyword">private</span> Department department; <span class="comment">// 嵌套的部门对象</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">// getter、setter省略...</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 员工DTO - 同样包含部门DTO对象</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">EmployeeDto</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> Long empId;</span><br><span class="line">    <span class="keyword">private</span> String empName;</span><br><span class="line">    <span class="keyword">private</span> String email;</span><br><span class="line">    <span class="keyword">private</span> DepartmentDto department; <span class="comment">// 嵌套的部门DTO对象</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">// getter、setter省略...</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 需要先定义部门映射器</span></span><br><span class="line"><span class="meta">@Mapper</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">DepartmentMapper</span> &#123;</span><br><span class="line">    DepartmentDto <span class="title function_">toDto</span><span class="params">(Department department)</span>;</span><br><span class="line">    Department <span class="title function_">toEntity</span><span class="params">(DepartmentDto dto)</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 员工映射器 - 会自动处理嵌套对象</span></span><br><span class="line"><span class="meta">@Mapper(uses = DepartmentMapper.class)</span> <span class="comment">// 指定依赖的映射器</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">EmployeeMapper</span> &#123;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// MapStruct会自动检测到department字段是嵌套对象</span></span><br><span class="line">    <span class="comment">// 并使用DepartmentMapper来进行转换</span></span><br><span class="line">    EmployeeDto <span class="title function_">toDto</span><span class="params">(Employee employee)</span>;</span><br><span class="line">    </span><br><span class="line">    Employee <span class="title function_">toEntity</span><span class="params">(EmployeeDto dto)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>此时嵌套映射的工作原理</strong></p>
+<ol type="1">
+<li>MapStruct 会自动检测到 <code>Employee</code> 中的
+<code>department</code> 字段是一个 <code>Department</code> 对象</li>
+<li>它会查找是否有可用的 <code>Department</code> 到
+<code>DepartmentDto</code> 的映射方法</li>
+<li>如果找到了（通过 <code>uses</code> 属性指定的
+<code>DepartmentMapper</code>），就会使用该映射器处理嵌套对象</li>
+<li>如果没找到，会尝试自动生成映射逻辑</li>
+</ol>
+<p>如果其中遇到了更复杂的嵌套处理路径，我们可以使用
+<code>@Mapping(source = "嵌套字段", target = "目标字段")</code></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Mapper</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">OrderMapper</span> &#123;</span><br><span class="line">    <span class="meta">@Mapping(source = &quot;customer.address.city&quot;, target = &quot;deliveryCity&quot;)</span></span><br><span class="line">    OrderDto <span class="title function_">toDto</span><span class="params">(Order order)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在这个例子中，<code>toDto</code>方法将<code>customer</code>的<code>address.city</code>属性映射到<code>OrderDto</code>的<code>deliveryCity</code>属性。</p>
+<h4 id="使用自定义的转换">使用自定义的转换</h4>
+<p>有时候，对于某些类型， 无法通过代码生成器的形式来进行处理。 那么，
+就需要自定义的方法来进行转换。或者当MapStruct的默认转换逻辑无法满足复杂业务需求时，我们也可以在映射器中定义自定义方法：</p>
+<p>这时候， 我们可以在接口(同一个接口， 后续还有调用别的 Mapper
+的方法)中定义默认方法(Java8及之后)。</p>
+<p>自定义转换方法可以是：</p>
+<ol type="1">
+<li>同一映射器接口中的默认方法</li>
+<li>其他映射器中的方法（通过 <code>uses</code> 属性引用）</li>
+<li>静态工具类中的方法（通过 <code>uses</code> 属性引用）</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Mapper</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">UserMapper</span> &#123;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 基本映射方法，引用自定义转换</span></span><br><span class="line">    <span class="meta">@Mapping(source = &quot;createTime&quot;, target = &quot;createDate&quot;, dateFormat = &quot;yyyy-MM-dd&quot;)</span></span><br><span class="line">    <span class="meta">@Mapping(source = &quot;status&quot;, target = &quot;statusText&quot;, qualifiedByName = &quot;statusToText&quot;)</span></span><br><span class="line">    <span class="meta">@Mapping(target = &quot;fullName&quot;, expression = &quot;java(formatFullName(user.getFirstName(), user.getLastName()))&quot;)</span></span><br><span class="line">    UserDto <span class="title function_">toDto</span><span class="params">(User user)</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 自定义转换方法：将状态码转换为文本描述</span></span><br><span class="line">    <span class="meta">@Named(&quot;statusToText&quot;)</span> <span class="comment">// 指定方法名，供@Mapping使用</span></span><br><span class="line">    <span class="keyword">default</span> String <span class="title function_">statusToText</span><span class="params">(Integer status)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (status == <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="string">&quot;未知&quot;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">switch</span> (status) &#123;</span><br><span class="line">            <span class="keyword">case</span> <span class="number">1</span>:</span><br><span class="line">                <span class="keyword">return</span> <span class="string">&quot;激活&quot;</span>;</span><br><span class="line">            <span class="keyword">case</span> <span class="number">0</span>:</span><br><span class="line">                <span class="keyword">return</span> <span class="string">&quot;禁用&quot;</span>;</span><br><span class="line">            <span class="keyword">case</span> -<span class="number">1</span>:</span><br><span class="line">                <span class="keyword">return</span> <span class="string">&quot;删除&quot;</span>;</span><br><span class="line">            <span class="keyword">default</span>:</span><br><span class="line">                <span class="keyword">return</span> <span class="string">&quot;未知状态&quot;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 自定义方法：处理复杂的业务逻辑</span></span><br><span class="line">    <span class="keyword">default</span> String <span class="title function_">formatFullName</span><span class="params">(String firstName, String lastName)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (firstName == <span class="literal">null</span> &amp;&amp; lastName == <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (firstName == <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> lastName;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (lastName == <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> firstName;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> firstName + <span class="string">&quot; &quot;</span> + lastName;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>使用外部工具类进行自定义转换</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 工具类</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">DateFormatters</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> String <span class="title function_">formatDate</span><span class="params">(Date date)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (date == <span class="literal">null</span>) <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">        <span class="type">SimpleDateFormat</span> <span class="variable">format</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">SimpleDateFormat</span>(<span class="string">&quot;yyyy-MM-dd&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> format.format(date);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 映射器</span></span><br><span class="line"><span class="meta">@Mapper(uses = DateFormatters.class)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">UserMapper</span> &#123;</span><br><span class="line">    <span class="meta">@Mapping(source = &quot;birthDate&quot;, target = &quot;formattedBirthDate&quot;, qualifiedByName = &quot;formatDate&quot;)</span></span><br><span class="line">    UserDto <span class="title function_">toDto</span><span class="params">(User user)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>也可以使用 <code>@Context</code> 传递上下文信息</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Mapper</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">UserMapper</span> &#123;</span><br><span class="line">    UserDto <span class="title function_">toDto</span><span class="params">(User user, <span class="meta">@Context</span> Locale locale)</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">default</span> String <span class="title function_">formatDate</span><span class="params">(Date date, <span class="meta">@Context</span> Locale locale)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (date == <span class="literal">null</span>) <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">        <span class="type">SimpleDateFormat</span> <span class="variable">format</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">SimpleDateFormat</span>(<span class="string">&quot;yyyy-MM-dd&quot;</span>, locale);</span><br><span class="line">        <span class="keyword">return</span> format.format(date);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 使用示例</span></span><br><span class="line"><span class="type">Locale</span> <span class="variable">locale</span> <span class="operator">=</span> Locale.CHINA;</span><br><span class="line"><span class="type">UserDto</span> <span class="variable">dto</span> <span class="operator">=</span> userMapper.toDto(user, locale);</span><br></pre></td></tr></table></figure>
+<h4 id="多转一">多转一</h4>
+<p>我们在实际的业务中少不了将多个对象转换成一个的场景。 MapStruct
+当然也支持多转一的操作。</p>
+<ul>
+<li>将多个实体对象合并为一个 DTO</li>
+<li>将表单数据和查询参数合并为一个业务对象</li>
+<li>将配置信息和运行时数据合并为一个完整的上下文对象</li>
+</ul>
+<p>MapStruct
+通过方法参数实现多对象映射，只需要在映射方法中声明多个源对象参数即可</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Mapper</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">CarMapper</span> &#123;</span><br><span class="line">    <span class="comment">// 多个源对象映射到一个目标对象</span></span><br><span class="line">    <span class="meta">@Mapping(source = &quot;car.make&quot;, target = &quot;manufacturer&quot;)</span></span><br><span class="line">    <span class="meta">@Mapping(source = &quot;car.numberOfSeats&quot;, target = &quot;seatCount&quot;)</span></span><br><span class="line">    <span class="meta">@Mapping(source = &quot;owner.name&quot;, target = &quot;ownerName&quot;)</span></span><br><span class="line">    CarDto <span class="title function_">carAndOwnerToCarDto</span><span class="params">(Car car, Person owner)</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 支持更多源对象</span></span><br><span class="line">    CarFullInfoDto <span class="title function_">carAndOwnerAndConfigToCarFullInfoDto</span><span class="params">(Car car, Person owner, CarConfig config)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>字段冲突处理</strong></p>
+<p>当多个源对象包含同名属性时，MapStruct
+默认使用最后一个参数中的值：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Mapper</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">ConflictMapper</span> &#123;</span><br><span class="line">    <span class="comment">// 如果Source1和Source2都有name属性，将使用Source2中的值</span></span><br><span class="line">    Target <span class="title function_">mergeSources</span><span class="params">(Source1 source1, Source2 source2)</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 显式指定使用哪个源对象的属性</span></span><br><span class="line">    <span class="meta">@Mapping(source = &quot;source1.name&quot;, target = &quot;nameFromSource1&quot;)</span></span><br><span class="line">    <span class="meta">@Mapping(source = &quot;source2.name&quot;, target = &quot;nameFromSource2&quot;)</span></span><br><span class="line">    TargetWithBothNames <span class="title function_">mergeSourcesWithBothNames</span><span class="params">(Source1 source1, Source2 source2)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>使用 <span class="citation" data-cites="MappingTarget">@MappingTarget</span>
+处理已存在的目标对象</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Mapper</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">UpdateMapper</span> &#123;</span><br><span class="line">    <span class="comment">// 将source1和source2的属性合并到已存在的target对象中</span></span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">updateTarget</span><span class="params">(<span class="meta">@MappingTarget</span> Target target, Source1 source1, Source2 source2)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="更新现有-bean-对象">更新现有 bean 对象</h4>
+<p>在实际应用中，我们经常需要更新一个已存在的对象，而不是创建一个新对象。MapStruct
+提供了专门的机制来处理这种情况。</p>
+<p>使用 <span class="citation" data-cites="MappingTarget">@MappingTarget</span> 注解</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Mapper</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">UserMapper</span> &#123;</span><br><span class="line">    <span class="comment">// 将DTO中的属性更新到已存在的实体对象中</span></span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">updateUserFromDto</span><span class="params">(UserDto userDto, <span class="meta">@MappingTarget</span> User user)</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 支持多个源对象更新</span></span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">updateUserFromDtoAndConfig</span><span class="params">(UserDto userDto, UserConfig config, <span class="meta">@MappingTarget</span> User user)</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 集合更新</span></span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">updateUserListFromDtoList</span><span class="params">(List&lt;UserDto&gt; userDtos, <span class="meta">@MappingTarget</span> List&lt;User&gt; users)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>可以使用 <span class="citation" data-cites="BeanMapping">@BeanMapping</span>
+进行更详细的配置更新策略</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Mapper</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">CarMapper</span> &#123;</span><br><span class="line">    <span class="comment">// 忽略null值更新</span></span><br><span class="line">    <span class="meta">@BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)</span></span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">updateCarFromDto</span><span class="params">(CarDto carDto, <span class="meta">@MappingTarget</span> Car car)</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 忽略未映射的属性</span></span><br><span class="line">    <span class="meta">@BeanMapping(ignoreByDefault = true)</span></span><br><span class="line">    <span class="meta">@Mapping(source = &quot;name&quot;, target = &quot;name&quot;)</span></span><br><span class="line">    <span class="meta">@Mapping(source = &quot;price&quot;, target = &quot;price&quot;)</span></span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">updateCarWithSelectedFields</span><span class="params">(CarDto carDto, <span class="meta">@MappingTarget</span> Car car)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a target="_blank" rel="noopener" href="https://github.com/ergou10086">ErgouTree</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://ergou10086.github.io/posts/13973.html">https://ergou10086.github.io/posts/13973.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://ergou10086.github.io" target="_blank">ErgouTree's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E5%AE%9E%E7%94%A8%E7%9F%A5%E8%AF%86/">实用知识</a><a class="post-meta__tags" href="/tags/JavaWeb/">JavaWeb</a><a class="post-meta__tags" href="/tags/%E6%A1%86%E6%9E%B6%E7%9F%A5%E8%AF%86/">框架知识</a><a class="post-meta__tags" href="/tags/%E5%B8%B8%E7%94%A8%E7%9F%A5%E8%AF%86/">常用知识</a><a class="post-meta__tags" href="/tags/%E5%AD%A6%E4%B9%A0/">学习</a><a class="post-meta__tags" href="/tags/JavaEE/">JavaEE</a><a class="post-meta__tags" href="/tags/Java%E6%A1%86%E6%9E%B6/">Java框架</a></div><div class="post-share"><div class="addtoany"><div class="a2a_kit a2a_kit_size_32 a2a_default_style"><a class="a2a_button_facebook"></a><a class="a2a_button_twitter"></a><a class="a2a_button_wechat"></a><a class="a2a_button_sina_weibo"></a><a class="a2a_button_facebook_messenger"></a><a class="a2a_button_email"></a><a class="a2a_button_copy_link"></a><a class="a2a_dd" target="_blank" rel="noopener" href="https://www.addtoany.com/share"></a></div></div><script async="async" src="https://static.addtoany.com/menu/page.js"></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/posts/2780.html" title="三大自动注入相关注解的分析和对比"><img class="cover" src="/images/posts/cover_java15.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">三大自动注入相关注解的分析和对比</div></div><div class="info-2"><div class="info-item-1">自动注入相关注解 @Autowired 在使用Spring进行项目开发的时候，会大量使用到自动装配，那自动装配是什么呢？简单来说：Spring 利用依赖注入（DI）功能，完成SpringIOC容器中各个组件之间的依赖关系赋值管理。 @Autowired 是一个Spring框架的原生注解，它可以对类成员变量、方法及构造函数进行标注，让 spring 完成 bean 自动装配的工作，是 Spring 框架中用于实现依赖注入（Dependency Injection, DI） 的关键注解  自动将容器中已创建的 Bean 注入到当前 Bean 的字段、构造方法或 setter 方法中 避免手动创建对象，实现松耦合的组件协作 遵循 “控制反转（IoC）” 原则，让容器管理对象生命周期  使用@Autowired 时候，容器启动的扫描流程如下：  Spring容器在启动时会自动扫描并管理所有带有 @Component、@Service、@Repository 和 @Controller...</div></div></div></a><a class="pagination-related" href="/posts/18245.html" title="关于C#中的委托机制的讲解"><img class="cover" src="/images/posts/cover_java3.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">关于C#中的委托机制的讲解</div></div><div class="info-2"><div class="info-item-1">C# 委托机制深度解析与实战指南 一、委托的本质与核心概念 委托（Delegate） 是 C# 中实现回调机制的核心特性，本质上是一种引用方法的类型安全对象。与 C++ 函数指针相比，委托具有以下优势：  类型安全：委托实例必须匹配方法的签名（参数类型、返回类型） 面向对象封装：委托是派生自System.Delegate的类实例 多播能力：一个委托实例可引用多个方法 跨应用域调用：支持在不同应用域间传递方法引用  委托的核心组成部分：  签名定义：指定参数列表和返回类型 目标方法：委托引用的具体方法（静态方法或实例方法） 调用逻辑：通过委托实例调用时执行目标方法  二、委托的基础用法详解 1. 委托的声明与类型匹配规则 1234567891011// 声明一个返回int、接收两个int参数的委托public delegate int MathOperation(int a, int b);// 符合该委托签名的方法public static int Add(int x, int y) =&gt; x + y;public static...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/posts/2780.html" title="三大自动注入相关注解的分析和对比"><img class="cover" src="/images/posts/cover_java15.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-06-19</div><div class="info-item-2">三大自动注入相关注解的分析和对比</div></div><div class="info-2"><div class="info-item-1">自动注入相关注解 @Autowired 在使用Spring进行项目开发的时候，会大量使用到自动装配，那自动装配是什么呢？简单来说：Spring 利用依赖注入（DI）功能，完成SpringIOC容器中各个组件之间的依赖关系赋值管理。 @Autowired 是一个Spring框架的原生注解，它可以对类成员变量、方法及构造函数进行标注，让 spring 完成 bean 自动装配的工作，是 Spring 框架中用于实现依赖注入（Dependency Injection, DI） 的关键注解  自动将容器中已创建的 Bean 注入到当前 Bean 的字段、构造方法或 setter 方法中 避免手动创建对象，实现松耦合的组件协作 遵循 “控制反转（IoC）” 原则，让容器管理对象生命周期  使用@Autowired 时候，容器启动的扫描流程如下：  Spring容器在启动时会自动扫描并管理所有带有 @Component、@Service、@Repository 和 @Controller...</div></div></div></a><a class="pagination-related" href="/posts/8200.html" title="Spring Boot part13-全面接管Spring MVC"><img class="cover" src="/images/posts/cover_java15.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-06-11</div><div class="info-item-2">Spring Boot part13-全面接管Spring MVC</div></div><div class="info-2"><div class="info-item-1">全面接管 SpringMVC 的思路 SpringBoot 默认配置好了 SpringMVC 的所有常⽤特性。 在 SpringBoot 中，全面接管 SpringMVC 配置的思路是通过禁用默认配置并完全自定义所有 MVC 行为。这是一个高级用法，适用于需要对 SpringMVC 进行深度定制的场景。 全面接管 SpringMVC 的核心步骤如下：  创建一个配置类，实现WebMvcConfigurer接口 使用@EnableWebMvc注解禁用 SpringBoot 的默认 MVC 配置 重写WebMvcConfigurer接口中的方法来定义所有需要的 MVC 行为，WebMvcConfigurer组件定义MVC的底层行为  回忆一下配置类的三种自定义方式          全自动 直接编写控制器逻辑  全部使用自动配置默认效果     手自一体 @Configuration + 配置 WebMvcConfigurer + 配置...</div></div></div></a><a class="pagination-related" href="/posts/6874.html" title="Spring Boot part12-嵌入式容器"><img class="cover" src="/images/posts/cover_main.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-06-11</div><div class="info-item-2">Spring Boot part12-嵌入式容器</div></div><div class="info-2"><div class="info-item-1">前言 Spring Boot 的目标是构建“非常容易创建、独立、产品级别的基于Spring的应用”。这些应用是“立即可运行的”。在这个过程中，完全没有代码生成，不需要配置任何特殊的XML配置，为了这个目标，Spring Boot 在 Spring 4.0 框架之上提供了很多特性，帮助应用以“约定优于配置”“开箱即用”的方式来启动应用并运行上下文。 Spring Boot 同样改变了一个传统的 Web 应用服务的启动流程和部署方式。通过自动配置机制，Spring Boot 提供了一个嵌入式的运行时容器环境，并使用代码注解的方式在代码中将 URL 服务地址映射到 Controller 的方法完成服务映射。 所以，开发者不再需要关心传统容器（如 Tomcat）中web.xml的配置，同时实现容器的具体技术都是可替换及可更改的，这些技术以插件化的Starter组件方式在运行时加载到 Spring...</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="gitalk-container"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/arp.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">ErgouTree</div><div class="author-info-description">I start a brand-new life with you.</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">125</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">80</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">55</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/ergou10086"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/ergou10086" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="/zjm88822201@126.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a><a class="social-icon" href="https://space.bilibili.com/142045656?spm_id_from=333.1007.0.0" target="_blank" title="bilibili"><i class="fas fa-brands fa-bilibili" style="color: #4a72be;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">作者长期陷入galgame和osu!maina4k中 祝他好运吧 对了 如果图片加载过慢 建议科学上网进行使用</div></div><div class="card-widget"><div class="item-headline"><i></i><span></span></div><div class="item-content"></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%90%86%E8%A7%A3-mapper-%E6%B3%A8%E8%A7%A3%E7%9A%84%E6%A0%B8%E5%BF%83%E5%8A%9F%E8%83%BD"><span class="toc-number">1.</span> <span class="toc-text">理解 @Mapper 注解的核心功能</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%8D%E5%90%8C%E5%AF%B9%E8%B1%A1%E4%B9%8B%E9%97%B4%E9%83%BD%E6%98%AF%E4%BB%80%E4%B9%88%E6%84%8F%E6%80%9D"><span class="toc-number">2.</span> <span class="toc-text">不同对象之间都是什么意思</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E7%89%B9%E6%80%A7%E4%B8%8E%E5%8E%9F%E7%90%86"><span class="toc-number">3.</span> <span class="toc-text">核心特性与原理</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%87%AA%E5%8A%A8%E5%AD%97%E6%AE%B5%E6%98%A0%E5%B0%84"><span class="toc-number">3.1.</span> <span class="toc-text">自动字段映射</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BC%96%E8%AF%91%E6%97%B6%E7%94%9F%E6%88%90%E4%BB%A3%E7%A0%81"><span class="toc-number">3.2.</span> <span class="toc-text">编译时生成代码</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%B1%BB%E5%9E%8B%E5%AE%89%E5%85%A8"><span class="toc-number">3.3.</span> <span class="toc-text">类型安全</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%9F%BA%E6%9C%AC%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86"><span class="toc-number">3.4.</span> <span class="toc-text">基本工作原理</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#mapstruct-%E7%9A%84%E7%B1%BB%E5%9E%8B%E8%BD%AC%E6%8D%A2"><span class="toc-number">3.5.</span> <span class="toc-text">MapStruct 的类型转换</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8"><span class="toc-number">4.</span> <span class="toc-text">使用</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AF%BC%E5%85%A5%E4%BE%9D%E8%B5%96"><span class="toc-number">4.1.</span> <span class="toc-text">导入依赖</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%80%E4%BA%9B%E9%85%8D%E7%BD%AE"><span class="toc-number">4.2.</span> <span class="toc-text">一些配置</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B6%E4%B8%AD%E6%B3%A8%E8%A7%A3%E7%9A%84%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8"><span class="toc-number">5.</span> <span class="toc-text">其中注解的基本使用</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#mapper-%E5%9F%BA%E7%A1%80%E6%8E%A5%E5%8F%A3%E7%9A%84%E5%AE%9A%E4%B9%89"><span class="toc-number">5.1.</span> <span class="toc-text">@Mapper 基础接口的定义</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#mapping-%E5%9F%BA%E7%A1%80%E6%8E%A5%E5%8F%A3%E7%9A%84%E5%AE%9A%E4%B9%89"><span class="toc-number">5.2.</span> <span class="toc-text">@Mapping 基础接口的定义</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#beanmapping"><span class="toc-number">5.3.</span> <span class="toc-text">@BeanMapping</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#beforemapping-aftermapping"><span class="toc-number">5.4.</span> <span class="toc-text">@BeforeMapping &#x2F; @AfterMapping</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#iterablemapping"><span class="toc-number">5.5.</span> <span class="toc-text">@IterableMapping</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#mapmapping"><span class="toc-number">5.6.</span> <span class="toc-text">@MapMapping</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#mapperconfig"><span class="toc-number">5.7.</span> <span class="toc-text">@MapperConfig</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#inheritconfiguration-inheritinverseconfiguration"><span class="toc-number">5.8.</span> <span class="toc-text">@InheritConfiguration &#x2F; @InheritInverseConfiguration</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#valuemapping"><span class="toc-number">5.9.</span> <span class="toc-text">@ValueMapping</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#context"><span class="toc-number">5.10.</span> <span class="toc-text">@Context</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#named"><span class="toc-number">5.11.</span> <span class="toc-text">@Named</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B1%9E%E6%80%A7%E8%AE%B2%E8%A7%A3"><span class="toc-number">6.</span> <span class="toc-text">属性讲解</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#componentmodel-%E5%B1%9E%E6%80%A7"><span class="toc-number">6.1.</span> <span class="toc-text">componentModel 属性</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#nullvaluecheckstrategy-%E5%B1%9E%E6%80%A7"><span class="toc-number">6.2.</span> <span class="toc-text">nullValueCheckStrategy 属性</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#always"><span class="toc-number">6.3.</span> <span class="toc-text">ALWAYS</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#on_implicit_conversion"><span class="toc-number">6.4.</span> <span class="toc-text">ON_IMPLICIT_CONVERSION</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#nullvaluepropertymappingstrategy%E5%B1%9E%E6%80%A7"><span class="toc-number">6.5.</span> <span class="toc-text">nullValuePropertyMappingStrategy属性</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8C%87%E5%AE%9A%E9%BB%98%E8%AE%A4%E5%80%BC"><span class="toc-number">6.6.</span> <span class="toc-text">指定默认值</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%87%AA%E5%AE%9A%E4%B9%89%E6%98%A0%E5%B0%84"><span class="toc-number">6.7.</span> <span class="toc-text">自定义映射</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#experssion"><span class="toc-number">6.8.</span> <span class="toc-text">experssion</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#beanmapping%E5%9C%A8%E6%98%A0%E5%B0%84%E6%96%B9%E6%B3%95%E7%BA%A7%E5%88%AB%E6%8F%90%E4%BE%9B%E6%9B%B4%E8%AF%A6%E7%BB%86%E7%9A%84%E9%85%8D%E7%BD%AE"><span class="toc-number">6.9.</span> <span class="toc-text">@BeanMapping在映射方法级别提供更详细的配置</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8%E8%A3%85%E9%A5%B0%E5%99%A8%E5%A2%9E%E5%BC%BAmapper"><span class="toc-number">6.10.</span> <span class="toc-text">使用装饰器增强Mapper</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%B8%B8%E9%87%8F%E6%98%A0%E5%B0%84"><span class="toc-number">6.11.</span> <span class="toc-text">常量映射</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BD%AC%E6%8D%A2%E6%83%85%E6%99%AF%E4%B8%8E%E8%A7%84%E5%88%99"><span class="toc-number">7.</span> <span class="toc-text">转换情景与规则</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%BB%98%E8%AE%A4%E6%96%B9%E5%BC%8F%E8%8E%B7%E5%8F%96%E6%98%A0%E5%B0%84%E5%99%A8%E5%AE%9E%E4%BE%8B"><span class="toc-number">7.1.</span> <span class="toc-text">默认方式获取映射器实例</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AD%97%E6%AE%B5%E6%98%A0%E5%B0%84%E9%85%8D%E7%BD%AE"><span class="toc-number">7.2.</span> <span class="toc-text">字段映射配置</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%B5%8C%E5%A5%97%E5%AF%B9%E8%B1%A1%E6%98%A0%E5%B0%84"><span class="toc-number">7.3.</span> <span class="toc-text">嵌套对象映射</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8%E8%87%AA%E5%AE%9A%E4%B9%89%E7%9A%84%E8%BD%AC%E6%8D%A2"><span class="toc-number">7.4.</span> <span class="toc-text">使用自定义的转换</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%A4%9A%E8%BD%AC%E4%B8%80"><span class="toc-number">7.5.</span> <span class="toc-text">多转一</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%9B%B4%E6%96%B0%E7%8E%B0%E6%9C%89-bean-%E5%AF%B9%E8%B1%A1"><span class="toc-number">7.6.</span> <span class="toc-text">更新现有 bean 对象</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/18245.html" title="关于C#中的委托机制的讲解"><img src="/images/posts/cover_java3.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="关于C#中的委托机制的讲解"/></a><div class="content"><a class="title" href="/posts/18245.html" title="关于C#中的委托机制的讲解">关于C#中的委托机制的讲解</a><time datetime="2025-06-19T10:15:33.000Z" title="发表于 2025-06-19 18:15:33">2025-06-19</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/13973.html" title="mapStruct对象转换相关注解的使用"><img src="/images/posts/cover_4x.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="mapStruct对象转换相关注解的使用"/></a><div class="content"><a class="title" href="/posts/13973.html" title="mapStruct对象转换相关注解的使用">mapStruct对象转换相关注解的使用</a><time datetime="2025-06-19T10:09:46.000Z" title="发表于 2025-06-19 18:09:46">2025-06-19</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/2780.html" title="三大自动注入相关注解的分析和对比"><img src="/images/posts/cover_java15.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="三大自动注入相关注解的分析和对比"/></a><div class="content"><a class="title" href="/posts/2780.html" title="三大自动注入相关注解的分析和对比">三大自动注入相关注解的分析和对比</a><time datetime="2025-06-19T09:58:57.000Z" title="发表于 2025-06-19 17:58:57">2025-06-19</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/35124.html" title="Spring Boot part14-数据访问之整合SSM场景及其自动配置原理"><img src="/images/posts/cover_5x.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Spring Boot part14-数据访问之整合SSM场景及其自动配置原理"/></a><div class="content"><a class="title" href="/posts/35124.html" title="Spring Boot part14-数据访问之整合SSM场景及其自动配置原理">Spring Boot part14-数据访问之整合SSM场景及其自动配置原理</a><time datetime="2025-06-13T15:46:47.000Z" title="发表于 2025-06-13 23:46:47">2025-06-13</time></div></div></div></div></div></div></main><div class="fps-display"><span id="fps">FPS: 60</span></div><footer id="footer" style="background-image: url(/images/posts/cover_4x.jpg);"><div id="footer-wrap"><div class="copyright">&copy;2024 - 2025 By ErgouTree</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">忘れたくない思い、ありますか？ <br>,<span id="realtime_duration" style="font-family: monospace;"></span>,<br><a href="https://icp.gov.moe/?keyword=20257009" target="_blank">萌ICP备20257009号</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><a class="icon-V hidden" onclick="switchNightMode()" title="日间和夜间模式切换"><svg width="25" height="25" viewBox="0 0 1024 1024"><use id="modeicon" xlink:href="#icon-moon"></use></svg></a><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="chat-btn" type="button" title="聊天" style="display:none"><i class="fas fa-comment"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (true) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script><script>(() => {
+  const applyThemeDefaultsConfig = theme => {
+    if (theme === 'dark-mode') {
+      Chart.defaults.color = "rgba(255, 255, 255, 0.8)"
+      Chart.defaults.borderColor = "rgba(255, 255, 255, 0.2)"
+      Chart.defaults.scale.ticks.backdropColor = "transparent"
+    } else {
+      Chart.defaults.color = "rgba(0, 0, 0, 0.8)"
+      Chart.defaults.borderColor = "rgba(0, 0, 0, 0.1)"
+      Chart.defaults.scale.ticks.backdropColor = "transparent"
+    }
+  }
+
+  // Recursively traverse the config object and automatically apply theme-specific color schemes
+  const applyThemeConfig = (obj, theme) => {
+    if (typeof obj !== 'object' || obj === null) return
+
+    Object.keys(obj).forEach(key => {
+      const value = obj[key]
+      // If the property is an object and has theme-specific options, apply them
+      if (typeof value === 'object' && value !== null) {
+        if (value[theme]) {
+          obj[key] = value[theme] // Apply the value for the current theme
+        } else {
+          // Recursively process child objects
+          applyThemeConfig(value, theme)
+        }
+      }
+    })
+  }
+
+  const runChartJS = ele => {
+    window.loadChartJS = true
+
+    Array.from(ele).forEach((item, index) => {
+      const chartSrc = item.firstElementChild
+      const chartID = item.getAttribute('data-chartjs-id') || ('chartjs-' + index) // Use custom ID or default ID
+      const width = item.getAttribute('data-width')
+      const existingCanvas = document.getElementById(chartID)
+
+      // If a canvas already exists, remove it to avoid rendering duplicates
+      if (existingCanvas) {
+          existingCanvas.parentNode.remove()
+      }
+
+      const chartDefinition = chartSrc.textContent
+      const canvas = document.createElement('canvas')
+      canvas.id = chartID
+
+      const div = document.createElement('div')
+      div.className = 'chartjs-wrap'
+
+      if (width) {
+        div.style.width = width
+      }
+
+      div.appendChild(canvas)
+      chartSrc.insertAdjacentElement('afterend', div)
+
+      const ctx = document.getElementById(chartID).getContext('2d')
+
+      const config = JSON.parse(chartDefinition)
+
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark-mode' : 'light-mode'
+
+      // Set default styles (initial setup)
+      applyThemeDefaultsConfig(theme)
+
+      // Automatically traverse the config and apply dual-mode color schemes
+      applyThemeConfig(config, theme)
+
+      new Chart(ctx, config)
+    })
+  }
+
+  const loadChartJS = () => {
+    const chartJSEle = document.querySelectorAll('#article-container .chartjs-container')
+    if (chartJSEle.length === 0) return
+
+    window.loadChartJS ? runChartJS(chartJSEle) : btf.getScript('https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.min.js').then(() => runChartJS(chartJSEle))
+  }
+
+  // Listen for theme change events
+  btf.addGlobalFn('themeChange', loadChartJS, 'chartjs')
+  btf.addGlobalFn('encrypt', loadChartJS, 'chartjs')
+
+  window.pjax ? loadChartJS() : document.addEventListener('DOMContentLoaded', loadChartJS)
+})()</script><script>(function() {
+  const abcjsInit = function() {
+    const abcjsFn = function() {
+      setTimeout(function() {
+        const sheets = document.querySelectorAll(".abc-music-sheet")
+        for (let i = 0; i < sheets.length; i++) {
+          const ele = sheets[i]
+          if (ele.children.length > 0) continue
+
+          // Parse parameters from data-params attribute
+          let params = {}
+          const dp = ele.getAttribute("data-params")
+          if (dp) {
+            try {
+              params = JSON.parse(dp)
+            } catch (e) {
+              console.error("Failed to parse data-params:", e)
+            }
+          }
+
+          // Merge parsed parameters with the responsive option
+          // Ensures params content appears before responsive
+          const options = { ...params, responsive: "resize" }
+
+          // Render the music score using ABCJS.renderAbc
+          ABCJS.renderAbc(ele, ele.innerHTML, options)
+        }
+      }, 100)
+    }
+
+    if (typeof ABCJS === "object") {
+      abcjsFn()
+    } else {
+      btf.getScript("https://cdn.jsdelivr.net/npm/abcjs/dist/abcjs-basic-min.min.js").then(abcjsFn)
+    }
+  }
+
+  if (window.pjax) {
+    abcjsInit()
+  } else {
+    window.addEventListener("load", abcjsInit)
+  }
+
+  btf.addGlobalFn("encrypt", abcjsInit, "abcjs")
+})()</script><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = {"labels":["Gitalk","Comment"],"createIssueManually":false,"distractionFreeMode":false}
+
+  const commentCount = n => {
+    const isCommentCount = document.querySelector('#post-meta .gitalk-comment-count')
+    if (isCommentCount) {
+      isCommentCount.textContent= n
+    }
+  }
+
+  const initGitalk = (el, path) => {
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGitalk = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+
+    const gitalk = new Gitalk({
+      clientID: 'Ov23li3vDQANiUddL4XB',
+      clientSecret: '5c9a56d02995340fca117809cd414662aadce6ff',
+      repo: 'HexoComment',
+      owner: 'ergou10086',
+      admin: ['ergou10086'],
+      updateCountCallback: commentCount,
+      ...option,
+      id: isShuoshuo ? path : (option && option.id) || '1ba389dcc13908fcb99aec239fa968a6'
+    })
+
+    gitalk.render('gitalk-container')
+  }
+
+  const loadGitalk = async(el, path) => {
+    if (typeof Gitalk === 'function') initGitalk(el, path)
+    else {
+      await btf.getCSS('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.css')
+      await btf.getScript('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.js')
+      initGitalk(el, path)
+    }
+  }
+
+  if (isShuoshuo) {
+    'Gitalk' === 'Gitalk'
+      ? window.shuoshuoComment = { loadComment: loadGitalk }
+      : window.loadOtherComment = loadGitalk
+    return
+  }
+
+  if ('Gitalk' === 'Gitalk' || !false) {
+    if (false) btf.loadComment(document.getElementById('gitalk-container'), loadGitalk)
+    else loadGitalk()
+  } else {
+    window.loadOtherComment = loadGitalk
+  }
+})()</script></div><div class="aplayer no-destroy" data-id="13587761608" data-server="netease" data-type="playlist" data-fixed="true" data-autoplay="false" data-lrcType="-1"> </div><script src="https://cdn.jsdelivr.net/npm/abcjs@7.1.2/dist/abcjs-basic-min.js"></script><script src="/js/sun_moon.js" async></script><script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.7/dayjs.min.js"></script><script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.7/plugin/duration.min.js"></script><script src="/scripts/realtime.js"></script><script src="/scripts/random.js"></script><script defer="defer" id="ribbon" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-ribbon.min.js" size="150" alpha="0.6" zIndex="-1" mobile="null" data-click="true"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = false;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><script id="click-heart" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/click-heart.min.js" async="async" mobile="false"></script><script>(() => {
+  window.ChatraID = '4bzb546NSBoJcrNyu'
+  window.Chatra = window.Chatra || function() {
+    (window.Chatra.q = window.Chatra.q || []).push(arguments)
+  }
+
+  btf.getScript('https://call.chatra.io/chatra.js').then(() => {
+    const isChatBtn = true
+    const isChatHideShow = true
+
+    if (isChatBtn) {
+      const close = () => {
+        Chatra('minimizeWidget')
+        Chatra('hide')
+      }
+
+      const open = () => {
+        Chatra('openChat', true)
+        Chatra('show')
+      }
+
+      window.ChatraSetup = { startHidden: true }
+    
+      window.chatBtnFn = () => document.getElementById('chatra').classList.contains('chatra--expanded') ? close() : open()
+
+      document.getElementById('chat-btn').style.display = 'block'
+    } else if (isChatHideShow) {
+      window.chatBtn = {
+        hide: () => Chatra('hide'),
+        show: () => Chatra('show')
+      }
+    }
+  })
+})()</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/metingjs/dist/Meting.min.js"></script><script>(() => {
+  const destroyAplayer = () => {
+    if (window.aplayers) {
+      for (let i = 0; i < window.aplayers.length; i++) {
+        if (!window.aplayers[i].options.fixed) {
+          window.aplayers[i].destroy()
+        }
+      }
+    }
+  }
+
+  const runMetingJS = () => {
+    typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+  }
+
+  btf.addGlobalFn('pjaxSend', destroyAplayer, 'destroyAplayer')
+  btf.addGlobalFn('pjaxComplete', loadMeting, 'runMetingJS')
+})()</script><script src="https://cdn.jsdelivr.net/npm/pjax/pjax.min.js"></script><script>(() => {
+  const pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+  window.pjax = new Pjax({
+    elements: 'a:not([target="_blank"]):not([href="/music/"])',
+    selectors: pjaxSelectors,
+    cacheBust: false,
+    analytics: false,
+    scrollRestoration: false
+  })
+
+  const triggerPjaxFn = (val) => {
+    if (!val) return
+    Object.values(val).forEach(fn => fn())
+  }
+
+  document.addEventListener('pjax:send', () => {
+    // removeEventListener
+    btf.removeGlobalFnEvent('pjaxSendOnce')
+    btf.removeGlobalFnEvent('themeChange')
+
+    // reset readmode
+    const $bodyClassList = document.body.classList
+    if ($bodyClassList.contains('read-mode')) $bodyClassList.remove('read-mode')
+
+    triggerPjaxFn(window.globalFn.pjaxSend)
+  })
+
+  document.addEventListener('pjax:complete', () => {
+    btf.removeGlobalFnEvent('pjaxCompleteOnce')
+    document.querySelectorAll('script[data-pjax]').forEach(item => {
+      const newScript = document.createElement('script')
+      const content = item.text || item.textContent || item.innerHTML || ""
+      Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+      newScript.appendChild(document.createTextNode(content))
+      item.parentNode.replaceChild(newScript, item)
+    })
+
+    triggerPjaxFn(window.globalFn.pjaxComplete)
+  })
+
+  document.addEventListener('pjax:error', e => {
+    if (e.request.status === 404) {
+      const usePjax = true
+      true 
+        ? (usePjax ? pjax.loadUrl('/404.html') : window.location.href = '/404.html')
+        : window.location.href = e.request.responseURL
+    }
+  })
+})()</script><script src="/js/fps-display.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><!-- hexo injector body_end start --><script data-pjax>
+  function butterfly_swiper_injector_config(){
+    var parent_div_git = document.getElementById('recent-posts');
+    var item_html = '<div class="recent-post-item" style="height: auto;width: 100%"><div class="blog-slider swiper-container-fade swiper-container-horizontal" id="swiper_container"><div class="blog-slider__wrp swiper-wrapper" style="transition-duration: 0ms;"><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_database.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-14</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt="">结构化查询语言SQL</a><div class="blog-slider__text">SQL基本很常用的语句都在这里了，本质上是当初为了应付数据库考试整理的，后来发现还蛮有用的很方便查常用的语句</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java4.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-22</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt="">SpringBoot part0?INF-SpringBoot这个框架都需要学习什么</a><div class="blog-slider__text">主要围绕Spring Boot中重要知识来简洁或详细的说明，其中部分不够完全，持续更新</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java11.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-15</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt="">关于Lombok在高版本IDEA中注解处理不生效的问题解决</a><div class="blog-slider__text">基本上是彻底的解决了用 IDEA 新建 Spring Boot 项目时候会产生的 Lombok 注解处理失效的各种问题</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_实用.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-05</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt="">个人向galgame原声带或相关音乐整理及其资源</a><div class="blog-slider__text">整理了我喜欢的galgame ost或者衍生的音乐专辑，部分资源是自己扒盘扒下来的，部分来自鸟白岛放映厅</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_math.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-17</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt="">对书上证明样本方差是总体方差的无偏估计量的解析</a><div class="blog-slider__text">对书上证明样本方差是总体方差的无偏估计量的解析，高等教育出版社-华科大版本</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_alog.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-04-24</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt="">第十五届蓝桥杯Java国赛B组D题-园丁题解</a><div class="blog-slider__text">第十五届蓝桥杯Java国赛B组D题-园丁题解，该题解已经发布到洛谷社区中并且被全站推荐</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java4.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-04-29</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt="">操作系统之处理机的死锁部分概述</a><div class="blog-slider__text">对操作系统之处理机的死锁部分知识的总结，包括代码复现</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_lb.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-09</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt="">Little Busters!EX游戏攻略</a><div class="blog-slider__text">整理了一份详细清晰的Little Busters！EX的游戏攻略，因为我自己也在推，就顺手整理了一份方便查阅的md文档</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java9.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-16</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt="">Spring Boot中使用Hibernate框架</a><div class="blog-slider__text">对学习完Hibernate的应用部分，主要围绕Spring Boot中使用Hibernate框架，建议学习完 Hibernate 框架再看</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div></div><div class="blog-slider__pagination swiper-pagination-clickable swiper-pagination-bullets"></div></div></div>';
+    console.log('已挂载butterfly_swiper')
+    parent_div_git.insertAdjacentHTML("afterbegin",item_html)
+    }
+  var elist = 'undefined'.split(',');
+  var cpage = location.pathname;
+  var epage = '/';
+  var flag = 0;
+
+  for (var i=0;i<elist.length;i++){
+    if (cpage.includes(elist[i])){
+      flag++;
+    }
+  }
+
+  if ((epage ==='all')&&(flag == 0)){
+    butterfly_swiper_injector_config();
+  }
+  else if (epage === cpage){
+    butterfly_swiper_injector_config();
+  }
+  </script><script defer src="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper.min.js"></script><script defer data-pjax src="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper_init.js"></script><!-- hexo injector body_end end --></body></html>
