@@ -1,0 +1,1377 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>参数估计之区间估计 | ErgouTree's Blog</title><meta name="author" content="ErgouTree"><meta name="copyright" content="ErgouTree"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="区间估计 什么是区间估计 上一篇文章中我们理解了什么是点估计，这次就是参数估计的另一种估计方式，区间估计。 由于点估计忽略了抽样波动性，为了更全面地反映参数估计的可靠性，我们引入区间估计 和理解点估计一样，区间估计就是估计未知参数θ的可能取值范围和这个范围包含该未知参数θ的可信程度，这个范围就是区间估计的估计内容 区间估计不仅给出一个中心点，还给出了一个上下界，使得该区间在一定的置信水平">
+<meta property="og:type" content="article">
+<meta property="og:title" content="参数估计之区间估计">
+<meta property="og:url" content="https://ergou10086.github.io/posts/9946.html">
+<meta property="og:site_name" content="ErgouTree&#39;s Blog">
+<meta property="og:description" content="区间估计 什么是区间估计 上一篇文章中我们理解了什么是点估计，这次就是参数估计的另一种估计方式，区间估计。 由于点估计忽略了抽样波动性，为了更全面地反映参数估计的可靠性，我们引入区间估计 和理解点估计一样，区间估计就是估计未知参数θ的可能取值范围和这个范围包含该未知参数θ的可信程度，这个范围就是区间估计的估计内容 区间估计不仅给出一个中心点，还给出了一个上下界，使得该区间在一定的置信水平">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://ergou10086.github.io/images/posts/cover_math4.jpg">
+<meta property="article:published_time" content="2025-06-26T13:02:41.000Z">
+<meta property="article:modified_time" content="2025-06-27T06:09:44.457Z">
+<meta property="article:author" content="ErgouTree">
+<meta property="article:tag" content="学习类">
+<meta property="article:tag" content="数学">
+<meta property="article:tag" content="概率论与数理统计">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ergou10086.github.io/images/posts/cover_math4.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "参数估计之区间估计",
+  "url": "https://ergou10086.github.io/posts/9946.html",
+  "image": "https://ergou10086.github.io/images/posts/cover_math4.jpg",
+  "datePublished": "2025-06-26T13:02:41.000Z",
+  "dateModified": "2025-06-27T06:09:44.457Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "ErgouTree",
+      "url": "https://github.com/ergou10086"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/pi.ico"><link rel="canonical" href="https://ergou10086.github.io/posts/9946.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//hm.baidu.com"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!true && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?https://hm.baidu.com/hm.js?a6ab1b78e2c6320b664f31e8b9bf0e36";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+btf.addGlobalFn('pjaxComplete', () => {
+  _hmt.push(['_trackPageview',window.location.pathname])
+}, 'baidu_analytics')
+</script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.json","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":true},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: {"chs_to_cht":"已切换为繁体中文","cht_to_chs":"已切换为简体中文","day_to_night":"已切换为深色模式","night_to_day":"已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#1f1f1f","position":"bottom-left"},
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '参数估计之区间估计',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css"><svg aria-hidden="true" style="position:absolute; overflow:hidden; width:0; height:0"><symbol id="icon-sun" viewBox="0 0 1024 1024"><path d="M960 512l-128 128v192h-192l-128 128-128-128H192v-192l-128-128 128-128V192h192l128-128 128 128h192v192z" fill="#FFD878" p-id="8420"></path><path d="M736 512a224 224 0 1 0-448 0 224 224 0 1 0 448 0z" fill="#FFE4A9" p-id="8421"></path><path d="M512 109.248L626.752 224H800v173.248L914.752 512 800 626.752V800h-173.248L512 914.752 397.248 800H224v-173.248L109.248 512 224 397.248V224h173.248L512 109.248M512 64l-128 128H192v192l-128 128 128 128v192h192l128 128 128-128h192v-192l128-128-128-128V192h-192l-128-128z" fill="#4D5152" p-id="8422"></path><path d="M512 320c105.888 0 192 86.112 192 192s-86.112 192-192 192-192-86.112-192-192 86.112-192 192-192m0-32a224 224 0 1 0 0 448 224 224 0 0 0 0-448z" fill="#4D5152" p-id="8423"></path></symbol><symbol id="icon-moon" viewBox="0 0 1024 1024"><path d="M611.370667 167.082667a445.013333 445.013333 0 0 1-38.4 161.834666 477.824 477.824 0 0 1-244.736 244.394667 445.141333 445.141333 0 0 1-161.109334 38.058667 85.077333 85.077333 0 0 0-65.066666 135.722666A462.08 462.08 0 1 0 747.093333 102.058667a85.077333 85.077333 0 0 0-135.722666 65.024z" fill="#FFB531" p-id="11345"></path><path d="M329.728 274.133333l35.157333-35.157333a21.333333 21.333333 0 1 0-30.165333-30.165333l-35.157333 35.157333-35.114667-35.157333a21.333333 21.333333 0 0 0-30.165333 30.165333l35.114666 35.157333-35.114666 35.157334a21.333333 21.333333 0 1 0 30.165333 30.165333l35.114667-35.157333 35.157333 35.157333a21.333333 21.333333 0 1 0 30.165333-30.165333z" fill="#030835" p-id="11346"></path></symbol></svg><link rel="stylesheet" href="/css/custom.css"><!-- hexo injector head_end start --><link rel="stylesheet" href="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiperstyle.css" media="print" onload="this.media='all'"><!-- hexo injector head_end end --><meta name="generator" content="Hexo 7.3.0"></head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js/pace.min.js"></script><div id="web_bg" style="background: linear-gradient(20deg, #0062be, #925696, #cc426e, #fb0347);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/arp.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">145</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">82</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">55</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-images"></i><span> Gallery</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/games/"><i class="fa-fw fas fa-game"></i><span> GalGame</span></a></li><li><a class="site-page child" href="/video/"><i class="fa-fw fas fa-video"></i><span> Video</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div><div class="menus_item"><a class="site-page" href="javascript:randomPost();"><span> Random</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/images/posts/cover_math4.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">ErgouTree's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">参数估计之区间估计</span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-images"></i><span> Gallery</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/games/"><i class="fa-fw fas fa-game"></i><span> GalGame</span></a></li><li><a class="site-page child" href="/video/"><i class="fa-fw fas fa-video"></i><span> Video</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div><div class="menus_item"><a class="site-page" href="javascript:randomPost();"><span> Random</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div><div id="randomPost"><a class="site-page social-icon search" href="javascript:;" onclick="randomPost()" title="随机访问一篇文章"><i class="fas fa-circle-notch fa-fw"></i></a></div></nav><div id="post-info"><h1 class="post-title">参数估计之区间估计<a class="post-edit-link" href="https://github.com/ergou10086/ergou10086.github.io/edit/main/source/_posts/_posts/参数估计之区间估计.md" title="编辑" target="_blank"><i class="fas fa-pencil-alt"></i></a></h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2025-06-26T13:02:41.000Z" title="发表于 2025-06-26 21:02:41">2025-06-26</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2025-06-27T06:09:44.457Z" title="更新于 2025-06-27 14:09:44">2025-06-27</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%95%B0%E5%AD%A6%E7%B1%BB/">数学类</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%95%B0%E5%AD%A6%E7%B1%BB/%E6%A6%82%E7%8E%87%E8%AE%BA%E4%B8%8E%E6%95%B0%E7%90%86%E7%BB%9F%E8%AE%A1/">概率论与数理统计</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">6.4k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>28分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span><span class="post-meta-separator">|</span><span class="post-meta-commentcount"><i class="far fa-comments fa-fw post-meta-icon"></i><span class="post-meta-label">评论数:</span><a href="/posts/9946.html#post-comment"><span class="gitalk-comment-count"><i class="fa-solid fa-spinner fa-spin"></i></span></a></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="区间估计">区间估计</h2>
+<h3 id="什么是区间估计">什么是区间估计</h3>
+<p>上一篇文章中我们理解了什么是点估计，这次就是参数估计的另一种估计方式，区间估计。</p>
+<p>由于点估计忽略了抽样波动性，为了更全面地反映参数估计的可靠性，我们引入<strong>区间估计</strong></p>
+<p>和理解点估计一样，区间估计就是估计未知参数<span class="math inline"><em>θ</em></span>的可能取值范围和这个范围包含该未知参数<span class="math inline"><em>θ</em></span>的可信程度，这个范围就是区间估计的估计内容</p>
+<p>区间估计不仅给出一个<strong>中心点</strong>，还给出了一个<strong>上下界</strong>，使得该区间在一定的置信水平下包含真实参数值。例如，当我们计算出某总体均值的95%置信区间为<span class="math inline">[<em>a</em>, <em>b</em>]</span>时，可以理解为在相同抽样条件下重复实验，约有95%的构造出的区间会包含总体均值。</p>
+<p>具体说，区间估计是统计学中用来估计未知参数（比如均值、比例等）的一种方法。它不像点估计那样只给出一个具体的数值（比如“平均身高是170cm”），而是给出一个范围（比如“平均身高在168cm到172cm之间”），并说明这个范围的可信程度（比如“有95%的把握”）。</p>
+<h3 id="构造步骤">构造步骤</h3>
+<p>以单个正态总体均值的区间估计为例，构造置信区间通常包括以下步骤：</p>
+<ul>
+<li><p>若总体服从正态分布，则样本均值 <span class="math inline">$\overline x$</span>
+的抽样分布为正态分布；当总体方差未知且样本量较小时，则服从 $t
+$分布。</p></li>
+<li><p>然后确定置信水平，</p>
+<p>例如设定置信水平为 95%，对应的显著性水平 <span class="math inline"><em>α</em> = 0.05</span></p></li>
+<li><p>查找临界值</p>
+<p>当总体方差已知时，根据<strong>标准正态分布</strong>查找 <span class="math inline"><em>z</em><sub><em>α</em>/2</sub></span>，若未知，则根据
+<span class="math inline"><em>t</em></span> 分布查找，<span class="math inline"><em>t</em><sub><em>n</em> − 1; <em>α</em>/2</sub></span></p></li>
+<li><p>构造区间</p>
+<p>总体均值（已知总体方差）的双侧置信区间： <span class="math display">$$
+\left( \bar{x} - z_{\alpha/2} \frac{\sigma}{\sqrt{n}},\bar{x} +
+z_{\alpha/2} \frac{\sigma}{\sqrt{n}} \right)
+$$</span> 总体均值（未知总体方差）的双侧置信区间：</p></li>
+</ul>
+<p><span class="math display">$$
+\left( \bar{x} - t_{n - 1;\alpha/2} \frac{s}{\sqrt{n}},\bar{x} + t_{n -
+1;\alpha/2} \frac{s}{\sqrt{n}} \right)
+$$</span></p>
+<pre><code>其中 $s$ 为样本标准差，$n$ 为样本容量</code></pre>
+<h3 id="置信区间与置信水平的定义">置信区间与置信水平的定义</h3>
+<p>设总体 <span class="math inline"><em>X</em></span> 的分布函数为 <span class="math inline"><em>F</em>(<em>x</em>; <em>θ</em>)</span>，其中
+<span class="math inline"><em>θ</em></span> 是未知参数，<span class="math inline">(<em>X</em><sub>1</sub>, <em>X</em><sub>2</sub>, ⋯, <em>X</em><sub><em>n</em></sub>)</span>
+为 <span class="math inline"><em>X</em></span> 的样本。给定 <span class="math inline"><em>α</em></span>（<span class="math inline">0 &lt; <em>α</em> &lt; 1</span>），若统计量 <span class="math inline">$\underline{\theta} = \underline{\theta}(X_1,
+X_2,  \cdots, X_n)$</span> 和 <span class="math inline">$\overline{\theta} = \overline{\theta}(X_1, X_2,
+\cdots, X_n)$</span> 满足 <span class="math display">$$
+P(\underline{\theta} &lt; \theta &lt; \overline{\theta}) = 1 - \alpha
+$$</span> 则称区间 <span class="math inline">$(\underline{\theta},
+\overline{\theta})$</span> 是 <span class="math inline"><em>θ</em></span> 的置信水平为 <span class="math inline">1 − <em>α</em></span>
+的<strong>置信区间</strong>，<span class="math inline">$\underline{\theta}$</span> 和 <span class="math inline">$\overline{\theta}$</span>
+分别称为<strong>置信下限</strong>和<strong>置信上限</strong>，<span class="math inline">1 − <em>α</em></span>
+称为<strong>置信水平</strong>。</p>
+<h3 id="如何理解置信区间">如何理解置信区间</h3>
+<p>值得注意的是，区间 <span class="math inline">$(\underline{\theta},
+\overline{\theta})$</span> 的上、下限都是统计量，故称 <span class="math inline">$(\underline{\theta}, \overline{\theta})$</span>
+为<strong>随机区间</strong>。随着样本观测值的不同，随机区间 <span class="math inline">$(\underline{\theta}, \overline{\theta})$</span>
+会产生不同的具体区间。</p>
+<p>上式<span class="math inline">$P(\underline{\theta} &lt; \theta &lt;
+\overline{\theta}) = 1 - \alpha$</span>的意义是：</p>
+<ul>
+<li><strong>随机区间</strong> <span class="math inline">$(\underline{\theta}, \overline{\theta})$</span>
+包含 <span class="math inline"><em>θ</em></span> 真值的概率为 <span class="math inline">1 − <em>α</em></span>，而不是 <span class="math inline"><em>θ</em></span> 的真值落在区间 <span class="math inline">$(\underline{\theta},  \overline{\theta})$</span>
+内的概率为 <span class="math inline">1 − <em>α</em></span></li>
+<li>换句话说，如果反复抽样多次（每次样本容量均为 <span class="math inline"><em>n</em></span>），每个样本观测值都会确定一个区间
+<span class="math inline">$(\underline{\theta},
+\overline{\theta})$</span>，其中有的区间包含 <span class="math inline"><em>θ</em></span> 的真值，有的不包含。</li>
+<li>根据<strong>伯努利大数定律</strong>，在大量重复抽样下，大约有 <span class="math inline">100(1 − <em>α</em>)</span> 的区间会包含 <span class="math inline"><em>θ</em></span> 的真值，而 <span class="math inline">100<em>α</em></span> 的区间不会包含。</li>
+</ul>
+<p><strong>举例说明</strong>：</p>
+<ul>
+<li>若 <span class="math inline"><em>α</em> = 0.05</span>，反复抽样
+<span class="math inline">1000</span> 次，则大约有 <span class="math inline">950</span> 个区间包含 <span class="math inline"><em>θ</em></span> 的真值，<span class="math inline">50</span> 个区间不包含。</li>
+<li>但对于<strong>某一个具体的区间</strong>（如某次抽样得到的 <span class="math inline">[<em>a</em>, <em>b</em>]</span>），我们不能说“<span class="math inline"><em>θ</em></span> 有 <span class="math inline">95</span> 的概率落在这个区间内”，因为 <span class="math inline"><em>θ</em></span>
+是固定值，只能说“这个区间属于那些有 <span class="math inline">95</span>
+置信度包含 <span class="math inline"><em>θ</em></span>
+的区间之一”。</li>
+</ul>
+<p>感觉说的依旧不太清晰，我重新说一下</p>
+<p><strong>什么是随机区间？</strong></p>
+<ul>
+<li><span class="math inline">$\underline{\theta}$</span> 和 <span class="math inline">$\overline{\theta}$</span>
+是由样本计算得到的统计量（如样本均值<span class="math inline"><em>X̄</em></span>、样本标准差<span class="math inline"><em>S</em></span>等），因此 <span class="math inline">$(\underline{\theta}, \overline{\theta})$</span>
+是一个<strong>随机区间</strong>（每次抽样结果不同）。</li>
+<li><strong>举例</strong>： 假设我们估计全校学生的平均身高<span class="math inline"><em>μ</em></span>，每次随机抽100人计算：
+<ul>
+<li>第1次抽样：<span class="math inline"><em>X̄</em><sub>1</sub> = 168</span>，得到区间<span class="math inline">(165, 171)</span></li>
+<li>第2次抽样：<span class="math inline"><em>X̄</em><sub>2</sub> = 170</span>，得到区间<span class="math inline">(167, 173)</span></li>
+<li>… 这些区间会因样本不同而变化，但<strong>大约<span class="math inline">95</span>的区间会包含真实<span class="math inline"><em>μ</em></span></strong>（假设置信水平<span class="math inline">1 − <em>α</em> = 95</span>）。</li>
+</ul></li>
+</ul>
+<p><strong>置信水平<span class="math inline">1 − <em>α</em></span>的含义</strong></p>
+<ul>
+<li><p><strong>正确理解</strong>：</p>
+<p><span class="math inline">$P(\underline{\theta} &lt; \theta &lt;
+\overline{\theta}) = 1-\alpha$</span> 表示：</p>
+<p><strong>在无数次重复抽样中，<span class="math inline">100(1 − <em>α</em>)</span>的区间会覆盖真实参数<span class="math inline"><em>θ</em></span></strong>，而不是<span class="math inline"><em>θ</em></span>有<span class="math inline">1 − <em>α</em></span>的概率落在当前区间内（因为<span class="math inline"><em>θ</em></span>是固定值，不是随机变量）。</p></li>
+<li><p><strong>类比</strong>：
+想象你用渔网（置信区间）捞鱼（真实参数<span class="math inline"><em>θ</em></span>）：</p>
+<ul>
+<li>如果渔网有<span class="math inline">95</span>的捕获率（<span class="math inline">1 − <em>α</em> = 0.95</span>），意味着<strong>长期来看</strong>，撒网100次大约有95次能捞到鱼。</li>
+<li>但<strong>某一次撒网后</strong>，鱼要么在网里（100%），要么不在（0%），不能说“鱼有95%的概率在网里”。</li>
+</ul></li>
+</ul>
+<p><strong>举例说明（<span class="math inline"><em>α</em> = 0.05</span>）</strong></p>
+<ul>
+<li><p><strong>重复抽样100次</strong>：
+理论上，大约95次计算出的区间会包含真实<span class="math inline"><em>θ</em></span>，5次不包含。</p>
+<ul>
+<li>例如：估计某药品的有效率<span class="math inline"><em>θ</em></span>，100次实验得到95个区间包含真实值（如<span class="math inline">(0.6, 0.8)</span>），5个区间不包含（如<span class="math inline">(0.4, 0.6)</span>）。</li>
+</ul></li>
+<li><p><strong>单次区间的解释</strong>： 如果你得到一个具体区间<span class="math inline">(0.65, 0.75)</span>，只能说：</p>
+<blockquote>
+<p>“这个区间是通过一个<strong>方法</strong>生成的，而该方法有<span class="math inline">95</span>的可靠性覆盖真实值”， 而不是“<span class="math inline"><em>θ</em></span>有<span class="math inline">95</span>的概率在<span class="math inline">(0.65, 0.75)</span>内”。</p>
+</blockquote></li>
+</ul>
+<p><strong>为什么不能对单个区间谈概率？</strong></p>
+<ul>
+<li><span class="math inline"><em>θ</em></span>是<strong>固定参数</strong>（如全校平均身高<span class="math inline"><em>μ</em> = 169</span>cm），而区间是随机的。</li>
+<li><strong>类比</strong>： 你测量一块石头的重量<span class="math inline"><em>θ</em></span>，用天平测10次得到10个区间。
+<ul>
+<li>石头重量<span class="math inline"><em>θ</em></span>是固定的，但测量区间会波动。</li>
+<li>只能说“我的测量方法有<span class="math inline">95</span>的置信度包含真实重量”，而不是“<span class="math inline"><em>θ</em></span>有<span class="math inline">95</span>的概率在某个区间内”。</li>
+</ul></li>
+</ul>
+<h2 id="单个正态总体的区间估计">单个正态总体的区间估计</h2>
+<p>我们主要介绍枢轴量法，统计量法懒得写了</p>
+<h3 id="单个正态总体均值的区间估计">单个正态总体均值的区间估计</h3>
+<p>设已给定置信水平为 <span class="math inline">1 − <em>α</em></span>,
+并设 <span class="math inline">(<em>X</em><sub>1</sub>, <em>X</em><sub>2</sub>, ⋯, <em>X</em><sub><em>n</em></sub>)</span>
+是总体 <span class="math inline"><em>N</em>(<em>μ</em>, <em>σ</em><sup>2</sup>)</span>
+的样本. <span class="math inline"><em>X̄</em></span> 和 <span class="math inline"><em>S</em><sup>2</sup></span>
+分别是样本均值和样本方差. 对总体均值作区间估计, 分总体方差 <span class="math inline"><em>σ</em><sup>2</sup></span>
+已知和未知两种情况.</p>
+<h4 id="boldsymbolsigma2-已知"><span class="math inline"><strong>σ</strong><sup><strong>2</strong></sup></span>
+已知</h4>
+<h5 id="推导步骤">推导步骤</h5>
+<p>首先构建统计量</p>
+<p>样本均值<span class="math inline">$\bar{X} = \frac{1}{n}\sum_{i=1}^n
+X_i$</span>服从正态分布，所以随机变量 <span class="math display">$$
+\bar{X} \sim N\left(\mu, \frac{\sigma^2}{n}\right)
+$$</span></p>
+<p>将其标准化得到<span class="math inline"><em>U</em></span>统计量：
+<span class="math display">$$
+U = \frac{\bar{X} - \mu}{\sigma/\sqrt{n}} \sim N(0,1)
+$$</span></p>
+<p>对于给定的显著性水平<span class="math inline"><em>α</em></span>，查标准正态分布表得到<span class="math inline"><em>u</em><sub><em>α</em>/2</sub></span>，满足：
+<span class="math display">$$
+P\left( |U| \geq u_{\frac{\alpha}{2}} \right) = P\left( \left|
+\frac{\bar{X} - \mu}{\sigma} \sqrt{n} \right| \geq u_{\frac{\alpha}{2}}
+\right) = \alpha \tag{7.9}
+$$</span></p>
+<figure>
+<img src="/posts/9946/image-20250626094043358.png" alt="image-20250626094043358">
+<figcaption aria-hidden="true">image-20250626094043358</figcaption>
+</figure>
+<p>等价于： <span class="math display"><em>P</em>(−<em>u</em><sub><em>α</em>/2</sub> ≤ <em>U</em> ≤ <em>u</em><sub><em>α</em>/2</sub>) = 1 − <em>α</em></span></p>
+<p>将<span class="math inline"><em>U</em></span>的表达式代入： <span class="math display">$$
+P\left(-u_{\alpha/2} \leq \frac{\bar{X} - \mu}{\sigma/\sqrt{n}} \leq
+u_{\alpha/2}\right) = 1 - \alpha
+$$</span></p>
+<p>解这个不等式：</p>
+<ol type="1">
+<li><p>两边乘以<span class="math inline">$\sigma/\sqrt{n}$</span>：
+<span class="math display">$$
+P\left(-\frac{\sigma}{\sqrt{n}}u_{\alpha/2} \leq \bar{X} - \mu \leq
+\frac{\sigma}{\sqrt{n}}u_{\alpha/2}\right) = 1 - \alpha
+$$</span></p></li>
+<li><p>移项得到<span class="math inline"><em>μ</em></span>的范围： <span class="math display">$$
+P\left(\bar{X} - \frac{\sigma}{\sqrt{n}}u_{\alpha/2} \leq \mu \leq
+\bar{X} + \frac{\sigma}{\sqrt{n}}u_{\alpha/2}\right) = 1 - \alpha
+$$</span></p></li>
+</ol>
+<p>所以，(7.9) 式等价于 <span class="math display">$$
+P\left( \bar{X} - \frac{\sigma}{\sqrt{n}} u_{\alpha/2} &lt; \mu &lt;
+\bar{X} + \frac{\sigma}{\sqrt{n}} u_{\alpha/2} \right) = 1 - \alpha,
+$$</span> 由此得到 <span class="math inline"><em>μ</em></span>
+的置信水平为 <span class="math inline">1 − <em>α</em></span> (简称 <span class="math inline">1 − <em>α</em></span>) 的置信区间为 <span class="math display">$$
+\left( \bar{X} - \frac{\sigma}{\sqrt{n}} u_{\alpha/2},\ \bar{X} +
+\frac{\sigma}{\sqrt{n}} u_{\alpha/2} \right). \tag{7.10}
+$$</span></p>
+<h5 id="实际计算步骤">实际计算步骤</h5>
+<ol type="1">
+<li><p>计算样本均值： <span class="math display">$$
+\bar{x} = \frac{1}{n}\sum_{i=1}^n x_i
+$$</span></p></li>
+<li><p>查表得到<span class="math inline"><em>u</em><sub><em>α</em>/2</sub></span>值（例如<span class="math inline"><em>α</em> = 0.05</span>时，<span class="math inline"><em>u</em><sub>0.025</sub> = 1.96</span>）</p></li>
+<li><p>代入公式计算上下限：</p>
+<ul>
+<li>下限：<span class="math inline">$\bar{x} -
+\frac{\sigma}{\sqrt{n}}u_{\alpha/2}$</span></li>
+<li>上限：<span class="math inline">$\bar{x} +
+\frac{\sigma}{\sqrt{n}}u_{\alpha/2}$</span></li>
+</ul></li>
+</ol>
+<h4 id="boldsymbolsigma2-未知"><span class="math inline"><strong>σ</strong><sup><strong>2</strong></sup></span>
+未知</h4>
+<h5 id="推导过程">推导过程</h5>
+<p>此时不能采用上面的式子给出的区间，因为其中含未知参数 <span class="math inline"><em>σ</em></span>。</p>
+<p>由于 <span class="math inline"><em>S</em><sup>2</sup></span> 是 <span class="math inline"><em>σ</em><sup>2</sup></span>的无偏估计，当总体方差<span class="math inline"><em>σ</em><sup>2</sup></span>未知时，无法直接使用<span class="math inline"><em>Z</em></span>统计量： <span class="math display">$$
+Z = \frac{\bar{X} - \mu}{\sigma/\sqrt{n}} \sim N(0,1)
+$$</span> 因为公式中含未知参数<span class="math inline"><em>σ</em></span>。</p>
+<p>所以，用样本标准差<span class="math inline"><em>S</em></span>替代<span class="math inline"><em>σ</em></span>，构造<span class="math inline"><em>t</em></span>统计量： <span class="math display">$$
+t = \frac{\bar{X} - \mu}{S/\sqrt{n}} \sim t(n-1)
+$$</span> 其中： - <span class="math inline">$S^2 =
+\frac{1}{n-1}\sum_{i=1}^n (X_i - \bar{X})^2$</span>是样本方差 - <span class="math inline"><em>t</em>(<em>n</em> − 1)</span>表示自由度为<span class="math inline"><em>n</em> − 1</span>的<span class="math inline"><em>t</em></span>分布</p>
+<p>确定临界值</p>
+<p>对给定 <span class="math inline"><em>α</em>(0 &lt; <em>α</em> &lt; 1)</span>, 查
+<span class="math inline"><em>t</em></span> 分布表, 可得 <span class="math inline"><em>t</em>(<em>n</em> − 1)</span> 分布的双侧分位数
+<span class="math inline"><em>t</em><sub><em>α</em>/2</sub>(<em>n</em> − 1)</span>,
+使得 <span class="math display"><em>P</em>(|<em>t</em>| ≥ <em>t</em><sub><em>α</em>/2</sub>(<em>n</em> − 1)) = <em>α</em></span>
+即： <span class="math display"><em>P</em>(|<em>t</em>| &lt; <em>t</em><sub><em>α</em>/2</sub>(<em>n</em> − 1)) = 1 − <em>α</em></span></p>
+<p><span class="math display"><em>P</em>(−<em>t</em><sub><em>α</em>/2</sub>(<em>n</em> − 1) &lt; <em>t</em> &lt; <em>t</em><sub><em>α</em>/2</sub>(<em>n</em> − 1)) = 1 − <em>α</em></span></p>
+<figure>
+<img src="/posts/9946/image-20250626100334605.png" alt="image-20250626100334605">
+<figcaption aria-hidden="true">image-20250626100334605</figcaption>
+</figure>
+<p>现在就可以开始具体的置信区间的推导了</p>
+<p>将<span class="math inline"><em>t</em></span>统计量表达式代入： <span class="math display">$$
+P\left(-t_{\alpha/2}(n-1) &lt; \frac{\bar{X} - \mu}{S/\sqrt{n}} &lt;
+t_{\alpha/2}(n-1)\right) = 1 - \alpha
+$$</span></p>
+<p>逐步解这个不等式： 1. 乘以<span class="math inline">$S/\sqrt{n}$</span>： <span class="math display">$$
+   P\left(-\frac{S}{\sqrt{n}}t_{\alpha/2}(n-1) &lt; \bar{X} - \mu &lt;
+\frac{S}{\sqrt{n}}t_{\alpha/2}(n-1)\right) = 1 - \alpha
+   $$</span></p>
+<ol start="2" type="1">
+<li>移项得到<span class="math inline"><em>μ</em></span>的范围： <span class="math display">$$
+P\left(\bar{X} - \frac{S}{\sqrt{n}}t_{\alpha/2}(n-1) &lt; \mu &lt;
+\bar{X} + \frac{S}{\sqrt{n}}t_{\alpha/2}(n-1)\right) = 1 - \alpha
+$$</span></li>
+</ol>
+<p>最终，<span class="math inline"><em>μ</em></span>的置信水平为<span class="math inline">1 − <em>α</em></span>的置信区间为： <span class="math display">$$
+\left( \bar{X} - \frac{S}{\sqrt{n}}t_{\alpha/2}(n-1),\ \bar{X} +
+\frac{S}{\sqrt{n}}t_{\alpha/2}(n-1) \right)
+$$</span></p>
+<h5 id="实际上计算步骤">实际上计算步骤</h5>
+<ol type="1">
+<li><p>计算样本统计量： <span class="math display">$$
+\bar{x} = \frac{1}{n}\sum_{i=1}^n x_i,\quad s =
+\sqrt{\frac{1}{n-1}\sum_{i=1}^n (x_i - \bar{x})^2}
+$$</span></p></li>
+<li><p>查<span class="math inline"><em>t</em></span>分布表得临界值<span class="math inline"><em>t</em><sub><em>α</em>/2</sub>(<em>n</em> − 1)</span></p></li>
+<li><p>计算置信区间：</p>
+<ul>
+<li>下限：<span class="math inline">$\bar{x} -
+\frac{s}{\sqrt{n}}t_{\alpha/2}(n-1)$</span></li>
+<li>上限：<span class="math inline">$\bar{x} +
+\frac{s}{\sqrt{n}}t_{\alpha/2}(n-1)$</span></li>
+</ul></li>
+</ol>
+<h3 id="单个正态总体方差的区间估计">单个正态总体方差的区间估计</h3>
+<h4 id="mu-未知"><span class="math inline"><em>μ</em></span> 未知</h4>
+<p>设总体 <span class="math inline"><em>X</em> ∼ <em>N</em>(<em>μ</em>, <em>σ</em><sup>2</sup>)</span>，<span class="math inline">(<em>X</em><sub>1</sub>, <em>X</em><sub>2</sub>, ⋯, <em>X</em><sub><em>n</em></sub>)</span>
+是 <span class="math inline"><em>X</em></span> 的样本。对总体方差 <span class="math inline"><em>σ</em><sup>2</sup></span> 作区间估计，同样分成
+<span class="math inline"><em>μ</em></span> 已知和未知两种情形。</p>
+<p>此处，根据实际情况的需要，只讨论 <span class="math inline"><em>μ</em></span> 未知的情况。</p>
+<p>设总体<span class="math inline"><em>X</em> ∼ <em>N</em>(<em>μ</em>, <em>σ</em><sup>2</sup>)</span>，样本为<span class="math inline">(<em>X</em><sub>1</sub>, <em>X</em><sub>2</sub>, ⋯, <em>X</em><sub><em>n</em></sub>)</span>，置信水平为<span class="math inline">1 − <em>α</em></span>。</p>
+<p>为什么根据实际情况的需要这里只讨论<span class="math inline"><em>μ</em></span> 未知的情况</p>
+<ul>
+<li>因为在绝大多数实际问题中，总体均值<span class="math inline"><em>μ</em></span>和方差<span class="math inline"><em>σ</em><sup>2</sup></span><strong>同时未知</strong>才是常态。例如：
+<ul>
+<li>测量某零件的尺寸误差（<span class="math inline"><em>μ</em></span>和<span class="math inline"><em>σ</em><sup>2</sup></span>均需估计）</li>
+<li>分析某地区居民收入分布（均值和方差都需要从样本推断）</li>
+</ul></li>
+<li><span class="math inline"><em>μ</em></span>已知的情况在现实中非常罕见（除非进行仿真实验或理论推导）</li>
+<li><span class="math inline"><em>μ</em></span>已知的情况可通过替换<span class="math inline"><em>X̄</em></span>→<span class="math inline"><em>μ</em></span>直接推导</li>
+</ul>
+<h5 id="推导过程-1"><strong>推导过程</strong></h5>
+<p>首先先构造统计量</p>
+<p>由样本方差<span class="math inline">$S^2 = \frac{1}{n-1}\sum_{i=1}^n
+(X_i - \bar{X})^2$</span>，构造卡方统计量： <span class="math display">$$
+\chi^2 = \frac{(n-1)S^2}{\sigma^2} \sim \chi^2(n-1)
+$$</span></p>
+<p>确定临界值</p>
+<p>对于给定的<span class="math inline"><em>α</em></span>，查<span class="math inline"><em>χ</em><sup>2</sup></span>分布表得： -
+下侧分位数<span class="math inline"><em>χ</em><sub>1 − <em>α</em>/2</sub><sup>2</sup>(<em>n</em> − 1)</span>
+- 上侧分位数<span class="math inline"><em>χ</em><sub><em>α</em>/2</sub><sup>2</sup>(<em>n</em> − 1)</span></p>
+<p>满足： <span class="math display">$$
+P\left(\chi^2_{1-\alpha/2}(n-1) &lt; \frac{(n-1)S^2}{\sigma^2} &lt;
+\chi^2_{\alpha/2}(n-1)\right) = 1-\alpha
+$$</span></p>
+<figure>
+<img src="/posts/9946/image-20250626101211666.png" alt="image-20250626101211666">
+<figcaption aria-hidden="true">image-20250626101211666</figcaption>
+</figure>
+<p>推导置信区间</p>
+<p>解不等式： 1. 不等式变形： <span class="math display">$$
+   \chi^2_{1-\alpha/2}(n-1) &lt; \frac{(n-1)S^2}{\sigma^2} &lt;
+\chi^2_{\alpha/2}(n-1)
+   $$</span></p>
+<ol start="2" type="1">
+<li><p>取倒数（注意不等号方向变化）： <span class="math display">$$
+\frac{1}{\chi^2_{1-\alpha/2}(n-1)} &gt; \frac{\sigma^2}{(n-1)S^2} &gt;
+\frac{1}{\chi^2_{\alpha/2}(n-1)}
+$$</span></p></li>
+<li><p>乘以<span class="math inline">(<em>n</em> − 1)<em>S</em><sup>2</sup></span>：
+<span class="math display">$$
+\frac{(n-1)S^2}{\chi^2_{1-\alpha/2}(n-1)} &gt; \sigma^2 &gt;
+\frac{(n-1)S^2}{\chi^2_{\alpha/2}(n-1)}
+$$</span></p></li>
+</ol>
+<p>而且<span class="math inline"><em>χ</em><sub><em>α</em>/2</sub><sup>2</sup>(<em>n</em> − 1)</span>和<span class="math inline"><em>χ</em><sub>1 − <em>α</em>/2</sub><sup>2</sup>(<em>n</em> − 1)</span>的值都可以通过查<span class="math inline"><em>χ</em><sup>2</sup>(<em>n</em> − 1)</span>的分布表得到</p>
+<p>所以有 <span class="math display">$$
+P\left( \frac{(n - 1)S^2}{\chi^2_{\alpha/2}(n - 1)} &lt; \sigma^2 &lt;
+\frac{(n - 1)S^2}{\chi^2_{1 - \alpha/2}(n - 1)} \right) = 1 - \alpha.
+$$</span> 因此方差<span class="math inline"><em>σ</em><sup>2</sup></span>的一个置信水平为<span class="math inline">1 − <em>α</em></span>的置信区间为： <span class="math display">$$
+\left( \frac{(n-1)S^2}{\chi^2_{\alpha/2}(n-1)},\
+\frac{(n-1)S^2}{\chi^2_{1-\alpha/2}(n-1)} \right)
+$$</span></p>
+<p>对<span class="math inline"><em>σ</em><sup>2</sup></span>区间取平方根，可以得到标准差<span class="math inline"><em>σ</em></span>的一个置信水平为<span class="math inline">1 − <em>α</em></span>的置信区间 <span class="math display">$$
+\left( \frac{\sqrt{n-1}S}{\sqrt{\chi^2_{\alpha/2}(n-1)}},\
+\frac{\sqrt{n-1}S}{\sqrt{\chi^2_{1-\alpha/2}(n-1)}} \right)
+$$</span></p>
+<h5 id="实际计算步骤-1">实际计算步骤</h5>
+<ol type="1">
+<li><p>计算样本方差： <span class="math display">$$
+s^2 = \frac{1}{n-1}\sum_{i=1}^n (x_i - \bar{x})^2
+$$</span></p></li>
+<li><p>查<span class="math inline"><em>χ</em><sup>2</sup></span>分布表：</p>
+<ul>
+<li><span class="math inline"><em>χ</em><sub><em>α</em>/2</sub><sup>2</sup>(<em>n</em> − 1)</span>（右侧临界值）</li>
+<li><span class="math inline"><em>χ</em><sub>1 − <em>α</em>/2</sub><sup>2</sup>(<em>n</em> − 1)</span>（左侧临界值）</li>
+</ul></li>
+<li><p>计算置信区间：</p>
+<ul>
+<li>方差区间： <span class="math display">$$
+\left( \frac{(n-1)s^2}{\chi^2_{\alpha/2}(n-1)},\
+\frac{(n-1)s^2}{\chi^2_{1-\alpha/2}(n-1)} \right)
+$$</span></li>
+<li>标准差区间： <span class="math display">$$
+\left( \sqrt{\frac{(n-1)s^2}{\chi^2_{\alpha/2}(n-1)}},\
+\sqrt{\frac{(n-1)s^2}{\chi^2_{1-\alpha/2}(n-1)}} \right)
+$$</span></li>
+</ul></li>
+</ol>
+<h4 id="mu-已知"><span class="math inline"><em>μ</em></span> 已知</h4>
+<p>想了一下<span class="math inline"><em>μ</em></span>已知的情况，也算一下得了，要不然总感觉怪怪的</p>
+<p>设总体<span class="math inline"><em>X</em> ∼ <em>N</em>(<em>μ</em>, <em>σ</em><sup>2</sup>)</span>，其中<span class="math inline"><em>μ</em></span>已知，<span class="math inline">(<em>X</em><sub>1</sub>, <em>X</em><sub>2</sub>, ⋯, <em>X</em><sub><em>n</em></sub>)</span>为样本，置信水平为<span class="math inline">1 − <em>α</em></span>。</p>
+<h5 id="推导过程-2">推导过程</h5>
+<p>构建统计量</p>
+<p>定义<strong>真实离差平方和</strong>： <span class="math display">$$
+Q = \sum_{i=1}^n (X_i - \mu)^2
+$$</span></p>
+<p>由于<span class="math inline"><em>X</em><sub><em>i</em></sub> ∼ <em>N</em>(<em>μ</em>, <em>σ</em><sup>2</sup>)</span>，标准化后有：
+<span class="math display">$$
+\frac{X_i - \mu}{\sigma} \sim N(0,1) \quad \Rightarrow \quad
+\left(\frac{X_i - \mu}{\sigma}\right)^2 \sim \chi^2(1)
+$$</span></p>
+<p>根据卡方分布的可加性： <span class="math display">$$
+\chi^2 = \frac{Q}{\sigma^2} = \sum_{i=1}^n \left(\frac{X_i -
+\mu}{\sigma}\right)^2 \sim \chi^2(n)
+$$</span></p>
+<p>确定临界值</p>
+<p>对于给定的<span class="math inline"><em>α</em></span>，查<span class="math inline"><em>χ</em><sup>2</sup></span>分布表得：</p>
+<ul>
+<li>下侧分位数<span class="math inline"><em>χ</em><sub>1 − <em>α</em>/2</sub><sup>2</sup>(<em>n</em>)</span></li>
+<li>上侧分位数<span class="math inline"><em>χ</em><sub><em>α</em>/2</sub><sup>2</sup>(<em>n</em>)</span></li>
+</ul>
+<p>满足概率等式： <span class="math display">$$
+P\left(\chi^2_{1-\alpha/2}(n) &lt; \frac{Q}{\sigma^2} &lt;
+\chi^2_{\alpha/2}(n)\right) = 1-\alpha
+$$</span></p>
+<p>推导置信区间 解关于<span class="math inline"><em>σ</em><sup>2</sup></span>的不等式：</p>
+<ol type="1">
+<li><p>原始不等式： <span class="math display">$$
+\chi^2_{1-\alpha/2}(n) &lt; \frac{\sum (X_i - \mu)^2}{\sigma^2} &lt;
+\chi^2_{\alpha/2}(n)
+$$</span></p></li>
+<li><p>取倒数（注意不等号方向变化）： <span class="math display">$$
+\frac{1}{\chi^2_{1-\alpha/2}(n)} &gt; \frac{\sigma^2}{\sum (X_i -
+\mu)^2} &gt; \frac{1}{\chi^2_{\alpha/2}(n)}
+$$</span></p></li>
+<li><p>乘以<span class="math inline">∑(<em>X</em><sub><em>i</em></sub> − <em>μ</em>)<sup>2</sup></span>：
+<span class="math display">$$
+\frac{\sum (X_i - \mu)^2}{\chi^2_{1-\alpha/2}(n)} &gt; \sigma^2 &gt;
+\frac{\sum (X_i - \mu)^2}{\chi^2_{\alpha/2}(n)}
+$$</span></p></li>
+</ol>
+<p>因此<span class="math inline"><em>σ</em><sup>2</sup></span>的置信区间为： <span class="math display">$$
+\left( \frac{\sum_{i=1}^n (X_i - \mu)^2}{\chi^2_{\alpha/2}(n)},\
+\frac{\sum_{i=1}^n (X_i - \mu)^2}{\chi^2_{1-\alpha/2}(n)} \right)
+$$</span></p>
+<p>对<span class="math inline"><em>σ</em><sup>2</sup></span>区间取平方根，就可以得到标准差<span class="math inline"><em>σ</em></span>的置信区间： <span class="math display">$$
+\left( \sqrt{\frac{\sum (X_i - \mu)^2}{\chi^2_{\alpha/2}(n)}},\
+\sqrt{\frac{\sum (X_i - \mu)^2}{\chi^2_{1-\alpha/2}(n)}} \right)
+$$</span></p>
+<h5 id="实际计算步骤-2">实际计算步骤</h5>
+<p>设<span class="math inline"><em>μ</em> = 5</span>，样本观测值<span class="math inline">(4.8, 5.1, 4.9, 5.2, 5.0)</span>，<span class="math inline"><em>α</em> = 0.05</span>：</p>
+<ol type="1">
+<li><p>计算离差平方和： <span class="math display">∑(<em>x</em><sub><em>i</em></sub> − 5)<sup>2</sup> = 0.10</span></p></li>
+<li><p>查<span class="math inline"><em>χ</em><sup>2</sup></span>分布表（<span class="math inline"><em>n</em> = 5</span>）：</p>
+<ul>
+<li><span class="math inline"><em>χ</em><sub>0.025</sub><sup>2</sup>(5) = 12.833</span></li>
+<li><span class="math inline"><em>χ</em><sub>0.975</sub><sup>2</sup>(5) = 0.831</span></li>
+</ul></li>
+<li><p>方差置信区间： <span class="math display">$$
+\left( \frac{0.10}{12.833},\ \frac{0.10}{0.831} \right) = (0.0078,\
+0.1203)
+$$</span></p></li>
+<li><p>标准差置信区间： <span class="math display">$$
+\left( \sqrt{0.0078},\ \sqrt{0.1203} \right) = (0.088,\ 0.347)
+$$</span></p></li>
+</ol>
+<h2 id="两个正态总体均值差的区间估计">两个正态总体均值差的区间估计</h2>
+<p>设已给定置信水平为 <span class="math inline">1 − <em>α</em></span>，并设 <span class="math inline">(<em>X</em><sub>1</sub>, <em>X</em><sub>2</sub>, ⋯, <em>X</em><sub><em>n</em><sub>1</sub></sub>)</span>
+是总体 <span class="math inline"><em>X</em> ∼ <em>N</em>(<em>μ</em><sub>1</sub>, <em>σ</em><sub>1</sub><sup>2</sup>)</span>
+的样本，<span class="math inline">(<em>Y</em><sub>1</sub>, <em>Y</em><sub>2</sub>, ⋯, <em>Y</em><sub><em>n</em><sub>2</sub></sub>)</span>
+是总体 <span class="math inline"><em>Y</em> ∼ <em>N</em>(<em>μ</em><sub>2</sub>, <em>σ</em><sub>2</sub><sup>2</sup>)</span>
+的样本，且这两个样本相互独立。</p>
+<p>记 <span class="math inline"><em>X̄</em>, <em>Ȳ</em></span> 分别是总体
+<span class="math inline"><em>X</em></span> 和 <span class="math inline"><em>Y</em></span> 的样本均值，<span class="math inline"><em>S</em><sub>1</sub><sup>2</sup>, <em>S</em><sub>2</sub><sup>2</sup></span>
+分别是总体 <span class="math inline"><em>X</em></span> 和 <span class="math inline"><em>Y</em></span> 的样本方差。对总体均值差 <span class="math inline"><em>μ</em><sub>1</sub> − <em>μ</em><sub>2</sub></span>
+作区间估计，分如下三种情况讨论。</p>
+<h3 id="sigma_1-2和sigma_2-2均已知"><span class="math inline"><em>σ</em><sub>1</sub><sup>2</sup></span>和<span class="math inline"><em>σ</em><sub>2</sub><sup>2</sup></span>均已知</h3>
+<h4 id="推导过程-3">推导过程</h4>
+<p>无偏估计量的构造</p>
+<p>由于： - <span class="math inline"><em>X̄</em></span>是<span class="math inline"><em>μ</em><sub>1</sub></span>的无偏估计：<span class="math inline"><em>E</em>(<em>X̄</em>) = <em>μ</em><sub>1</sub></span>
+- <span class="math inline"><em>Ȳ</em></span>是<span class="math inline"><em>μ</em><sub>2</sub></span>的无偏估计：<span class="math inline"><em>E</em>(<em>Ȳ</em>) = <em>μ</em><sub>2</sub></span></p>
+<p>因此： <span class="math display"><em>D</em> = <em>X̄</em> − <em>Ȳ</em>  是  <em>δ</em> = <em>μ</em><sub>1</sub> − <em>μ</em><sub>2</sub>  的无偏估计</span></p>
+<p>由正态分布性质： <span class="math display">$$
+\begin{aligned}
+\bar{X} &amp;\sim N\left(\mu_1, \frac{\sigma_1^2}{n_1}\right) \\
+\bar{Y} &amp;\sim N\left(\mu_2, \frac{\sigma_2^2}{n_2}\right)
+\end{aligned}
+$$</span></p>
+<p>由于<span class="math inline"><em>X̄</em></span>与<span class="math inline"><em>Ȳ</em></span>相互独立，其线性组合服从： <span class="math display">$$
+\bar{X} - \bar{Y} \sim N\left(\mu_1 - \mu_2, \frac{\sigma_1^2}{n_1} +
+\frac{\sigma_2^2}{n_2}\right)
+$$</span></p>
+<p>标准化统计量，构造标准正态统计量：</p>
+<p><span class="math display">$$
+U = \frac{(\bar{X} - \bar{Y}) - (\mu_1 -
+\mu_2)}{\sqrt{\frac{\sigma_1^2}{n_1} + \frac{\sigma_2^2}{n_2}}} \sim
+N(0,1)
+$$</span></p>
+<p>置信区间推导</p>
+<p>对于给定<span class="math inline"><em>α</em></span>，查标准正态分布得<span class="math inline"><em>u</em><sub><em>α</em>/2</sub></span>满足： <span class="math display"><em>P</em>(−<em>u</em><sub><em>α</em>/2</sub> &lt; <em>U</em> &lt; <em>u</em><sub><em>α</em>/2</sub>) = 1 − <em>α</em></span></p>
+<p>将<span class="math inline"><em>U</em></span>表达式代入： <span class="math display">$$
+P\left(-u_{\alpha/2} &lt; \frac{D - \delta}{\sqrt{\frac{\sigma_1^2}{n_1}
++ \frac{\sigma_2^2}{n_2}}} &lt; u_{\alpha/2}\right) = 1 - \alpha
+$$</span></p>
+<p>解不等式： 1. 乘以标准差： <span class="math display">$$
+   P\left(-u_{\alpha/2}\sqrt{\frac{\sigma_1^2}{n_1} +
+\frac{\sigma_2^2}{n_2}} &lt; D - \delta &lt;
+u_{\alpha/2}\sqrt{\frac{\sigma_1^2}{n_1} +
+\frac{\sigma_2^2}{n_2}}\right) = 1 - \alpha
+   $$</span></p>
+<ol start="2" type="1">
+<li>移项得： <span class="math display">$$
+P\left(D - u_{\alpha/2}\sqrt{\frac{\sigma_1^2}{n_1} +
+\frac{\sigma_2^2}{n_2}} &lt; \delta &lt; D +
+u_{\alpha/2}\sqrt{\frac{\sigma_1^2}{n_1} +
+\frac{\sigma_2^2}{n_2}}\right) = 1 - \alpha
+$$</span></li>
+</ol>
+<p>最终置信区间</p>
+<p><span class="math inline"><em>μ</em><sub>1</sub> − <em>μ</em><sub>2</sub></span>的<span class="math inline">1 − <em>α</em></span>置信区间为： <span class="math display">$$
+\left( \bar{X} - \bar{Y} - u_{\alpha/2}\sqrt{\frac{\sigma_1^2}{n_1} +
+\frac{\sigma_2^2}{n_2}},\ \bar{X} - \bar{Y} +
+u_{\alpha/2}\sqrt{\frac{\sigma_1^2}{n_1} + \frac{\sigma_2^2}{n_2}}
+\right)
+$$</span></p>
+<h4 id="实际计算步骤-3">实际计算步骤</h4>
+<ol type="1">
+<li><p>计算样本均值： <span class="math display">$$
+\bar{x} = \frac{1}{n_1}\sum x_i,\quad \bar{y} = \frac{1}{n_2}\sum y_i
+$$</span></p></li>
+<li><p>查标准正态分布表得<span class="math inline"><em>u</em><sub><em>α</em>/2</sub></span>值：</p>
+<ul>
+<li><span class="math inline"><em>α</em> = 0.05</span>时，<span class="math inline"><em>u</em><sub>0.025</sub> = 1.96</span></li>
+</ul></li>
+<li><p>计算合并标准误： <span class="math display">$$
+SE = \sqrt{\frac{\sigma_1^2}{n_1} + \frac{\sigma_2^2}{n_2}}
+$$</span></p></li>
+<li><p>计算置信区间： <span class="math display">CI = (<em>x̄</em> − <em>ȳ</em>) ± 1.96 × <em>S</em><em>E</em></span></p></li>
+</ol>
+<p>示例：</p>
+<p>设<span class="math inline"><em>n</em><sub>1</sub> = 30</span>, <span class="math inline"><em>σ</em><sub>1</sub><sup>2</sup> = 4</span>, <span class="math inline"><em>x̄</em> = 10.2</span><br>
+<span class="math inline"><em>n</em><sub>2</sub> = 40</span>, <span class="math inline"><em>σ</em><sub>2</sub><sup>2</sup> = 9</span>, <span class="math inline"><em>ȳ</em> = 8.5</span>, <span class="math inline"><em>α</em> = 0.05</span></p>
+<ol type="1">
+<li><p>计算标准误： <span class="math display">$$
+SE = \sqrt{\frac{4}{30} + \frac{9}{40}} = \sqrt{0.1333 + 0.225} = 0.598
+$$</span></p></li>
+<li><p>置信区间： <span class="math display">(10.2 − 8.5) ± 1.96 × 0.598 = 1.7 ± 1.172 = (0.528, 2.872)</span></p></li>
+</ol>
+<h3 id="sigma_1-2和sigma_2-2均未知但是sigma_1-2-sigma_2-2-sigma2"><span class="math inline"><em>σ</em><sub>1</sub><sup>2</sup></span>和<span class="math inline"><em>σ</em><sub>2</sub><sup>2</sup></span>均未知，但是<span class="math inline"><em>σ</em><sub>1</sub><sup>2</sup> = <em>σ</em><sub>2</sub><sup>2</sup> = <em>σ</em><sup>2</sup></span></h3>
+<h4 id="推导过程-4">推导过程</h4>
+<p>合并方差估计</p>
+<p>构造合并方差估计量： <span class="math display">$$
+S_w^2 = \frac{(n_1-1)S_1^2 + (n_2-1)S_2^2}{n_1+n_2-2}
+$$</span></p>
+<ul>
+<li>分子：两样本离差平方和的加权组合</li>
+<li>分母：总自由度<span class="math inline"><em>d</em><em>f</em> = <em>n</em><sub>1</sub> + <em>n</em><sub>2</sub> − 2</span></li>
+</ul>
+<p>构建t统计量</p>
+<p>标准化均值差： <span class="math display">$$
+T = \frac{(\bar{X} - \bar{Y}) - (\mu_1 - \mu_2)}{S_w \sqrt{\frac{1}{n_1}
++ \frac{1}{n_2}}} \sim t(n_1+n_2-2)
+$$</span></p>
+<p>而其中，<span class="math inline"><em>S</em><sub><em>w</em></sub></span>为 <span class="math display">$$
+S_w^2 = \frac{(n_1-1)S_1^2 + (n_2-1)S_2^2}{n_1+n_2-2}
+$$</span> 置信区间推导</p>
+<p>对于给定<span class="math inline"><em>α</em></span>，查t分布表得<span class="math inline"><em>t</em><sub><em>α</em>/2</sub>(<em>d</em><em>f</em>)</span>满足：
+<span class="math display"><em>P</em>(−<em>t</em><sub><em>α</em>/2</sub>(<em>d</em><em>f</em>) &lt; <em>T</em> &lt; <em>t</em><sub><em>α</em>/2</sub>(<em>d</em><em>f</em>)) = 1 − <em>α</em></span></p>
+<p>展开后得到： <span class="math display">$$
+P\left(\bar{X}-\bar{Y} - t_{\alpha/2} S_w \sqrt{\frac{1}{n_1} +
+\frac{1}{n_2}} &lt; \mu_1 - \mu_2 &lt; \bar{X}-\bar{Y} + t_{\alpha/2}
+S_w \sqrt{\frac{1}{n_1} + \frac{1}{n_2}}\right) = 1 - \alpha
+$$</span></p>
+<p>整理得到置信区间公式</p>
+<p><span class="math inline"><em>μ</em><sub>1</sub> − <em>μ</em><sub>2</sub></span>的一个置信水平为<span class="math inline">1 − <em>α</em></span>的置信区间： <span class="math display">$$
+\left(\bar{X} - \bar{Y} - t_{\alpha/2}(n_1+n_2-2) \cdot S_w
+\sqrt{\frac{1}{n_1} + \frac{1}{n_2}}, \bar{X} - \bar{Y} +
+t_{\alpha/2}(n_1+n_2-2) \cdot S_w \sqrt{\frac{1}{n_1} +
+\frac{1}{n_2}}\right)
+$$</span></p>
+<h4 id="实际计算步骤-4">实际计算步骤</h4>
+<ol type="1">
+<li><p>计算样本统计量： <span class="math display">$$
+\bar{x} = \frac{1}{n_1}\sum x_i,\quad s_1^2 =
+\frac{1}{n_1-1}\sum(x_i-\bar{x})^2 \\
+\bar{y} = \frac{1}{n_2}\sum y_i,\quad s_2^2 =
+\frac{1}{n_2-1}\sum(y_i-\bar{y})^2
+$$</span></p></li>
+<li><p>计算合并方差： <span class="math display">$$
+s_w^2 = \frac{(n_1-1)s_1^2 + (n_2-1)s_2^2}{n_1+n_2-2}
+$$</span></p></li>
+<li><p>查t分布表得临界值<span class="math inline"><em>t</em><sub><em>α</em>/2</sub>(<em>n</em><sub>1</sub> + <em>n</em><sub>2</sub> − 2)</span></p></li>
+<li><p>计算置信区间： <span class="math display">$$
+\text{CI} = (\bar{x} - \bar{y}) \pm t_{\alpha/2} \cdot s_w
+\sqrt{\frac{1}{n_1} + \frac{1}{n_2}}
+$$</span></p></li>
+</ol>
+<p>示例计算</p>
+<p>设<span class="math inline"><em>n</em><sub>1</sub> = 15</span>, <span class="math inline"><em>x̄</em> = 50.2</span>, <span class="math inline"><em>s</em><sub>1</sub><sup>2</sup> = 16</span><br>
+<span class="math inline"><em>n</em><sub>2</sub> = 20</span>, <span class="math inline"><em>ȳ</em> = 48.5</span>, <span class="math inline"><em>s</em><sub>2</sub><sup>2</sup> = 12.5</span>,
+<span class="math inline"><em>α</em> = 0.05</span></p>
+<ol type="1">
+<li><p>计算合并方差： <span class="math display">$$
+s_w^2 = \frac{14\times16 + 19\times12.5}{33} = \frac{224 + 237.5}{33}
+\approx 14.0
+$$</span></p></li>
+<li><p>查t分布表：</p>
+<p><span class="math inline"><em>t</em><sub>0.025</sub>(33) ≈ 2.0345</span></p></li>
+<li><p>计算置信区间： <span class="math display">$$
+1.7 \pm 2.0345 \times \sqrt{14} \times \sqrt{\frac{1}{15} +
+\frac{1}{20}} \\
+= 1.7 \pm 2.0345 \times 3.7417 \times 0.3416 \\
+= 1.7 \pm 2.60 \\
+= (-0.90, 4.30)
+$$</span></p></li>
+<li><p>结论：区间包含0，不能认为<span class="math inline"><em>μ</em><sub>1</sub></span>与<span class="math inline"><em>μ</em><sub>2</sub></span>有显著差异</p></li>
+</ol>
+<h3 id="sigma_1-2和sigma_2-2均未知但是关系不确定"><span class="math inline"><em>σ</em><sub>1</sub><sup>2</sup></span>和<span class="math inline"><em>σ</em><sub>2</sub><sup>2</sup></span>均未知，但是关系不确定</h3>
+<h4 id="推导过程-5">推导过程</h4>
+<p>设两独立总体： - <span class="math inline"><em>X</em> ∼ <em>N</em>(<em>μ</em><sub>1</sub>, <em>σ</em><sub>1</sub><sup>2</sup>)</span>，样本<span class="math inline">(<em>X</em><sub>1</sub>, ..., <em>X</em><sub><em>n</em><sub>1</sub></sub>)</span>，样本均值<span class="math inline"><em>X̄</em></span>，样本方差<span class="math inline"><em>S</em><sub>1</sub><sup>2</sup></span> - <span class="math inline"><em>Y</em> ∼ <em>N</em>(<em>μ</em><sub>2</sub>, <em>σ</em><sub>2</sub><sup>2</sup>)</span>，样本<span class="math inline">(<em>Y</em><sub>1</sub>, ..., <em>Y</em><sub><em>n</em><sub>2</sub></sub>)</span>，样本均值<span class="math inline"><em>Ȳ</em></span>，样本方差<span class="math inline"><em>S</em><sub>2</sub><sup>2</sup></span></p>
+<p>构建统计量</p>
+<p>考虑均值差<span class="math inline"><em>δ</em> = <em>μ</em><sub>1</sub> − <em>μ</em><sub>2</sub></span>的估计量：
+<span class="math display">$$
+D = \bar{X} - \bar{Y} \sim N\left(\delta, \frac{\sigma_1^2}{n_1} +
+\frac{\sigma_2^2}{n_2}\right)
+$$</span></p>
+<p>标准化后： <span class="math display">$$
+T = \frac{D - \delta}{\sqrt{\frac{S_1^2}{n_1} + \frac{S_2^2}{n_2}}} \sim
+t(\nu)
+$$</span> 其中自由度<span class="math inline"><em>ν</em></span>由Welch-Satterthwaite方程确定：</p>
+<p>自由度计算</p>
+<p><span class="math display">$$
+\nu = \frac{\left(\frac{S_1^2}{n_1} +
+\frac{S_2^2}{n_2}\right)^2}{\frac{(S_1^2/n_1)^2}{n_1-1} +
+\frac{(S_2^2/n_2)^2}{n_2-1}}
+$$</span></p>
+<p>置信区间推导</p>
+<p>对于给定<span class="math inline"><em>α</em></span>，查<span class="math inline"><em>t</em></span>分布表得<span class="math inline"><em>t</em><sub><em>α</em>/2</sub>(<em>ν</em>)</span>，满足：
+<span class="math display">$$
+P\left(-t_{\alpha/2}(\nu) &lt; \frac{(\bar{X}-\bar{Y}) -
+(\mu_1-\mu_2)}{\sqrt{\frac{S_1^2}{n_1} + \frac{S_2^2}{n_2}}} &lt;
+t_{\alpha/2}(\nu)\right) = 1-\alpha
+$$</span></p>
+<p>解不等式得<span class="math inline"><em>δ</em></span>的置信区间：
+<span class="math display">$$
+(\bar{X}-\bar{Y}) \pm t_{\alpha/2}(\nu)\sqrt{\frac{S_1^2}{n_1} +
+\frac{S_2^2}{n_2}}
+$$</span></p>
+<p>计算步骤</p>
+<ol type="1">
+<li><p>计算样本统计量： <span class="math display">$$
+\bar{x} = \frac{1}{n_1}\sum x_i,\quad s_1^2 =
+\frac{1}{n_1-1}\sum(x_i-\bar{x})^2 \\
+\bar{y} = \frac{1}{n_2}\sum y_i,\quad s_2^2 =
+\frac{1}{n_2-1}\sum(y_i-\bar{y})^2
+$$</span></p></li>
+<li><p>计算自由度<span class="math inline"><em>ν</em></span>（结果四舍五入取整）： <span class="math display">$$
+\nu = \frac{\left(\frac{s_1^2}{n_1} +
+\frac{s_2^2}{n_2}\right)^2}{\frac{(s_1^2/n_1)^2}{n_1-1} +
+\frac{(s_2^2/n_2)^2}{n_2-1}}
+$$</span></p></li>
+<li><p>查<span class="math inline"><em>t</em></span>分布表得临界值<span class="math inline"><em>t</em><sub><em>α</em>/2</sub>(<em>ν</em>)</span></p></li>
+<li><p>计算置信区间： <span class="math display">$$
+\text{CI} = (\bar{x}-\bar{y}) \pm
+t_{\alpha/2}(\nu)\sqrt{\frac{s_1^2}{n_1} + \frac{s_2^2}{n_2}}
+$$</span></p></li>
+</ol>
+<h4 id="实际计算步骤-5">实际计算步骤</h4>
+<p>设<span class="math inline"><em>n</em><sub>1</sub> = 10</span>, <span class="math inline"><em>x̄</em> = 5.2</span>, <span class="math inline"><em>s</em><sub>1</sub><sup>2</sup> = 1.5</span>
+，<span class="math inline"><em>n</em><sub>2</sub> = 15</span>, <span class="math inline"><em>ȳ</em> = 4.8</span>, <span class="math inline"><em>s</em><sub>2</sub><sup>2</sup> = 2.0</span>,
+<span class="math inline"><em>α</em> = 0.05</span></p>
+<ol type="1">
+<li><p>计算自由度： <span class="math display">$$
+\nu = \frac{(0.15+0.1333)^2}{0.0225/9 + 0.0178/14} \approx 21.3 \approx
+21
+$$</span></p></li>
+<li><p>查<span class="math inline"><em>t</em><sub>0.025</sub>(21) = 2.080</span></p></li>
+<li><p>置信区间： <span class="math display">$$
+0.4 \pm 2.080\sqrt{0.15+0.1333} = 0.4 \pm 2.080\times0.532 = (-0.706,
+1.506)
+$$</span></p></li>
+</ol>
+<h2 id="两个正态总体方差比的区间估计">两个正态总体方差比的区间估计</h2>
+<p>设 <span class="math inline">(<em>X</em><sub>1</sub>, <em>X</em><sub>2</sub>, ⋯, <em>X</em><sub><em>n</em><sub>1</sub></sub>)</span>
+是总体 <span class="math inline"><em>X</em> ∼ <em>N</em>(<em>μ</em><sub>1</sub>, <em>σ</em><sub>1</sub><sup>2</sup>)</span>
+的样本，<span class="math inline">(<em>Y</em><sub>1</sub>, <em>Y</em><sub>2</sub>, ⋯, <em>Y</em><sub><em>n</em><sub>2</sub></sub>)</span>
+是总体 <span class="math inline"><em>Y</em> ∼ <em>N</em>(<em>μ</em><sub>2</sub>, <em>σ</em><sub>2</sub><sup>2</sup>)</span>
+的样本，且两个样本相互独立，要求两总体方差比 <span class="math inline"><em>σ</em><sub>1</sub><sup>2</sup>/<em>σ</em><sub>2</sub><sup>2</sup></span>
+的置信水平为 <span class="math inline">(1 − <em>α</em>)</span>
+的置信区间。</p>
+<h3 id="mu_1mu_2均未知的情况"><span class="math inline"><em>μ</em><sub>1</sub></span>,<span class="math inline"><em>μ</em><sub>2</sub></span>均未知的情况</h3>
+<h4 id="推导过程-6">推导过程</h4>
+<p>构建F统计量</p>
+<p>由抽样分布理论： <span class="math display">$$
+F = \frac{S_1^2/\sigma_1^2}{S_2^2/\sigma_2^2} \sim F(n_1-1, n_2-1)
+$$</span></p>
+<p>且分布 <span class="math inline"><em>F</em>(<em>n</em><sub>1</sub> − 1, <em>n</em><sub>2</sub> − 1)</span>
+不依赖任何参数. 由 <span class="math inline"><em>F</em></span>
+分布的上侧分位数的定义知</p>
+<figure>
+<img src="/posts/9946/image-20250626104603082.png" alt="image-20250626104603082">
+<figcaption aria-hidden="true">image-20250626104603082</figcaption>
+</figure>
+<p>确定临界值</p>
+<p>对于给定<span class="math inline"><em>α</em></span>，查F分布表得： -
+上侧分位数<span class="math inline"><em>F</em><sub><em>α</em>/2</sub>(<em>n</em><sub>1</sub> − 1, <em>n</em><sub>2</sub> − 1)</span>
+- 下侧分位数<span class="math inline"><em>F</em><sub>1 − <em>α</em>/2</sub>(<em>n</em><sub>1</sub> − 1, <em>n</em><sub>2</sub> − 1)</span></p>
+<p>满足概率等式： <span class="math display">$$
+P\left(F_{1-\alpha/2} &lt; \frac{S_1^2/\sigma_1^2}{S_2^2/\sigma_2^2}
+&lt; F_{\alpha/2}\right) = 1-\alpha
+$$</span></p>
+<p>推导置信区间</p>
+<p>解关于<span class="math inline"><em>σ</em><sub>1</sub><sup>2</sup>/<em>σ</em><sub>2</sub><sup>2</sup></span>的不等式：</p>
+<ol type="1">
+<li><p>原始不等式： <span class="math display">$$
+F_{1-\alpha/2} &lt; \frac{S_1^2}{S_2^2} \cdot
+\frac{\sigma_2^2}{\sigma_1^2} &lt; F_{\alpha/2}
+$$</span></p></li>
+<li><p>取倒数（注意不等号方向变化）： <span class="math display">$$
+\frac{1}{F_{1-\alpha/2}} &gt; \frac{S_2^2}{S_1^2} \cdot
+\frac{\sigma_1^2}{\sigma_2^2} &gt; \frac{1}{F_{\alpha/2}}
+$$</span></p></li>
+<li><p>乘以<span class="math inline">$\frac{S_1^2}{S_2^2}$</span>：
+<span class="math display">$$
+\frac{S_1^2}{S_2^2} \cdot \frac{1}{F_{\alpha/2}} &lt;
+\frac{\sigma_1^2}{\sigma_2^2} &lt; \frac{S_1^2}{S_2^2} \cdot
+\frac{1}{F_{1-\alpha/2}}
+$$</span></p></li>
+</ol>
+<p>最终置信区间</p>
+<p><span class="math inline"><em>σ</em><sub>1</sub><sup>2</sup>/<em>σ</em><sub>2</sub><sup>2</sup></span>的<span class="math inline">1 − <em>α</em></span>置信区间： <span class="math display">$$
+\left( \frac{S_1^2}{S_2^2} \cdot \frac{1}{F_{\alpha/2}(n_1-1,n_2-1)},\
+\frac{S_1^2}{S_2^2} \cdot \frac{1}{F_{1-\alpha/2}(n_1-1,n_2-1)} \right)
+$$</span></p>
+<h4 id="实际计算步骤-6">实际计算步骤</h4>
+<ol type="1">
+<li><p>计算样本方差： <span class="math display">$$
+s_1^2 = \frac{1}{n_1-1}\sum(x_i-\bar{x})^2,\quad s_2^2 =
+\frac{1}{n_2-1}\sum(y_i-\bar{y})^2
+$$</span></p></li>
+<li><p>计算方差比： <span class="math display">$$
+\frac{s_1^2}{s_2^2}
+$$</span></p></li>
+<li><p>查F分布表：</p>
+<ul>
+<li><span class="math inline"><em>F</em><sub><em>α</em>/2</sub>(<em>d</em><em>f</em><sub>1</sub>, <em>d</em><em>f</em><sub>2</sub>)</span></li>
+<li><span class="math inline">$F_{1-\alpha/2}(df_1,df_2) =
+\frac{1}{F_{\alpha/2}(df_2,df_1)}$</span></li>
+</ul></li>
+<li><p>计算置信区间：</p>
+<ul>
+<li>下限：<span class="math inline">$\frac{s_1^2}{s_2^2} \cdot
+\frac{1}{F_{\alpha/2}(n_1-1,n_2-1)}$</span></li>
+<li>上限：<span class="math inline">$\frac{s_1^2}{s_2^2} \cdot
+\frac{1}{F_{1-\alpha/2}(n_1-1,n_2-1)}$</span></li>
+</ul></li>
+</ol>
+<p>示例</p>
+<p>设<span class="math inline"><em>n</em><sub>1</sub> = 10</span>, <span class="math inline"><em>s</em><sub>1</sub><sup>2</sup> = 4.5</span><br>
+<span class="math inline"><em>n</em><sub>2</sub> = 15</span>, <span class="math inline"><em>s</em><sub>2</sub><sup>2</sup> = 2.8</span>,
+<span class="math inline"><em>α</em> = 0.05</span></p>
+<ol type="1">
+<li><p>计算方差比： <span class="math display">$$
+\frac{4.5}{2.8} \approx 1.607
+$$</span></p></li>
+<li><p>查F分布表：</p>
+<ul>
+<li><span class="math inline"><em>F</em><sub>0.025</sub>(9, 14) = 3.209</span></li>
+<li><span class="math inline">$F_{0.975}(9,14) =
+\frac{1}{F_{0.025}(14,9)} = \frac{1}{3.798} \approx 0.263$</span></li>
+</ul></li>
+<li><p>置信区间：</p>
+<ul>
+<li>下限：<span class="math inline">$1.607 \times \frac{1}{3.209}
+\approx 0.501$</span></li>
+<li>上限：<span class="math inline">$1.607 \times \frac{1}{0.263}
+\approx 6.110$</span> <span class="math display">(0.501, 6.110)</span></li>
+</ul></li>
+</ol>
+<h3 id="mu_1已知mu_2未知"><span class="math inline"><em>μ</em><sub>1</sub></span>已知，<span class="math inline"><em>μ</em><sub>2</sub></span>未知</h3>
+<h4 id="推导过程-7">推导过程</h4>
+<ol type="1">
+<li><p><strong>构建统计量</strong>： 当<span class="math inline"><em>μ</em><sub>1</sub></span>已知时，使用真实离差构造样本方差：
+<span class="math display">$$
+S_1^{*2} = \frac{1}{n_1}\sum_{i=1}^{n_1}(X_i - \mu_1)^2 \sim
+\frac{\sigma_1^2}{n_1}\chi^2(n_1)
+$$</span> 而<span class="math inline"><em>S</em><sub>2</sub><sup>2</sup></span>仍为常规样本方差：
+<span class="math display">$$
+S_2^2 = \frac{1}{n_2-1}\sum_{i=1}^{n_2}(Y_i - \bar{Y})^2 \sim
+\frac{\sigma_2^2}{n_2-1}\chi^2(n_2-1)
+$$</span></p></li>
+<li><p><strong>构造F统计量</strong>： <span class="math display">$$
+F = \frac{S_1^{*2}/\sigma_1^2}{S_2^2/\sigma_2^2} \sim F(n_1, n_2-1)
+$$</span></p></li>
+<li><p><strong>确定临界值</strong>： 查F分布表得<span class="math inline"><em>F</em><sub><em>α</em>/2</sub>(<em>n</em><sub>1</sub>, <em>n</em><sub>2</sub> − 1)</span>和<span class="math inline"><em>F</em><sub>1 − <em>α</em>/2</sub>(<em>n</em><sub>1</sub>, <em>n</em><sub>2</sub> − 1)</span></p></li>
+<li><p><strong>推导置信区间</strong>： <span class="math display">$$
+\left( \frac{S_1^{*2}}{S_2^2} \cdot \frac{1}{F_{\alpha/2}(n_1,n_2-1)},\
+\frac{S_1^{*2}}{S_2^2} \cdot \frac{1}{F_{1-\alpha/2}(n_1,n_2-1)} \right)
+$$</span></p></li>
+</ol>
+<h4 id="示例计算">示例计算</h4>
+<p>设<span class="math inline"><em>μ</em><sub>1</sub> = 5</span>, <span class="math inline"><em>n</em><sub>1</sub> = 10</span>, <span class="math inline">∑(<em>x</em><sub><em>i</em></sub> − 5)<sup>2</sup> = 40</span><br>
+<span class="math inline"><em>n</em><sub>2</sub> = 15</span>, <span class="math inline"><em>s</em><sub>2</sub><sup>2</sup> = 3.2</span>,
+<span class="math inline"><em>α</em> = 0.05</span></p>
+<ol type="1">
+<li>计算<span class="math inline"><em>S</em><sub>1</sub><sup>*2</sup> = 40/10 = 4</span></li>
+<li>方差比：<span class="math inline">4/3.2 = 1.25</span></li>
+<li>查F分布表：
+<ul>
+<li><span class="math inline"><em>F</em><sub>0.025</sub>(10, 14) = 3.15</span></li>
+<li><span class="math inline"><em>F</em><sub>0.975</sub>(10, 14) = 1/<em>F</em><sub>0.025</sub>(14, 10) ≈ 1/3.35 ≈ 0.299</span></li>
+</ul></li>
+<li>置信区间：
+<ul>
+<li>下限：<span class="math inline">1.25 × 1/3.15 ≈ 0.397</span></li>
+<li>上限：<span class="math inline">1.25 × 1/0.299 ≈ 4.181</span></li>
+</ul></li>
+</ol>
+<h3 id="mu_1mu_2均已知"><span class="math inline"><em>μ</em><sub>1</sub></span>,<span class="math inline"><em>μ</em><sub>2</sub></span>均已知</h3>
+<h4 id="推导过程-8">推导过程</h4>
+<ol type="1">
+<li><p><strong>构建统计量</strong>： 使用真实离差构造方差估计： <span class="math display">$$
+S_1^{*2} = \frac{1}{n_1}\sum(X_i - \mu_1)^2 \sim
+\frac{\sigma_1^2}{n_1}\chi^2(n_1) \\
+S_2^{*2} = \frac{1}{n_2}\sum(Y_i - \mu_2)^2 \sim
+\frac{\sigma_2^2}{n_2}\chi^2(n_2)
+$$</span></p></li>
+<li><p><strong>构造F统计量</strong>： <span class="math display">$$
+F = \frac{S_1^{*2}/\sigma_1^2}{S_2^{*2}/\sigma_2^2} \sim F(n_1, n_2)
+$$</span></p></li>
+<li><p><strong>确定临界值</strong>：</p>
+<p>查F分布表得<span class="math inline"><em>F</em><sub><em>α</em>/2</sub>(<em>n</em><sub>1</sub>, <em>n</em><sub>2</sub>)</span>和<span class="math inline"><em>F</em><sub>1 − <em>α</em>/2</sub>(<em>n</em><sub>1</sub>, <em>n</em><sub>2</sub>)</span></p></li>
+<li><p><strong>推导置信区间</strong>： <span class="math display">$$
+\left( \frac{S_1^{*2}}{S_2^{*2}} \cdot \frac{1}{F_{\alpha/2}(n_1,n_2)},\
+\frac{S_1^{*2}}{S_2^{*2}} \cdot \frac{1}{F_{1-\alpha/2}(n_1,n_2)}
+\right)
+$$</span></p></li>
+</ol>
+<h4 id="示例计算-1">示例计算</h4>
+<p>设<span class="math inline"><em>μ</em><sub>1</sub> = 5</span>, <span class="math inline"><em>μ</em><sub>2</sub> = 6</span>, <span class="math inline"><em>n</em><sub>1</sub> = 8</span>, <span class="math inline">∑(<em>x</em><sub><em>i</em></sub> − 5)<sup>2</sup> = 24</span><br>
+<span class="math inline"><em>n</em><sub>2</sub> = 12</span>, <span class="math inline">∑(<em>y</em><sub><em>i</em></sub> − 6)<sup>2</sup> = 42</span>,
+<span class="math inline"><em>α</em> = 0.1</span></p>
+<ol type="1">
+<li>计算方差估计：
+<ul>
+<li><span class="math inline"><em>S</em><sub>1</sub><sup>*2</sup> = 24/8 = 3</span></li>
+<li><span class="math inline"><em>S</em><sub>2</sub><sup>*2</sup> = 42/12 = 3.5</span></li>
+</ul></li>
+<li>方差比：<span class="math inline">3/3.5 ≈ 0.857</span></li>
+<li>查F分布表：
+<ul>
+<li><span class="math inline"><em>F</em><sub>0.05</sub>(8, 12) = 2.85</span></li>
+<li><span class="math inline"><em>F</em><sub>0.95</sub>(8, 12) = 1/<em>F</em><sub>0.05</sub>(12, 8) ≈ 1/3.28 ≈ 0.305</span></li>
+</ul></li>
+<li>置信区间：
+<ul>
+<li>下限：<span class="math inline">0.857 × 1/2.85 ≈ 0.301</span></li>
+<li>上限：<span class="math inline">0.857 × 1/0.305 ≈ 2.810</span></li>
+</ul></li>
+</ol>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a target="_blank" rel="noopener" href="https://github.com/ergou10086">ErgouTree</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://ergou10086.github.io/posts/9946.html">https://ergou10086.github.io/posts/9946.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://ergou10086.github.io" target="_blank">ErgouTree's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E5%AD%A6%E4%B9%A0%E7%B1%BB/">学习类</a><a class="post-meta__tags" href="/tags/%E6%95%B0%E5%AD%A6/">数学</a><a class="post-meta__tags" href="/tags/%E6%A6%82%E7%8E%87%E8%AE%BA%E4%B8%8E%E6%95%B0%E7%90%86%E7%BB%9F%E8%AE%A1/">概率论与数理统计</a></div><div class="post-share"><div class="addtoany"><div class="a2a_kit a2a_kit_size_32 a2a_default_style"><a class="a2a_button_facebook"></a><a class="a2a_button_twitter"></a><a class="a2a_button_wechat"></a><a class="a2a_button_sina_weibo"></a><a class="a2a_button_facebook_messenger"></a><a class="a2a_button_email"></a><a class="a2a_button_copy_link"></a><a class="a2a_dd" target="_blank" rel="noopener" href="https://www.addtoany.com/share"></a></div></div><script async="async" src="https://static.addtoany.com/menu/page.js"></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/posts/5644.html" title="参数估计之点估计—矩估计法和最大似然估计法"><img class="cover" src="/images/posts/cover_security.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">参数估计之点估计—矩估计法和最大似然估计法</div></div><div class="info-2"><div class="info-item-1">参数估计之点估计 什么是参数估计 首先，什么是参数估计呢？ 之前我们其实已经了解到很多种分布类型了，比如正态分布、均匀分布、泊松分布等。拿正态分布举例，决定正态分布的有两个参数：均值和方差。 因此，参数就是决定分布的关键性数据。知道了参数，也就是知道了分布的详细内容。 总体的分布类别如果我们知道了，是不是只要知道分布的参数，就能知道总体的分布详情？ 所以说，用样本的数据来构造函数（即统计量），来估计总体参数，这就是参数估计。 估计量 定义 估计量是样本的统计量，用于估计总体未知参数。它是一个随机变量，因为其值依赖于随机样本。 若总体参数为 θ，表示总体X的待估计参数，其中 X1, X2, …, Xn 是来自总体的样本，则其中的一个估计量记作 θ̂ = θ̂(X1, X2, …, Xn)来估计θ，则称 θ̂ 为 θ 的估计量 理解 用于估计总体参数的 随机变量 ，是基于样本构造的、对总体参数进行估计的 “规则 / 公式” 。 它本身是一种统计量（由样本数据计算得到），因样本具有随机性，所以估计量是随机变量，会随样本不同而变化。 比如：用 “样本均值...</div></div></div></a><a class="pagination-related" href="/posts/59825.html" title="随机变量的假设检验"><img class="cover" src="/images/posts/cover_nothing.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">随机变量的假设检验</div></div><div class="info-2"><div class="info-item-1">...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/posts/50276.html" title="一些分布函数的数字特征的求解过程"><img class="cover" src="/images/posts/cover_wish.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-06-26</div><div class="info-item-2">一些分布函数的数字特征的求解过程</div></div><div class="info-2"><div class="info-item-1">前言 在这里主要是进行求一些常见分布的一些数字特性，包括期望，方差等 主要写的是计算过程，这些分布的数字特征是怎么计算来的，我个人喜欢把计算过程写的比较详细，感觉多的大概扫一眼就知道这东西其实都是怎么求的了 两点分布 重复一下分布表示 设随机变量 X 服从参数为 p 的两点分布（也称为伯努利分布），其概率质量函数为： P(X = 1) = p,  P(X = 0) = 1 − p 其中 0 ≤ p ≤ 1。 期望（数学期望） 期望 E[X] 的计算公式为： E[X] = ∑xx ⋅ P(X = x) = 0 ⋅ P(X = 0) + 1 ⋅ P(X = 1) 代入概率质量函数： E[X] = 0 ⋅ (1 − p) + 1 ⋅ p = p 因此，两点分布的期望为： E[X] = p 方差 方差 D(X) 的计算公式为： D(X) = E[X2] − (E[X])2 计算 E[X2]...</div></div></div></a><a class="pagination-related" href="/posts/48358.html" title="关于常用六大分布的一些内容"><img class="cover" src="/images/posts/cover2x.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-06-23</div><div class="info-item-2">关于常用六大分布的一些内容</div></div><div class="info-2"><div class="info-item-1">哪六大分布 离散型分布  两点分布 X ∼ B(1, p) 二项分布 X ∼ B(n, p) 泊松分布 X ∼ P(λ)  连续型分布  均匀分布 X ∼ U(a, b) 指数分布 X ∼ E(λ) 正态分布 X ∼ N(μ, σ2)  之后搞一个每个分布都单开一个文章把里面所有需要搞的东西，全搞了 一些公式备忘 期望公式 离散型随机变量的期望 若随机变量 X 取值为 x1, x2, …, xn，对应概率为 P(X = xi) = pi，则期望为 $$ E(X) = \sum_{i=1}^{n} x_i \cdot p_i $$ 连续型随机变量的期望 若随机变量 X 的概率密度函数为 f(x)，则期望为： E(X) = ∫−∞+∞x ⋅ f(x) dx 方差公式 基于期望的定义式 随机变量 X 的方差表示为D(X)，定义为： D(X) = E[(X − E(X))2] 展开计算式 D(X) = E(X2) − [E(X)]2 离散型随机变量的方差 $$ D(X) = \sum_{i=1}^{n} (x_i -...</div></div></div></a><a class="pagination-related" href="/posts/20606.html" title="无偏估计性与估计有效程度比较的例题解析"><img class="cover" src="/images/posts/cover_theory2.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-05-17</div><div class="info-item-2">无偏估计性与估计有效程度比较的例题解析</div></div><div class="info-2"><div class="info-item-1"> 问题重述 我们需要证明样本方差 $S^2 = \frac{1}{n-1} \sum_{i=1}^{n} (X_i - \overline{X})^2$ 是总体方差 σ2 = D(X) 的无偏估计量。即证明 E[S2] = σ2。 证明步骤  设定和已知条件：  总体 X 的均值 E(X) = μ，方差 D(X) = σ2 &lt; ∞。 样本 X1, X2, …, Xn 是独立同分布（i.i.d.）的，与 X 同分布。 样本均值 $\overline{X} = \frac{1}{n} \sum_{i=1}^{n} X_i$。  展开样本方差： $$ S^2 = \frac{1}{n-1} \sum_{i=1}^{n} (X_i - \overline{X})^2 $$ 我们首先将 $(X_i - \overline{X})$ 表示为 $(X_i - \mu) - (\overline{X} - \mu)$： $$ (X_i - \overline{X}) = (X_i - \mu) - (\overline{X} -...</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="gitalk-container"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/arp.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">ErgouTree</div><div class="author-info-description">I start a brand-new life with you.</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">145</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">82</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">55</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/ergou10086"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/ergou10086" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="/zjm88822201@126.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a><a class="social-icon" href="https://space.bilibili.com/142045656?spm_id_from=333.1007.0.0" target="_blank" title="bilibili"><i class="fas fa-brands fa-bilibili" style="color: #4a72be;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">作者长期陷入galgame和osu!maina4k中 祝他好运吧 对了 如果图片加载过慢 建议科学上网进行使用</div></div><div class="card-widget"><div class="item-headline"><i></i><span></span></div><div class="item-content"></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8C%BA%E9%97%B4%E4%BC%B0%E8%AE%A1"><span class="toc-number">1.</span> <span class="toc-text">区间估计</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E5%8C%BA%E9%97%B4%E4%BC%B0%E8%AE%A1"><span class="toc-number">1.1.</span> <span class="toc-text">什么是区间估计</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9E%84%E9%80%A0%E6%AD%A5%E9%AA%A4"><span class="toc-number">1.2.</span> <span class="toc-text">构造步骤</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BD%AE%E4%BF%A1%E5%8C%BA%E9%97%B4%E4%B8%8E%E7%BD%AE%E4%BF%A1%E6%B0%B4%E5%B9%B3%E7%9A%84%E5%AE%9A%E4%B9%89"><span class="toc-number">1.3.</span> <span class="toc-text">置信区间与置信水平的定义</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A6%82%E4%BD%95%E7%90%86%E8%A7%A3%E7%BD%AE%E4%BF%A1%E5%8C%BA%E9%97%B4"><span class="toc-number">1.4.</span> <span class="toc-text">如何理解置信区间</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%95%E4%B8%AA%E6%AD%A3%E6%80%81%E6%80%BB%E4%BD%93%E7%9A%84%E5%8C%BA%E9%97%B4%E4%BC%B0%E8%AE%A1"><span class="toc-number">2.</span> <span class="toc-text">单个正态总体的区间估计</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8D%95%E4%B8%AA%E6%AD%A3%E6%80%81%E6%80%BB%E4%BD%93%E5%9D%87%E5%80%BC%E7%9A%84%E5%8C%BA%E9%97%B4%E4%BC%B0%E8%AE%A1"><span class="toc-number">2.1.</span> <span class="toc-text">单个正态总体均值的区间估计</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#boldsymbolsigma2-%E5%B7%B2%E7%9F%A5"><span class="toc-number">2.1.1.</span> <span class="toc-text">σ2
+已知</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E6%8E%A8%E5%AF%BC%E6%AD%A5%E9%AA%A4"><span class="toc-number">2.1.1.1.</span> <span class="toc-text">推导步骤</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%AE%9E%E9%99%85%E8%AE%A1%E7%AE%97%E6%AD%A5%E9%AA%A4"><span class="toc-number">2.1.1.2.</span> <span class="toc-text">实际计算步骤</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#boldsymbolsigma2-%E6%9C%AA%E7%9F%A5"><span class="toc-number">2.1.2.</span> <span class="toc-text">σ2
+未知</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E6%8E%A8%E5%AF%BC%E8%BF%87%E7%A8%8B"><span class="toc-number">2.1.2.1.</span> <span class="toc-text">推导过程</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%AE%9E%E9%99%85%E4%B8%8A%E8%AE%A1%E7%AE%97%E6%AD%A5%E9%AA%A4"><span class="toc-number">2.1.2.2.</span> <span class="toc-text">实际上计算步骤</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8D%95%E4%B8%AA%E6%AD%A3%E6%80%81%E6%80%BB%E4%BD%93%E6%96%B9%E5%B7%AE%E7%9A%84%E5%8C%BA%E9%97%B4%E4%BC%B0%E8%AE%A1"><span class="toc-number">2.2.</span> <span class="toc-text">单个正态总体方差的区间估计</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#mu-%E6%9C%AA%E7%9F%A5"><span class="toc-number">2.2.1.</span> <span class="toc-text">μ 未知</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E6%8E%A8%E5%AF%BC%E8%BF%87%E7%A8%8B-1"><span class="toc-number">2.2.1.1.</span> <span class="toc-text">推导过程</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%AE%9E%E9%99%85%E8%AE%A1%E7%AE%97%E6%AD%A5%E9%AA%A4-1"><span class="toc-number">2.2.1.2.</span> <span class="toc-text">实际计算步骤</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#mu-%E5%B7%B2%E7%9F%A5"><span class="toc-number">2.2.2.</span> <span class="toc-text">μ 已知</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E6%8E%A8%E5%AF%BC%E8%BF%87%E7%A8%8B-2"><span class="toc-number">2.2.2.1.</span> <span class="toc-text">推导过程</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%AE%9E%E9%99%85%E8%AE%A1%E7%AE%97%E6%AD%A5%E9%AA%A4-2"><span class="toc-number">2.2.2.2.</span> <span class="toc-text">实际计算步骤</span></a></li></ol></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%A4%E4%B8%AA%E6%AD%A3%E6%80%81%E6%80%BB%E4%BD%93%E5%9D%87%E5%80%BC%E5%B7%AE%E7%9A%84%E5%8C%BA%E9%97%B4%E4%BC%B0%E8%AE%A1"><span class="toc-number">3.</span> <span class="toc-text">两个正态总体均值差的区间估计</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#sigma_1-2%E5%92%8Csigma_2-2%E5%9D%87%E5%B7%B2%E7%9F%A5"><span class="toc-number">3.1.</span> <span class="toc-text">σ12和σ22均已知</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8E%A8%E5%AF%BC%E8%BF%87%E7%A8%8B-3"><span class="toc-number">3.1.1.</span> <span class="toc-text">推导过程</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%9E%E9%99%85%E8%AE%A1%E7%AE%97%E6%AD%A5%E9%AA%A4-3"><span class="toc-number">3.1.2.</span> <span class="toc-text">实际计算步骤</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#sigma_1-2%E5%92%8Csigma_2-2%E5%9D%87%E6%9C%AA%E7%9F%A5%E4%BD%86%E6%98%AFsigma_1-2-sigma_2-2-sigma2"><span class="toc-number">3.2.</span> <span class="toc-text">σ12和σ22均未知，但是σ12 &#x3D; σ22 &#x3D; σ2</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8E%A8%E5%AF%BC%E8%BF%87%E7%A8%8B-4"><span class="toc-number">3.2.1.</span> <span class="toc-text">推导过程</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%9E%E9%99%85%E8%AE%A1%E7%AE%97%E6%AD%A5%E9%AA%A4-4"><span class="toc-number">3.2.2.</span> <span class="toc-text">实际计算步骤</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#sigma_1-2%E5%92%8Csigma_2-2%E5%9D%87%E6%9C%AA%E7%9F%A5%E4%BD%86%E6%98%AF%E5%85%B3%E7%B3%BB%E4%B8%8D%E7%A1%AE%E5%AE%9A"><span class="toc-number">3.3.</span> <span class="toc-text">σ12和σ22均未知，但是关系不确定</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8E%A8%E5%AF%BC%E8%BF%87%E7%A8%8B-5"><span class="toc-number">3.3.1.</span> <span class="toc-text">推导过程</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%9E%E9%99%85%E8%AE%A1%E7%AE%97%E6%AD%A5%E9%AA%A4-5"><span class="toc-number">3.3.2.</span> <span class="toc-text">实际计算步骤</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%A4%E4%B8%AA%E6%AD%A3%E6%80%81%E6%80%BB%E4%BD%93%E6%96%B9%E5%B7%AE%E6%AF%94%E7%9A%84%E5%8C%BA%E9%97%B4%E4%BC%B0%E8%AE%A1"><span class="toc-number">4.</span> <span class="toc-text">两个正态总体方差比的区间估计</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#mu_1mu_2%E5%9D%87%E6%9C%AA%E7%9F%A5%E7%9A%84%E6%83%85%E5%86%B5"><span class="toc-number">4.1.</span> <span class="toc-text">μ1,μ2均未知的情况</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8E%A8%E5%AF%BC%E8%BF%87%E7%A8%8B-6"><span class="toc-number">4.1.1.</span> <span class="toc-text">推导过程</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%9E%E9%99%85%E8%AE%A1%E7%AE%97%E6%AD%A5%E9%AA%A4-6"><span class="toc-number">4.1.2.</span> <span class="toc-text">实际计算步骤</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#mu_1%E5%B7%B2%E7%9F%A5mu_2%E6%9C%AA%E7%9F%A5"><span class="toc-number">4.2.</span> <span class="toc-text">μ1已知，μ2未知</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8E%A8%E5%AF%BC%E8%BF%87%E7%A8%8B-7"><span class="toc-number">4.2.1.</span> <span class="toc-text">推导过程</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%A4%BA%E4%BE%8B%E8%AE%A1%E7%AE%97"><span class="toc-number">4.2.2.</span> <span class="toc-text">示例计算</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#mu_1mu_2%E5%9D%87%E5%B7%B2%E7%9F%A5"><span class="toc-number">4.3.</span> <span class="toc-text">μ1,μ2均已知</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8E%A8%E5%AF%BC%E8%BF%87%E7%A8%8B-8"><span class="toc-number">4.3.1.</span> <span class="toc-text">推导过程</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%A4%BA%E4%BE%8B%E8%AE%A1%E7%AE%97-1"><span class="toc-number">4.3.2.</span> <span class="toc-text">示例计算</span></a></li></ol></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/59825.html" title="随机变量的假设检验"><img src="/images/posts/cover_nothing.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="随机变量的假设检验"/></a><div class="content"><a class="title" href="/posts/59825.html" title="随机变量的假设检验">随机变量的假设检验</a><time datetime="2025-06-26T13:03:44.000Z" title="发表于 2025-06-26 21:03:44">2025-06-26</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/9946.html" title="参数估计之区间估计"><img src="/images/posts/cover_math4.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="参数估计之区间估计"/></a><div class="content"><a class="title" href="/posts/9946.html" title="参数估计之区间估计">参数估计之区间估计</a><time datetime="2025-06-26T13:02:41.000Z" title="发表于 2025-06-26 21:02:41">2025-06-26</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/5644.html" title="参数估计之点估计—矩估计法和最大似然估计法"><img src="/images/posts/cover_security.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="参数估计之点估计—矩估计法和最大似然估计法"/></a><div class="content"><a class="title" href="/posts/5644.html" title="参数估计之点估计—矩估计法和最大似然估计法">参数估计之点估计—矩估计法和最大似然估计法</a><time datetime="2025-06-26T13:01:47.000Z" title="发表于 2025-06-26 21:01:47">2025-06-26</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/19945.html" title="大数定律部分定理详解"><img src="/images/posts/cover_Tijie.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="大数定律部分定理详解"/></a><div class="content"><a class="title" href="/posts/19945.html" title="大数定律部分定理详解">大数定律部分定理详解</a><time datetime="2025-06-26T13:00:36.000Z" title="发表于 2025-06-26 21:00:36">2025-06-26</time></div></div></div></div></div></div></main><div class="fps-display"><span id="fps">FPS: 60</span></div><footer id="footer" style="background-image: url(/images/posts/cover_math4.jpg);"><div id="footer-wrap"><div class="copyright">&copy;2024 - 2025 By ErgouTree</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">忘れたくない思い、ありますか？ <br>,<span id="realtime_duration" style="font-family: monospace;"></span>,<br><a href="https://icp.gov.moe/?keyword=20257009" target="_blank">萌ICP备20257009号</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><a class="icon-V hidden" onclick="switchNightMode()" title="日间和夜间模式切换"><svg width="25" height="25" viewBox="0 0 1024 1024"><use id="modeicon" xlink:href="#icon-moon"></use></svg></a><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="chat-btn" type="button" title="聊天" style="display:none"><i class="fas fa-comment"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (true) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script><script>(() => {
+  const applyThemeDefaultsConfig = theme => {
+    if (theme === 'dark-mode') {
+      Chart.defaults.color = "rgba(255, 255, 255, 0.8)"
+      Chart.defaults.borderColor = "rgba(255, 255, 255, 0.2)"
+      Chart.defaults.scale.ticks.backdropColor = "transparent"
+    } else {
+      Chart.defaults.color = "rgba(0, 0, 0, 0.8)"
+      Chart.defaults.borderColor = "rgba(0, 0, 0, 0.1)"
+      Chart.defaults.scale.ticks.backdropColor = "transparent"
+    }
+  }
+
+  // Recursively traverse the config object and automatically apply theme-specific color schemes
+  const applyThemeConfig = (obj, theme) => {
+    if (typeof obj !== 'object' || obj === null) return
+
+    Object.keys(obj).forEach(key => {
+      const value = obj[key]
+      // If the property is an object and has theme-specific options, apply them
+      if (typeof value === 'object' && value !== null) {
+        if (value[theme]) {
+          obj[key] = value[theme] // Apply the value for the current theme
+        } else {
+          // Recursively process child objects
+          applyThemeConfig(value, theme)
+        }
+      }
+    })
+  }
+
+  const runChartJS = ele => {
+    window.loadChartJS = true
+
+    Array.from(ele).forEach((item, index) => {
+      const chartSrc = item.firstElementChild
+      const chartID = item.getAttribute('data-chartjs-id') || ('chartjs-' + index) // Use custom ID or default ID
+      const width = item.getAttribute('data-width')
+      const existingCanvas = document.getElementById(chartID)
+
+      // If a canvas already exists, remove it to avoid rendering duplicates
+      if (existingCanvas) {
+          existingCanvas.parentNode.remove()
+      }
+
+      const chartDefinition = chartSrc.textContent
+      const canvas = document.createElement('canvas')
+      canvas.id = chartID
+
+      const div = document.createElement('div')
+      div.className = 'chartjs-wrap'
+
+      if (width) {
+        div.style.width = width
+      }
+
+      div.appendChild(canvas)
+      chartSrc.insertAdjacentElement('afterend', div)
+
+      const ctx = document.getElementById(chartID).getContext('2d')
+
+      const config = JSON.parse(chartDefinition)
+
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark-mode' : 'light-mode'
+
+      // Set default styles (initial setup)
+      applyThemeDefaultsConfig(theme)
+
+      // Automatically traverse the config and apply dual-mode color schemes
+      applyThemeConfig(config, theme)
+
+      new Chart(ctx, config)
+    })
+  }
+
+  const loadChartJS = () => {
+    const chartJSEle = document.querySelectorAll('#article-container .chartjs-container')
+    if (chartJSEle.length === 0) return
+
+    window.loadChartJS ? runChartJS(chartJSEle) : btf.getScript('https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.min.js').then(() => runChartJS(chartJSEle))
+  }
+
+  // Listen for theme change events
+  btf.addGlobalFn('themeChange', loadChartJS, 'chartjs')
+  btf.addGlobalFn('encrypt', loadChartJS, 'chartjs')
+
+  window.pjax ? loadChartJS() : document.addEventListener('DOMContentLoaded', loadChartJS)
+})()</script><script>(function() {
+  const abcjsInit = function() {
+    const abcjsFn = function() {
+      setTimeout(function() {
+        const sheets = document.querySelectorAll(".abc-music-sheet")
+        for (let i = 0; i < sheets.length; i++) {
+          const ele = sheets[i]
+          if (ele.children.length > 0) continue
+
+          // Parse parameters from data-params attribute
+          let params = {}
+          const dp = ele.getAttribute("data-params")
+          if (dp) {
+            try {
+              params = JSON.parse(dp)
+            } catch (e) {
+              console.error("Failed to parse data-params:", e)
+            }
+          }
+
+          // Merge parsed parameters with the responsive option
+          // Ensures params content appears before responsive
+          const options = { ...params, responsive: "resize" }
+
+          // Render the music score using ABCJS.renderAbc
+          ABCJS.renderAbc(ele, ele.innerHTML, options)
+        }
+      }, 100)
+    }
+
+    if (typeof ABCJS === "object") {
+      abcjsFn()
+    } else {
+      btf.getScript("https://cdn.jsdelivr.net/npm/abcjs/dist/abcjs-basic-min.min.js").then(abcjsFn)
+    }
+  }
+
+  if (window.pjax) {
+    abcjsInit()
+  } else {
+    window.addEventListener("load", abcjsInit)
+  }
+
+  btf.addGlobalFn("encrypt", abcjsInit, "abcjs")
+})()</script><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = {"labels":["Gitalk","Comment"],"createIssueManually":false,"distractionFreeMode":false}
+
+  const commentCount = n => {
+    const isCommentCount = document.querySelector('#post-meta .gitalk-comment-count')
+    if (isCommentCount) {
+      isCommentCount.textContent= n
+    }
+  }
+
+  const initGitalk = (el, path) => {
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGitalk = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+
+    const gitalk = new Gitalk({
+      clientID: 'Ov23li3vDQANiUddL4XB',
+      clientSecret: '5c9a56d02995340fca117809cd414662aadce6ff',
+      repo: 'HexoComment',
+      owner: 'ergou10086',
+      admin: ['ergou10086'],
+      updateCountCallback: commentCount,
+      ...option,
+      id: isShuoshuo ? path : (option && option.id) || '36ff9e9f13409da21ccc988e4591b0f0'
+    })
+
+    gitalk.render('gitalk-container')
+  }
+
+  const loadGitalk = async(el, path) => {
+    if (typeof Gitalk === 'function') initGitalk(el, path)
+    else {
+      await btf.getCSS('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.css')
+      await btf.getScript('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.js')
+      initGitalk(el, path)
+    }
+  }
+
+  if (isShuoshuo) {
+    'Gitalk' === 'Gitalk'
+      ? window.shuoshuoComment = { loadComment: loadGitalk }
+      : window.loadOtherComment = loadGitalk
+    return
+  }
+
+  if ('Gitalk' === 'Gitalk' || !false) {
+    if (false) btf.loadComment(document.getElementById('gitalk-container'), loadGitalk)
+    else loadGitalk()
+  } else {
+    window.loadOtherComment = loadGitalk
+  }
+})()</script></div><div class="aplayer no-destroy" data-id="13587761608" data-server="netease" data-type="playlist" data-fixed="true" data-autoplay="false" data-lrcType="-1"> </div><script src="https://cdn.jsdelivr.net/npm/abcjs@7.1.2/dist/abcjs-basic-min.js"></script><script src="/js/sun_moon.js" async></script><script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.7/dayjs.min.js"></script><script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.7/plugin/duration.min.js"></script><script src="/scripts/realtime.js"></script><script src="/scripts/random.js"></script><script defer="defer" id="ribbon" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-ribbon.min.js" size="150" alpha="0.6" zIndex="-1" mobile="null" data-click="true"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = false;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><script id="click-heart" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/click-heart.min.js" async="async" mobile="false"></script><script>(() => {
+  window.ChatraID = '4bzb546NSBoJcrNyu'
+  window.Chatra = window.Chatra || function() {
+    (window.Chatra.q = window.Chatra.q || []).push(arguments)
+  }
+
+  btf.getScript('https://call.chatra.io/chatra.js').then(() => {
+    const isChatBtn = true
+    const isChatHideShow = true
+
+    if (isChatBtn) {
+      const close = () => {
+        Chatra('minimizeWidget')
+        Chatra('hide')
+      }
+
+      const open = () => {
+        Chatra('openChat', true)
+        Chatra('show')
+      }
+
+      window.ChatraSetup = { startHidden: true }
+    
+      window.chatBtnFn = () => document.getElementById('chatra').classList.contains('chatra--expanded') ? close() : open()
+
+      document.getElementById('chat-btn').style.display = 'block'
+    } else if (isChatHideShow) {
+      window.chatBtn = {
+        hide: () => Chatra('hide'),
+        show: () => Chatra('show')
+      }
+    }
+  })
+})()</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/metingjs/dist/Meting.min.js"></script><script>(() => {
+  const destroyAplayer = () => {
+    if (window.aplayers) {
+      for (let i = 0; i < window.aplayers.length; i++) {
+        if (!window.aplayers[i].options.fixed) {
+          window.aplayers[i].destroy()
+        }
+      }
+    }
+  }
+
+  const runMetingJS = () => {
+    typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+  }
+
+  btf.addGlobalFn('pjaxSend', destroyAplayer, 'destroyAplayer')
+  btf.addGlobalFn('pjaxComplete', loadMeting, 'runMetingJS')
+})()</script><script src="https://cdn.jsdelivr.net/npm/pjax/pjax.min.js"></script><script>(() => {
+  const pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+  window.pjax = new Pjax({
+    elements: 'a:not([target="_blank"]):not([href="/music/"])',
+    selectors: pjaxSelectors,
+    cacheBust: false,
+    analytics: false,
+    scrollRestoration: false
+  })
+
+  const triggerPjaxFn = (val) => {
+    if (!val) return
+    Object.values(val).forEach(fn => fn())
+  }
+
+  document.addEventListener('pjax:send', () => {
+    // removeEventListener
+    btf.removeGlobalFnEvent('pjaxSendOnce')
+    btf.removeGlobalFnEvent('themeChange')
+
+    // reset readmode
+    const $bodyClassList = document.body.classList
+    if ($bodyClassList.contains('read-mode')) $bodyClassList.remove('read-mode')
+
+    triggerPjaxFn(window.globalFn.pjaxSend)
+  })
+
+  document.addEventListener('pjax:complete', () => {
+    btf.removeGlobalFnEvent('pjaxCompleteOnce')
+    document.querySelectorAll('script[data-pjax]').forEach(item => {
+      const newScript = document.createElement('script')
+      const content = item.text || item.textContent || item.innerHTML || ""
+      Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+      newScript.appendChild(document.createTextNode(content))
+      item.parentNode.replaceChild(newScript, item)
+    })
+
+    triggerPjaxFn(window.globalFn.pjaxComplete)
+  })
+
+  document.addEventListener('pjax:error', e => {
+    if (e.request.status === 404) {
+      const usePjax = true
+      true 
+        ? (usePjax ? pjax.loadUrl('/404.html') : window.location.href = '/404.html')
+        : window.location.href = e.request.responseURL
+    }
+  })
+})()</script><script src="/js/fps-display.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><!-- hexo injector body_end start --><script data-pjax>
+  function butterfly_swiper_injector_config(){
+    var parent_div_git = document.getElementById('recent-posts');
+    var item_html = '<div class="recent-post-item" style="height: auto;width: 100%"><div class="blog-slider swiper-container-fade swiper-container-horizontal" id="swiper_container"><div class="blog-slider__wrp swiper-wrapper" style="transition-duration: 0ms;"><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_database.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-14</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt="">结构化查询语言SQL</a><div class="blog-slider__text">SQL基本很常用的语句都在这里了，本质上是当初为了应付数据库考试整理的，后来发现还蛮有用的很方便查常用的语句</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java4.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-22</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt="">SpringBoot part0?INF-SpringBoot这个框架都需要学习什么</a><div class="blog-slider__text">主要围绕Spring Boot中重要知识来简洁或详细的说明，其中部分不够完全，持续更新</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java11.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-15</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt="">关于Lombok在高版本IDEA中注解处理不生效的问题解决</a><div class="blog-slider__text">基本上是彻底的解决了用 IDEA 新建 Spring Boot 项目时候会产生的 Lombok 注解处理失效的各种问题</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_实用.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-05</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt="">个人向galgame原声带或相关音乐整理及其资源</a><div class="blog-slider__text">整理了我喜欢的galgame ost或者衍生的音乐专辑，部分资源是自己扒盘扒下来的，部分来自鸟白岛放映厅</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_math.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-17</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt="">对书上证明样本方差是总体方差的无偏估计量的解析</a><div class="blog-slider__text">对书上证明样本方差是总体方差的无偏估计量的解析，高等教育出版社-华科大版本</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_alog.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-04-24</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt="">第十五届蓝桥杯Java国赛B组D题-园丁题解</a><div class="blog-slider__text">第十五届蓝桥杯Java国赛B组D题-园丁题解，该题解已经发布到洛谷社区中并且被全站推荐</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java4.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-04-29</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt="">操作系统之处理机的死锁部分概述</a><div class="blog-slider__text">对操作系统之处理机的死锁部分知识的总结，包括代码复现</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_lb.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-09</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt="">Little Busters!EX游戏攻略</a><div class="blog-slider__text">整理了一份详细清晰的Little Busters！EX的游戏攻略，因为我自己也在推，就顺手整理了一份方便查阅的md文档</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java9.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-16</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt="">Spring Boot中使用Hibernate框架</a><div class="blog-slider__text">对学习完Hibernate的应用部分，主要围绕Spring Boot中使用Hibernate框架，建议学习完 Hibernate 框架再看</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div></div><div class="blog-slider__pagination swiper-pagination-clickable swiper-pagination-bullets"></div></div></div>';
+    console.log('已挂载butterfly_swiper')
+    parent_div_git.insertAdjacentHTML("afterbegin",item_html)
+    }
+  var elist = 'undefined'.split(',');
+  var cpage = location.pathname;
+  var epage = '/';
+  var flag = 0;
+
+  for (var i=0;i<elist.length;i++){
+    if (cpage.includes(elist[i])){
+      flag++;
+    }
+  }
+
+  if ((epage ==='all')&&(flag == 0)){
+    butterfly_swiper_injector_config();
+  }
+  else if (epage === cpage){
+    butterfly_swiper_injector_config();
+  }
+  </script><script defer src="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper.min.js"></script><script defer data-pjax src="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper_init.js"></script><!-- hexo injector body_end end --></body></html>

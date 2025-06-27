@@ -1,0 +1,781 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Spring Boot part21-自定义starter | ErgouTree's Blog</title><meta name="author" content="ErgouTree"><meta name="copyright" content="ErgouTree"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="自定义 starter SpringBoot Starter 场景机制 Spring Boot Starter 是一种简化 Spring Boot 应用开发的机制，它可以通过引入一些预定义的依赖和配置，让我们快速地集成某些功能模块，而无需繁琐地编写代码和配置文件。应用者只需要在maven中引入 starter 依赖，Spring Boot 就能自动扫描到要加载的信息并启动相应的默认配置。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spring Boot part21-自定义starter">
+<meta property="og:url" content="https://ergou10086.github.io/posts/59030.html">
+<meta property="og:site_name" content="ErgouTree&#39;s Blog">
+<meta property="og:description" content="自定义 starter SpringBoot Starter 场景机制 Spring Boot Starter 是一种简化 Spring Boot 应用开发的机制，它可以通过引入一些预定义的依赖和配置，让我们快速地集成某些功能模块，而无需繁琐地编写代码和配置文件。应用者只需要在maven中引入 starter 依赖，Spring Boot 就能自动扫描到要加载的信息并启动相应的默认配置。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://ergou10086.github.io/images/posts/cover_java3.jpg">
+<meta property="article:published_time" content="2025-06-21T13:06:38.000Z">
+<meta property="article:modified_time" content="2025-06-27T06:09:44.433Z">
+<meta property="article:author" content="ErgouTree">
+<meta property="article:tag" content="实用知识">
+<meta property="article:tag" content="Java技术">
+<meta property="article:tag" content="JavaWeb">
+<meta property="article:tag" content="框架知识">
+<meta property="article:tag" content="学习">
+<meta property="article:tag" content="JavaSE">
+<meta property="article:tag" content="JavaEE">
+<meta property="article:tag" content="Spring系列">
+<meta property="article:tag" content="Spring Boot">
+<meta property="article:tag" content="Java框架">
+<meta property="article:tag" content="配置相关">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ergou10086.github.io/images/posts/cover_java3.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Spring Boot part21-自定义starter",
+  "url": "https://ergou10086.github.io/posts/59030.html",
+  "image": "https://ergou10086.github.io/images/posts/cover_java3.jpg",
+  "datePublished": "2025-06-21T13:06:38.000Z",
+  "dateModified": "2025-06-27T06:09:44.433Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "ErgouTree",
+      "url": "https://github.com/ergou10086"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/pi.ico"><link rel="canonical" href="https://ergou10086.github.io/posts/59030.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//hm.baidu.com"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!true && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?https://hm.baidu.com/hm.js?a6ab1b78e2c6320b664f31e8b9bf0e36";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+btf.addGlobalFn('pjaxComplete', () => {
+  _hmt.push(['_trackPageview',window.location.pathname])
+}, 'baidu_analytics')
+</script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.json","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":true},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: {"chs_to_cht":"已切换为繁体中文","cht_to_chs":"已切换为简体中文","day_to_night":"已切换为深色模式","night_to_day":"已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#1f1f1f","position":"bottom-left"},
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Spring Boot part21-自定义starter',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css"><svg aria-hidden="true" style="position:absolute; overflow:hidden; width:0; height:0"><symbol id="icon-sun" viewBox="0 0 1024 1024"><path d="M960 512l-128 128v192h-192l-128 128-128-128H192v-192l-128-128 128-128V192h192l128-128 128 128h192v192z" fill="#FFD878" p-id="8420"></path><path d="M736 512a224 224 0 1 0-448 0 224 224 0 1 0 448 0z" fill="#FFE4A9" p-id="8421"></path><path d="M512 109.248L626.752 224H800v173.248L914.752 512 800 626.752V800h-173.248L512 914.752 397.248 800H224v-173.248L109.248 512 224 397.248V224h173.248L512 109.248M512 64l-128 128H192v192l-128 128 128 128v192h192l128 128 128-128h192v-192l128-128-128-128V192h-192l-128-128z" fill="#4D5152" p-id="8422"></path><path d="M512 320c105.888 0 192 86.112 192 192s-86.112 192-192 192-192-86.112-192-192 86.112-192 192-192m0-32a224 224 0 1 0 0 448 224 224 0 0 0 0-448z" fill="#4D5152" p-id="8423"></path></symbol><symbol id="icon-moon" viewBox="0 0 1024 1024"><path d="M611.370667 167.082667a445.013333 445.013333 0 0 1-38.4 161.834666 477.824 477.824 0 0 1-244.736 244.394667 445.141333 445.141333 0 0 1-161.109334 38.058667 85.077333 85.077333 0 0 0-65.066666 135.722666A462.08 462.08 0 1 0 747.093333 102.058667a85.077333 85.077333 0 0 0-135.722666 65.024z" fill="#FFB531" p-id="11345"></path><path d="M329.728 274.133333l35.157333-35.157333a21.333333 21.333333 0 1 0-30.165333-30.165333l-35.157333 35.157333-35.114667-35.157333a21.333333 21.333333 0 0 0-30.165333 30.165333l35.114666 35.157333-35.114666 35.157334a21.333333 21.333333 0 1 0 30.165333 30.165333l35.114667-35.157333 35.157333 35.157333a21.333333 21.333333 0 1 0 30.165333-30.165333z" fill="#030835" p-id="11346"></path></symbol></svg><link rel="stylesheet" href="/css/custom.css"><!-- hexo injector head_end start --><link rel="stylesheet" href="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiperstyle.css" media="print" onload="this.media='all'"><!-- hexo injector head_end end --><meta name="generator" content="Hexo 7.3.0"></head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js/pace.min.js"></script><div id="web_bg" style="background: linear-gradient(20deg, #0062be, #925696, #cc426e, #fb0347);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/arp.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">145</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">82</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">55</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-images"></i><span> Gallery</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/games/"><i class="fa-fw fas fa-game"></i><span> GalGame</span></a></li><li><a class="site-page child" href="/video/"><i class="fa-fw fas fa-video"></i><span> Video</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div><div class="menus_item"><a class="site-page" href="javascript:randomPost();"><span> Random</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/images/posts/cover_java3.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">ErgouTree's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">Spring Boot part21-自定义starter</span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-images"></i><span> Gallery</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/games/"><i class="fa-fw fas fa-game"></i><span> GalGame</span></a></li><li><a class="site-page child" href="/video/"><i class="fa-fw fas fa-video"></i><span> Video</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div><div class="menus_item"><a class="site-page" href="javascript:randomPost();"><span> Random</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div><div id="randomPost"><a class="site-page social-icon search" href="javascript:;" onclick="randomPost()" title="随机访问一篇文章"><i class="fas fa-circle-notch fa-fw"></i></a></div></nav><div id="post-info"><h1 class="post-title">Spring Boot part21-自定义starter<a class="post-edit-link" href="https://github.com/ergou10086/ergou10086.github.io/edit/main/source/_posts/_posts/SpringBootpart20-自定义starter.md" title="编辑" target="_blank"><i class="fas fa-pencil-alt"></i></a></h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2025-06-21T13:06:38.000Z" title="发表于 2025-06-21 21:06:38">2025-06-21</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2025-06-27T06:09:44.433Z" title="更新于 2025-06-27 14:09:44">2025-06-27</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Java%E5%AD%A6%E4%B9%A0/">Java学习</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Java%E5%AD%A6%E4%B9%A0/Spring%E7%B3%BB%E5%88%97/">Spring系列</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Java%E5%AD%A6%E4%B9%A0/Spring%E7%B3%BB%E5%88%97/Spring-Boot/">Spring Boot</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">4.9k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>19分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span><span class="post-meta-separator">|</span><span class="post-meta-commentcount"><i class="far fa-comments fa-fw post-meta-icon"></i><span class="post-meta-label">评论数:</span><a href="/posts/59030.html#post-comment"><span class="gitalk-comment-count"><i class="fa-solid fa-spinner fa-spin"></i></span></a></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="自定义-starter">自定义 starter</h2>
+<h3 id="springboot-starter-场景机制">SpringBoot Starter 场景机制</h3>
+<p>Spring Boot Starter 是一种简化 Spring Boot
+应用开发的机制，它可以通过引入一些预定义的依赖和配置，让我们快速地集成某些功能模块，而无需繁琐地编写代码和配置文件。应用者只需要在maven中引入
+starter 依赖，Spring Boot
+就能自动扫描到要加载的信息并启动相应的默认配置。</p>
+<p>starter 让我们摆脱了各种依赖库的处理，需要配置各种信息的困扰。Spring
+Boot 会自动通过 classpath 路径下的类发现需要的
+Bean，并注册进IOC容器。Spring Boot 提供了针对日常企业应用研发各种场景的
+spring-boot-starter
+依赖模块。所有这些依赖模块都遵循着约定成俗的默认配置，并允许我们调整这些配置，即遵循“约定大于配置”的理念。</p>
+<p>Spring Boot 官方提供了很多常用的
+Starter，例如<code>spring-boot-starter-web</code>、<code>spring-boot-starter-data-jpa</code>等，但有时候我们也需要根据自己的业务需求，创建一些自定义的Starter，以便在不同的项目中复用一些通用的功能或组件。</p>
+<h3 id="自定义starter的命名规则">自定义starter的命名规则</h3>
+<p>Spring Boot 提供的 starter
+以<code>spring-boot-starter-xxx</code>的方式命名的。官方建议自定义的starter使用<code>xxx-spring-boot-starter</code>命名规则。以区分Spring
+Boot生态提供的 starter。</p>
+<p>自定义 Starter 通常包含以下内容：</p>
+<ol type="1">
+<li><strong>自动配置类</strong>（<code>@Configuration</code>）：定义好依赖的自动配置逻辑。</li>
+<li><strong>配置属性类</strong>（<code>@ConfigurationProperties</code>）：支持使用外部化配置参数来简化使用。</li>
+<li><strong>必要的依赖管理</strong>：将常用的第三方库一并引入，避免手动添加依赖。</li>
+</ol>
+<h3 id="starter项目的结构">Starter项目的结构</h3>
+<p>创建一个自定义的Starter项目和创建一个普通的Spring
+Boot项目没有太大区别，我们可以使用IDE或者 Spring Initializer
+来快速生成一个基本的项目结构。一个典型的 Starter 项目结构如下：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">ergou-spring-boot-starter</span><br><span class="line">├── src</span><br><span class="line">│   ├── main</span><br><span class="line">│   │   ├── java</span><br><span class="line">│   │   │   └── com.woniu.util</span><br><span class="line">│   │   │       ├── autoconfigure // 自动配置类所在的包</span><br><span class="line">│   │   │       │   ├── ErgouAutoConfiguration.java // 自动配置类</span><br><span class="line">│   │   │       │   └── ErgouProperties.java // 属性类</span><br><span class="line">│   │   │       └── util // 业务功能类所在的包</span><br><span class="line">│   │   │           └── ErgouUtil.java // 业务功能类</span><br><span class="line">│   │   └── resources</span><br><span class="line">│   │       └── META-INF</span><br><span class="line">│   │           └── spring.factories // Spring Boot自动装配文件</span><br><span class="line">│   └── test</span><br><span class="line">│       └── java</span><br><span class="line">├── pom.xml // Maven依赖管理文件</span><br><span class="line">└── README.md // 项目说明文档</span><br></pre></td></tr></table></figure>
+<p>在创建一个自定义的 Starter 项目时，我们需要在 pom.xml
+文件中添加一些必要的依赖。首先，我们需要添加<code>spring-boot-starter</code>作为基础依赖，它提供了
+Spring Boot 核心功能和默认配置。其次，我们需要添加
+<code>spring-boot-configuration-processor</code>
+作为编译时依赖，它可以帮助我们生成属性类和配置元数据，并且设置为可选依赖，避免传递给其他项目。最后，我们需要添加我们要集成的功能模块相关的依赖。</p>
+<h2 id="示例演示自定义一个简单的短信发送starter">示例演示：自定义一个简单的短信发送Starter</h2>
+<h3 id="starter的依赖导入">starter的依赖导入</h3>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line">   <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.example<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">   <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>sms-spring-boot-starter<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">   <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.0.0<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">   <span class="tag">&lt;<span class="name">packaging</span>&gt;</span>jar<span class="tag">&lt;/<span class="name">packaging</span>&gt;</span></span><br><span class="line"></span><br><span class="line">   <span class="tag">&lt;<span class="name">name</span>&gt;</span>SMS Spring Boot Starter<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">   <span class="tag">&lt;<span class="name">description</span>&gt;</span>自定义短信发送Starter<span class="tag">&lt;/<span class="name">description</span>&gt;</span></span><br><span class="line"></span><br><span class="line">   <span class="tag">&lt;<span class="name">properties</span>&gt;</span></span><br><span class="line">       <span class="tag">&lt;<span class="name">maven.compiler.source</span>&gt;</span>8<span class="tag">&lt;/<span class="name">maven.compiler.source</span>&gt;</span></span><br><span class="line">       <span class="tag">&lt;<span class="name">maven.compiler.target</span>&gt;</span>8<span class="tag">&lt;/<span class="name">maven.compiler.target</span>&gt;</span></span><br><span class="line">       <span class="tag">&lt;<span class="name">spring.boot.version</span>&gt;</span>2.7.0<span class="tag">&lt;/<span class="name">spring.boot.version</span>&gt;</span></span><br><span class="line">   <span class="tag">&lt;/<span class="name">properties</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependencies</span>&gt;</span></span><br><span class="line">	<span class="comment">&lt;!-- 基础依赖：Spring Boot自动配置 --&gt;</span></span><br><span class="line">       <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">           <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">           <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-autoconfigure<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">           <span class="tag">&lt;<span class="name">version</span>&gt;</span>$&#123;spring.boot.version&#125;<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">       <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">       </span><br><span class="line">       <span class="comment">&lt;!-- 编译时依赖： Spring Boot配置处理器，用于生成配置元数据 --&gt;</span></span><br><span class="line">       <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">           <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">           <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-configuration-processor<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">           <span class="tag">&lt;<span class="name">version</span>&gt;</span>$&#123;spring.boot.version&#125;<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">           <span class="tag">&lt;<span class="name">optional</span>&gt;</span>true<span class="tag">&lt;/<span class="name">optional</span>&gt;</span></span><br><span class="line">       <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">       </span><br><span class="line">       <span class="comment">&lt;!-- 构建和管理应用程序的运行环境 Spring Context --&gt;</span></span><br><span class="line">       <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">           <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">           <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-context<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">           <span class="tag">&lt;<span class="name">version</span>&gt;</span>5.3.21<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">       <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">       </span><br><span class="line">       <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">   		<span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.projectlombok<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">   		<span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>lombok<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">       	<span class="tag">&lt;<span class="name">optional</span>&gt;</span>true<span class="tag">&lt;/<span class="name">optional</span>&gt;</span></span><br><span class="line">       <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">   <span class="tag">&lt;/<span class="name">dependencies</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h3 id="starter项目的属性类">Starter项目的属性类</h3>
+<p>在创建一个自定义的Starter项目时，我们需要编写一个属性类，用来定义我们要集成的功能模块所需的配置项，并且使用<code>@ConfigurationProperties</code>注解来指定配置文件中的前缀。</p>
+<p>例如，在本例中，我们要使用短信发送服务，需要在属性类中做好如下配置</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.example.sms.properties;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.springframework.boot.context.properties.ConfigurationProperties;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 短信服务配置属性类</span></span><br><span class="line"><span class="comment"> * 用于映射application.yml中的配置项</span></span><br><span class="line"><span class="comment"> * 支持阿里云、腾讯云、华为云等短信服务商</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@Getter</span></span><br><span class="line"><span class="meta">@Setter</span></span><br><span class="line"><span class="meta">@ConfigurationProperties(prefix = &quot;sms&quot;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">SmsProperties</span> &#123;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 是否启用短信服务，默认为true</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">boolean</span> <span class="variable">enabled</span> <span class="operator">=</span> <span class="literal">true</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 短信服务提供商类型：aliyun, tencent, huawei</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">String</span> <span class="variable">provider</span> <span class="operator">=</span> <span class="string">&quot;aliyun&quot;</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * API访问密钥ID</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> String accessKeyId;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * API访问密钥Secret</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> String accessKeySecret;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 短信签名</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> String signName;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 默认短信模板ID</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> String defaultTemplateId;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 连接超时时间（毫秒），默认5000ms</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> <span class="variable">connectTimeout</span> <span class="operator">=</span> <span class="number">5000</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 读取超时时间（毫秒），默认10000ms</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> <span class="variable">readTimeout</span> <span class="operator">=</span> <span class="number">10000</span>;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">toString</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">&quot;SmsProperties&#123;&quot;</span> +</span><br><span class="line">                <span class="string">&quot;enabled=&quot;</span> + enabled +</span><br><span class="line">                <span class="string">&quot;, provider=&#x27;&quot;</span> + provider + <span class="string">&#x27;\&#x27;&#x27;</span> +</span><br><span class="line">                <span class="string">&quot;, accessKeyId=&#x27;&quot;</span> + accessKeyId + <span class="string">&#x27;\&#x27;&#x27;</span> +</span><br><span class="line">                <span class="string">&quot;, signName=&#x27;&quot;</span> + signName + <span class="string">&#x27;\&#x27;&#x27;</span> +</span><br><span class="line">                <span class="string">&quot;, defaultTemplateId=&#x27;&quot;</span> + defaultTemplateId + <span class="string">&#x27;\&#x27;&#x27;</span> +</span><br><span class="line">                <span class="string">&quot;, connectTimeout=&quot;</span> + connectTimeout +</span><br><span class="line">                <span class="string">&quot;, readTimeout=&quot;</span> + readTimeout +</span><br><span class="line">                <span class="string">&#x27;&#125;&#x27;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 短信发送结果</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@Data</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">SmsResult</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">boolean</span> success;</span><br><span class="line">    <span class="keyword">private</span> String message;</span><br><span class="line">    <span class="keyword">private</span> String requestId;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="starter-项目的业务功能类">Starter 项目的业务功能类</h3>
+<p>在创建一个自定义的Starter项目时，我们需要编写一个或多个业务功能类，用来实现我们要集成的功能模块的具体逻辑。例如，在本例中，我们要集成短信发送功能，所以我们需要定义一个短信发送的服务接口及其实现类，用来实现短信发送的业务流程。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.example.sms.service;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> com.example.sms.properties.SmsProperties;</span><br><span class="line"><span class="keyword">import</span> org.springframework.util.StringUtils;</span><br><span class="line"><span class="keyword">import</span> java.util.Map;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 短信服务接口</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">SmsService</span> &#123;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 发送短信</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> phone 手机号</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> templateId 模板ID</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> params 模板参数</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> 发送结果</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    SmsResult <span class="title function_">sendSms</span><span class="params">(String phone, String templateId, Map&lt;String, Object&gt; params)</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 发送短信（使用默认模板）</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> phone 手机号</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> params 模板参数</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> 发送结果</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    SmsResult <span class="title function_">sendSms</span><span class="params">(String phone, Map&lt;String, Object&gt; params)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 短信服务实现类</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">SmsServiceImpl</span> <span class="keyword">implements</span> <span class="title class_">SmsService</span> &#123;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> SmsProperties smsProperties;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">SmsServiceImpl</span><span class="params">(SmsProperties smsProperties)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.smsProperties = smsProperties;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> SmsResult <span class="title function_">sendSms</span><span class="params">(String phone, String templateId, Map&lt;String, Object&gt; params)</span> &#123;</span><br><span class="line">        <span class="comment">// 参数校验</span></span><br><span class="line">        <span class="keyword">if</span> (!StringUtils.hasText(phone)) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">SmsResult</span>(<span class="literal">false</span>, <span class="string">&quot;手机号不能为空&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">if</span> (!StringUtils.hasText(templateId)) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">SmsResult</span>(<span class="literal">false</span>, <span class="string">&quot;模板ID不能为空&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 模拟发送短信的过程</span></span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            System.out.println(<span class="string">&quot;=== 短信发送详情 ===&quot;</span>);</span><br><span class="line">            System.out.println(<span class="string">&quot;服务提供商: &quot;</span> + smsProperties.getProvider());</span><br><span class="line">            System.out.println(<span class="string">&quot;手机号: &quot;</span> + phone);</span><br><span class="line">            System.out.println(<span class="string">&quot;签名: &quot;</span> + smsProperties.getSignName());</span><br><span class="line">            System.out.println(<span class="string">&quot;模板ID: &quot;</span> + templateId);</span><br><span class="line">            System.out.println(<span class="string">&quot;模板参数: &quot;</span> + params);</span><br><span class="line">            System.out.println(<span class="string">&quot;连接超时: &quot;</span> + smsProperties.getConnectTimeout() + <span class="string">&quot;ms&quot;</span>);</span><br><span class="line">            System.out.println(<span class="string">&quot;读取超时: &quot;</span> + smsProperties.getReadTimeout() + <span class="string">&quot;ms&quot;</span>);</span><br><span class="line">            </span><br><span class="line">            <span class="comment">// 模拟网络请求延迟</span></span><br><span class="line">            Thread.sleep(<span class="number">100</span>);</span><br><span class="line">            </span><br><span class="line">            <span class="comment">// 模拟成功响应</span></span><br><span class="line">            <span class="type">String</span> <span class="variable">requestId</span> <span class="operator">=</span> <span class="string">&quot;SMS_&quot;</span> + System.currentTimeMillis();</span><br><span class="line">            System.out.println(<span class="string">&quot;发送成功，请求ID: &quot;</span> + requestId);</span><br><span class="line">            System.out.println(<span class="string">&quot;==================&quot;</span>);</span><br><span class="line">            </span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">SmsResult</span>(<span class="literal">true</span>, <span class="string">&quot;短信发送成功&quot;</span>, requestId);</span><br><span class="line">            </span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">            System.err.println(<span class="string">&quot;短信发送失败: &quot;</span> + e.getMessage());</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">SmsResult</span>(<span class="literal">false</span>, <span class="string">&quot;短信发送失败: &quot;</span> + e.getMessage());</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> SmsResult <span class="title function_">sendSms</span><span class="params">(String phone, Map&lt;String, Object&gt; params)</span> &#123;</span><br><span class="line">        <span class="type">String</span> <span class="variable">defaultTemplateId</span> <span class="operator">=</span> smsProperties.getDefaultTemplateId();</span><br><span class="line">        <span class="keyword">if</span> (!StringUtils.hasText(defaultTemplateId)) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">SmsResult</span>(<span class="literal">false</span>, <span class="string">&quot;未配置默认模板ID&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> sendSms(phone, defaultTemplateId, params);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="starter项目的自动配置类">Starter项目的自动配置类</h3>
+<p>在创建一个自定义的Starter项目时，我们需要编写一个自动配置类，用来根据属性类和业务功能类，创建相应的Bean对象，并且使用<code>@EnableConfigurationProperties</code>注解来启用属性类，使用<code>@ConditionalOnClass</code>注解来判断业务功能类是否存在，使用<code>@ConditionalOnProperty</code>注解来判断配置文件中是否有相应的配置项。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.example.sms.autoconfigure;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> com.example.sms.properties.SmsProperties;</span><br><span class="line"><span class="keyword">import</span> com.example.sms.service.SmsService;</span><br><span class="line"><span class="keyword">import</span> com.example.sms.service.SmsServiceImpl;</span><br><span class="line"><span class="keyword">import</span> org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;</span><br><span class="line"><span class="keyword">import</span> org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;</span><br><span class="line"><span class="keyword">import</span> org.springframework.boot.context.properties.EnableConfigurationProperties;</span><br><span class="line"><span class="keyword">import</span> org.springframework.context.annotation.Bean;</span><br><span class="line"><span class="keyword">import</span> org.springframework.context.annotation.Configuration;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * SMS自动配置类</span></span><br><span class="line"><span class="comment"> * 这是Starter的核心类，负责自动创建和配置Bean</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@Configuration</span>  <span class="comment">// 标识这是一个配置类</span></span><br><span class="line"><span class="meta">@ConditionalOnWebApplication</span>   <span class="comment">// 表示在web应用中才配置</span></span><br><span class="line"><span class="meta">@EnableConfigurationProperties(SmsProperties.class)</span>  <span class="comment">// 启用并且绑定配置属性类</span></span><br><span class="line"><span class="meta">@ConditionalOnProperty(prefix = &quot;sms&quot;, name = &quot;enabled&quot;, havingValue = &quot;true&quot;, matchIfMissing = true)</span>   <span class="comment">// 基于配置属性值生效</span></span><br><span class="line"><span class="comment">// 条件注解：只有当sms.enabled=true时才生效，默认为true</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">SmsAutoConfiguration</span> &#123;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 创建SmsService Bean</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> smsProperties 注入的配置属性</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> SmsService实例</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="meta">@ConditionalOnMissingBean(SmsService.class)</span>  <span class="comment">// 只有当容器中没有SmsService Bean时才创建</span></span><br><span class="line">    <span class="keyword">public</span> SmsService <span class="title function_">smsService</span><span class="params">(SmsProperties smsProperties)</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;初始化SmsService，配置信息: &quot;</span> + smsProperties);</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">SmsServiceImpl</span>(smsProperties);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="starter项目的自动装配文件">Starter项目的自动装配文件</h3>
+<p>在创建一个自定义的Starter项目时，我们需要在<code>resources/META-INF</code>目录下创建一个名为<code>spring.factories</code>的文件，用来指定我们的自动配置类，让Spring
+Boot能够在启动时自动扫描并加载它。以下是一个示例</p>
+<figure class="highlight properties"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 这个文件必须放在src/main/resources/META-INF/目录下</span></span><br><span class="line"><span class="comment"># Spring Boot通过这个文件来发现和加载自动配置类</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment"># 自动配置类注册</span></span><br><span class="line"><span class="attr">org.springframework.boot.autoconfigure.EnableAutoConfiguration</span>=<span class="string">\</span></span><br><span class="line"><span class="string">com.example.sms.autoconfigure.SmsAutoConfiguration</span></span><br></pre></td></tr></table></figure>
+<h3 id="在其他项目中使用这个starter">在其他项目中使用这个starter</h3>
+<p>在完成了一个自定义的Starter项目后，我们可以将它打包成jar文件，并且发布到Maven仓库或者本地仓库，这样就可以在其他项目中引用它了。我们默认打包发布是发布在我们本地的maven仓库的，所以只能本地使用。如果想要将自己的服务公开出去，可以查找发布到maven中心仓库的方法。</p>
+<p>大约流程如下</p>
+<ul>
+<li><p>在需要使用你自定义starter的项目的pom.xml中添加依赖</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&lt;dependency&gt;</span><br><span class="line">    &lt;groupId&gt;com.example&lt;/groupId&gt;</span><br><span class="line">    &lt;artifactId&gt;sms-spring-boot-starter&lt;/artifactId&gt;</span><br><span class="line">    &lt;version&gt;<span class="number">1.0</span><span class="number">.0</span>&lt;/version&gt;</span><br><span class="line">&lt;/dependency&gt;</span><br></pre></td></tr></table></figure></li>
+<li><p>然后，在其他项目的配置文件中添加如下配置项，这部分配置就是对应的是你编写的配置属性类部分</p>
+<figure class="highlight properties"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">sms</span>:<span class="string"></span></span><br><span class="line">  <span class="attr">enabled</span>: <span class="string">true</span></span><br><span class="line">  <span class="attr">provider</span>: <span class="string">aliyun</span></span><br><span class="line">  <span class="attr">access-key-id</span>: <span class="string">your-access-key-id</span></span><br><span class="line">  <span class="attr">access-key-secret</span>: <span class="string">your-access-key-secret</span></span><br><span class="line">  <span class="attr">sign-name</span>: <span class="string">你的签名</span></span><br><span class="line">  <span class="attr">default-template-id</span>: <span class="string">SMS_123456789</span></span><br><span class="line">  <span class="attr">connect-timeout</span>: <span class="string">5000</span></span><br><span class="line">  <span class="attr">read-timeout</span>: <span class="string">10000</span></span><br></pre></td></tr></table></figure></li>
+<li><p>最后，在其他项目的代码中，我们可以通过注入 smsService
+类来调用其功能</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.example.demo;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> com.example.sms.service.SmsService;</span><br><span class="line"><span class="keyword">import</span> org.springframework.beans.factory.annotation.Autowired;</span><br><span class="line"><span class="keyword">import</span> org.springframework.boot.SpringApplication;</span><br><span class="line"><span class="keyword">import</span> org.springframework.boot.autoconfigure.SpringBootApplication;</span><br><span class="line"><span class="keyword">import</span> org.springframework.web.bind.annotation.GetMapping;</span><br><span class="line"><span class="keyword">import</span> org.springframework.web.bind.annotation.RequestParam;</span><br><span class="line"><span class="keyword">import</span> org.springframework.web.bind.annotation.RestController;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.util.HashMap;</span><br><span class="line"><span class="keyword">import</span> java.util.Map;</span><br><span class="line"></span><br><span class="line"><span class="meta">@SpringBootApplication</span></span><br><span class="line"><span class="meta">@RestController</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">DemoApplication</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 自动注入SmsService，这个Bean是由我们的Starter自动创建的</span></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> SmsService smsService;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        SpringApplication.run(DemoApplication.class, args);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 发送验证码短信</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@GetMapping(&quot;/send-code&quot;)</span></span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">sendVerificationCode</span><span class="params">(<span class="meta">@RequestParam</span> String phone)</span> &#123;</span><br><span class="line">        Map&lt;String, Object&gt; params = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">        params.put(<span class="string">&quot;code&quot;</span>, <span class="string">&quot;123456&quot;</span>);</span><br><span class="line">        params.put(<span class="string">&quot;minutes&quot;</span>, <span class="string">&quot;5&quot;</span>);</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 使用默认模板发送</span></span><br><span class="line">        <span class="type">var</span> <span class="variable">result</span> <span class="operator">=</span> smsService.sendSms(phone, params);</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">return</span> result.isSuccess() ? <span class="string">&quot;发送成功: &quot;</span> + result.getRequestId() : <span class="string">&quot;发送失败: &quot;</span> + result.getMessage();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 发送自定义模板短信</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@GetMapping(&quot;/send-custom&quot;)</span></span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">sendCustomMessage</span><span class="params">(<span class="meta">@RequestParam</span> String phone, <span class="meta">@RequestParam</span> String templateId)</span> &#123;</span><br><span class="line">        Map&lt;String, Object&gt; params = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">        params.put(<span class="string">&quot;name&quot;</span>, <span class="string">&quot;张三&quot;</span>);</span><br><span class="line">        params.put(<span class="string">&quot;product&quot;</span>, <span class="string">&quot;云服务器&quot;</span>);</span><br><span class="line">        </span><br><span class="line">        <span class="type">var</span> <span class="variable">result</span> <span class="operator">=</span> smsService.sendSms(phone, templateId, params);</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">return</span> result.isSuccess() ? <span class="string">&quot;发送成功: &quot;</span> + result.getRequestId() : <span class="string">&quot;发送失败: &quot;</span> + result.getMessage();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>如果你想使用自己的SmsService实现，可以创建一个Bean：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">CustomSmsService</span> <span class="keyword">implements</span> <span class="title class_">SmsService</span> &#123;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> SmsResult <span class="title function_">sendSms</span><span class="params">(String phone, String templateId, Map&lt;String, Object&gt; params)</span> &#123;</span><br><span class="line">        <span class="comment">// 你的自定义实现</span></span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">SmsResult</span>(<span class="literal">true</span>, <span class="string">&quot;使用自定义实现发送成功&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> SmsResult <span class="title function_">sendSms</span><span class="params">(String phone, Map&lt;String, Object&gt; params)</span> &#123;</span><br><span class="line">        <span class="comment">// 你的自定义实现</span></span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">SmsResult</span>(<span class="literal">true</span>, <span class="string">&quot;使用自定义实现发送成功&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>由于<code>@ConditionalOnMissingBean</code>注解的存在，Starter
+会检测到你已经有了SmsService的实现，就不会创建默认的SmsServiceImpl了。</p></li>
+</ul>
+<h2 id="starter项目的原理">Starter项目的原理</h2>
+<p>首先，Starter 项目也是一个 Spring Boot （Maven/Gradle 项目）
+项目，其核心还是Spring Boot组件自动配置与集成的那些机制：</p>
+<ol type="1">
+<li><p><strong>依赖聚合</strong> 将特定功能所需的所有依赖（如
+Redis、MyBatis、RabbitMQ
+等）整合到一个模块中，简化使用者的依赖管理。Starter 的依赖管理是通过
+Maven 的依赖传递机制来实现的。每个 Starter 都是一个 Maven 项目，它在
+<code>pom.xml</code>
+文件中定义了一系列的依赖项。当开发者在自己的项目中引入一个 Starter
+时，Maven 会自动解析该 Starter
+的依赖关系，并将这些依赖项添加到项目的依赖列表中。</p>
+<p>Spring Boot 提供了一个依赖管理模块
+<code>spring-boot-dependencies</code>，它定义了所有 Spring Boot
+相关依赖的版本号。这样，开发者在使用 Starter
+时，无需手动指定依赖的版本号，而是直接使用
+<code>spring-boot-dependencies</code>
+中定义的版本。这保证了依赖版本的一致性，避免了版本冲突的问题。</p></li>
+<li><p><strong>自动配置</strong> Spring Boot 的自动配置机制是 Starter
+能够发挥作用的关键。当 Spring Boot
+应用程序启动时，它会通过一系列的条件注解（如
+<code>@Conditional</code>）来判断是否需要加载某个自动配置类。这些条件注解会检查类路径中是否存在某些类、配置文件中是否存在某些属性等条件，从而决定是否启用某个功能。</p>
+<p>自动配置类通常位于 <code>spring-boot-autoconfigure</code>
+模块中，每个 Starter 都会通过 <code>@EnableAutoConfiguration</code>
+注解来启用这些自动配置。开发者可以通过在
+<code>application.properties</code> 或 <code>application.yml</code>
+文件中配置相关的属性来覆盖默认的自动配置。</p></li>
+<li><p><strong>条件注解</strong></p>
+<p>条件注解是 Spring Boot 自动配置的核心。Spring Boot
+提供了一系列的条件注解，这些注解可以用来控制自动配置类的加载条件。以下是一些常用的条件注解：</p>
+<ul>
+<li><code>@ConditionalOnClass</code>：当类路径中存在指定的类时，才加载自动配置类。</li>
+<li><code>@ConditionalOnMissingBean</code>：当容器中不存在指定的 Bean
+时，才加载自动配置类。</li>
+<li><code>@ConditionalOnProperty</code>：当配置文件中存在指定的属性时，才加载自动配置类。</li>
+<li><code>@ConditionalOnWebApplication</code>：当项目是一个 Web
+应用程序时，才加载自动配置类。</li>
+</ul>
+<p>通过这些条件注解，Spring Boot
+可以根据项目的实际情况动态地加载相关的自动配置类，从而实现“按需配置”的效果。</p></li>
+<li><p><strong>SPI 机制</strong> 通过 Java 的 SPI（Service Provider
+Interface）机制，在 <code>META-INF/spring.factories</code>
+中声明自动配置类，使 Spring Boot 能够发现并加载它们。</p></li>
+</ol>
+<h3 id="starter-的加载流程如下">Starter 的加载流程如下</h3>
+<ol type="1">
+<li><strong>SpringApplication 启动</strong> Spring Boot
+应用启动时，<code>SpringApplication</code> 类会自动扫描类路径下的
+<code>spring.factories</code> 文件。</li>
+<li><strong>自动配置类加载</strong> 从 <code>spring.factories</code>
+中获取 <code>EnableAutoConfiguration</code>
+对应的配置类列表，并加载到容器中。</li>
+<li><strong>条件评估</strong> 对每个自动配置类中的
+<code>@Conditional</code> 注解进行评估，决定是否生效。</li>
+<li><strong>Bean 注册</strong> 生效的配置类会注册相应的 Bean 到 Spring
+容器中。</li>
+<li><strong>属性绑定</strong> 通过 <code>@ConfigurationProperties</code>
+将配置文件中的值绑定到属性类。</li>
+</ol>
+<h3 id="java-的-spi-机制">Java 的 SPI 机制</h3>
+<p>在这里只是简单说一下，之后打算单开一篇文章说，因为放在前面的话会使得启动流程那篇太长了</p>
+<p>Java 的 SPI（Service Provider
+Interface）是JDK内置的一种服务提供发现机制，允许第三方组件通过接口实现来扩展系统功能。它通过将接口定义与具体实现分离，实现了框架的可插拔性，是
+Java 生态中众多组件（如 JDBC、SLF4J、Spring Boot
+等）的核心扩展机制。</p>
+<p>Java中SPI机制主要思想是将装配的控制权移到程序之外，在模块化设计中这个机制尤其重要，其核心思想就是<strong>解耦</strong>。</p>
+<figure>
+<img src="/posts/59030/image-20250621205637825.png" alt="image-20250621205637825">
+<figcaption aria-hidden="true">image-20250621205637825</figcaption>
+</figure>
+<p>在Java中，当服务的提供者提供了一种接口的实现之后，需要在<code>classpath</code>下的<code>META-INF/services/</code>目录里创建一个以服务接口命名的文件，这个文件里的内容就是这个接口的具体的实现类。当其他的程序需要这个服务的时候，就可以通过查找这个jar包（一般都是以jar包做依赖）的<code>META-INF/services/</code>中的配置文件，配置文件中有接口的具体实现类名，可以根据这个类名进行加载实例化，就可以使用该服务了。JDK中查找服务的实现的工具类是：<code>java.util.ServiceLoader</code>。</p>
+<p>在 Spring Boot
+中，<code>META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports</code>，在
+<code>META-INF/spring.factories</code> 中声明自动配置类，使 Spring Boot
+能够发现并加载它们。</p>
+<p>在这里主要以 Spring Boot 为背景说了，上面那个 Java
+原生的我哪天再单开</p>
+<h4 id="角色划分">角色划分</h4>
+<ul>
+<li><strong>服务接口（Service
+Interface）</strong>：定义系统提供的功能契约，由框架开发者定义。</li>
+<li><strong>服务提供者（Service
+Provider）</strong>：实现服务接口的具体类，由第三方开发者提供。</li>
+<li><strong>服务注册表（Service
+Registry）</strong>：<code>ServiceLoader</code>
+类，负责加载和管理服务提供者。</li>
+</ul>
+<h4 id="约定大于配置">约定大于配置</h4>
+<p>SPI 机制遵循以下约定：</p>
+<ul>
+<li>在 <code>META-INF/services</code>
+目录下创建以接口全限定名命名的文件</li>
+<li>文件内容为实现类的全限定名</li>
+<li>多个实现类可按行分隔</li>
+</ul>
+<h4 id="spi-的工作流程">SPI 的工作流程</h4>
+<ul>
+<li><p><strong>定义服务接口</strong> 框架开发者定义公共接口：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">PaymentService</span> &#123;</span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">pay</span><span class="params">(<span class="type">double</span> amount)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p><strong>实现服务提供者</strong> 第三方实现该接口：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">AlipayService</span> <span class="keyword">implements</span> <span class="title class_">PaymentService</span> &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">pay</span><span class="params">(<span class="type">double</span> amount)</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;使用支付宝支付: &quot;</span> + amount + <span class="string">&quot;元&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">WechatPayService</span> <span class="keyword">implements</span> <span class="title class_">PaymentService</span> &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">pay</span><span class="params">(<span class="type">double</span> amount)</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;使用微信支付: &quot;</span> + amount + <span class="string">&quot;元&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p><strong>注册服务提供者</strong> 在
+<code>META-INF/services/com.example.PaymentService</code>
+文件中写入实现类：</p>
+<figure class="highlight properties"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">com.example.impl.AlipayService</span></span><br><span class="line"><span class="attr">com.example.impl.WechatPayService</span></span><br></pre></td></tr></table></figure></li>
+<li><p><strong>加载服务提供者</strong> 使用 <code>ServiceLoader</code>
+动态加载实现类：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">ServiceLoader&lt;PaymentService&gt; loader = ServiceLoader.load(PaymentService.class);</span><br><span class="line"><span class="keyword">for</span> (PaymentService service : loader) &#123;</span><br><span class="line">    service.pay(<span class="number">100.0</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>其中，加载服务提供者的方式如下</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 方式一：使用线程上下文类加载器</span></span><br><span class="line">ServiceLoader&lt;PaymentService&gt; loader = ServiceLoader.load(PaymentService.class);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 方式二：指定类加载器</span></span><br><span class="line">ServiceLoader&lt;PaymentService&gt; loader = ServiceLoader.load(</span><br><span class="line">    PaymentService.class, </span><br><span class="line">    Thread.currentThread().getContextClassLoader()</span><br><span class="line">);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 方式三：Java 9+ 模块系统使用</span></span><br><span class="line">ServiceLoader&lt;PaymentService&gt; loader = ServiceLoader.load(PaymentService.class, ModuleLayer.boot());</span><br><span class="line"></span><br><span class="line"><span class="comment">// 迭代器方式（Java 8 之前）</span></span><br><span class="line">Iterator&lt;PaymentService&gt; iterator = loader.iterator();</span><br><span class="line"><span class="keyword">while</span> (iterator.hasNext()) &#123;</span><br><span class="line">    <span class="type">PaymentService</span> <span class="variable">service</span> <span class="operator">=</span> iterator.next();</span><br><span class="line">    service.pay(<span class="number">100.0</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Stream 方式（Java 8+）</span></span><br><span class="line">loader.stream()</span><br><span class="line">    .map(ServiceLoader.Provider::get)</span><br><span class="line">    .forEach(service -&gt; service.pay(<span class="number">100.0</span>));</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h4 id="spi与传统依赖注入的区别">SPI与传统依赖注入的区别</h4>
+<p>在 Spring 环境中使用 SPI 并注入依赖：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">SpringServiceProvider</span> <span class="keyword">implements</span> <span class="title class_">PaymentService</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> OrderService orderService;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">SpringServiceProvider</span><span class="params">(OrderService orderService)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.orderService = orderService;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">pay</span><span class="params">(<span class="type">double</span> amount)</span> &#123;</span><br><span class="line">        <span class="comment">// 使用注入的服务</span></span><br><span class="line">        orderService.createOrder(amount);</span><br><span class="line">        System.out.println(<span class="string">&quot;支付完成&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>ServiceLoader采用懒加载策略，只有在真正迭代时才会实例化服务提供者：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">SpiLazyLoadingDemo</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="comment">// 这里不会实例化任何服务提供者</span></span><br><span class="line">        ServiceLoader&lt;PaymentService&gt; loader = ServiceLoader.load(PaymentService.class);</span><br><span class="line">        </span><br><span class="line">        System.out.println(<span class="string">&quot;ServiceLoader已创建，但服务未实例化&quot;</span>);</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 只有在迭代时才会实例化</span></span><br><span class="line">        <span class="keyword">for</span> (PaymentService service : loader) &#123;</span><br><span class="line">            System.out.println(<span class="string">&quot;实例化服务: &quot;</span> + service.getClass().getName());</span><br><span class="line">            service.pay(<span class="number">100.0</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a target="_blank" rel="noopener" href="https://github.com/ergou10086">ErgouTree</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://ergou10086.github.io/posts/59030.html">https://ergou10086.github.io/posts/59030.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://ergou10086.github.io" target="_blank">ErgouTree's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E5%AE%9E%E7%94%A8%E7%9F%A5%E8%AF%86/">实用知识</a><a class="post-meta__tags" href="/tags/Java%E6%8A%80%E6%9C%AF/">Java技术</a><a class="post-meta__tags" href="/tags/JavaWeb/">JavaWeb</a><a class="post-meta__tags" href="/tags/%E6%A1%86%E6%9E%B6%E7%9F%A5%E8%AF%86/">框架知识</a><a class="post-meta__tags" href="/tags/%E5%AD%A6%E4%B9%A0/">学习</a><a class="post-meta__tags" href="/tags/JavaSE/">JavaSE</a><a class="post-meta__tags" href="/tags/JavaEE/">JavaEE</a><a class="post-meta__tags" href="/tags/Spring%E7%B3%BB%E5%88%97/">Spring系列</a><a class="post-meta__tags" href="/tags/Spring-Boot/">Spring Boot</a><a class="post-meta__tags" href="/tags/Java%E6%A1%86%E6%9E%B6/">Java框架</a><a class="post-meta__tags" href="/tags/%E9%85%8D%E7%BD%AE%E7%9B%B8%E5%85%B3/">配置相关</a></div><div class="post-share"><div class="addtoany"><div class="a2a_kit a2a_kit_size_32 a2a_default_style"><a class="a2a_button_facebook"></a><a class="a2a_button_twitter"></a><a class="a2a_button_wechat"></a><a class="a2a_button_sina_weibo"></a><a class="a2a_button_facebook_messenger"></a><a class="a2a_button_email"></a><a class="a2a_button_copy_link"></a><a class="a2a_dd" target="_blank" rel="noopener" href="https://www.addtoany.com/share"></a></div></div><script async="async" src="https://static.addtoany.com/menu/page.js"></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/posts/10821.html" title="Spring Boot part20-事件驱动开发"><div class="cover" style="background: /images/posts/"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">Spring Boot part20-事件驱动开发</div></div><div class="info-2"><div class="info-item-1">事件驱动开发 简介 在现代应用程序开发中，事件驱动架构（EDA）越来越受欢迎。它不仅可以提高系统的解耦性，还能提升系统的可扩展性和响应速度。Spring Boot 中的事件驱动开发是一种解耦业务逻辑的设计模式，核心思想是：通过 “事件发布 - 监听” 机制，让不同组件在不直接依赖的情况下协作。 事件驱动开发是一种软件架构模式，系统通过事件来进行通信和协调。事件可以是系统中发生的任何有意义的事情，如用户点击按钮、数据更新等。事件驱动架构的核心思想是将事件的发布者和事件的处理者解耦，通过事件总线来传递事件。这样可以使得系统更加灵活，易于扩展和维护。 Spring Boot中的事件模型基于 Spring Framework 的 ApplicationEvent 和 ApplicationListener。ApplicationEvent 是所有事件的基类，ApplicationListener 是所有事件监听器的接口。我们可以自定义事件并发布，自定义监听器来处理这些事件。 简单说，事件驱动开发是用 “事件” 作为业务流程的 “粘合剂”，让不同组件在...</div></div></div></a><a class="pagination-related" href="/posts/58802.html" title="概率论常见公式的详细推导和概率公理化的内容描述"><img class="cover" src="/images/posts/cover_h2.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">概率论常见公式的详细推导和概率公理化的内容描述</div></div><div class="info-2"><div class="info-item-1">关于概率的公理化的一些说明 概率的公理化定义 设有随机试验E，E的样本空间为Ω，记包括Ω在内的E的所有时间组成的集合族为ℱ，若ℱ对中的任意一个事件A都能赋予一个实数P(A)，且P(A)满足条件：  非负性：0 ≤ P(A) ≤ 1； 规范性：P(Ω) = 1； 可列可加性：对两两互不相容的事件A1, A2, ⋯，有 $$ P\left(\sum_{i = 1}^{\infty}A_i\right)=\sum_{i = 1}^{\infty}P(A_i) $$  则称P(A)为事件A的概率 关于概率的公理化定义一些额外内容 其中，设ℱ是由Ω中的子集组成的子集类，若具有  Ω ∈ ℱ 若$\overline{A} \in \mathscr{F}$，则$\overline{A} = \Omega - A \in \mathscr{F}$ 若An ∈ ℱ（对一切n ≥ 1），则$\bigcup_{n = 1}^{\infty} A_n...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/posts/10821.html" title="Spring Boot part20-事件驱动开发"><div class="cover" style="background: /images/posts/"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-06-21</div><div class="info-item-2">Spring Boot part20-事件驱动开发</div></div><div class="info-2"><div class="info-item-1">事件驱动开发 简介 在现代应用程序开发中，事件驱动架构（EDA）越来越受欢迎。它不仅可以提高系统的解耦性，还能提升系统的可扩展性和响应速度。Spring Boot 中的事件驱动开发是一种解耦业务逻辑的设计模式，核心思想是：通过 “事件发布 - 监听” 机制，让不同组件在不直接依赖的情况下协作。 事件驱动开发是一种软件架构模式，系统通过事件来进行通信和协调。事件可以是系统中发生的任何有意义的事情，如用户点击按钮、数据更新等。事件驱动架构的核心思想是将事件的发布者和事件的处理者解耦，通过事件总线来传递事件。这样可以使得系统更加灵活，易于扩展和维护。 Spring Boot中的事件模型基于 Spring Framework 的 ApplicationEvent 和 ApplicationListener。ApplicationEvent 是所有事件的基类，ApplicationListener 是所有事件监听器的接口。我们可以自定义事件并发布，自定义监听器来处理这些事件。 简单说，事件驱动开发是用 “事件” 作为业务流程的 “粘合剂”，让不同组件在...</div></div></div></a><a class="pagination-related" href="/posts/6874.html" title="Spring Boot part12-嵌入式容器"><img class="cover" src="/images/posts/cover_main.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-06-11</div><div class="info-item-2">Spring Boot part12-嵌入式容器</div></div><div class="info-2"><div class="info-item-1">前言 Spring Boot 的目标是构建“非常容易创建、独立、产品级别的基于Spring的应用”。这些应用是“立即可运行的”。在这个过程中，完全没有代码生成，不需要配置任何特殊的XML配置，为了这个目标，Spring Boot 在 Spring 4.0 框架之上提供了很多特性，帮助应用以“约定优于配置”“开箱即用”的方式来启动应用并运行上下文。 Spring Boot 同样改变了一个传统的 Web 应用服务的启动流程和部署方式。通过自动配置机制，Spring Boot 提供了一个嵌入式的运行时容器环境，并使用代码注解的方式在代码中将 URL 服务地址映射到 Controller 的方法完成服务映射。 所以，开发者不再需要关心传统容器（如 Tomcat）中web.xml的配置，同时实现容器的具体技术都是可替换及可更改的，这些技术以插件化的Starter组件方式在运行时加载到 Spring...</div></div></div></a><a class="pagination-related" href="/posts/8200.html" title="Spring Boot part13-全面接管Spring MVC"><img class="cover" src="/images/posts/cover_java15.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-06-11</div><div class="info-item-2">Spring Boot part13-全面接管Spring MVC</div></div><div class="info-2"><div class="info-item-1">全面接管 SpringMVC 的思路 SpringBoot 默认配置好了 SpringMVC 的所有常⽤特性。 在 SpringBoot 中，全面接管 SpringMVC 配置的思路是通过禁用默认配置并完全自定义所有 MVC 行为。这是一个高级用法，适用于需要对 SpringMVC 进行深度定制的场景。 全面接管 SpringMVC 的核心步骤如下：  创建一个配置类，实现WebMvcConfigurer接口 使用@EnableWebMvc注解禁用 SpringBoot 的默认 MVC 配置 重写WebMvcConfigurer接口中的方法来定义所有需要的 MVC 行为，WebMvcConfigurer组件定义MVC的底层行为  回忆一下配置类的三种自定义方式          全自动 直接编写控制器逻辑  全部使用自动配置默认效果     手自一体 @Configuration + 配置 WebMvcConfigurer + 配置...</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="gitalk-container"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/arp.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">ErgouTree</div><div class="author-info-description">I start a brand-new life with you.</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">145</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">82</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">55</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/ergou10086"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/ergou10086" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="/zjm88822201@126.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a><a class="social-icon" href="https://space.bilibili.com/142045656?spm_id_from=333.1007.0.0" target="_blank" title="bilibili"><i class="fas fa-brands fa-bilibili" style="color: #4a72be;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">作者长期陷入galgame和osu!maina4k中 祝他好运吧 对了 如果图片加载过慢 建议科学上网进行使用</div></div><div class="card-widget"><div class="item-headline"><i></i><span></span></div><div class="item-content"></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%87%AA%E5%AE%9A%E4%B9%89-starter"><span class="toc-number">1.</span> <span class="toc-text">自定义 starter</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#springboot-starter-%E5%9C%BA%E6%99%AF%E6%9C%BA%E5%88%B6"><span class="toc-number">1.1.</span> <span class="toc-text">SpringBoot Starter 场景机制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%87%AA%E5%AE%9A%E4%B9%89starter%E7%9A%84%E5%91%BD%E5%90%8D%E8%A7%84%E5%88%99"><span class="toc-number">1.2.</span> <span class="toc-text">自定义starter的命名规则</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#starter%E9%A1%B9%E7%9B%AE%E7%9A%84%E7%BB%93%E6%9E%84"><span class="toc-number">1.3.</span> <span class="toc-text">Starter项目的结构</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%A4%BA%E4%BE%8B%E6%BC%94%E7%A4%BA%E8%87%AA%E5%AE%9A%E4%B9%89%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%84%E7%9F%AD%E4%BF%A1%E5%8F%91%E9%80%81starter"><span class="toc-number">2.</span> <span class="toc-text">示例演示：自定义一个简单的短信发送Starter</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#starter%E7%9A%84%E4%BE%9D%E8%B5%96%E5%AF%BC%E5%85%A5"><span class="toc-number">2.1.</span> <span class="toc-text">starter的依赖导入</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#starter%E9%A1%B9%E7%9B%AE%E7%9A%84%E5%B1%9E%E6%80%A7%E7%B1%BB"><span class="toc-number">2.2.</span> <span class="toc-text">Starter项目的属性类</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#starter-%E9%A1%B9%E7%9B%AE%E7%9A%84%E4%B8%9A%E5%8A%A1%E5%8A%9F%E8%83%BD%E7%B1%BB"><span class="toc-number">2.3.</span> <span class="toc-text">Starter 项目的业务功能类</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#starter%E9%A1%B9%E7%9B%AE%E7%9A%84%E8%87%AA%E5%8A%A8%E9%85%8D%E7%BD%AE%E7%B1%BB"><span class="toc-number">2.4.</span> <span class="toc-text">Starter项目的自动配置类</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#starter%E9%A1%B9%E7%9B%AE%E7%9A%84%E8%87%AA%E5%8A%A8%E8%A3%85%E9%85%8D%E6%96%87%E4%BB%B6"><span class="toc-number">2.5.</span> <span class="toc-text">Starter项目的自动装配文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9C%A8%E5%85%B6%E4%BB%96%E9%A1%B9%E7%9B%AE%E4%B8%AD%E4%BD%BF%E7%94%A8%E8%BF%99%E4%B8%AAstarter"><span class="toc-number">2.6.</span> <span class="toc-text">在其他项目中使用这个starter</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#starter%E9%A1%B9%E7%9B%AE%E7%9A%84%E5%8E%9F%E7%90%86"><span class="toc-number">3.</span> <span class="toc-text">Starter项目的原理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#starter-%E7%9A%84%E5%8A%A0%E8%BD%BD%E6%B5%81%E7%A8%8B%E5%A6%82%E4%B8%8B"><span class="toc-number">3.1.</span> <span class="toc-text">Starter 的加载流程如下</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#java-%E7%9A%84-spi-%E6%9C%BA%E5%88%B6"><span class="toc-number">3.2.</span> <span class="toc-text">Java 的 SPI 机制</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%A7%92%E8%89%B2%E5%88%92%E5%88%86"><span class="toc-number">3.2.1.</span> <span class="toc-text">角色划分</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BA%A6%E5%AE%9A%E5%A4%A7%E4%BA%8E%E9%85%8D%E7%BD%AE"><span class="toc-number">3.2.2.</span> <span class="toc-text">约定大于配置</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#spi-%E7%9A%84%E5%B7%A5%E4%BD%9C%E6%B5%81%E7%A8%8B"><span class="toc-number">3.2.3.</span> <span class="toc-text">SPI 的工作流程</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#spi%E4%B8%8E%E4%BC%A0%E7%BB%9F%E4%BE%9D%E8%B5%96%E6%B3%A8%E5%85%A5%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="toc-number">3.2.4.</span> <span class="toc-text">SPI与传统依赖注入的区别</span></a></li></ol></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/59825.html" title="随机变量的假设检验"><img src="/images/posts/cover_nothing.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="随机变量的假设检验"/></a><div class="content"><a class="title" href="/posts/59825.html" title="随机变量的假设检验">随机变量的假设检验</a><time datetime="2025-06-26T13:03:44.000Z" title="发表于 2025-06-26 21:03:44">2025-06-26</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/9946.html" title="参数估计之区间估计"><img src="/images/posts/cover_math4.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="参数估计之区间估计"/></a><div class="content"><a class="title" href="/posts/9946.html" title="参数估计之区间估计">参数估计之区间估计</a><time datetime="2025-06-26T13:02:41.000Z" title="发表于 2025-06-26 21:02:41">2025-06-26</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/5644.html" title="参数估计之点估计—矩估计法和最大似然估计法"><img src="/images/posts/cover_security.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="参数估计之点估计—矩估计法和最大似然估计法"/></a><div class="content"><a class="title" href="/posts/5644.html" title="参数估计之点估计—矩估计法和最大似然估计法">参数估计之点估计—矩估计法和最大似然估计法</a><time datetime="2025-06-26T13:01:47.000Z" title="发表于 2025-06-26 21:01:47">2025-06-26</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/19945.html" title="大数定律部分定理详解"><img src="/images/posts/cover_Tijie.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="大数定律部分定理详解"/></a><div class="content"><a class="title" href="/posts/19945.html" title="大数定律部分定理详解">大数定律部分定理详解</a><time datetime="2025-06-26T13:00:36.000Z" title="发表于 2025-06-26 21:00:36">2025-06-26</time></div></div></div></div></div></div></main><div class="fps-display"><span id="fps">FPS: 60</span></div><footer id="footer" style="background-image: url(/images/posts/cover_java3.jpg);"><div id="footer-wrap"><div class="copyright">&copy;2024 - 2025 By ErgouTree</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">忘れたくない思い、ありますか？ <br>,<span id="realtime_duration" style="font-family: monospace;"></span>,<br><a href="https://icp.gov.moe/?keyword=20257009" target="_blank">萌ICP备20257009号</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><a class="icon-V hidden" onclick="switchNightMode()" title="日间和夜间模式切换"><svg width="25" height="25" viewBox="0 0 1024 1024"><use id="modeicon" xlink:href="#icon-moon"></use></svg></a><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="chat-btn" type="button" title="聊天" style="display:none"><i class="fas fa-comment"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (true) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script><script>(() => {
+  const applyThemeDefaultsConfig = theme => {
+    if (theme === 'dark-mode') {
+      Chart.defaults.color = "rgba(255, 255, 255, 0.8)"
+      Chart.defaults.borderColor = "rgba(255, 255, 255, 0.2)"
+      Chart.defaults.scale.ticks.backdropColor = "transparent"
+    } else {
+      Chart.defaults.color = "rgba(0, 0, 0, 0.8)"
+      Chart.defaults.borderColor = "rgba(0, 0, 0, 0.1)"
+      Chart.defaults.scale.ticks.backdropColor = "transparent"
+    }
+  }
+
+  // Recursively traverse the config object and automatically apply theme-specific color schemes
+  const applyThemeConfig = (obj, theme) => {
+    if (typeof obj !== 'object' || obj === null) return
+
+    Object.keys(obj).forEach(key => {
+      const value = obj[key]
+      // If the property is an object and has theme-specific options, apply them
+      if (typeof value === 'object' && value !== null) {
+        if (value[theme]) {
+          obj[key] = value[theme] // Apply the value for the current theme
+        } else {
+          // Recursively process child objects
+          applyThemeConfig(value, theme)
+        }
+      }
+    })
+  }
+
+  const runChartJS = ele => {
+    window.loadChartJS = true
+
+    Array.from(ele).forEach((item, index) => {
+      const chartSrc = item.firstElementChild
+      const chartID = item.getAttribute('data-chartjs-id') || ('chartjs-' + index) // Use custom ID or default ID
+      const width = item.getAttribute('data-width')
+      const existingCanvas = document.getElementById(chartID)
+
+      // If a canvas already exists, remove it to avoid rendering duplicates
+      if (existingCanvas) {
+          existingCanvas.parentNode.remove()
+      }
+
+      const chartDefinition = chartSrc.textContent
+      const canvas = document.createElement('canvas')
+      canvas.id = chartID
+
+      const div = document.createElement('div')
+      div.className = 'chartjs-wrap'
+
+      if (width) {
+        div.style.width = width
+      }
+
+      div.appendChild(canvas)
+      chartSrc.insertAdjacentElement('afterend', div)
+
+      const ctx = document.getElementById(chartID).getContext('2d')
+
+      const config = JSON.parse(chartDefinition)
+
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark-mode' : 'light-mode'
+
+      // Set default styles (initial setup)
+      applyThemeDefaultsConfig(theme)
+
+      // Automatically traverse the config and apply dual-mode color schemes
+      applyThemeConfig(config, theme)
+
+      new Chart(ctx, config)
+    })
+  }
+
+  const loadChartJS = () => {
+    const chartJSEle = document.querySelectorAll('#article-container .chartjs-container')
+    if (chartJSEle.length === 0) return
+
+    window.loadChartJS ? runChartJS(chartJSEle) : btf.getScript('https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.min.js').then(() => runChartJS(chartJSEle))
+  }
+
+  // Listen for theme change events
+  btf.addGlobalFn('themeChange', loadChartJS, 'chartjs')
+  btf.addGlobalFn('encrypt', loadChartJS, 'chartjs')
+
+  window.pjax ? loadChartJS() : document.addEventListener('DOMContentLoaded', loadChartJS)
+})()</script><script>(function() {
+  const abcjsInit = function() {
+    const abcjsFn = function() {
+      setTimeout(function() {
+        const sheets = document.querySelectorAll(".abc-music-sheet")
+        for (let i = 0; i < sheets.length; i++) {
+          const ele = sheets[i]
+          if (ele.children.length > 0) continue
+
+          // Parse parameters from data-params attribute
+          let params = {}
+          const dp = ele.getAttribute("data-params")
+          if (dp) {
+            try {
+              params = JSON.parse(dp)
+            } catch (e) {
+              console.error("Failed to parse data-params:", e)
+            }
+          }
+
+          // Merge parsed parameters with the responsive option
+          // Ensures params content appears before responsive
+          const options = { ...params, responsive: "resize" }
+
+          // Render the music score using ABCJS.renderAbc
+          ABCJS.renderAbc(ele, ele.innerHTML, options)
+        }
+      }, 100)
+    }
+
+    if (typeof ABCJS === "object") {
+      abcjsFn()
+    } else {
+      btf.getScript("https://cdn.jsdelivr.net/npm/abcjs/dist/abcjs-basic-min.min.js").then(abcjsFn)
+    }
+  }
+
+  if (window.pjax) {
+    abcjsInit()
+  } else {
+    window.addEventListener("load", abcjsInit)
+  }
+
+  btf.addGlobalFn("encrypt", abcjsInit, "abcjs")
+})()</script><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = {"labels":["Gitalk","Comment"],"createIssueManually":false,"distractionFreeMode":false}
+
+  const commentCount = n => {
+    const isCommentCount = document.querySelector('#post-meta .gitalk-comment-count')
+    if (isCommentCount) {
+      isCommentCount.textContent= n
+    }
+  }
+
+  const initGitalk = (el, path) => {
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGitalk = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+
+    const gitalk = new Gitalk({
+      clientID: 'Ov23li3vDQANiUddL4XB',
+      clientSecret: '5c9a56d02995340fca117809cd414662aadce6ff',
+      repo: 'HexoComment',
+      owner: 'ergou10086',
+      admin: ['ergou10086'],
+      updateCountCallback: commentCount,
+      ...option,
+      id: isShuoshuo ? path : (option && option.id) || '5cf592b7d205022a6ec9745960e3b5c8'
+    })
+
+    gitalk.render('gitalk-container')
+  }
+
+  const loadGitalk = async(el, path) => {
+    if (typeof Gitalk === 'function') initGitalk(el, path)
+    else {
+      await btf.getCSS('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.css')
+      await btf.getScript('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.js')
+      initGitalk(el, path)
+    }
+  }
+
+  if (isShuoshuo) {
+    'Gitalk' === 'Gitalk'
+      ? window.shuoshuoComment = { loadComment: loadGitalk }
+      : window.loadOtherComment = loadGitalk
+    return
+  }
+
+  if ('Gitalk' === 'Gitalk' || !false) {
+    if (false) btf.loadComment(document.getElementById('gitalk-container'), loadGitalk)
+    else loadGitalk()
+  } else {
+    window.loadOtherComment = loadGitalk
+  }
+})()</script></div><div class="aplayer no-destroy" data-id="13587761608" data-server="netease" data-type="playlist" data-fixed="true" data-autoplay="false" data-lrcType="-1"> </div><script src="https://cdn.jsdelivr.net/npm/abcjs@7.1.2/dist/abcjs-basic-min.js"></script><script src="/js/sun_moon.js" async></script><script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.7/dayjs.min.js"></script><script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.7/plugin/duration.min.js"></script><script src="/scripts/realtime.js"></script><script src="/scripts/random.js"></script><script defer="defer" id="ribbon" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-ribbon.min.js" size="150" alpha="0.6" zIndex="-1" mobile="null" data-click="true"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = false;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><script id="click-heart" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/click-heart.min.js" async="async" mobile="false"></script><script>(() => {
+  window.ChatraID = '4bzb546NSBoJcrNyu'
+  window.Chatra = window.Chatra || function() {
+    (window.Chatra.q = window.Chatra.q || []).push(arguments)
+  }
+
+  btf.getScript('https://call.chatra.io/chatra.js').then(() => {
+    const isChatBtn = true
+    const isChatHideShow = true
+
+    if (isChatBtn) {
+      const close = () => {
+        Chatra('minimizeWidget')
+        Chatra('hide')
+      }
+
+      const open = () => {
+        Chatra('openChat', true)
+        Chatra('show')
+      }
+
+      window.ChatraSetup = { startHidden: true }
+    
+      window.chatBtnFn = () => document.getElementById('chatra').classList.contains('chatra--expanded') ? close() : open()
+
+      document.getElementById('chat-btn').style.display = 'block'
+    } else if (isChatHideShow) {
+      window.chatBtn = {
+        hide: () => Chatra('hide'),
+        show: () => Chatra('show')
+      }
+    }
+  })
+})()</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/metingjs/dist/Meting.min.js"></script><script>(() => {
+  const destroyAplayer = () => {
+    if (window.aplayers) {
+      for (let i = 0; i < window.aplayers.length; i++) {
+        if (!window.aplayers[i].options.fixed) {
+          window.aplayers[i].destroy()
+        }
+      }
+    }
+  }
+
+  const runMetingJS = () => {
+    typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+  }
+
+  btf.addGlobalFn('pjaxSend', destroyAplayer, 'destroyAplayer')
+  btf.addGlobalFn('pjaxComplete', loadMeting, 'runMetingJS')
+})()</script><script src="https://cdn.jsdelivr.net/npm/pjax/pjax.min.js"></script><script>(() => {
+  const pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+  window.pjax = new Pjax({
+    elements: 'a:not([target="_blank"]):not([href="/music/"])',
+    selectors: pjaxSelectors,
+    cacheBust: false,
+    analytics: false,
+    scrollRestoration: false
+  })
+
+  const triggerPjaxFn = (val) => {
+    if (!val) return
+    Object.values(val).forEach(fn => fn())
+  }
+
+  document.addEventListener('pjax:send', () => {
+    // removeEventListener
+    btf.removeGlobalFnEvent('pjaxSendOnce')
+    btf.removeGlobalFnEvent('themeChange')
+
+    // reset readmode
+    const $bodyClassList = document.body.classList
+    if ($bodyClassList.contains('read-mode')) $bodyClassList.remove('read-mode')
+
+    triggerPjaxFn(window.globalFn.pjaxSend)
+  })
+
+  document.addEventListener('pjax:complete', () => {
+    btf.removeGlobalFnEvent('pjaxCompleteOnce')
+    document.querySelectorAll('script[data-pjax]').forEach(item => {
+      const newScript = document.createElement('script')
+      const content = item.text || item.textContent || item.innerHTML || ""
+      Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+      newScript.appendChild(document.createTextNode(content))
+      item.parentNode.replaceChild(newScript, item)
+    })
+
+    triggerPjaxFn(window.globalFn.pjaxComplete)
+  })
+
+  document.addEventListener('pjax:error', e => {
+    if (e.request.status === 404) {
+      const usePjax = true
+      true 
+        ? (usePjax ? pjax.loadUrl('/404.html') : window.location.href = '/404.html')
+        : window.location.href = e.request.responseURL
+    }
+  })
+})()</script><script src="/js/fps-display.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><!-- hexo injector body_end start --><script data-pjax>
+  function butterfly_swiper_injector_config(){
+    var parent_div_git = document.getElementById('recent-posts');
+    var item_html = '<div class="recent-post-item" style="height: auto;width: 100%"><div class="blog-slider swiper-container-fade swiper-container-horizontal" id="swiper_container"><div class="blog-slider__wrp swiper-wrapper" style="transition-duration: 0ms;"><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_database.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-14</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt="">结构化查询语言SQL</a><div class="blog-slider__text">SQL基本很常用的语句都在这里了，本质上是当初为了应付数据库考试整理的，后来发现还蛮有用的很方便查常用的语句</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java4.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-22</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt="">SpringBoot part0?INF-SpringBoot这个框架都需要学习什么</a><div class="blog-slider__text">主要围绕Spring Boot中重要知识来简洁或详细的说明，其中部分不够完全，持续更新</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java11.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-15</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt="">关于Lombok在高版本IDEA中注解处理不生效的问题解决</a><div class="blog-slider__text">基本上是彻底的解决了用 IDEA 新建 Spring Boot 项目时候会产生的 Lombok 注解处理失效的各种问题</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_实用.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-05</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt="">个人向galgame原声带或相关音乐整理及其资源</a><div class="blog-slider__text">整理了我喜欢的galgame ost或者衍生的音乐专辑，部分资源是自己扒盘扒下来的，部分来自鸟白岛放映厅</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_math.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-17</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt="">对书上证明样本方差是总体方差的无偏估计量的解析</a><div class="blog-slider__text">对书上证明样本方差是总体方差的无偏估计量的解析，高等教育出版社-华科大版本</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_alog.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-04-24</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt="">第十五届蓝桥杯Java国赛B组D题-园丁题解</a><div class="blog-slider__text">第十五届蓝桥杯Java国赛B组D题-园丁题解，该题解已经发布到洛谷社区中并且被全站推荐</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java4.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-04-29</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt="">操作系统之处理机的死锁部分概述</a><div class="blog-slider__text">对操作系统之处理机的死锁部分知识的总结，包括代码复现</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_lb.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-09</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt="">Little Busters!EX游戏攻略</a><div class="blog-slider__text">整理了一份详细清晰的Little Busters！EX的游戏攻略，因为我自己也在推，就顺手整理了一份方便查阅的md文档</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java9.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-16</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt="">Spring Boot中使用Hibernate框架</a><div class="blog-slider__text">对学习完Hibernate的应用部分，主要围绕Spring Boot中使用Hibernate框架，建议学习完 Hibernate 框架再看</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div></div><div class="blog-slider__pagination swiper-pagination-clickable swiper-pagination-bullets"></div></div></div>';
+    console.log('已挂载butterfly_swiper')
+    parent_div_git.insertAdjacentHTML("afterbegin",item_html)
+    }
+  var elist = 'undefined'.split(',');
+  var cpage = location.pathname;
+  var epage = '/';
+  var flag = 0;
+
+  for (var i=0;i<elist.length;i++){
+    if (cpage.includes(elist[i])){
+      flag++;
+    }
+  }
+
+  if ((epage ==='all')&&(flag == 0)){
+    butterfly_swiper_injector_config();
+  }
+  else if (epage === cpage){
+    butterfly_swiper_injector_config();
+  }
+  </script><script defer src="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper.min.js"></script><script defer data-pjax src="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper_init.js"></script><!-- hexo injector body_end end --></body></html>

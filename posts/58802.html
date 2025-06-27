@@ -1,0 +1,1097 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>概率论常见公式的详细推导和概率公理化的内容描述 | ErgouTree's Blog</title><meta name="author" content="ErgouTree"><meta name="copyright" content="ErgouTree"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="关于概率的公理化的一些说明 概率的公理化定义 设有随机试验E，E的样本空间为Ω，记包括Ω在内的E的所有时间组成的集合族为ℱ，若ℱ对中的任意一个事件A都能赋予一个实数P(A)，且P(A)满足条件：  非负性：0 ≤ P(A) ≤ 1； 规范性：P(Ω) &#x3D; 1； 可列可加性：对两两互不相容的事件A1, A2, ⋯，有 $$ P\left(\sum_{i &#x3D; 1}^{\infty}A_">
+<meta property="og:type" content="article">
+<meta property="og:title" content="概率论常见公式的详细推导和概率公理化的内容描述">
+<meta property="og:url" content="https://ergou10086.github.io/posts/58802.html">
+<meta property="og:site_name" content="ErgouTree&#39;s Blog">
+<meta property="og:description" content="关于概率的公理化的一些说明 概率的公理化定义 设有随机试验E，E的样本空间为Ω，记包括Ω在内的E的所有时间组成的集合族为ℱ，若ℱ对中的任意一个事件A都能赋予一个实数P(A)，且P(A)满足条件：  非负性：0 ≤ P(A) ≤ 1； 规范性：P(Ω) &#x3D; 1； 可列可加性：对两两互不相容的事件A1, A2, ⋯，有 $$ P\left(\sum_{i &#x3D; 1}^{\infty}A_">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://ergou10086.github.io/images/posts/cover_h2.jpg">
+<meta property="article:published_time" content="2025-06-22T07:19:57.000Z">
+<meta property="article:modified_time" content="2025-06-27T06:09:44.490Z">
+<meta property="article:author" content="ErgouTree">
+<meta property="article:tag" content="算法">
+<meta property="article:tag" content="学习类">
+<meta property="article:tag" content="数学">
+<meta property="article:tag" content="数学建模">
+<meta property="article:tag" content="概率论与数理统计">
+<meta property="article:tag" content="定理证明">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ergou10086.github.io/images/posts/cover_h2.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "概率论常见公式的详细推导和概率公理化的内容描述",
+  "url": "https://ergou10086.github.io/posts/58802.html",
+  "image": "https://ergou10086.github.io/images/posts/cover_h2.jpg",
+  "datePublished": "2025-06-22T07:19:57.000Z",
+  "dateModified": "2025-06-27T06:09:44.490Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "ErgouTree",
+      "url": "https://github.com/ergou10086"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/pi.ico"><link rel="canonical" href="https://ergou10086.github.io/posts/58802.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//hm.baidu.com"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!true && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?https://hm.baidu.com/hm.js?a6ab1b78e2c6320b664f31e8b9bf0e36";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+btf.addGlobalFn('pjaxComplete', () => {
+  _hmt.push(['_trackPageview',window.location.pathname])
+}, 'baidu_analytics')
+</script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.json","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":true},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: {"chs_to_cht":"已切换为繁体中文","cht_to_chs":"已切换为简体中文","day_to_night":"已切换为深色模式","night_to_day":"已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#1f1f1f","position":"bottom-left"},
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '概率论常见公式的详细推导和概率公理化的内容描述',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css"><svg aria-hidden="true" style="position:absolute; overflow:hidden; width:0; height:0"><symbol id="icon-sun" viewBox="0 0 1024 1024"><path d="M960 512l-128 128v192h-192l-128 128-128-128H192v-192l-128-128 128-128V192h192l128-128 128 128h192v192z" fill="#FFD878" p-id="8420"></path><path d="M736 512a224 224 0 1 0-448 0 224 224 0 1 0 448 0z" fill="#FFE4A9" p-id="8421"></path><path d="M512 109.248L626.752 224H800v173.248L914.752 512 800 626.752V800h-173.248L512 914.752 397.248 800H224v-173.248L109.248 512 224 397.248V224h173.248L512 109.248M512 64l-128 128H192v192l-128 128 128 128v192h192l128 128 128-128h192v-192l128-128-128-128V192h-192l-128-128z" fill="#4D5152" p-id="8422"></path><path d="M512 320c105.888 0 192 86.112 192 192s-86.112 192-192 192-192-86.112-192-192 86.112-192 192-192m0-32a224 224 0 1 0 0 448 224 224 0 0 0 0-448z" fill="#4D5152" p-id="8423"></path></symbol><symbol id="icon-moon" viewBox="0 0 1024 1024"><path d="M611.370667 167.082667a445.013333 445.013333 0 0 1-38.4 161.834666 477.824 477.824 0 0 1-244.736 244.394667 445.141333 445.141333 0 0 1-161.109334 38.058667 85.077333 85.077333 0 0 0-65.066666 135.722666A462.08 462.08 0 1 0 747.093333 102.058667a85.077333 85.077333 0 0 0-135.722666 65.024z" fill="#FFB531" p-id="11345"></path><path d="M329.728 274.133333l35.157333-35.157333a21.333333 21.333333 0 1 0-30.165333-30.165333l-35.157333 35.157333-35.114667-35.157333a21.333333 21.333333 0 0 0-30.165333 30.165333l35.114666 35.157333-35.114666 35.157334a21.333333 21.333333 0 1 0 30.165333 30.165333l35.114667-35.157333 35.157333 35.157333a21.333333 21.333333 0 1 0 30.165333-30.165333z" fill="#030835" p-id="11346"></path></symbol></svg><link rel="stylesheet" href="/css/custom.css"><!-- hexo injector head_end start --><link rel="stylesheet" href="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiperstyle.css" media="print" onload="this.media='all'"><!-- hexo injector head_end end --><meta name="generator" content="Hexo 7.3.0"></head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js/pace.min.js"></script><div id="web_bg" style="background: linear-gradient(20deg, #0062be, #925696, #cc426e, #fb0347);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/arp.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">145</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">82</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">55</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-images"></i><span> Gallery</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/games/"><i class="fa-fw fas fa-game"></i><span> GalGame</span></a></li><li><a class="site-page child" href="/video/"><i class="fa-fw fas fa-video"></i><span> Video</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div><div class="menus_item"><a class="site-page" href="javascript:randomPost();"><span> Random</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/images/posts/cover_h2.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">ErgouTree's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">概率论常见公式的详细推导和概率公理化的内容描述</span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-images"></i><span> Gallery</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/games/"><i class="fa-fw fas fa-game"></i><span> GalGame</span></a></li><li><a class="site-page child" href="/video/"><i class="fa-fw fas fa-video"></i><span> Video</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div><div class="menus_item"><a class="site-page" href="javascript:randomPost();"><span> Random</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div><div id="randomPost"><a class="site-page social-icon search" href="javascript:;" onclick="randomPost()" title="随机访问一篇文章"><i class="fas fa-circle-notch fa-fw"></i></a></div></nav><div id="post-info"><h1 class="post-title">概率论常见公式的详细推导和概率公理化的内容描述<a class="post-edit-link" href="https://github.com/ergou10086/ergou10086.github.io/edit/main/source/_posts/_posts/概率论常见公式的详细推导和概率公理化的内容描述.md" title="编辑" target="_blank"><i class="fas fa-pencil-alt"></i></a></h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2025-06-22T07:19:57.000Z" title="发表于 2025-06-22 15:19:57">2025-06-22</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2025-06-27T06:09:44.490Z" title="更新于 2025-06-27 14:09:44">2025-06-27</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%95%B0%E5%AD%A6%E7%B1%BB/">数学类</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%95%B0%E5%AD%A6%E7%B1%BB/%E6%A6%82%E7%8E%87%E8%AE%BA%E4%B8%8E%E6%95%B0%E7%90%86%E7%BB%9F%E8%AE%A1/">概率论与数理统计</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">4.8k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>19分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span><span class="post-meta-separator">|</span><span class="post-meta-commentcount"><i class="far fa-comments fa-fw post-meta-icon"></i><span class="post-meta-label">评论数:</span><a href="/posts/58802.html#post-comment"><span class="gitalk-comment-count"><i class="fa-solid fa-spinner fa-spin"></i></span></a></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="关于概率的公理化的一些说明">关于概率的公理化的一些说明</h2>
+<h3 id="概率的公理化定义">概率的公理化定义</h3>
+<p>设有随机试验<span class="math inline"><em>E</em></span>，<span class="math inline"><em>E</em></span>的样本空间为<span class="math inline"><em>Ω</em></span>，记包括<span class="math inline"><em>Ω</em></span>在内的<span class="math inline"><em>E</em></span>的所有时间组成的集合族为<span class="math inline">ℱ</span>，若<span class="math inline">ℱ</span>对中的任意一个事件<span class="math inline"><em>A</em></span>都能赋予一个实数<span class="math inline"><em>P</em>(<em>A</em>)</span>，且<span class="math inline"><em>P</em>(<em>A</em>)</span>满足条件：</p>
+<ol type="1">
+<li><p>非负性：<span class="math inline">0 ≤ <em>P</em>(<em>A</em>) ≤ 1</span>；</p></li>
+<li><p>规范性：<span class="math inline"><em>P</em>(<em>Ω</em>) = 1</span>；</p></li>
+<li><p>可列可加性：对两两互不相容的事件<span class="math inline"><em>A</em><sub>1</sub>, <em>A</em><sub>2</sub>, ⋯</span>，有
+<span class="math display">$$
+P\left(\sum_{i = 1}^{\infty}A_i\right)=\sum_{i = 1}^{\infty}P(A_i)
+$$</span></p></li>
+</ol>
+<p>则称<span class="math inline"><em>P</em>(<em>A</em>)</span>为事件A的概率</p>
+<h3 id="关于概率的公理化定义一些额外内容">关于概率的公理化定义一些额外内容</h3>
+<p>其中，设<span class="math inline">ℱ</span>是由<span class="math inline"><em>Ω</em></span>中的子集组成的子集类，若具有</p>
+<ol type="1">
+<li><span class="math inline"><em>Ω</em> ∈ ℱ</span></li>
+<li>若<span class="math inline">$\overline{A} \in
+\mathscr{F}$</span>，则<span class="math inline">$\overline{A} = \Omega
+- A \in \mathscr{F}$</span></li>
+<li>若<span class="math inline"><em>A</em><sub><em>n</em></sub> ∈ ℱ</span>（对一切<span class="math inline"><em>n</em> ≥ 1</span>），则<span class="math inline">$\bigcup_{n = 1}^{\infty} A_n \in
+\mathscr{F}$</span>，即称<span class="math inline">ℱ</span>为<span class="math inline"><em>Ω</em></span>中的<span class="math inline"><em>σ</em></span>域（或称为<span class="math inline"><em>σ</em></span>代数）。</li>
+</ol>
+<p>可以证明，当<span class="math inline">ℱ</span>是<span class="math inline"><em>Ω</em></span>中的<span class="math inline"><em>σ</em></span>域时，有如下结论成立：</p>
+<ul>
+<li>若<span class="math inline"><em>A</em><sub><em>i</em></sub> ∈ ℱ(<em>i</em> = 1, ⋯, <em>n</em>)</span>，则<span class="math inline">$\bigcup_{i = 1}^{n} A_i \in \mathscr{F}$</span> 且
+<span class="math inline">$\bigcap_{i = 1}^{n} A_i \in
+\mathscr{F}$</span>；</li>
+<li>若<span class="math inline"><em>A</em><sub><em>i</em></sub> ∈ ℱ(<em>i</em> = 1, 2, ⋯)</span>，则<span class="math inline">$\bigcap_{i = 1}^{\infty} A_i \in
+\mathscr{F}$</span>；</li>
+<li>若<span class="math inline"><em>A</em> ∈ ℱ</span>，<span class="math inline"><em>B</em> ∈ ℱ</span>，则<span class="math inline"><em>A</em> − <em>B</em> ∈ ℱ</span>。</li>
+</ul>
+<p>显然<span class="math inline"><em>σ</em></span>域的定义是在保证这样的事件子集类在事件的基本运算具有某些封闭性的要求下建立的。</p>
+<h3 id="上述三条结论是如何证明的呢">上述三条结论是如何证明的呢</h3>
+<h4 id="sigma域与概率公理化的关系事件子集类的封闭规则"><span class="math inline"><em>σ</em></span>域与概率公理化的关系：“事件子集类的封闭规则”</h4>
+<p>这里是一些关于<span class="math inline"><em>σ</em></span>域的说明</p>
+<p>设<span class="math inline">ℱ</span>是由 <span class="math inline"><em>Ω</em></span> 中的子集组成的子集类，若满足 3
+条规则，就称 <span class="math inline">ℱ</span> 是 <span class="math inline"><em>Ω</em></span> 中的 <span class="math inline"><em>σ</em></span> 域 。</p>
+<p>这 3
+条规则，本质是<strong>“事件子集类对运算的封闭性”</strong>（即：对这些运算，子集类不会
+“跑出去”），对应概率公理化里的逻辑：</p>
+<ul>
+<li><p><span class="math inline"><em>Ω</em> ∈ ℱ</span></p>
+<p>样本空间本身要包含在里</p>
+<p>概率公理化中，样本空间 <span class="math inline"><em>Ω</em></span>
+是“必然事件”，概率 <span class="math inline"><em>P</em>(<em>Ω</em>) = 1</span>（规范性）。<span class="math inline"><em>σ</em></span> 域 先把 <span class="math inline"><em>Ω</em></span>
+包含进来，保证“必然事件”是讨论的基础。</p></li>
+<li><p>若<span class="math inline">$\overline{A} \in
+\mathscr{F}$</span>，则<span class="math inline">$\overline{A} = \Omega
+- A \in \mathscr{F}$</span></p>
+<p>对“取补集”封闭</p>
+<p>概率里有“对立事件”（比如 “<span class="math inline"><em>A</em></span>
+发生” 和 “<span class="math inline"><em>A</em></span>不发生”），公理化定义也要求概率满足
+<span class="math inline">$P(\overline{A}) = 1 -
+P(A)$</span>（后续可推导的性质）。<span class="math inline"><em>σ</em></span>
+域通过“补集封闭”，保证对立事件也在讨论范围内。</p></li>
+<li><p>若<span class="math inline"><em>A</em><sub><em>n</em></sub> ∈ ℱ</span>（对一切<span class="math inline"><em>n</em> ≥ 1</span>），则<span class="math inline">$\bigcup_{n = 1}^{\infty} A_n \in
+\mathscr{F}$</span>，即称<span class="math inline">ℱ</span>为<span class="math inline"><em>Ω</em></span>中的<span class="math inline"><em>σ</em></span>域（或称为<span class="math inline"><em>σ</em></span>代数）。</p>
+<p>对“可列并”封闭</p>
+<p>概率公理化里有“可列可加性”（3
+条核心条件之一），需要“无穷多个互斥事件的并”也是一个“合法事件”。<span class="math inline"><em>σ</em></span>
+域通过“可列并封闭”，为可列可加性铺路——先保证这类“无穷并事件”存在，才能给它定义概率。</p></li>
+</ul>
+<p>这三条结论都是能够直接从从<span class="math inline"><em>σ</em>−</span>代数的定义推出的，这里不再提<span class="math inline"><em>σ</em>−</span>代数的相关内容了</p>
+<p>回到概率公理化：<span class="math inline"><em>σ</em></span>
+域是“事件的合法范围”</p>
+<p>概率公理化定义里，有个关键前提： “包括 <span class="math inline"><em>Ω</em></span> 在内的 <span class="math inline"><em>E</em></span> 的所有事件组成的集合族为<span class="math inline">ℱ</span> ” ——这里的<span class="math inline">ℱ</span> ，必须是一个<span class="math inline"><em>σ</em></span> 域！换句话说：</p>
+<ul>
+<li><p>不是随便选一些子集就能当“事件”，得满足 <span class="math inline"><em>σ</em></span> 域的封闭性（补、可列并、包含 <span class="math inline"><em>Ω</em></span> 等）。</p></li>
+<li><p>只有这样，概率 <span class="math inline"><em>P</em>(<em>A</em>)</span> 才能用公理化的 3
+条条件（非负、规范、可列可加）“合理定义”到这些事件上。</p></li>
+</ul>
+<p>打个比方：<span class="math inline"><em>σ</em></span>
+域像一个“合法事件的容器”，先规定好哪些子集能当“事件”（满足封闭性），概率公理化再给这些“合法事件”赋予概率值，保证运算不出错。</p>
+<p>那么，<strong>概率为0的事件是否一定不可能？</strong></p>
+<p>其实就不一定了。在连续空间中，单点概率为0（如均匀分布下 <span class="math inline"><em>P</em>(0.5) = 0</span>），但“概率为0”不等价于“不可能发生”（不可能事件仅指
+<span class="math inline">∅</span>）。</p>
+<p>总结：<span class="math inline"><em>σ</em></span>
+域与概率公理化的关系</p>
+<p>简单说：<span class="math inline"><em>σ</em></span>
+域负责“事件合法”，概率公理化负责“给合法事件赋值”，缺一不可</p>
+<ul>
+<li><p><span class="math inline"><em>σ</em></span>
+域是“事件的规则边界”：限定哪些子集能被称为“事件”，保证事件在补、并（有限/可列）、交（有限/可列）、差运算下“不超界”。</p></li>
+<li><p>概率公理化是“事件的数值规则”：给这些“合法事件”赋予概率值，且要求概率满足非负、规范、可列可加。</p></li>
+</ul>
+<p>二者配合，才能严格定义“概率”——<span class="math inline"><em>σ</em></span>
+域先圈定“能讨论的事件”，概率公理化再给这些事件“赋值规则”。</p>
+<h3 id="接下来是对内容里三条结论的证明">接下来是对内容里三条结论的证明</h3>
+<ul>
+<li><h4 id="若a_iinmathcalfi-1cdotsn则bigcup_i-1na_iinmathcalf且bigcap_i-1na_iinmathcalf">若<span class="math inline"><em>A</em><sub><em>i</em></sub> ∈ ℱ(<em>i</em> = 1, ⋯, <em>n</em>)</span>，则<span class="math inline">$\bigcup_{i = 1}^{n}A_i\in\mathcal{F}$</span>且<span class="math inline">$\bigcap_{i = 1}^{n}A_i\in\mathcal{F}$</span></h4>
+<p>本质上就是在证明<span class="math inline"><em>σ</em>−</span>代数对有限并和有限交的封闭性</p>
+<ul>
+<li><p>证明<span class="math inline">$\boldsymbol{\bigcup_{i =
+1}^{n}A_i\in\mathcal{F}}$</span>：</p>
+<p>利用 <span class="math inline"><em>σ</em></span>
+域对可列并的封闭性，构造可列个事件：令<span class="math inline"><em>A</em><sub><em>n</em> + 1</sub> = <em>A</em><sub><em>n</em> + 2</sub> = ⋯ = ⌀</span>（空集，根据后续易证<span class="math inline">⌀ ∈ ℱ</span>），且由<span class="math inline"><em>σ</em></span>域定义，若<span class="math inline"><em>A</em> ∈ ℱ</span>，<span class="math inline">$\overline{A}\in\mathcal{F}$</span>，又<span class="math inline"><em>Ω</em> ∈ ℱ</span>，则<span class="math inline">$\varnothing=\overline{\Omega}\in\mathcal{F}$</span>。</p>
+<p>此时<span class="math inline">$\bigcup_{i = 1}^{n}A_i=\bigcup_{i =
+1}^{\infty}A_i$</span>（因为后面添加的空集不影响并集结果 ），由于<span class="math inline">ℱ</span>是 <span class="math inline"><em>σ</em></span> 域，对可列并封闭，即若<span class="math inline"><em>A</em><sub><em>i</em></sub> ∈ ℱ(<em>i</em> ≥ 1)</span>，则<span class="math inline">$\bigcup_{i =
+1}^{\infty}A_i\in\mathcal{F}$</span>，所以<span class="math inline">$\bigcup_{i = 1}^{n}A_i\in\mathcal{F}$</span>
+。</p></li>
+<li><p><strong>证明<span class="math inline">$\boldsymbol{\bigcap_{i =
+1}^{n}A_i\in\mathcal{F}}$</span></strong>：</p>
+<p>根据德摩根律<span class="math inline">$\bigcap_{i =
+1}^{n}A_i=\overline{\bigcup_{i = 1}^{n}\overline{A_i}}$</span> 。
+已知<span class="math inline"><em>A</em><sub><em>i</em></sub> ∈ ℱ</span>，由<span class="math inline"><em>σ</em></span>域对补集的封闭性（若<span class="math inline"><em>A</em> ∈ ℱ</span>，则<span class="math inline">$\overline{A}\in\mathcal{F}$</span>），可得<span class="math inline">$\overline{A_i}\in\mathcal{F}(i =
+1,\cdots,n)$</span> 。</p>
+<p>再由前面已证的 “有限个事件并集属于<span class="math inline">ℱ</span>”，可知<span class="math inline">$\bigcup_{i
+= 1}^{n}\overline{A_i}\in\mathcal{F}$</span>。</p>
+<p>最后，再次利用补集封闭性，对<span class="math inline">$\bigcup_{i =
+1}^{n}\overline{A_i}$</span>取补集，即<span class="math inline">$\overline{\bigcup_{i =
+1}^{n}\overline{A_i}}\in\mathcal{F}$</span>，也就是<span class="math inline">$\bigcap_{i = 1}^{n}A_i\in\mathcal{F}$</span>
+。</p></li>
+</ul></li>
+<li><h4 id="若a_iinmathcalfi-12cdots则bigcap_i-1inftya_iinmathcalf">若<span class="math inline"><em>A</em><sub><em>i</em></sub> ∈ ℱ(<em>i</em> = 1, 2, ⋯)</span>，则<span class="math inline">$\bigcap_{i =
+1}^{\infty}A_i\in\mathcal{F}$</span></h4>
+<p>根据德摩根律，<span class="math inline">$\bigcap_{i =
+1}^{\infty}A_i=\overline{\bigcup_{i =
+1}^{\infty}\overline{A_i}}$</span>。</p>
+<ul>
+<li>因为<span class="math inline"><em>A</em><sub><em>i</em></sub> ∈ ℱ</span>，由<span class="math inline"><em>σ</em></span>域对补集的封闭性，<span class="math inline">$\overline{A_i}\in\mathcal{F}(i =
+1,2,\cdots)$</span>。</li>
+<li>又因为<span class="math inline">ℱ</span>是<span class="math inline"><em>σ</em></span>域，对可列并封闭，所以<span class="math inline">$\bigcup_{i =
+1}^{\infty}\overline{A_i}\in\mathcal{F}$</span> 。</li>
+<li>最后依据补集封闭性，对<span class="math inline">$\bigcup_{i =
+1}^{\infty}\overline{A_i}$</span>取补集，可得<span class="math inline">$\overline{\bigcup_{i =
+1}^{\infty}\overline{A_i}}\in\mathcal{F}$</span>，即<span class="math inline">$\bigcap_{i =
+1}^{\infty}A_i\in\mathcal{F}$</span>。</li>
+</ul></li>
+<li><h4 id="若ainmathcalfbinmathcalf则a---binmathcalf">若<span class="math inline"><em>A</em> ∈ ℱ</span>，<span class="math inline"><em>B</em> ∈ ℱ</span>，则<span class="math inline"><em>A</em> − <em>B</em> ∈ ℱ</span></h4>
+<p>根据集合运算关系，<span class="math inline">$A - B =
+A\cap\overline{B}$</span> 。</p>
+<ul>
+<li>已知<span class="math inline"><em>B</em> ∈ ℱ</span>，由<span class="math inline"><em>σ</em></span>域对补集的封闭性，<span class="math inline">$\overline{B}\in\mathcal{F}$</span> 。</li>
+<li>又<span class="math inline"><em>A</em> ∈ ℱ</span>，再根据前面已证的
+“两个事件交集属于<span class="math inline">ℱ</span>”（<span class="math inline"><em>n</em> = 2</span>时的结论 ），(A)，也就是<span class="math inline"><em>A</em> − <em>B</em> ∈ ℱ</span> 。</li>
+</ul></li>
+</ul>
+<h3 id="由此可推导出概率的一些重要性质">由此，可推导出概率的一些重要性质</h3>
+<ul>
+<li><p>不可能事件的概率为0，即 <span class="math inline"><em>P</em>(⌀) = 0</span></p>
+<ul>
+<li>证明：</li>
+</ul></li>
+<li><p>(有限可加性) 若事件<span class="math inline"><em>A</em><sub><em>i</em></sub>(<em>i</em> = 1, ⋯, <em>n</em>)</span>中两两互不相容，则
+<span class="math display">$$
+P\left(\sum_{i = 1}^{\infty}A_i\right)=\sum_{i = 1}^{\infty}P(A_i)
+$$</span></p>
+<ul>
+<li>证明：</li>
+</ul></li>
+<li><p>(逆事件概率的计算) <span class="math inline">$P(\overline A) = 1
+- P(A)$</span></p>
+<ul>
+<li>证明：</li>
+</ul></li>
+<li><p>(差事件概率的计算和概率的单调性) 若 <span class="math inline"><em>B</em> ⊂ <em>A</em></span>，则 <span class="math inline"><em>P</em>(<em>A</em> − <em>B</em>) = <em>P</em>(<em>A</em>) − <em>P</em>(<em>B</em>)</span>，若<span class="math inline"><em>A</em> ⊆ <em>B</em></span>，则<span class="math inline"><em>P</em>(<em>B</em>) ≤ <em>P</em>(<em>A</em>)</span></p>
+<ul>
+<li>证明</li>
+</ul></li>
+<li><p>(加法公式) 对于任意两个事件<span class="math inline"><em>A</em></span> 和 <span class="math inline"><em>B</em></span>，有：<span class="math inline"><em>P</em>(<em>A</em>⋃<em>B</em>) = <em>P</em>(<em>A</em>) + <em>P</em>(<em>B</em>) − <em>P</em>(<em>A</em> ∩ <em>B</em>)</span></p>
+<p>上述为两个加法公式的内容，可以扩展到多个</p>
+<p>对于任意 n 个事件 <span class="math inline"><em>A</em><sub>1</sub>, <em>A</em><sub>2</sub>, …, <em>A</em><sub><em>n</em></sub></span>，有：
+<span class="math display">$$
+\begin{align*} P\left( \bigcup_{i = 1}^{n} A_i \right) &amp;= \sum_{i =
+1}^{n} P(A_i) - \sum_{1 \leq i &lt; j \leq n} P(A_i \cap A_j) + \sum_{1
+\leq i &lt; j &lt; k \leq n} P(A_i \cap A_j \cap A_k) - \dots \\
+&amp;\quad + (-1)^{n - 1} P(A_1 \cap A_2 \cap \dots \cap A_n)
+\end{align*}
+$$</span></p>
+<ul>
+<li>证明：下面证</li>
+</ul></li>
+</ul>
+<h2 id="公式推导">公式推导</h2>
+<h3 id="加法公式">加法公式</h3>
+<ul>
+<li><h4 id="两个加法公式的推导过程">两个加法公式的推导过程</h4>
+<ul>
+<li><p>含义：“$A $或 $B $发生” 的概率，等于 <span class="math inline"><em>A</em></span> 发生概率加 <span class="math inline"><em>B</em></span> 发生概率，减去 “<span class="math inline"><em>A</em></span> 且 <span class="math inline"><em>B</em></span> 同时发生”
+的概率（避免重复计算交集部分 ）。</p></li>
+<li><p>证明：</p>
+<p>利用集合分解：将 <span class="math inline"><em>A</em> ∪ <em>B</em></span>
+拆分为互不相交的三个部分（基于集合运算）：</p>
+<p><span class="math display"><em>A</em> ∪ <em>B</em> = <em>A</em> ∪ (<em>B</em> − <em>A</em> ∩ <em>B</em>)</span></p>
+<p>其中 <span class="math inline"><em>A</em></span> 与 <span class="math inline"><em>B</em> − <em>A</em> ∩ <em>B</em></span>
+是互不相容事件（即 <span class="math inline"><em>A</em> ∩ (<em>B</em> − <em>A</em> ∩ <em>B</em>) = ⌀</span>，因为
+<span class="math inline"><em>B</em> − <em>A</em> ∩ <em>B</em></span> 是
+<span class="math inline"><em>B</em></span> 中去掉与 <span class="math inline"><em>A</em></span> 重叠的部分）。</p>
+<p>根据概率的有限可加性（由”可列可加性”推导而来：若 <span class="math inline"><em>A</em><sub>1</sub>, <em>A</em><sub>2</sub>, …, <em>A</em><sub><em>n</em></sub></span>
+两两互不相容，令 <span class="math inline"><em>A</em><sub><em>n</em> + 1</sub> = <em>A</em><sub><em>n</em> + 2</sub> = … = ⌀</span></p>
+<p>结合可列可加性 <span class="math inline">$P\left(\bigcup_{i =
+1}^{\infty} A_i\right) = \sum_{i = 1}^{\infty}
+P(A_i)$</span>，可推出有限可加性 <span class="math inline">$P\left(\bigcup_{i = 1}^{n} A_i\right) = \sum_{i =
+1}^{n} P(A_i)$</span>），有：</p>
+<p><span class="math display"><em>P</em>(<em>A</em> ∪ <em>B</em>) = <em>P</em>(<em>A</em>) + <em>P</em>(<em>B</em> − <em>A</em> ∩ <em>B</em>)</span></p>
+<p>再看 <span class="math inline"><em>B</em> − <em>A</em> ∩ <em>B</em></span>，它等于
+<span class="math inline">$B \cap \overline{A \cap
+B}$</span>（差集定义），而根据概率的单调性与差事件公式</p>
+<p>若 <span class="math inline"><em>C</em> ⊆ <em>D</em></span>，则 <span class="math inline"><em>P</em>(<em>D</em> − <em>C</em>) = <em>P</em>(<em>D</em>) − <em>P</em>(<em>C</em>)</span></p>
+<p>可由”若 <span class="math inline"><em>A</em>, <em>B</em> ∈ ℱ</span>，则 <span class="math inline"><em>A</em> − <em>B</em> ∈ ℱ</span>“结合有限可加性推导：因为
+<span class="math inline"><em>D</em> = <em>C</em> ∪ (<em>D</em> − <em>C</em>)</span>
+且 <span class="math inline"><em>C</em></span> 与 <span class="math inline"><em>D</em> − <em>C</em></span> 互不相容</p>
+<p>所以 <span class="math inline"><em>P</em>(<em>D</em>) = <em>P</em>(<em>C</em>) + <em>P</em>(<em>D</em> − <em>C</em>)</span>，即
+<span class="math inline"><em>P</em>(<em>D</em> − <em>C</em>) = <em>P</em>(<em>D</em>) − <em>P</em>(<em>C</em>)</span>）</p>
+<p>由于 <span class="math inline"><em>A</em> ∩ <em>B</em> ⊆ <em>B</em></span>，因此：</p>
+<p><span class="math display"><em>P</em>(<em>B</em> − <em>A</em> ∩ <em>B</em>) = <em>P</em>(<em>B</em>) − <em>P</em>(<em>A</em> ∩ <em>B</em>)</span></p>
+<p>将上式代入 <span class="math inline"><em>P</em>(<em>A</em> ∪ <em>B</em>) = <em>P</em>(<em>A</em>) + <em>P</em>(<em>B</em> − <em>A</em> ∩ <em>B</em>)</span>，就得到：</p>
+<p><span class="math display"><em>P</em>(<em>A</em> ∪ <em>B</em>) = <em>P</em>(<em>A</em>) + <em>P</em>(<em>B</em>) − <em>P</em>(<em>A</em> ∩ <em>B</em>)</span></p></li>
+</ul></li>
+<li><h4 id="多个加法公式的推导过程">多个加法公式的推导过程</h4>
+<ul>
+<li><p>含义：“至少一个事件发生”
+的概率，通过<strong>容斥原理</strong>，交替加减
+“单个事件概率”“两个事件交集概率”“三个事件交集概率”…… 最后加上（或减去
+）“所有事件交集概率”，消除重复 / 遗漏计数。</p></li>
+<li><p>证明：</p>
+<p>数学归纳法秒了（）））））</p>
+<p><strong>归纳假设</strong>： 假设对 <span class="math inline"><em>n</em> = <em>k</em></span> 个事件 <span class="math inline"><em>A</em><sub>1</sub>, <em>A</em><sub>2</sub>, …, <em>A</em><sub><em>k</em></sub></span>，加法公式成立，即：
+<span class="math display"></span>P( <em>{i = 1}^{k} A_i ) = </em>{i =
+1}^{k} P(A_i) - <em>{1 i &lt; j k} P(A_i A_j) + + (-1)^{k - 1} P(A_1
+A_k) <span class="math display">$$
+**归纳步骤（$n = k + 1$）**：
+把 $\bigcup_{i = 1}^{k + 1} A_i$ 看作 $\left( \bigcup_{i = 1}^{k} A_i
+\right) \cup A_{k + 1}$，利用两个事件的加法公式：
+$$</span> P( </em>{i = 1}^{k + 1} A_i ) = P( <em>{i = 1}^{k} A_i ) +
+P(A</em>{k + 1}) - P( ( <em>{i = 1}^{k} A_i ) A</em>{k + 1} ) $$
+其中，<span class="math inline">$\left( \bigcup_{i = 1}^{k} A_i \right)
+\cap A_{k + 1} = \bigcup_{i = 1}^{k} (A_i \cap A_{k +
+1})$</span>（分配律：<span class="math inline">(<em>A</em> ∪ <em>B</em>) ∩ <em>C</em> = (<em>A</em> ∩ <em>C</em>) ∪ (<em>B</em> ∩ <em>C</em>)</span>
+推广到 <span class="math inline"><em>k</em></span> 个集合）。</p>
+<p>再对 <span class="math inline">$\bigcup_{i = 1}^{k} (A_i \cap A_{k +
+1})$</span> 用归纳假设（把 <span class="math inline"><em>A</em><sub><em>i</em></sub> ∩ <em>A</em><sub><em>k</em> + 1</sub></span>
+看作新的”单个事件”），可得：</p>
+<p><span class="math display">$$
+\begin{aligned}
+P\left( \bigcup_{i = 1}^{k} (A_i \cap A_{k + 1}) \right) &amp;= \sum_{i
+= 1}^{k} P(A_i \cap A_{k + 1}) \\
+&amp;\quad - \sum_{1 \leq i &lt; j \leq k} P((A_i \cap A_{k + 1}) \cap
+(A_j \cap A_{k + 1})) \\
+&amp;\quad + \dots \\
+&amp;\quad + (-1)^{k - 1} P(A_1 \cap \dots \cap A_k \cap A_{k + 1})
+\end{aligned}
+$$</span> 注意到 <span class="math inline">(<em>A</em><sub><em>i</em></sub> ∩ <em>A</em><sub><em>k</em> + 1</sub>) ∩ (<em>A</em><sub><em>j</em></sub> ∩ <em>A</em><sub><em>k</em> + 1</sub>) = <em>A</em><sub><em>i</em></sub> ∩ <em>A</em><sub><em>j</em></sub> ∩ <em>A</em><sub><em>k</em> + 1</sub></span>，以此类推，将各项代入并整理后，可验证
+<span class="math inline"><em>n</em> = <em>k</em> + 1</span>
+时公式也成立。</p>
+<p>结合基例与归纳步骤，由数学归纳法可知，<span class="math inline"><em>n</em></span> 个事件的加法公式对任意正整数 <span class="math inline"><em>n</em></span> 成立。</p></li>
+<li><p>可以看出这其实就是概率公理化定义中 “可列可加性”
+的直接体现，也可看作加法公式在 “可列无穷、互不相容”
+场景下的特殊形式。</p></li>
+</ul></li>
+</ul>
+<h3 id="条件概率公式">条件概率公式</h3>
+<p>设 <span class="math inline">(<em>Ω</em>, ℱ, <em>P</em>)</span>
+是一个概率空间，<span class="math inline"><em>A</em>, <em>B</em> ∈ ℱ</span> 是两个事件，且
+<span class="math inline"><em>P</em>(<em>B</em>) &gt; 0</span>。事件
+<span class="math inline"><em>A</em></span> 在给定 <span class="math inline"><em>B</em></span> 发生的条件下的条件概率定义为：</p>
+<p><span class="math display">$$
+P(A|B) = \frac{P(A \cap B)}{P(B)}
+$$</span></p>
+<h4 id="条件概率公式的推导过程">条件概率公式的推导过程</h4>
+<p><strong>推导思路</strong>： 条件概率的本质是在已知事件 <span class="math inline"><em>B</em></span>
+发生的情况下，重新定义概率测度。推导可以从以下两个角度理解：</p>
+<ol type="1">
+<li><p><strong>几何直观法</strong>（面积比例）：</p>
+<ul>
+<li>将样本空间 <span class="math inline"><em>Ω</em></span>
+看作单位面积</li>
+<li><span class="math inline"><em>P</em>(<em>B</em>)</span> 表示事件
+<span class="math inline"><em>B</em></span> 的面积</li>
+<li><span class="math inline"><em>P</em>(<em>A</em> ∩ <em>B</em>)</span>
+表示 <span class="math inline"><em>A</em></span> 和 <span class="math inline"><em>B</em></span> 同时发生的面积</li>
+<li>在 <span class="math inline"><em>B</em></span>
+发生的条件下，新的样本空间缩小为 <span class="math inline"><em>B</em></span></li>
+<li><span class="math inline"><em>A</em></span> 发生的”相对面积”就是
+<span class="math inline">$\frac{P(A \cap B)}{P(B)}$</span></li>
+</ul></li>
+<li><p><strong>公理化推导</strong>： 条件概率 <span class="math inline"><em>P</em>(⋅|<em>B</em>)</span>
+必须满足概率的三条公理：</p>
+<ul>
+<li><strong>非负性</strong>：显然 <span class="math inline"><em>P</em>(<em>A</em>|<em>B</em>) ≥ 0</span></li>
+<li><strong>规范性</strong>：<span class="math inline">$P(\Omega|B) =
+\frac{P(\Omega \cap B)}{P(B)} = 1$</span></li>
+<li><strong>可列可加性</strong>：对于互不相容的事件序列 <span class="math inline">{<em>A</em><sub><em>i</em></sub>}</span>： <span class="math display"></span>P(<em>{i=1}^A_i | B) = = </em>{i=1}^ =
+_{i=1}^P(A_i|B) $$</li>
+</ul></li>
+</ol>
+<p><strong>严格推导步骤</strong>：</p>
+<ol type="1">
+<li><p><strong>定义新的测度</strong>： 对于固定的事件 <span class="math inline"><em>B</em></span> 满足 <span class="math inline"><em>P</em>(<em>B</em>) &gt; 0</span>，定义： <span class="math display">$$
+P_B(A) = \frac{P(A \cap B)}{P(B)}
+$$</span></p></li>
+<li><p><strong>验证概率公理</strong>：</p>
+<ul>
+<li><p><strong>非负性</strong>：由于 <span class="math inline"><em>P</em>(<em>A</em> ∩ <em>B</em>) ≥ 0</span> 且
+<span class="math inline"><em>P</em>(<em>B</em>) &gt; 0</span>，故 <span class="math inline"><em>P</em><sub><em>B</em></sub>(<em>A</em>) ≥ 0</span></p></li>
+<li><p><strong>规范性</strong>： <span class="math display">$$
+P_B(\Omega) = \frac{P(\Omega \cap B)}{P(B)} = \frac{P(B)}{P(B)} = 1
+$$</span></p></li>
+<li><p><strong>可列可加性</strong>： 设 <span class="math inline">{<em>A</em><sub><em>i</em></sub>}</span>
+是互不相容的事件序列，则： <span class="math display">$$
+\begin{aligned}
+P_B\left(\bigcup_{i=1}^\infty A_i\right) &amp;=
+\frac{P\left(\bigcup_{i=1}^\infty (A_i \cap B)\right)}{P(B)} \\
+&amp;= \frac{\sum_{i=1}^\infty P(A_i \cap B)}{P(B)} \\
+&amp;= \sum_{i=1}^\infty \frac{P(A_i \cap B)}{P(B)} \\
+&amp;= \sum_{i=1}^\infty P_B(A_i)
+\end{aligned}
+$$</span></p></li>
+</ul></li>
+<li><p><strong>结论</strong>： 因此，<span class="math inline"><em>P</em><sub><em>B</em></sub>(⋅)</span>
+是一个合法的概率测度，我们将其记作 <span class="math inline"><em>P</em>(⋅|<em>B</em>)</span>，即： <span class="math display">$$
+P(A|B) = \frac{P(A \cap B)}{P(B)}
+$$</span></p></li>
+</ol>
+<p><strong>直观理解</strong>：</p>
+<ul>
+<li>分子 <span class="math inline"><em>P</em>(<em>A</em> ∩ <em>B</em>)</span>：<span class="math inline"><em>A</em></span> 和 <span class="math inline"><em>B</em></span> 同时发生的概率</li>
+<li>分母 <span class="math inline"><em>P</em>(<em>B</em>)</span>：对概率进行”归一化”，使得在新的条件下
+<span class="math inline"><em>P</em>(<em>B</em>|<em>B</em>) = 1</span></li>
+<li>比值反映了在 <span class="math inline"><em>B</em></span>
+发生的”世界”中，<span class="math inline"><em>A</em></span>
+发生的相对概率</li>
+</ul>
+<p>条件概率公式也满足概率公理化的性质：非负，规范，可列可加</p>
+<h3 id="乘法概率公式">乘法概率公式</h3>
+<p>设 <span class="math inline">(<em>Ω</em>, ℱ, <em>P</em>)</span>
+是一个概率空间，<span class="math inline"><em>A</em><sub>1</sub>, <em>A</em><sub>2</sub>, …, <em>A</em><sub><em>n</em></sub> ∈ ℱ</span>
+是事件，且满足 <span class="math inline">$P\left(\bigcap_{i=1}^{k}
+A_i\right) &gt; 0$</span> 对所有 <span class="math inline"><em>k</em> &lt; <em>n</em></span>
+成立。则乘法公式为：</p>
+<p><span class="math display">$$
+P\left(\bigcap_{i=1}^n A_i\right) = P(A_1) \cdot P(A_2|A_1) \cdot
+P(A_3|A_1 \cap A_2) \cdots P(A_n|A_1 \cap \cdots \cap A_{n-1})
+$$</span></p>
+<h4 id="乘法公式的推导过程">乘法公式的推导过程</h4>
+<p><strong>推导思路</strong>：
+乘法公式可以通过反复应用条件概率的定义得到。换一下的事</p>
+<p><strong>基础情形（n=2）</strong>： 由条件概率定义直接可得： <span class="math display"><em>P</em>(<em>A</em><sub>1</sub> ∩ <em>A</em><sub>2</sub>) = <em>P</em>(<em>A</em><sub>1</sub>) ⋅ <em>P</em>(<em>A</em><sub>2</sub>|<em>A</em><sub>1</sub>)</span>
+<strong>归纳步骤</strong>： 假设公式对 <span class="math inline"><em>n</em> = <em>k</em></span> 成立，证明对 <span class="math inline"><em>n</em> = <em>k</em> + 1</span> 也成立： <span class="math display">$$
+\begin{aligned}
+P\left(\bigcap_{i=1}^{k+1} A_i\right) &amp;=
+P\left(\left(\bigcap_{i=1}^k A_i\right) \cap A_{k+1}\right) \\
+&amp;= P\left(\bigcap_{i=1}^k A_i\right) \cdot
+P\left(A_{k+1}\bigg|\bigcap_{i=1}^k A_i\right) \\
+&amp;= \left[ \prod_{i=1}^k P\left(A_i \bigg| \bigcap_{j=1}^{i-1} A_j
+\right) \right] \cdot P\left(A_{k+1}\bigg|\bigcap_{i=1}^k A_i\right) \\
+&amp;= \prod_{i=1}^{k+1} P\left(A_i \bigg| \bigcap_{j=1}^{i-1} A_j
+\right)
+\end{aligned}
+$$</span> <strong>完整推导</strong>：</p>
+<p><del>数学归纳秒了）））</del></p>
+<ol type="1">
+<li><p><strong>初始步骤</strong>： 对于两个事件 <span class="math inline"><em>A</em><sub>1</sub></span> 和 <span class="math inline"><em>A</em><sub>2</sub></span>，由条件概率定义：
+<span class="math display">$$
+P(A_2|A_1) = \frac{P(A_1 \cap A_2)}{P(A_1)}
+$$</span> 变形即得：</p>
+<p><span class="math display"><em>P</em>(<em>A</em><sub>1</sub> ∩ <em>A</em><sub>2</sub>) = <em>P</em>(<em>A</em><sub>1</sub>) ⋅ <em>P</em>(<em>A</em><sub>2</sub>|<em>A</em><sub>1</sub>)</span></p></li>
+<li><p><strong>三个事件的情形</strong>： 对于三个事件 <span class="math inline"><em>A</em><sub>1</sub>, <em>A</em><sub>2</sub>, <em>A</em><sub>3</sub></span>：</p>
+<p><span class="math display">$$
+\begin{aligned}
+P(A_1 \cap A_2 \cap A_3) &amp;= P((A_1 \cap A_2) \cap A_3) \\
+&amp;= P(A_1 \cap A_2) \cdot P(A_3|A_1 \cap A_2) \\
+&amp;= P(A_1) \cdot P(A_2|A_1) \cdot P(A_3|A_1 \cap A_2)
+\end{aligned}
+$$</span></p></li>
+<li><p><strong>一般情形（数学归纳法）</strong>：</p>
+<ul>
+<li><p><strong>基例</strong>：<span class="math inline"><em>n</em> = 2</span> 时已证明成立</p></li>
+<li><p><strong>归纳假设</strong>：假设对 <span class="math inline"><em>n</em> = <em>k</em></span> 成立</p></li>
+<li><p><strong>归纳步骤</strong>：对 <span class="math inline"><em>n</em> = <em>k</em> + 1</span>，有：</p>
+<p><span class="math display">$$
+\begin{aligned}
+P\left(\bigcap_{i=1}^{k+1} A_i\right) &amp;=
+P\left(\left(\bigcap_{i=1}^k A_i\right) \cap A_{k+1}\right) \\
+&amp;= P\left(\bigcap_{i=1}^k A_i\right) \cdot
+P\left(A_{k+1}\bigg|\bigcap_{i=1}^k A_i\right) \\
+&amp;= \left[ \prod_{i=1}^k P\left(A_i \bigg| \bigcap_{j=1}^{i-1} A_j
+\right) \right] \cdot P\left(A_{k+1}\bigg|\bigcap_{i=1}^k A_i\right) \\
+&amp;= \prod_{i=1}^{k+1} P\left(A_i \bigg| \bigcap_{j=1}^{i-1} A_j
+\right)
+\end{aligned}
+$$</span></p></li>
+</ul></li>
+</ol>
+<p><strong>直观解释</strong>：
+乘法公式描述的是多个事件同时发生的概率，可以理解为： 1.
+第一个事件发生的概率 <span class="math inline"><em>P</em>(<em>A</em><sub>1</sub>)</span> 2.
+在第一个事件发生的条件下，第二个事件发生的概率 <span class="math inline"><em>P</em>(<em>A</em><sub>2</sub>|<em>A</em><sub>1</sub>)</span>
+3. 在前两个事件都发生的条件下，第三个事件发生的概率 <span class="math inline"><em>P</em>(<em>A</em><sub>3</sub>|<em>A</em><sub>1</sub> ∩ <em>A</em><sub>2</sub>)</span>
+… n. 在前 <span class="math inline"><em>n</em> − 1</span>
+个事件都发生的条件下，第 <span class="math inline"><em>n</em></span>
+个事件发生的概率 <span class="math inline"><em>P</em>(<em>A</em><sub><em>n</em></sub>|<em>A</em><sub>1</sub> ∩ ⋯ ∩ <em>A</em><sub><em>n</em> − 1</sub>)</span></p>
+<p>这些概率的乘积就是所有事件同时发生的概率。</p>
+<p><strong>应用示例</strong>：
+从一副52张的扑克牌中不放回地抽取3张牌，求都是A的概率： <span class="math display">$$
+\begin{aligned}
+P(A_1 \cap A_2 \cap A_3) &amp;= P(A_1) \cdot P(A_2|A_1) \cdot P(A_3|A_1
+\cap A_2) \\
+&amp;= \frac{4}{52} \cdot \frac{3}{51} \cdot \frac{2}{50}
+\end{aligned}
+$$</span></p>
+<h3 id="全概率公式">全概率公式</h3>
+<p>常用形式： <span class="math display">$$
+P(A) = P(A | B)  P(B) + P(A | \overline B)  P(\overline B)
+$$</span> 设 <span class="math inline">(<em>Ω</em>, ℱ, <em>P</em>)</span>
+是一个概率空间，<span class="math inline">{<em>B</em><sub><em>i</em></sub>}<sub><em>i</em> = 1</sub><sup><em>n</em></sup></span>
+是样本空间 <span class="math inline"><em>Ω</em></span>
+的一个<strong>划分</strong></p>
+<blockquote>
+<p>即满足：<span class="math inline"><em>B</em><sub><em>i</em></sub> ∩ <em>B</em><sub><em>j</em></sub> = ⌀</span>
+对任意 <span class="math inline"><em>i</em> ≠ <em>j</em></span>，且
+<span class="math inline">$\bigcup_{i=1}^n B_i = \Omega$</span></p>
+</blockquote>
+<p>且 <span class="math inline"><em>P</em>(<em>B</em><sub><em>i</em></sub>) &gt; 0</span>
+对所有 <span class="math inline"><em>i</em></span> 成立。则对任意事件
+<span class="math inline"><em>A</em> ∈ ℱ</span>，有： <span class="math display">$$
+P(A) = \sum_{i=1}^n P(A \cap B_i) = \sum_{i=1}^n P(B_i) \cdot P(A|B_i)
+$$</span></p>
+<h4 id="全概率公式的推导过程">全概率公式的推导过程</h4>
+<p><strong>推导思路</strong>： 全概率公式的核心思想是将复杂事件 <span class="math inline"><em>A</em></span> 分解到各个划分 <span class="math inline"><em>B</em><sub><em>i</em></sub></span>
+上，通过”分而治之”的方式计算其概率。</p>
+<p><strong>B在<span class="math inline"><em>Ω</em></span>上划分的几何直观</strong>：</p>
+<ul>
+<li>将样本空间 <span class="math inline"><em>Ω</em></span>
+划分为若干互不重叠的区域 <span class="math inline"><em>B</em><sub>1</sub>, <em>B</em><sub>2</sub>, …, <em>B</em><sub><em>n</em></sub></span></li>
+<li>事件 <span class="math inline"><em>A</em></span> 与每个 <span class="math inline"><em>B</em><sub><em>i</em></sub></span> 的交 <span class="math inline"><em>A</em> ∩ <em>B</em><sub><em>i</em></sub></span>
+互不相容</li>
+<li><span class="math inline"><em>A</em></span> 的总面积等于它在各个
+<span class="math inline"><em>B</em><sub><em>i</em></sub></span>
+区域上面积的和</li>
+</ul>
+<p><strong>严格推导</strong>：</p>
+<ol type="1">
+<li><p><strong>利用划分性质</strong>： 由于 <span class="math inline">{<em>B</em><sub><em>i</em></sub>}</span> 是 <span class="math inline"><em>Ω</em></span> 的划分，可将 <span class="math inline"><em>A</em></span> 表示为： <span class="math display">$$
+A = A \cap \Omega = A \cap \left(\bigcup_{i=1}^n B_i\right) =
+\bigcup_{i=1}^n (A \cap B_i)
+$$</span></p></li>
+<li><p><strong>概率的可加性</strong>： 由于 <span class="math inline"><em>B</em><sub><em>i</em></sub></span> 互不相容，故
+<span class="math inline"><em>A</em> ∩ <em>B</em><sub><em>i</em></sub></span>
+也互不相容。由概率的可列可加性： <span class="math display">$$
+P(A) = P\left(\bigcup_{i=1}^n (A \cap B_i)\right) = \sum_{i=1}^n P(A
+\cap B_i)
+$$</span></p></li>
+<li><p><strong>引入条件概率</strong>： 根据条件概率定义 <span class="math inline">$P(A|B_i) = \frac{P(A \cap
+B_i)}{P(B_i)}$</span>，可得： <span class="math display"><em>P</em>(<em>A</em> ∩ <em>B</em><sub><em>i</em></sub>) = <em>P</em>(<em>B</em><sub><em>i</em></sub>) ⋅ <em>P</em>(<em>A</em>|<em>B</em><sub><em>i</em></sub>)</span></p></li>
+<li><p><strong>综合得到公式</strong>： 将步骤3代入步骤2： <span class="math display">$$
+P(A) = \sum_{i=1}^n P(B_i) \cdot P(A|B_i)
+$$</span></p></li>
+</ol>
+<h3 id="贝叶斯公式">贝叶斯公式</h3>
+<p>设 <span class="math inline">(<em>Ω</em>, ℱ, <em>P</em>)</span>
+是一个概率空间，<span class="math inline">{<em>B</em><sub><em>i</em></sub>}<sub><em>i</em> = 1</sub><sup><em>n</em></sup></span>
+是样本空间 <span class="math inline"><em>Ω</em></span>
+的一个<strong>划分</strong></p>
+<blockquote>
+<p>即满足：<span class="math inline"><em>B</em><sub><em>i</em></sub> ∩ <em>B</em><sub><em>j</em></sub> = ⌀</span>
+对任意 <span class="math inline"><em>i</em> ≠ <em>j</em></span>，且
+<span class="math inline">$\bigcup_{i=1}^n B_i = \Omega$</span></p>
+</blockquote>
+<p>且 <span class="math inline"><em>P</em>(<em>B</em><sub><em>i</em></sub>) &gt; 0</span>
+对所有 <span class="math inline"><em>i</em></span> 成立。则对任意事件
+<span class="math inline"><em>A</em> ∈ ℱ</span> 且 <span class="math inline"><em>P</em>(<em>A</em>) &gt; 0</span>，有： <span class="math display">$$
+P(B_i|A) = \frac{P(B_i) \cdot P(A|B_i)}{\sum_{j=1}^n P(B_j) \cdot
+P(A|B_j)} = \frac{P(B_i) \cdot P(A|B_i)}{P(A)}
+$$</span></p>
+<p><del>上面是乘法公式，下面是全概率公式的全划分，也就是<span class="math inline"><em>P</em>(<em>A</em>)</span>，0秒记住公式性质)))</del></p>
+<h4 id="贝叶斯公式的推导过程">贝叶斯公式的推导过程</h4>
+<p><strong>推导思路</strong>：
+贝叶斯公式本质上是条件概率定义与全概率公式的结合。</p>
+<p><strong>几何直观</strong>： - 已知各个”原因” <span class="math inline"><em>B</em><sub><em>i</em></sub></span>
+及其导致”结果” <span class="math inline"><em>A</em></span> 的概率 -
+当观察到结果 <span class="math inline"><em>A</em></span>
+发生时，反推各个原因 <span class="math inline"><em>B</em><sub><em>i</em></sub></span>
+的贡献比例</p>
+<p><strong>严格推导</strong>：</p>
+<ol type="1">
+<li><p><strong>从条件概率定义出发</strong>： 由条件概率的定义： <span class="math display">$$
+P(B_i|A) = \frac{P(B_i \cap A)}{P(A)}
+$$</span></p></li>
+<li><p><strong>分子处理</strong>： 利用乘法公式： <span class="math display"><em>P</em>(<em>B</em><sub><em>i</em></sub> ∩ <em>A</em>) = <em>P</em>(<em>B</em><sub><em>i</em></sub>) ⋅ <em>P</em>(<em>A</em>|<em>B</em><sub><em>i</em></sub>)</span></p></li>
+<li><p><strong>分母处理</strong>： 应用全概率公式： <span class="math display">$$
+P(A) = \sum_{j=1}^n P(B_j) \cdot P(A|B_j)
+$$</span></p></li>
+<li><p><strong>综合得到公式</strong>： 将步骤2和步骤3代入步骤1： <span class="math display">$$
+P(B_i|A) = \frac{P(B_i) \cdot P(A|B_i)}{\sum_{j=1}^n P(B_j) \cdot
+P(A|B_j)}
+$$</span></p></li>
+</ol>
+<p><strong>关键理解</strong>： - <strong>先验概率</strong> <span class="math inline"><em>P</em>(<em>B</em><sub><em>i</em></sub>)</span>：在观测
+<span class="math inline"><em>A</em></span> 之前对 <span class="math inline"><em>B</em><sub><em>i</em></sub></span> 的初始信念 -
+<strong>似然</strong> <span class="math inline"><em>P</em>(<em>A</em>|<em>B</em><sub><em>i</em></sub>)</span>：在
+<span class="math inline"><em>B</em><sub><em>i</em></sub></span>
+成立的条件下 <span class="math inline"><em>A</em></span> 发生的概率 -
+<strong>证据</strong> <span class="math inline"><em>P</em>(<em>A</em>)</span>：标准化常数，确保概率总和为1
+- <strong>后验概率</strong> <span class="math inline"><em>P</em>(<em>B</em><sub><em>i</em></sub>|<em>A</em>)</span>：观测到
+<span class="math inline"><em>A</em></span> 后对 <span class="math inline"><em>B</em><sub><em>i</em></sub></span>
+的更新信念</p>
+<p><strong>推广形式</strong>： 对连续随机变量，贝叶斯公式表现为： <span class="math display">$$
+\pi(\theta|x) = \frac{f(x|\theta)\pi(\theta)}{\int
+f(x|\theta)\pi(\theta)d\theta}
+$$</span> 其中 <span class="math inline"><em>π</em>(<em>θ</em>)</span>
+是先验分布，<span class="math inline"><em>f</em>(<em>x</em>|<em>θ</em>)</span>
+是似然函数，<span class="math inline"><em>π</em>(<em>θ</em>|<em>x</em>)</span>
+是后验分布。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a target="_blank" rel="noopener" href="https://github.com/ergou10086">ErgouTree</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://ergou10086.github.io/posts/58802.html">https://ergou10086.github.io/posts/58802.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://ergou10086.github.io" target="_blank">ErgouTree's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E7%AE%97%E6%B3%95/">算法</a><a class="post-meta__tags" href="/tags/%E5%AD%A6%E4%B9%A0%E7%B1%BB/">学习类</a><a class="post-meta__tags" href="/tags/%E6%95%B0%E5%AD%A6/">数学</a><a class="post-meta__tags" href="/tags/%E6%95%B0%E5%AD%A6%E5%BB%BA%E6%A8%A1/">数学建模</a><a class="post-meta__tags" href="/tags/%E6%A6%82%E7%8E%87%E8%AE%BA%E4%B8%8E%E6%95%B0%E7%90%86%E7%BB%9F%E8%AE%A1/">概率论与数理统计</a><a class="post-meta__tags" href="/tags/%E5%AE%9A%E7%90%86%E8%AF%81%E6%98%8E/">定理证明</a></div><div class="post-share"><div class="addtoany"><div class="a2a_kit a2a_kit_size_32 a2a_default_style"><a class="a2a_button_facebook"></a><a class="a2a_button_twitter"></a><a class="a2a_button_wechat"></a><a class="a2a_button_sina_weibo"></a><a class="a2a_button_facebook_messenger"></a><a class="a2a_button_email"></a><a class="a2a_button_copy_link"></a><a class="a2a_dd" target="_blank" rel="noopener" href="https://www.addtoany.com/share"></a></div></div><script async="async" src="https://static.addtoany.com/menu/page.js"></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/posts/59030.html" title="Spring Boot part21-自定义starter"><img class="cover" src="/images/posts/cover_java3.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">Spring Boot part21-自定义starter</div></div><div class="info-2"><div class="info-item-1">自定义 starter SpringBoot Starter 场景机制 Spring Boot Starter 是一种简化 Spring Boot 应用开发的机制，它可以通过引入一些预定义的依赖和配置，让我们快速地集成某些功能模块，而无需繁琐地编写代码和配置文件。应用者只需要在maven中引入 starter 依赖，Spring Boot 就能自动扫描到要加载的信息并启动相应的默认配置。 starter 让我们摆脱了各种依赖库的处理，需要配置各种信息的困扰。Spring Boot 会自动通过 classpath 路径下的类发现需要的 Bean，并注册进IOC容器。Spring Boot 提供了针对日常企业应用研发各种场景的 spring-boot-starter 依赖模块。所有这些依赖模块都遵循着约定成俗的默认配置，并允许我们调整这些配置，即遵循“约定大于配置”的理念。 Spring Boot...</div></div></div></a><a class="pagination-related" href="/posts/16323.html" title="有关事件独立性内容部分的说明"><img class="cover" src="/images/posts/cover_math3.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">有关事件独立性内容部分的说明</div></div><div class="info-2"><div class="info-item-1">什么是事件独立性 若事件A，B 满足 P(AB) = P(A)P(B) 则称事件 A 独立于事件 B 这是证明两事件独立的唯一公式 由此定义可知，若A独立于B，则必有B独立于A，从而A，B之间的独立性是相互的。以后就称A，B相互独立，或简称A，B独立。 由此定义，若P(B) = 0，则必有A独立于B。 现将两个事件相互独立的概念推广到n(n ≥ 2)个事件的情形： 设A1, A2, ⋯, An为n(n ≥ 2)个事件，若对其中任意一组事件Ai1, Ai2, ⋯, Aik(2 ≤ k ≤ n)，都有 P(Ai1, Ai2, ⋯, Aik) = P(Ai1)P(Ai2)⋯P(Aik) 再则由此定义即可推出如下定理： 关于事件独立性的一些定理  设P(B) &gt; 0，则A与B独立的充要条件是P(A|B) = P(A)。同理，若P(A) &gt; 0，则A与B独立的充要条件是...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/posts/20606.html" title="无偏估计性与估计有效程度比较的例题解析"><img class="cover" src="/images/posts/cover_theory2.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-05-17</div><div class="info-item-2">无偏估计性与估计有效程度比较的例题解析</div></div><div class="info-2"><div class="info-item-1"> 问题重述 我们需要证明样本方差 $S^2 = \frac{1}{n-1} \sum_{i=1}^{n} (X_i - \overline{X})^2$ 是总体方差 σ2 = D(X) 的无偏估计量。即证明 E[S2] = σ2。 证明步骤  设定和已知条件：  总体 X 的均值 E(X) = μ，方差 D(X) = σ2 &lt; ∞。 样本 X1, X2, …, Xn 是独立同分布（i.i.d.）的，与 X 同分布。 样本均值 $\overline{X} = \frac{1}{n} \sum_{i=1}^{n} X_i$。  展开样本方差： $$ S^2 = \frac{1}{n-1} \sum_{i=1}^{n} (X_i - \overline{X})^2 $$ 我们首先将 $(X_i - \overline{X})$ 表示为 $(X_i - \mu) - (\overline{X} - \mu)$： $$ (X_i - \overline{X}) = (X_i - \mu) - (\overline{X} -...</div></div></div></a><a class="pagination-related" href="/posts/6458.html" title="对书上证明样本方差是总体方差的无偏估计量的解析"><img class="cover" src="/images/posts/cover_math.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-05-17</div><div class="info-item-2">对书上证明样本方差是总体方差的无偏估计量的解析</div></div><div class="info-2"><div class="info-item-1">问题描述 设总体服从区间 [0, θ] 上的均匀分布，(X1, X2, ⋯, Xn) 为取自该总体的容量为 n 的样本。对未知参数 θ 的两个估计量： $$ \hat{\theta}_1 = 2\bar{X}, \quad \hat{\theta}_2 = \frac{n+1}{n} \max_{1 \leq i \leq n} \{ X_i \}. $$  验证 θ̂1 和 θ̂2 均为 θ 的无偏估计；  指出哪个更有效。   (1) 验证无偏性 1.1 验证 θ̂1 = 2X̄ 的无偏性  步骤 1：计算总体均值  总体 $ X U[0, ] ，其期望为：$ E(X) = = $$ 所以对于总体 X ∼ U[0, θ]，有 $E(X) = \frac{\theta}{2}$。  步骤 2：计算样本均值的期望  样本均值 $\bar{X} = \frac{1}{n} \sum_{i=1}^{n} X_i$，其期望为：   $$ E(\bar{X}) = \frac{1}{n} \sum_{i=1}^{n}...</div></div></div></a><a class="pagination-related" href="/posts/50276.html" title="一些分布函数的数字特征的求解过程"><img class="cover" src="/images/posts/cover_wish.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-06-26</div><div class="info-item-2">一些分布函数的数字特征的求解过程</div></div><div class="info-2"><div class="info-item-1">前言 在这里主要是进行求一些常见分布的一些数字特性，包括期望，方差等 主要写的是计算过程，这些分布的数字特征是怎么计算来的，我个人喜欢把计算过程写的比较详细，感觉多的大概扫一眼就知道这东西其实都是怎么求的了 两点分布 重复一下分布表示 设随机变量 X 服从参数为 p 的两点分布（也称为伯努利分布），其概率质量函数为： P(X = 1) = p,  P(X = 0) = 1 − p 其中 0 ≤ p ≤ 1。 期望（数学期望） 期望 E[X] 的计算公式为： E[X] = ∑xx ⋅ P(X = x) = 0 ⋅ P(X = 0) + 1 ⋅ P(X = 1) 代入概率质量函数： E[X] = 0 ⋅ (1 − p) + 1 ⋅ p = p 因此，两点分布的期望为： E[X] = p 方差 方差 D(X) 的计算公式为： D(X) = E[X2] − (E[X])2 计算 E[X2]...</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="gitalk-container"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/arp.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">ErgouTree</div><div class="author-info-description">I start a brand-new life with you.</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">145</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">82</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">55</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/ergou10086"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/ergou10086" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="/zjm88822201@126.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a><a class="social-icon" href="https://space.bilibili.com/142045656?spm_id_from=333.1007.0.0" target="_blank" title="bilibili"><i class="fas fa-brands fa-bilibili" style="color: #4a72be;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">作者长期陷入galgame和osu!maina4k中 祝他好运吧 对了 如果图片加载过慢 建议科学上网进行使用</div></div><div class="card-widget"><div class="item-headline"><i></i><span></span></div><div class="item-content"></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B3%E4%BA%8E%E6%A6%82%E7%8E%87%E7%9A%84%E5%85%AC%E7%90%86%E5%8C%96%E7%9A%84%E4%B8%80%E4%BA%9B%E8%AF%B4%E6%98%8E"><span class="toc-number">1.</span> <span class="toc-text">关于概率的公理化的一些说明</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A6%82%E7%8E%87%E7%9A%84%E5%85%AC%E7%90%86%E5%8C%96%E5%AE%9A%E4%B9%89"><span class="toc-number">1.1.</span> <span class="toc-text">概率的公理化定义</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B3%E4%BA%8E%E6%A6%82%E7%8E%87%E7%9A%84%E5%85%AC%E7%90%86%E5%8C%96%E5%AE%9A%E4%B9%89%E4%B8%80%E4%BA%9B%E9%A2%9D%E5%A4%96%E5%86%85%E5%AE%B9"><span class="toc-number">1.2.</span> <span class="toc-text">关于概率的公理化定义一些额外内容</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%8A%E8%BF%B0%E4%B8%89%E6%9D%A1%E7%BB%93%E8%AE%BA%E6%98%AF%E5%A6%82%E4%BD%95%E8%AF%81%E6%98%8E%E7%9A%84%E5%91%A2"><span class="toc-number">1.3.</span> <span class="toc-text">上述三条结论是如何证明的呢</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#sigma%E5%9F%9F%E4%B8%8E%E6%A6%82%E7%8E%87%E5%85%AC%E7%90%86%E5%8C%96%E7%9A%84%E5%85%B3%E7%B3%BB%E4%BA%8B%E4%BB%B6%E5%AD%90%E9%9B%86%E7%B1%BB%E7%9A%84%E5%B0%81%E9%97%AD%E8%A7%84%E5%88%99"><span class="toc-number">1.3.1.</span> <span class="toc-text">σ域与概率公理化的关系：“事件子集类的封闭规则”</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8E%A5%E4%B8%8B%E6%9D%A5%E6%98%AF%E5%AF%B9%E5%86%85%E5%AE%B9%E9%87%8C%E4%B8%89%E6%9D%A1%E7%BB%93%E8%AE%BA%E7%9A%84%E8%AF%81%E6%98%8E"><span class="toc-number">1.4.</span> <span class="toc-text">接下来是对内容里三条结论的证明</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%8B%A5a_iinmathcalfi-1cdotsn%E5%88%99bigcup_i-1na_iinmathcalf%E4%B8%94bigcap_i-1na_iinmathcalf"><span class="toc-number">1.4.1.</span> <span class="toc-text">若Ai ∈ ℱ(i &#x3D; 1, ⋯, n)，则$\bigcup_{i &#x3D; 1}^{n}A_i\in\mathcal{F}$且$\bigcap_{i &#x3D; 1}^{n}A_i\in\mathcal{F}$</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%8B%A5a_iinmathcalfi-12cdots%E5%88%99bigcap_i-1inftya_iinmathcalf"><span class="toc-number">1.4.2.</span> <span class="toc-text">若Ai ∈ ℱ(i &#x3D; 1, 2, ⋯)，则$\bigcap_{i &#x3D;
+1}^{\infty}A_i\in\mathcal{F}$</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%8B%A5ainmathcalfbinmathcalf%E5%88%99a---binmathcalf"><span class="toc-number">1.4.3.</span> <span class="toc-text">若A ∈ ℱ，B ∈ ℱ，则A − B ∈ ℱ</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%94%B1%E6%AD%A4%E5%8F%AF%E6%8E%A8%E5%AF%BC%E5%87%BA%E6%A6%82%E7%8E%87%E7%9A%84%E4%B8%80%E4%BA%9B%E9%87%8D%E8%A6%81%E6%80%A7%E8%B4%A8"><span class="toc-number">1.5.</span> <span class="toc-text">由此，可推导出概率的一些重要性质</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AC%E5%BC%8F%E6%8E%A8%E5%AF%BC"><span class="toc-number">2.</span> <span class="toc-text">公式推导</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8A%A0%E6%B3%95%E5%85%AC%E5%BC%8F"><span class="toc-number">2.1.</span> <span class="toc-text">加法公式</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%A4%E4%B8%AA%E5%8A%A0%E6%B3%95%E5%85%AC%E5%BC%8F%E7%9A%84%E6%8E%A8%E5%AF%BC%E8%BF%87%E7%A8%8B"><span class="toc-number">2.1.1.</span> <span class="toc-text">两个加法公式的推导过程</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%A4%9A%E4%B8%AA%E5%8A%A0%E6%B3%95%E5%85%AC%E5%BC%8F%E7%9A%84%E6%8E%A8%E5%AF%BC%E8%BF%87%E7%A8%8B"><span class="toc-number">2.1.2.</span> <span class="toc-text">多个加法公式的推导过程</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9D%A1%E4%BB%B6%E6%A6%82%E7%8E%87%E5%85%AC%E5%BC%8F"><span class="toc-number">2.2.</span> <span class="toc-text">条件概率公式</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%9D%A1%E4%BB%B6%E6%A6%82%E7%8E%87%E5%85%AC%E5%BC%8F%E7%9A%84%E6%8E%A8%E5%AF%BC%E8%BF%87%E7%A8%8B"><span class="toc-number">2.2.1.</span> <span class="toc-text">条件概率公式的推导过程</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B9%98%E6%B3%95%E6%A6%82%E7%8E%87%E5%85%AC%E5%BC%8F"><span class="toc-number">2.3.</span> <span class="toc-text">乘法概率公式</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B9%98%E6%B3%95%E5%85%AC%E5%BC%8F%E7%9A%84%E6%8E%A8%E5%AF%BC%E8%BF%87%E7%A8%8B"><span class="toc-number">2.3.1.</span> <span class="toc-text">乘法公式的推导过程</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%A8%E6%A6%82%E7%8E%87%E5%85%AC%E5%BC%8F"><span class="toc-number">2.4.</span> <span class="toc-text">全概率公式</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%85%A8%E6%A6%82%E7%8E%87%E5%85%AC%E5%BC%8F%E7%9A%84%E6%8E%A8%E5%AF%BC%E8%BF%87%E7%A8%8B"><span class="toc-number">2.4.1.</span> <span class="toc-text">全概率公式的推导过程</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%B4%9D%E5%8F%B6%E6%96%AF%E5%85%AC%E5%BC%8F"><span class="toc-number">2.5.</span> <span class="toc-text">贝叶斯公式</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%B4%9D%E5%8F%B6%E6%96%AF%E5%85%AC%E5%BC%8F%E7%9A%84%E6%8E%A8%E5%AF%BC%E8%BF%87%E7%A8%8B"><span class="toc-number">2.5.1.</span> <span class="toc-text">贝叶斯公式的推导过程</span></a></li></ol></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/59825.html" title="随机变量的假设检验"><img src="/images/posts/cover_nothing.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="随机变量的假设检验"/></a><div class="content"><a class="title" href="/posts/59825.html" title="随机变量的假设检验">随机变量的假设检验</a><time datetime="2025-06-26T13:03:44.000Z" title="发表于 2025-06-26 21:03:44">2025-06-26</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/9946.html" title="参数估计之区间估计"><img src="/images/posts/cover_math4.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="参数估计之区间估计"/></a><div class="content"><a class="title" href="/posts/9946.html" title="参数估计之区间估计">参数估计之区间估计</a><time datetime="2025-06-26T13:02:41.000Z" title="发表于 2025-06-26 21:02:41">2025-06-26</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/5644.html" title="参数估计之点估计—矩估计法和最大似然估计法"><img src="/images/posts/cover_security.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="参数估计之点估计—矩估计法和最大似然估计法"/></a><div class="content"><a class="title" href="/posts/5644.html" title="参数估计之点估计—矩估计法和最大似然估计法">参数估计之点估计—矩估计法和最大似然估计法</a><time datetime="2025-06-26T13:01:47.000Z" title="发表于 2025-06-26 21:01:47">2025-06-26</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/19945.html" title="大数定律部分定理详解"><img src="/images/posts/cover_Tijie.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="大数定律部分定理详解"/></a><div class="content"><a class="title" href="/posts/19945.html" title="大数定律部分定理详解">大数定律部分定理详解</a><time datetime="2025-06-26T13:00:36.000Z" title="发表于 2025-06-26 21:00:36">2025-06-26</time></div></div></div></div></div></div></main><div class="fps-display"><span id="fps">FPS: 60</span></div><footer id="footer" style="background-image: url(/images/posts/cover_h2.jpg);"><div id="footer-wrap"><div class="copyright">&copy;2024 - 2025 By ErgouTree</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">忘れたくない思い、ありますか？ <br>,<span id="realtime_duration" style="font-family: monospace;"></span>,<br><a href="https://icp.gov.moe/?keyword=20257009" target="_blank">萌ICP备20257009号</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><a class="icon-V hidden" onclick="switchNightMode()" title="日间和夜间模式切换"><svg width="25" height="25" viewBox="0 0 1024 1024"><use id="modeicon" xlink:href="#icon-moon"></use></svg></a><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="chat-btn" type="button" title="聊天" style="display:none"><i class="fas fa-comment"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (true) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script><script>(() => {
+  const applyThemeDefaultsConfig = theme => {
+    if (theme === 'dark-mode') {
+      Chart.defaults.color = "rgba(255, 255, 255, 0.8)"
+      Chart.defaults.borderColor = "rgba(255, 255, 255, 0.2)"
+      Chart.defaults.scale.ticks.backdropColor = "transparent"
+    } else {
+      Chart.defaults.color = "rgba(0, 0, 0, 0.8)"
+      Chart.defaults.borderColor = "rgba(0, 0, 0, 0.1)"
+      Chart.defaults.scale.ticks.backdropColor = "transparent"
+    }
+  }
+
+  // Recursively traverse the config object and automatically apply theme-specific color schemes
+  const applyThemeConfig = (obj, theme) => {
+    if (typeof obj !== 'object' || obj === null) return
+
+    Object.keys(obj).forEach(key => {
+      const value = obj[key]
+      // If the property is an object and has theme-specific options, apply them
+      if (typeof value === 'object' && value !== null) {
+        if (value[theme]) {
+          obj[key] = value[theme] // Apply the value for the current theme
+        } else {
+          // Recursively process child objects
+          applyThemeConfig(value, theme)
+        }
+      }
+    })
+  }
+
+  const runChartJS = ele => {
+    window.loadChartJS = true
+
+    Array.from(ele).forEach((item, index) => {
+      const chartSrc = item.firstElementChild
+      const chartID = item.getAttribute('data-chartjs-id') || ('chartjs-' + index) // Use custom ID or default ID
+      const width = item.getAttribute('data-width')
+      const existingCanvas = document.getElementById(chartID)
+
+      // If a canvas already exists, remove it to avoid rendering duplicates
+      if (existingCanvas) {
+          existingCanvas.parentNode.remove()
+      }
+
+      const chartDefinition = chartSrc.textContent
+      const canvas = document.createElement('canvas')
+      canvas.id = chartID
+
+      const div = document.createElement('div')
+      div.className = 'chartjs-wrap'
+
+      if (width) {
+        div.style.width = width
+      }
+
+      div.appendChild(canvas)
+      chartSrc.insertAdjacentElement('afterend', div)
+
+      const ctx = document.getElementById(chartID).getContext('2d')
+
+      const config = JSON.parse(chartDefinition)
+
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark-mode' : 'light-mode'
+
+      // Set default styles (initial setup)
+      applyThemeDefaultsConfig(theme)
+
+      // Automatically traverse the config and apply dual-mode color schemes
+      applyThemeConfig(config, theme)
+
+      new Chart(ctx, config)
+    })
+  }
+
+  const loadChartJS = () => {
+    const chartJSEle = document.querySelectorAll('#article-container .chartjs-container')
+    if (chartJSEle.length === 0) return
+
+    window.loadChartJS ? runChartJS(chartJSEle) : btf.getScript('https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.min.js').then(() => runChartJS(chartJSEle))
+  }
+
+  // Listen for theme change events
+  btf.addGlobalFn('themeChange', loadChartJS, 'chartjs')
+  btf.addGlobalFn('encrypt', loadChartJS, 'chartjs')
+
+  window.pjax ? loadChartJS() : document.addEventListener('DOMContentLoaded', loadChartJS)
+})()</script><script>(function() {
+  const abcjsInit = function() {
+    const abcjsFn = function() {
+      setTimeout(function() {
+        const sheets = document.querySelectorAll(".abc-music-sheet")
+        for (let i = 0; i < sheets.length; i++) {
+          const ele = sheets[i]
+          if (ele.children.length > 0) continue
+
+          // Parse parameters from data-params attribute
+          let params = {}
+          const dp = ele.getAttribute("data-params")
+          if (dp) {
+            try {
+              params = JSON.parse(dp)
+            } catch (e) {
+              console.error("Failed to parse data-params:", e)
+            }
+          }
+
+          // Merge parsed parameters with the responsive option
+          // Ensures params content appears before responsive
+          const options = { ...params, responsive: "resize" }
+
+          // Render the music score using ABCJS.renderAbc
+          ABCJS.renderAbc(ele, ele.innerHTML, options)
+        }
+      }, 100)
+    }
+
+    if (typeof ABCJS === "object") {
+      abcjsFn()
+    } else {
+      btf.getScript("https://cdn.jsdelivr.net/npm/abcjs/dist/abcjs-basic-min.min.js").then(abcjsFn)
+    }
+  }
+
+  if (window.pjax) {
+    abcjsInit()
+  } else {
+    window.addEventListener("load", abcjsInit)
+  }
+
+  btf.addGlobalFn("encrypt", abcjsInit, "abcjs")
+})()</script><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = {"labels":["Gitalk","Comment"],"createIssueManually":false,"distractionFreeMode":false}
+
+  const commentCount = n => {
+    const isCommentCount = document.querySelector('#post-meta .gitalk-comment-count')
+    if (isCommentCount) {
+      isCommentCount.textContent= n
+    }
+  }
+
+  const initGitalk = (el, path) => {
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGitalk = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+
+    const gitalk = new Gitalk({
+      clientID: 'Ov23li3vDQANiUddL4XB',
+      clientSecret: '5c9a56d02995340fca117809cd414662aadce6ff',
+      repo: 'HexoComment',
+      owner: 'ergou10086',
+      admin: ['ergou10086'],
+      updateCountCallback: commentCount,
+      ...option,
+      id: isShuoshuo ? path : (option && option.id) || '121b036ed7d7b78d32e540dca3a5e627'
+    })
+
+    gitalk.render('gitalk-container')
+  }
+
+  const loadGitalk = async(el, path) => {
+    if (typeof Gitalk === 'function') initGitalk(el, path)
+    else {
+      await btf.getCSS('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.css')
+      await btf.getScript('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.js')
+      initGitalk(el, path)
+    }
+  }
+
+  if (isShuoshuo) {
+    'Gitalk' === 'Gitalk'
+      ? window.shuoshuoComment = { loadComment: loadGitalk }
+      : window.loadOtherComment = loadGitalk
+    return
+  }
+
+  if ('Gitalk' === 'Gitalk' || !false) {
+    if (false) btf.loadComment(document.getElementById('gitalk-container'), loadGitalk)
+    else loadGitalk()
+  } else {
+    window.loadOtherComment = loadGitalk
+  }
+})()</script></div><div class="aplayer no-destroy" data-id="13587761608" data-server="netease" data-type="playlist" data-fixed="true" data-autoplay="false" data-lrcType="-1"> </div><script src="https://cdn.jsdelivr.net/npm/abcjs@7.1.2/dist/abcjs-basic-min.js"></script><script src="/js/sun_moon.js" async></script><script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.7/dayjs.min.js"></script><script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.7/plugin/duration.min.js"></script><script src="/scripts/realtime.js"></script><script src="/scripts/random.js"></script><script defer="defer" id="ribbon" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-ribbon.min.js" size="150" alpha="0.6" zIndex="-1" mobile="null" data-click="true"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = false;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><script id="click-heart" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/click-heart.min.js" async="async" mobile="false"></script><script>(() => {
+  window.ChatraID = '4bzb546NSBoJcrNyu'
+  window.Chatra = window.Chatra || function() {
+    (window.Chatra.q = window.Chatra.q || []).push(arguments)
+  }
+
+  btf.getScript('https://call.chatra.io/chatra.js').then(() => {
+    const isChatBtn = true
+    const isChatHideShow = true
+
+    if (isChatBtn) {
+      const close = () => {
+        Chatra('minimizeWidget')
+        Chatra('hide')
+      }
+
+      const open = () => {
+        Chatra('openChat', true)
+        Chatra('show')
+      }
+
+      window.ChatraSetup = { startHidden: true }
+    
+      window.chatBtnFn = () => document.getElementById('chatra').classList.contains('chatra--expanded') ? close() : open()
+
+      document.getElementById('chat-btn').style.display = 'block'
+    } else if (isChatHideShow) {
+      window.chatBtn = {
+        hide: () => Chatra('hide'),
+        show: () => Chatra('show')
+      }
+    }
+  })
+})()</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/metingjs/dist/Meting.min.js"></script><script>(() => {
+  const destroyAplayer = () => {
+    if (window.aplayers) {
+      for (let i = 0; i < window.aplayers.length; i++) {
+        if (!window.aplayers[i].options.fixed) {
+          window.aplayers[i].destroy()
+        }
+      }
+    }
+  }
+
+  const runMetingJS = () => {
+    typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+  }
+
+  btf.addGlobalFn('pjaxSend', destroyAplayer, 'destroyAplayer')
+  btf.addGlobalFn('pjaxComplete', loadMeting, 'runMetingJS')
+})()</script><script src="https://cdn.jsdelivr.net/npm/pjax/pjax.min.js"></script><script>(() => {
+  const pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+  window.pjax = new Pjax({
+    elements: 'a:not([target="_blank"]):not([href="/music/"])',
+    selectors: pjaxSelectors,
+    cacheBust: false,
+    analytics: false,
+    scrollRestoration: false
+  })
+
+  const triggerPjaxFn = (val) => {
+    if (!val) return
+    Object.values(val).forEach(fn => fn())
+  }
+
+  document.addEventListener('pjax:send', () => {
+    // removeEventListener
+    btf.removeGlobalFnEvent('pjaxSendOnce')
+    btf.removeGlobalFnEvent('themeChange')
+
+    // reset readmode
+    const $bodyClassList = document.body.classList
+    if ($bodyClassList.contains('read-mode')) $bodyClassList.remove('read-mode')
+
+    triggerPjaxFn(window.globalFn.pjaxSend)
+  })
+
+  document.addEventListener('pjax:complete', () => {
+    btf.removeGlobalFnEvent('pjaxCompleteOnce')
+    document.querySelectorAll('script[data-pjax]').forEach(item => {
+      const newScript = document.createElement('script')
+      const content = item.text || item.textContent || item.innerHTML || ""
+      Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+      newScript.appendChild(document.createTextNode(content))
+      item.parentNode.replaceChild(newScript, item)
+    })
+
+    triggerPjaxFn(window.globalFn.pjaxComplete)
+  })
+
+  document.addEventListener('pjax:error', e => {
+    if (e.request.status === 404) {
+      const usePjax = true
+      true 
+        ? (usePjax ? pjax.loadUrl('/404.html') : window.location.href = '/404.html')
+        : window.location.href = e.request.responseURL
+    }
+  })
+})()</script><script src="/js/fps-display.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><!-- hexo injector body_end start --><script data-pjax>
+  function butterfly_swiper_injector_config(){
+    var parent_div_git = document.getElementById('recent-posts');
+    var item_html = '<div class="recent-post-item" style="height: auto;width: 100%"><div class="blog-slider swiper-container-fade swiper-container-horizontal" id="swiper_container"><div class="blog-slider__wrp swiper-wrapper" style="transition-duration: 0ms;"><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_database.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-14</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt="">结构化查询语言SQL</a><div class="blog-slider__text">SQL基本很常用的语句都在这里了，本质上是当初为了应付数据库考试整理的，后来发现还蛮有用的很方便查常用的语句</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java4.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-22</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt="">SpringBoot part0?INF-SpringBoot这个框架都需要学习什么</a><div class="blog-slider__text">主要围绕Spring Boot中重要知识来简洁或详细的说明，其中部分不够完全，持续更新</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java11.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-15</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt="">关于Lombok在高版本IDEA中注解处理不生效的问题解决</a><div class="blog-slider__text">基本上是彻底的解决了用 IDEA 新建 Spring Boot 项目时候会产生的 Lombok 注解处理失效的各种问题</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_实用.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-05</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt="">个人向galgame原声带或相关音乐整理及其资源</a><div class="blog-slider__text">整理了我喜欢的galgame ost或者衍生的音乐专辑，部分资源是自己扒盘扒下来的，部分来自鸟白岛放映厅</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_math.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-17</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt="">对书上证明样本方差是总体方差的无偏估计量的解析</a><div class="blog-slider__text">对书上证明样本方差是总体方差的无偏估计量的解析，高等教育出版社-华科大版本</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_alog.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-04-24</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt="">第十五届蓝桥杯Java国赛B组D题-园丁题解</a><div class="blog-slider__text">第十五届蓝桥杯Java国赛B组D题-园丁题解，该题解已经发布到洛谷社区中并且被全站推荐</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java4.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-04-29</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt="">操作系统之处理机的死锁部分概述</a><div class="blog-slider__text">对操作系统之处理机的死锁部分知识的总结，包括代码复现</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_lb.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-09</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt="">Little Busters!EX游戏攻略</a><div class="blog-slider__text">整理了一份详细清晰的Little Busters！EX的游戏攻略，因为我自己也在推，就顺手整理了一份方便查阅的md文档</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java9.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-16</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt="">Spring Boot中使用Hibernate框架</a><div class="blog-slider__text">对学习完Hibernate的应用部分，主要围绕Spring Boot中使用Hibernate框架，建议学习完 Hibernate 框架再看</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div></div><div class="blog-slider__pagination swiper-pagination-clickable swiper-pagination-bullets"></div></div></div>';
+    console.log('已挂载butterfly_swiper')
+    parent_div_git.insertAdjacentHTML("afterbegin",item_html)
+    }
+  var elist = 'undefined'.split(',');
+  var cpage = location.pathname;
+  var epage = '/';
+  var flag = 0;
+
+  for (var i=0;i<elist.length;i++){
+    if (cpage.includes(elist[i])){
+      flag++;
+    }
+  }
+
+  if ((epage ==='all')&&(flag == 0)){
+    butterfly_swiper_injector_config();
+  }
+  else if (epage === cpage){
+    butterfly_swiper_injector_config();
+  }
+  </script><script defer src="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper.min.js"></script><script defer data-pjax src="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper_init.js"></script><!-- hexo injector body_end end --></body></html>
