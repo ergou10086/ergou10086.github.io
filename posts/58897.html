@@ -1,0 +1,1195 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Spring Cloud part7—Nacos注册中心的原理和使用 | ErgouTree's Blog</title><meta name="author" content="ErgouTree"><meta name="copyright" content="ErgouTree"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="Spring Cloud Alibaba 什么是Spring Cloud Alibaba Spring Cloud Alibaba 是阿里巴巴基于 Spring Cloud 规范开发的微服务生态体系，旨在为开发者提供一套完整的微服务解决方案，Spring Cloud Alibaba 生态以 Nacos、Sentinel、Seata 为核心，整合了网关、消息队列等组件，形成了一套适合国内企">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spring Cloud part7—Nacos注册中心的原理和使用">
+<meta property="og:url" content="https://ergou10086.github.io/posts/58897.html">
+<meta property="og:site_name" content="ErgouTree&#39;s Blog">
+<meta property="og:description" content="Spring Cloud Alibaba 什么是Spring Cloud Alibaba Spring Cloud Alibaba 是阿里巴巴基于 Spring Cloud 规范开发的微服务生态体系，旨在为开发者提供一套完整的微服务解决方案，Spring Cloud Alibaba 生态以 Nacos、Sentinel、Seata 为核心，整合了网关、消息队列等组件，形成了一套适合国内企">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://ergou10086.github.io/images/posts/cover_theory2.jpg">
+<meta property="article:published_time" content="2025-07-18T08:39:47.000Z">
+<meta property="article:modified_time" content="2025-07-19T17:05:08.032Z">
+<meta property="article:author" content="ErgouTree">
+<meta property="article:tag" content="Java技术">
+<meta property="article:tag" content="JavaWeb">
+<meta property="article:tag" content="框架知识">
+<meta property="article:tag" content="学习">
+<meta property="article:tag" content="JavaEE">
+<meta property="article:tag" content="Spring系列">
+<meta property="article:tag" content="Java框架">
+<meta property="article:tag" content="源码分析">
+<meta property="article:tag" content="Spring Cloud">
+<meta property="article:tag" content="微服务">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ergou10086.github.io/images/posts/cover_theory2.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Spring Cloud part7—Nacos注册中心的原理和使用",
+  "url": "https://ergou10086.github.io/posts/58897.html",
+  "image": "https://ergou10086.github.io/images/posts/cover_theory2.jpg",
+  "datePublished": "2025-07-18T08:39:47.000Z",
+  "dateModified": "2025-07-19T17:05:08.032Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "ErgouTree",
+      "url": "https://github.com/ergou10086"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/pi.ico"><link rel="canonical" href="https://ergou10086.github.io/posts/58897.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//hm.baidu.com"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!true && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?https://hm.baidu.com/hm.js?a6ab1b78e2c6320b664f31e8b9bf0e36";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+btf.addGlobalFn('pjaxComplete', () => {
+  _hmt.push(['_trackPageview',window.location.pathname])
+}, 'baidu_analytics')
+</script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.json","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":true},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: {"chs_to_cht":"已切换为繁体中文","cht_to_chs":"已切换为简体中文","day_to_night":"已切换为深色模式","night_to_day":"已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#1f1f1f","position":"bottom-left"},
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Spring Cloud part7—Nacos注册中心的原理和使用',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css"><svg aria-hidden="true" style="position:absolute; overflow:hidden; width:0; height:0"><symbol id="icon-sun" viewBox="0 0 1024 1024"><path d="M960 512l-128 128v192h-192l-128 128-128-128H192v-192l-128-128 128-128V192h192l128-128 128 128h192v192z" fill="#FFD878" p-id="8420"></path><path d="M736 512a224 224 0 1 0-448 0 224 224 0 1 0 448 0z" fill="#FFE4A9" p-id="8421"></path><path d="M512 109.248L626.752 224H800v173.248L914.752 512 800 626.752V800h-173.248L512 914.752 397.248 800H224v-173.248L109.248 512 224 397.248V224h173.248L512 109.248M512 64l-128 128H192v192l-128 128 128 128v192h192l128 128 128-128h192v-192l128-128-128-128V192h-192l-128-128z" fill="#4D5152" p-id="8422"></path><path d="M512 320c105.888 0 192 86.112 192 192s-86.112 192-192 192-192-86.112-192-192 86.112-192 192-192m0-32a224 224 0 1 0 0 448 224 224 0 0 0 0-448z" fill="#4D5152" p-id="8423"></path></symbol><symbol id="icon-moon" viewBox="0 0 1024 1024"><path d="M611.370667 167.082667a445.013333 445.013333 0 0 1-38.4 161.834666 477.824 477.824 0 0 1-244.736 244.394667 445.141333 445.141333 0 0 1-161.109334 38.058667 85.077333 85.077333 0 0 0-65.066666 135.722666A462.08 462.08 0 1 0 747.093333 102.058667a85.077333 85.077333 0 0 0-135.722666 65.024z" fill="#FFB531" p-id="11345"></path><path d="M329.728 274.133333l35.157333-35.157333a21.333333 21.333333 0 1 0-30.165333-30.165333l-35.157333 35.157333-35.114667-35.157333a21.333333 21.333333 0 0 0-30.165333 30.165333l35.114666 35.157333-35.114666 35.157334a21.333333 21.333333 0 1 0 30.165333 30.165333l35.114667-35.157333 35.157333 35.157333a21.333333 21.333333 0 1 0 30.165333-30.165333z" fill="#030835" p-id="11346"></path></symbol></svg><link rel="stylesheet" href="/css/custom.css"><!-- hexo injector head_end start --><link rel="stylesheet" href="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiperstyle.css" media="print" onload="this.media='all'"><!-- hexo injector head_end end --><meta name="generator" content="Hexo 7.3.0"></head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js/pace.min.js"></script><div id="web_bg" style="background: linear-gradient(20deg, #0062be, #925696, #cc426e, #fb0347);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/arp.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">167</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">87</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">60</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-images"></i><span> Gallery</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/games/"><i class="fa-fw fas fa-game"></i><span> GalGame</span></a></li><li><a class="site-page child" href="/video/"><i class="fa-fw fas fa-video"></i><span> Video</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div><div class="menus_item"><a class="site-page" href="javascript:randomPost();"><span> Random</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/images/posts/cover_theory2.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">ErgouTree's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">Spring Cloud part7—Nacos注册中心的原理和使用</span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-images"></i><span> Gallery</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/games/"><i class="fa-fw fas fa-game"></i><span> GalGame</span></a></li><li><a class="site-page child" href="/video/"><i class="fa-fw fas fa-video"></i><span> Video</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div><div class="menus_item"><a class="site-page" href="javascript:randomPost();"><span> Random</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div><div id="randomPost"><a class="site-page social-icon search" href="javascript:;" onclick="randomPost()" title="随机访问一篇文章"><i class="fas fa-circle-notch fa-fw"></i></a></div></nav><div id="post-info"><h1 class="post-title">Spring Cloud part7—Nacos注册中心的原理和使用<a class="post-edit-link" href="https://github.com/ergou10086/ergou10086.github.io/edit/main/source/_posts/_posts/SpringCloudpart7—Nacos注册中心的原理和使用.md" title="编辑" target="_blank"><i class="fas fa-pencil-alt"></i></a></h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2025-07-18T08:39:47.000Z" title="发表于 2025-07-18 16:39:47">2025-07-18</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2025-07-19T17:05:08.032Z" title="更新于 2025-07-20 01:05:08">2025-07-20</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Java%E5%AD%A6%E4%B9%A0/">Java学习</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Java%E5%AD%A6%E4%B9%A0/Spring%E7%B3%BB%E5%88%97/">Spring系列</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Java%E5%AD%A6%E4%B9%A0/Spring%E7%B3%BB%E5%88%97/Spring-Cloud/">Spring Cloud</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">7.9k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>24分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span><span class="post-meta-separator">|</span><span class="post-meta-commentcount"><i class="far fa-comments fa-fw post-meta-icon"></i><span class="post-meta-label">评论数:</span><a href="/posts/58897.html#post-comment"><span class="gitalk-comment-count"><i class="fa-solid fa-spinner fa-spin"></i></span></a></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="spring-cloud-alibaba">Spring Cloud Alibaba</h2>
+<h3 id="什么是spring-cloud-alibaba">什么是Spring Cloud Alibaba</h3>
+<p>Spring Cloud Alibaba 是阿里巴巴基于 Spring Cloud
+规范开发的微服务生态体系，旨在为开发者提供一套完整的微服务解决方案，Spring
+Cloud Alibaba 生态以 Nacos、Sentinel、Seata
+为核心，整合了网关、消息队列等组件，形成了一套适合国内企业的微服务解决方案。其优势在于<strong>组件一体化、高性能、本土化适配</strong>，尤其适合对稳定性和并发能力要求高的业务场景。</p>
+<h3 id="spring-cloud-alibaba-核心组件及功能">Spring Cloud Alibaba
+核心组件及功能</h3>
+<p>Spring Cloud Alibaba 与 Spring 官方提供的 Spring Cloud
+生态的不同，就基本都是体现在组件的不同上，基本Spring Cloud
+生态的该有的各种组件类型，Spring Cloud Alibaba 也基本都有</p>
+<p>Spring Cloud Alibaba
+的生态组件围绕微服务全生命周期展开，以下是他们的核心组件</p>
+<ul>
+<li><p>服务注册与发现组件，分布式配置：Nacos</p>
+<ul>
+<li>Nacos 是 Spring Cloud Alibaba
+的核心组件，集<strong>服务注册发现</strong>与<strong>配置管理</strong>于一体，替代了传统的
+Eureka + Config 组合。
+<ul>
+<li><strong>服务注册发现</strong>：支持基于 DNS 和 RPC 的服务发现，兼容
+Dubbo、Spring Cloud 等框架，提供实时健康检查（TCP/HTTP/MySQL
+等协议），自动剔除不健康服务。</li>
+<li><strong>动态配置管理</strong>：支持配置的集中管理、动态推送（无需重启服务），并可按环境、集群、命名空间隔离配置，满足多环境部署需求。</li>
+<li><strong>高可用设计</strong>：采用集群部署（至少 3 节点），通过 Raft
+协议保证数据一致性，支持数据持久化（MySQL 存储），避免单点故障</li>
+<li><strong>优势</strong>：相比 Eureka，Nacos
+支持配置管理与服务发现一体化，减少组件依赖；相比 Consul，Nacos
+提供更丰富的配置管理功能和本土化适配</li>
+</ul></li>
+<li>Nacos Config
+作为配置中心，解决了微服务中配置分散、更新繁琐的问题，与 Nacos
+服务发现共享同一集群，减少部署成本。</li>
+</ul></li>
+<li><p>服务熔断与服务降级：Sentinel</p>
+<ul>
+<li>Sentinel 是面向分布式系统的流量控制工具，替代了
+Hystrix，提供<strong>流量控制、熔断降级、系统负载保护</strong>等功能，以
+“熔断降级” 为核心，保障服务稳定性。
+<ul>
+<li>Sentinel
+采用滑动窗口计数（更精准），支持更细粒度的规则配置，且控制台更易用，性能优于
+Hystrix（单机 QPS 可达百万级）</li>
+</ul></li>
+</ul></li>
+<li><p>分布式事务：Seata</p>
+<ul>
+<li><p>Seata
+是阿里巴巴开源的分布式事务解决方案，解决微服务中跨服务数据一致性问题，替代了传统的
+2PC（两阶段提交）方案，支持<strong>AT、TCC、SAGA、XA</strong>
+四种模式。</p>
+<ul>
+<li><p>AT 模式（默认）：基于本地事务 +
+全局锁实现，无需业务代码侵入。流程为：</p>
+<ol type="1">
+<li>第一阶段：本地事务提交，记录 undo_log（回滚日志）；</li>
+</ol></li>
+</ul>
+<ol start="2" type="1">
+<li>第二阶段：若所有分支事务成功，删除 undo_log；若失败，根据 undo_log
+回滚。</li>
+</ol></li>
+<li><p><strong>TCC 模式</strong>：需要业务代码实现 Try（资源检查 /
+预留）、Confirm（确认提交）、Cancel（取消释放）三个接口，灵活性高但开发成本高，适合复杂业务场景。</p></li>
+<li><p><strong>SAGA
+模式</strong>：基于状态机的长事务解决方案，通过补偿操作实现最终一致性，适合长流程业务（如订单履约）。</p></li>
+<li><p><strong>优势</strong>：相比传统 2PC，Seata
+减少了锁竞争，性能更高；AT 模式无需侵入业务代码，降低开发成本。</p></li>
+</ul></li>
+<li><p>网关路由：Spring Cloud Gateway + Alibaba Cloud Gateway</p>
+<ul>
+<li>网关是微服务的入口，负责<strong>路由转发、负载均衡、认证授权、限流</strong>等功能，Spring
+Cloud Alibaba 推荐使用 Spring Cloud Gateway（基于 Netty
+的非阻塞网关），并提供 Alibaba Cloud Gateway 作为增强方案。
+<ul>
+<li><p><strong>动态路由</strong>：基于配置中心（如
+Nacos）动态更新路由规则，无需重启网关。</p></li>
+<li><p><strong>负载均衡</strong>：集成 Ribbon/Nacos
+负载均衡策略，将请求分发到后端服务实例。</p></li>
+<li><p><strong>与 Sentinel 集成</strong>：通过 Sentinel
+网关规则，对网关层进行流量控制（如限制某路由的 QPS）。</p></li>
+</ul></li>
+</ul></li>
+<li><p>消息驱动：Spring Cloud Stream + RocketMQ</p>
+<ul>
+<li>Spring Cloud Stream 是消息驱动开发的标准化框架，而 RocketMQ
+是阿里巴巴的分布式消息队列，两者结合实现<strong>服务间异步通信</strong>，解耦服务依赖，避免同步调用导致的服务阻塞。</li>
+</ul></li>
+<li><p>服务间调用：Dubbo Spring Cloud</p>
+<ul>
+<li>Dubbo 是阿里巴巴的 RPC 框架，Spring Cloud Alibaba 提供 Dubbo Spring
+Cloud 组件，支持<strong>基于 Dubbo 的 RPC 调用</strong>，与 Spring Cloud
+的 REST 调用形成互补。
+<ul>
+<li><p>Dubbo 基于二进制协议（如 Hessian2），性能优于
+REST（HTTP/JSON），适合高频、低延迟的服务调用。</p></li>
+<li><p>REST 基于 HTTP
+协议，更适合跨语言、跨平台通信（如前端与后端）。</p></li>
+<li><p>两者可共存：核心服务间用 Dubbo 提升性能，对外接口用 REST
+保持兼容性。</p></li>
+</ul></li>
+</ul></li>
+</ul>
+<table style="width:100%;">
+<colgroup>
+<col style="width: 12%">
+<col style="width: 26%">
+<col style="width: 25%">
+<col style="width: 35%">
+</colgroup>
+<thead>
+<tr>
+<th>功能场景</th>
+<th>Spring Cloud 原生组件</th>
+<th>Spring Cloud Alibaba 组件</th>
+<th>优势对比</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>服务注册发现</td>
+<td>Eureka/Consul</td>
+<td>Nacos</td>
+<td>Nacos 集成配置管理，高可用更优</td>
+</tr>
+<tr>
+<td>熔断降级</td>
+<td>Hystrix</td>
+<td>Sentinel</td>
+<td>Sentinel 性能更高，规则配置更灵活</td>
+</tr>
+<tr>
+<td>配置管理</td>
+<td>Config + Bus</td>
+<td>Nacos Config</td>
+<td>一体化部署，动态推送更高效</td>
+</tr>
+<tr>
+<td>分布式事务</td>
+<td>无原生支持（需集成 Seata）</td>
+<td>Seata</td>
+<td>深度集成，AT 模式降低开发成本</td>
+</tr>
+<tr>
+<td>网关</td>
+<td>Zuul</td>
+<td>Spring Cloud Gateway</td>
+<td>非阻塞 IO，性能提升 10 倍以上</td>
+</tr>
+<tr>
+<td>消息队列</td>
+<td>RabbitMQ/Kafka</td>
+<td>RocketMQ</td>
+<td>事务消息支持更完善，本土化适配更好</td>
+</tr>
+</tbody>
+</table>
+<h3 id="nacos-与-erueka-有什么区别">Nacos 与 Erueka 有什么区别</h3>
+<p>其实这个问题应该这么问，大家其实就差不多知道区别了——<strong>为什么使用Nacos而不是Eureka</strong></p>
+<p>工作方式的区别：</p>
+<ul>
+<li>Erueka：Eureka包含两个组件：Eureka Server和Eureka
+Client，这俩的作用前面已经说过了</li>
+<li>Nacos：Nacos提供了namespace来实现环境隔离功能。
+<ul>
+<li>nacos中可以有多个namespace</li>
+<li>namespace下可以有group</li>
+<li>不同namespace之间相互隔离，例如不同namespace的服务互相不可见</li>
+</ul></li>
+</ul>
+<p>支持CAP的情况：</p>
+<blockquote>
+<ul>
+<li><strong>Consistency（一致性）</strong>
+：数据一致更新，所有数据的变化都是同步的</li>
+<li><strong>Availability（可用性）</strong>
+：在集群中一部分节点故障后，集群整体是否还能响应客户端的读写请求</li>
+<li><strong>Partition tolerance（分区容忍性）</strong>
+：某个节点的故障，并不影响整个系统的运行</li>
+</ul>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>注册中心</th>
+<th>AP</th>
+<th>CP</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Eureka</td>
+<td>支持</td>
+<td>不支持</td>
+</tr>
+<tr>
+<td>Nacos</td>
+<td>支持</td>
+<td>支持</td>
+</tr>
+</tbody>
+</table>
+<p>连接方式：</p>
+<ul>
+<li>Nacos使用的是netty和服务直接进行连接,属于长连接</li>
+<li>Eureka是使用定时发送和服务进行联系,属于短连接</li>
+</ul>
+<p>服务异常的检测和剔除：</p>
+<ul>
+<li>Erueka：Eureka client在默认情况每隔30s想Eureka
+Server发送一次心跳，当Eureka
+Server在默认连续90s秒的情况下没有收到心跳，会把Eureka client
+从注册表中剔除，在由Eureka-Server 60秒的清除间隔，把Eureka client
+给下线，也就是在极端情况下Eureka
+服务从异常到剔除在到完全不接受请求可能需要 30s+90s+60s=3分钟左右</li>
+<li>Nacos client 通过心跳上报方式告诉
+nacos注册中心健康状态,默认心跳间隔5秒，nacos会在超过15秒未收到心跳后将实例设置为不健康状态，可以正常接收到请求超过30秒nacos将实例删除,不会再接收请求</li>
+</ul>
+<p>操作方式：</p>
+<ul>
+<li>Erueka：仅提供了实例列表，实例的状态，错误信息，相比于nacos过于简单</li>
+<li>Nacos：提供了nacos
+console可视化控制话界面，可以对实例列表进行监听，对实例进行上下线，权重的配置，并且config
+server提供了对服务实例提供配置中心，且可以对配置进行CRUD，版本管理</li>
+</ul>
+<h2 id="nacos-的原理">Nacos 的原理</h2>
+<h3 id="nacos-介绍">Nacos 介绍</h3>
+<p>在服务注册和发现中，服务消费者要去调用多个服务提供者组成的集群，需要做到以下几点：</p>
+<ol type="1">
+<li>服务消费者<strong>需要在本地配置文件中维护服务提供者集群的每个节点的请求地址</strong>。</li>
+<li>服务提供者集群中如果某个节点宕机，<strong>服务消费者的本地配置中需要同步删除这个节点的请求地址</strong>，防止请求发送到已经宕机的节点上造成请求失败。</li>
+</ol>
+<p>因此需要引入服务注册中心，它具有以下几个功能：</p>
+<ol type="1">
+<li>服务地址的管理。</li>
+<li>服务注册。</li>
+<li>服务动态感知。</li>
+</ol>
+<p>而Nacos致力于解决微服务中的统一配置，服务注册和发现等问题。<strong>Nacos集成了注册中心和配置中心</strong>。其相关特性包括：</p>
+<ul>
+<li>Nacos支持基于DNS和RPC的服务发现，即<strong>服务消费者可以使用DNS或者HTTP的方式来查找和发现服务</strong>。</li>
+<li><strong>Nacos支持传输层（Ping/TCP）、应用层（HTTP、Mysql）的健康检查。</strong></li>
+<li>Nacos支持动态配置服务，可以<strong>以中心化、外部化和动态化的方式管理所有环境的应用配置和服务配置。</strong></li>
+<li>Nacos支持动态 DNS
+服务，支持权重路由，让开发者更容易的实现中间层的负载均衡、更灵活的路由策略、流量控制以及DNS解析服务。</li>
+<li>Nacos允许开发者从微服务平台建设的视角来管理数据中心的所有服务和元数据。如：服务的生命周期、静态依赖分析、服务的健康状态、服务的流量管理、路由和安全策略等。</li>
+</ul>
+<h3 id="nacos-架构">Nacos 架构</h3>
+<p>如下为 Nacos 的架构图</p>
+<figure>
+<img src="/posts/58897/image-20250719101103327.png" alt="image-20250719101103327">
+<figcaption aria-hidden="true">image-20250719101103327</figcaption>
+</figure>
+<pre><code class="highlight mermaid">flowchart TB
+    subgraph 多数据中心Nacos集群
+        subgraph Nacos服务器
+            OpenAPI[OpenAPI（http/dns/udp/tls）]
+            subgraph 服务层
+                ConfigService[配置服务]
+                NamingService[命名服务]
+            end
+            NacosCore[Nacos核心]
+            ConsistencyProtocol[一致性协议（priv-raft/sync renew/rdbms based）]
+            OpenAPI --&gt; ConfigService
+            OpenAPI --&gt; NamingService
+            ConfigService --&gt; NacosCore
+            NamingService --&gt; NacosCore
+            NacosCore --&gt; ConsistencyProtocol
+        end
+        subgraph Nacos控制台
+            UserConsole[用户控制台]
+            AdminConsole[管理控制台]
+            CustomizedConsole[自定义控制台]
+        end
+    end
+    ProviderAPP[提供者应用\nNacos客户端/边车] --&gt; NameServer[名称服务器\n（dns/vip/地址服务器）]
+    ConsumerAPP[消费者应用\nNacos客户端/边车] --&gt; NameServer
+    NameServer --&gt; OpenAPI</code></pre>
+<p>其中分为这么几个模块：</p>
+<ul>
+<li><p><strong>Multi-Datacenter Nacos Cluster</strong>：多数据中心 Nacos
+集群</p>
+<p>这是整个 Nacos 的部署环境，表示 Nacos
+可以支持在多个数据中心进行部署，以实现高可用性和容灾能力。</p>
+<ul>
+<li><p><strong>Nacos Server</strong>：Nacos 服务器</p>
+<p>Nacos
+Server的底层则通过数据一致性算法（Raft）来完成节点的数据同步。</p>
+<ul>
+<li><p><strong>OpenAPI（http/dns/udp/tls）</strong>：提供了多种协议的开放
+API
+接口，供外部应用（如提供者应用和消费者应用）进行服务注册、发现、配置获取等操作。支持
+HTTP、DNS、UDP、TLS 等多种通信协议，增强了 Nacos
+的兼容性和灵活性。</p></li>
+<li><p><strong>服务层（Service Layer）</strong></p>
+<ul>
+<li><strong>配置服务（Config
+Service）</strong>：负责配置的管理，包括配置的存储、读取、更新、删除等操作。应用可以通过该服务获取和更新配置信息。</li>
+<li><strong>命名服务（Naming
+Service）</strong>：主要处理服务的注册与发现。服务提供者将自己的服务信息注册到命名服务，服务消费者通过命名服务获取可用的服务实例信息。</li>
+</ul></li>
+<li><p><strong>Nacos Core</strong>：Nacos 核心模块</p>
+<p>是 Nacos
+的核心模块，整合了配置服务和命名服务的功能，处理各种业务逻辑和请求分发。</p></li>
+<li><p><strong>Consistency Protocol - priv-raft/sync renew/rdbms
+based</strong>：一致性协议</p>
+<p>保证 Nacos
+集群中数据的一致性。这里提到了几种可能的一致性协议实现方式，如私有的
+Raft
+协议、同步更新协议以及基于关系型数据库（RDBMS）的方式。这些协议确保在分布式环境下，各个节点之间的数据能够保持同步和一致。</p></li>
+</ul></li>
+<li><p>Nacos Console：Nacos控制台</p>
+<ul>
+<li><strong>用户控制台（User
+Console）</strong>：为普通用户提供的操作界面，用户可以在这里进行服务和配置的相关操作，如查看服务列表、配置信息等。</li>
+<li><strong>管理控制台（Admin
+Console）</strong>：主要供管理员使用，用于对 Nacos
+集群进行管理和监控，如查看集群状态、进行节点管理、配置管理等高级操作。</li>
+<li><strong>自定义控制台（Customized
+Console）</strong>：允许用户根据自己的需求进行定制开发的控制台界面，以满足特定的业务需求。</li>
+</ul></li>
+<li><p><strong>提供者应用（Provider APP）和消费者应用（Consumer
+APP）</strong></p>
+<ul>
+<li>都包含 Nacos 客户端 / 边车（Nacos client/sidecar），用于与 Nacos
+服务器进行交互。<strong>提供者应用将服务注册到 Nacos
+服务器，消费者应用从 Nacos 服务器获取服务信息。</strong></li>
+<li>它们通过名称服务器（Name Server - dns/vip/ 地址服务器）与 Nacos
+服务器的 OpenAPI
+进行通信。名称服务器起到了路由和寻址的作用，帮助应用找到正确的 Nacos
+服务器节点。</li>
+</ul></li>
+</ul></li>
+</ul>
+<figure>
+<img src="/posts/58897/image-20250719122200786.png" alt="image-20250719122200786">
+<figcaption aria-hidden="true">image-20250719122200786</figcaption>
+</figure>
+<h3 id="nacos-的数据模型">Nacos 的数据模型</h3>
+<p>Nacos 数据模型 Key
+由三元组唯一确定。通过以下三者就可以确定同一个服务了</p>
+<p>在服务注册和订阅的时候，必须要指定上述三部分信息，如果不指定，Nacos就会提供默认的信息</p>
+<ul>
+<li><p>命名空间（Namespace）：多租户隔离用的，默认是<code>public</code></p>
+<p>Namespace
+的常用场景之一是不同环境的配置的区分隔离，例如开发测试环境和生产环境的资源（如配置、服务）隔离等。</p></li>
+<li><p>分组（Group）：这个其实可以用来做环境隔离，服务注册时可以指定服务的分组，比如是测试环境或者是开发环境，默认是<code>DEFAULT_GROUP</code></p>
+<p>Nacos 中的一组配置集，一个有意义的字符串（如 Buy 或 Trade
+）对配置集进行分组，从而区分 Data ID 相同的配置集，默认采用
+DEFAULT_GROUP 。</p>
+<p>配置分组的常见场景：不同的应用或组件使用了相同的配置类型。</p></li>
+<li><p>服务名（ServiceName）：这个就不用多说了</p></li>
+</ul>
+<figure>
+<img src="/posts/58897/image-20250719122652026.png" alt="image-20250719122652026">
+<figcaption aria-hidden="true">image-20250719122652026</figcaption>
+</figure>
+<p>其中，在服务里面其实还是有一个集群的概念，在服务注册的时候，可以指定这个服务实例在哪个集体的集群中，默认是在<code>DEFAULT</code>集群下，在服务订阅的时候，可以指定订阅哪些集群下的服务实例，当然，如果不指定的话，默认就是订阅这个服务下的所有集群的服务实例</p>
+<h3 id="临时实例和永久实例"><strong>临时实例和永久实例</strong></h3>
+<p>临时实例和永久实例在Nacos中是一个<strong>非常非常重要</strong>的概念，因为临时实例和永久实例在源码层次的许多实现机制是完全不同的</p>
+<p>临时实例在注册到注册中心之后仅仅只保存在服务端内部一个缓存中，不会持久化到磁盘，这个服务端内部的缓存在注册中心届一般被称为<strong>服务注册表</strong>，当服务实例出现异常或者下线之后，就会把这个服务实例从服务注册表中剔除</p>
+<p>永久服务实例不仅仅会存在服务注册表中，同时也会被持久化到磁盘文件中，当服务实例出现异常或者下线，Nacos只会将服务实例的健康状态设置为不健康，并不会对将其从服务注册表中剔除</p>
+<p><strong>临时实例</strong>就比较适合于业务服务，服务下线之后可以不需要在注册中心中查看到</p>
+<p><strong>永久实例</strong>就比较适合需要运维的服务，这种服务几乎是永久存在的，比如说MySQL、Redis等等，对于这些服务，我们需要一直看到服务实例的状态，即使出现异常，也需要能够查看实时的状态</p>
+<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">spring</span></span><br><span class="line">  <span class="attr">cloud:</span></span><br><span class="line">    <span class="attr">nacos:</span></span><br><span class="line">      <span class="attr">discovery:</span></span><br><span class="line">        <span class="comment">#ephemeral单词是临时的意思，设置成false，就是永久实例了</span></span><br><span class="line">        <span class="attr">ephemeral:</span> <span class="literal">false</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<h3 id="注册中心的原理">注册中心的原理</h3>
+<p>作为一个服务注册中心，服务注册肯定是一个非常重要的功能，首先，服务注册的功能体现在：</p>
+<ul>
+<li>服务实例启动时注册到服务注册表、关闭时则注销（<strong>服务注册</strong>）。</li>
+<li>服务消费者可以通过查询服务注册表来获得可用的实例（<strong>服务发现</strong>）。</li>
+<li>服务注册中心需要调用服务实例的健康检查API来验证其是否可以正确的处理请求（<strong>健康检查</strong>）。</li>
+</ul>
+<p>Nacos服务注册和发现的实现原理的图如下：</p>
+<figure>
+<img src="/posts/58897/image-20250719101851333.png" alt="image-20250719101851333">
+<figcaption aria-hidden="true">image-20250719101851333</figcaption>
+</figure>
+<p>在 2.x 的版本中，Nacos
+的服务注册就比较复杂，因为2.x版本相比于1.x版本最主要的升级就是客户端和服务端通信协议的改变，Nacos
+2.x 最核心的升级是通信协议从 HTTP 改为 gRPC。</p>
+<p>之所以改成了gRPC，主要是因为HTTP 是短连接模式，每次通信都需要建立 TCP
+连接→发送请求→断开连接，频繁的连接创建 / 销毁会消耗大量资源，这样，HTTP
+的开销会成为系统瓶颈，而且最重要的一点是实时性很差，HTTP 基于请求 -
+响应模式，服务端无法主动向客户端推送信息</p>
+<p>在具体的实现中，Nacos客户端在启动的时候，会通过gRPC跟服务端建立长连接，这个连接会一直存在，之后客户端与服务端所有的通信都是基于这个长连接来的，客户端的所有操作（注册、心跳、查询服务、订阅配置等）都通过这个长连接完成，不再频繁创建新连接</p>
+<figure>
+<img src="/posts/58897/image-20250719102724899.png" alt="image-20250719102724899">
+<figcaption aria-hidden="true">image-20250719102724899</figcaption>
+</figure>
+<p>剩下的就差不多了，服务端拿到服务实例存到服务注册表，对于<strong>临时实例</strong>（默认类型），客户端会将注册信息缓存到本地，方便
+Redo 操作</p>
+<p>而 Redo 操作本质是 “操作重做”
+的补偿策略，本质是个定时任务，默认每3s执行一次：</p>
+<ul>
+<li><strong>触发场景</strong>：当网络异常导致 gRPC
+长连接断开后，重新建立连接时</li>
+<li><strong>核心作用</strong>：确保客户端之前的关键操作（注册、订阅等）在重连后能恢复</li>
+<li>实现方式
+<ul>
+<li>客户端本地维护一个
+“操作日志缓存”，记录所有需要持久化的操作（如临时实例注册、服务订阅）</li>
+<li>内置定时任务（默认 3 秒执行一次）检查连接状态</li>
+<li>当连接恢复时，自动重新执行缓存中的操作（如重新注册服务实例、重新订阅服务）</li>
+</ul></li>
+</ul>
+<h3 id="nacos-服务发现的原理">Nacos 服务发现的原理</h3>
+<p>所谓的服务发现就是指当有服务实例注册成功之后，其它服务可以发现这些服务实例</p>
+<p>Nacos提供了两种发现方式：</p>
+<ul>
+<li><strong>主动查询</strong>：客户端主动向服务端发起查询请求，获取服务实例列表，也就是拉（pull）的模式，一般在服务启动时获取初始服务列表</li>
+<li><strong>服务订阅</strong>：客户端向服务端发送一个订阅服务的请求，当被订阅的服务有信息变动就会主动将服务实例的信息推送给订阅的客户端，本质就是推（push）模式</li>
+</ul>
+<p>在我们平时使用时，一般来说都是选择使用订阅的方式，这样一旦有服务实例数据的变动，客户端能够第一时间感知，并且Nacos在整合
+Spring Cloud 的时候，默认就是使用订阅的方式</p>
+<p><strong>服务查询</strong></p>
+<p>服务查询其实实现都很简单，1.x整体就是发送Http请求去查询服务实例，2.x只不过是将Http请求换成了gRPC的请求。服务端对于查询的处理过程都是一样的，从服务注册表中查出符合查询条件的服务实例进行返回</p>
+<p><strong>服务订阅</strong></p>
+<p>在Nacos客户端，不论是1.x还是2.x都是通过SDK中的<code>NamingService</code>中的<code>subscribe</code>方法来发起订阅的，只支持订阅临时服务，对于永久服务，已经不支持订阅了<img src="/posts/58897/image-20250719121655629.png" alt="image-20250719121655629"></p>
+<figure>
+<img src="/posts/58897/image-20250719121724252.png" alt="image-20250719121724252">
+<figcaption aria-hidden="true">image-20250719121724252</figcaption>
+</figure>
+<ol type="1">
+<li><p><strong>gRPC 长连接推送</strong>：</p>
+<ul>
+<li>基于 gRPC 的双向流特性，服务端可以主动向客户端推送服务变更</li>
+<li>当有服务实例变动的时候，服务端直接通过这个长连接将服务信息发送给客户端</li>
+</ul></li>
+<li><p><strong>本地缓存机制</strong>：</p>
+<ul>
+<li>保留了与 1.x 相同的本地缓存策略</li>
+<li>服务变更时更新本地缓存</li>
+</ul></li>
+<li><p><strong>定时拉取机制 (默认关闭)</strong>：</p>
+<ul>
+<li>保留了定时拉取补偿机制，但默认不启用，因为长连接比较稳定</li>
+<li>可以通过配置手动开启，作为极端情况下的兜底策略</li>
+</ul></li>
+<li><p><strong>Redo 机制保障</strong>：</p>
+<ul>
+<li><p>当客户端出现异常，接收不到请求，那么服务端会直接跟客户端断开连接</p></li>
+<li><p>连接断开重连后，通过 Redo
+机制自动重新订阅服务，所以还是能拿到最新的实例信息的</p></li>
+<li><p>这个机制确保服务端和客户端状态最终一致</p></li>
+</ul></li>
+</ol>
+<figure>
+<img src="/posts/58897/image-20250719121236780.png" alt="image-20250719121236780">
+<figcaption aria-hidden="true">image-20250719121236780</figcaption>
+</figure>
+<h3 id="nacos-中的心跳机制">Nacos 中的心跳机制</h3>
+<h4 id="nacos-心跳机制的保活">Nacos 心跳机制的保活</h4>
+<p>Erueka 有的，我们 Nacos 也有，而且做得更好</p>
+<p>在前面我们学习过，心跳机制的作用就是服务实例告诉注册中心我这个服务实例还活着，而且通过心跳机制，Nacos
+服务端可以实时了解每个服务实例的运行状态，如果服务端在一定时间内没有收到某个服务实例的心跳，就会认为该服务实例出现故障，将其从服务注册表中剔除，从而避免消费者调用到不可用的服务</p>
+<p><strong>在Nacos中，心跳机制仅仅是针对临时实例来说的，临时实例需要靠心跳机制来保活</strong></p>
+<p>在上面我提过，由于版本更新使用 gRPC
+协议，客户端与服务端保持长连接，所以它是利用这个 gRPC
+长连接本身的心跳来保活</p>
+<p>除了连接本身的心跳之外，Nacos还有服务端的一个主动检测机制，Nacos服务端也会启动一个定时任务，默认每隔3s执行一次，这个任务会去检查超过20s没有发送请求数据的连接，一旦发现有连接已经超过20s没发送请求，那么就会向这个连接对应的客户端发送一个请求，如果请求不通或者响应失败，此时服务端也会认为与客户端的这个连接异常，从而将这个客户端注册的服务实例从服务注册表中剔除</p>
+<p>在 Http 协议的版本中，心跳机制本质就是两个定时任务</p>
+<p>在服务注册时，如果发现是临时实例，客户端会开启一个5s执行一次的定时任务，这个定时任务会构建一个Http请求，携带这个服务实例的信息，然后发送到服务端</p>
+<p>Nacos
+服务端接收到心跳请求后，会根据请求中的信息，在服务注册表中找到对应的服务实例记录，并更新该实例的最后心跳时间。通过记录最后心跳时间，服务端可以判断服务实例的活跃状态。</p>
+<p>而在Nacos服务端也会开启一个定时任务，默认也是5s执行一次，去检查这些服务实例最后一次心跳的时间，也就是客户端最后一次发送Http请求的时间</p>
+<ul>
+<li>当最后一次心跳时间超过15s，但没有超过30s，会把这服务实例标记成不健康</li>
+<li>当最后一次心跳超过30s，直接把服务从服务注册表中剔除</li>
+</ul>
+<h4 id="nacos-的健康检查机制">Nacos 的健康检查机制</h4>
+<p>那么，心跳机制仅仅是临时实例用来保护的机制，而对于永久实例来说，一般来说无法主动上报心跳，这怎么办</p>
+<p>所以针对永久实例的情况，Nacos通过一种叫<strong>健康检查</strong>的机制去判断服务实例是否活着</p>
+<p>健康检查跟心跳机制刚好相反，心跳机制是服务实例向服务端发送请求</p>
+<p>而所谓的健康检查就是<strong>服务端主动向服务实例发送请求</strong>，去探测服务实例是否活着</p>
+<p>Nacos服务端在会去创建一个健康检查任务，这个任务每次执行时间间隔会在2000~7000毫秒之间，当任务触发的时候，会根据设置的健康检查的方式执行不同的逻辑，目前主要有以下三种方式</p>
+<ul>
+<li><p>TCP：根据服务实例的ip和端口去判断是否能连接成功，如果连接成功，就认为健康，反之就任务不健康，默认情况下，都是通过TCP的方式来探测服务实例是否还活着</p></li>
+<li><p>HTTP：向服务实例的ip和端口发送一个Http请求，请求路径是需要设置的，如果能正常请求，说明实例健康，反之就不健康</p></li>
+<li><p>MySQL：他可以执行下面这条Sql来判断数据库是不是主库</p>
+<figure>
+<img src="/posts/58897/image-20250719104248942.png" alt="image-20250719104248942">
+<figcaption aria-hidden="true">image-20250719104248942</figcaption>
+</figure></li>
+</ul>
+<h3 id="数据一致性">数据一致性</h3>
+<p>由于Nacos是支持集群模式的，所以一定会涉及到分布式系统中不可避免的数据一致性问题</p>
+<h4 id="服务实例的责任机制">服务实例的责任机制</h4>
+<p>Nacos
+集群中的每个节点都会维护完整的服务注册表，但为了平衡负载，每个节点只负责部分服务实例的健康检查，当然每个Nacos服务的注册表还是全部的服务实例数据：</p>
+<ol type="1">
+<li><strong>责任分配算法</strong>：基于服务实例的 IP
+或哈希值进行分片，确保<strong>每个服务实例只被一个节点负责</strong></li>
+<li><strong>数据同步</strong>：所有节点通过一致性协议保持服务注册表的最终一致</li>
+<li><strong>故障转移</strong>：当某个节点宕机时，其负责的服务实例会被重新分配给其他节点</li>
+</ol>
+<figure>
+<img src="/posts/58897/image-20250719121930837.png" alt="image-20250719121930837">
+<figcaption aria-hidden="true">image-20250719121930837</figcaption>
+</figure>
+<h4 id="cap-定理">CAP 定理</h4>
+<p>CAP 定理是分布式系统设计的基础理论，包含三个核心要素：</p>
+<ol type="1">
+<li><strong>一致性
+(Consistency)</strong>：所有节点在同一时间看到相同的数据</li>
+<li><strong>可用性
+(Availability)</strong>：系统在合理时间内返回结果，不出现错误</li>
+<li><strong>分区容错性 (Partition
+tolerance)</strong>：系统在网络分区情况下仍能继续运行</li>
+</ol>
+<p><strong>三者不可兼得的原因</strong>：</p>
+<ul>
+<li><p>网络分区是分布式系统必然存在的情况</p></li>
+<li><p>当网络分区发生时，系统必须在一致性和可用性之间做出选择</p>
+<figure>
+<img src="/posts/58897/image-20250719122411984.png" alt="image-20250719122411984">
+<figcaption aria-hidden="true">image-20250719122411984</figcaption>
+</figure></li>
+</ul>
+<p><strong>经典场景分析</strong>：</p>
+<p>假设系统分为 A、B 两个区域，网络分区导致 A 和 B 无法通信：</p>
+<ol type="1">
+<li><strong>保证可用性</strong>：A 区域可以处理写请求 (i=1)，但 B
+区域无法同步更新，导致数据不一致</li>
+<li><strong>保证一致性</strong>：A
+区域必须拒绝写请求，系统失去写可用性</li>
+</ol>
+<h4 id="base理论">BASE理论</h4>
+<p>继续上面的例子，首先我们可以先保证系统的可用性，也就是先让系统能够写数据，将A区域服务中的i修改成1，之后当AB区域之间网络恢复之后，将A区域的i值复制给B区域，这样就能够保证AB区域间的数据最终是一致的了</p>
+<p>BASE 理论是对 CAP 定理的妥协，强调可用性优先：</p>
+<ol type="1">
+<li><strong>基本可用 (Basically
+Available)</strong>：系统出现故障时仍能提供核心功能</li>
+<li><strong>软状态 (Soft
+State)</strong>：允许系统在一段时间内存在数据不一致</li>
+<li><strong>最终一致性 (Eventually
+Consistent)</strong>：系统恢复后，数据会自动同步达到一致</li>
+</ol>
+<p><strong>BASE 理论在 Nacos 中的应用</strong>：</p>
+<ol type="1">
+<li>临时实例处理
+<ul>
+<li>注册时先保证可用性，立即返回成功</li>
+<li>通过心跳机制最终保证实例状态一致</li>
+</ul></li>
+<li>配置同步
+<ul>
+<li>配置修改后立即返回成功</li>
+<li>通过长轮询或推送机制最终同步到所有节点</li>
+</ul></li>
+<li>服务发现
+<ul>
+<li>允许短时间内的服务列表不一致</li>
+<li>通过定时拉取保证最终一致性</li>
+</ul></li>
+</ol>
+<h3 id="nacos-的-ap-实现可用性优先">Nacos 的 AP 实现（可用性优先）</h3>
+<p>Nacos其实目前是同时支持AP和CP的，具体使用AP还是CP得取决于Nacos内部的具体功能</p>
+<p>就以服务注册举例来说，对于临时实例来说，Nacos会优先保证可用性，也就是AP，对于永久实例，Nacos会优先保证数据的一致性，也就是CP</p>
+<p>对于AP来说，Nacos使用的是阿里自研的 Distro
+协议，专为高可用场景设计。</p>
+<p>在这个协议中，每个服务端节点是一个平等的状态，每个服务端节点正常情况下数据是一样的，每个服务端节点都可以接收来自客户端的读写请求</p>
+<figure>
+<img src="/posts/58897/image-20250719123000392.png" alt="image-20250719123000392">
+<figcaption aria-hidden="true">image-20250719123000392</figcaption>
+</figure>
+<p>当某个节点刚启动时，他会向集群中的某个节点发送请求，拉取所有的服务实例数据到自己的服务注册表中，这样其它客户端就可以从这个服务节点中获取到服务实例数据了</p>
+<figure>
+<img src="/posts/58897/image-20250719123009720.png" alt="image-20250719123009720">
+<figcaption aria-hidden="true">image-20250719123009720</figcaption>
+</figure>
+<p>当某个服务端节点接收到注册<strong>临时服务实例</strong>的请求，不仅仅会将这个服务实例存到自身的服务注册表，同时也会向其它所有服务节点发送请求，将这个服务数据同步到其它所有节点，所以此时从任意一个节点都是可以获取到所有的服务实例数据的。</p>
+<figure>
+<img src="/posts/58897/image-20250719123309221.png" alt="image-20250719123309221">
+<figcaption aria-hidden="true">image-20250719123309221</figcaption>
+</figure>
+<p>即使数据同步的过程发生异常，服务实例也成功注册到一个Nacos服务中，对外部而言，整个Nacos集群是可用的，也就达到了AP的效果，而且Nacos也有下面两种机制保证最终节点间数据最终是一致的：</p>
+<ul>
+<li><p>失败重试机制：当数据同步给其它节点失败时，会每隔3s重试一次，直到成功</p></li>
+<li><p>定时对比机制：</p>
+<p>每个Nacos服务节点会定时向所有的其它服务节点发送一些认证的请求</p>
+<p>这个请求会告诉每个服务节点<strong>自己负责的服务实例</strong>的对应的版本号，这个版本号随着服务实例的变动就会变动</p>
+<p>如果其它服务节点的数据的版本号跟自己的对不上，那就说明其它服务节点的数据不是最新的</p>
+<p>此时这个Nacos服务节点就会将自己负责的服务实例数据发给不是最新数据的节点，这样就保证了每个节点的数据是一样的了。</p></li>
+</ul>
+<h3 id="nacos-的-cp-实现">Nacos 的 CP 实现</h3>
+<p>Nacos 的 CP（一致性优先）模式基于 <strong>Raft
+共识算法</strong>，提供强一致性保证。</p>
+<p>在Raft算法，每个节点主要有三个状态</p>
+<ul>
+<li>Leader，负责所有的读写请求，一个集群只有一个</li>
+<li>Follower，从节点，主要是负责复制Leader的数据，保证数据的一致性</li>
+<li>Candidate，候选节点，最终会变成Leader或者Follower</li>
+</ul>
+<p>集群启动时都是节点 Follower，超时未收到心跳会转换成 Candidate
+状态参与选举，再经过一系列复杂的选择算法，选出一个Leader</p>
+<p>当有写请求时，如果请求的节点不是Leader节点时，会将请求转给Leader节点，由Leader节点处理写请求，然后Leader
+向 Follower
+同步日志，而且写入操作需要超过半数节点确认，这样确保数据强一致性</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a target="_blank" rel="noopener" href="https://github.com/ergou10086">ErgouTree</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://ergou10086.github.io/posts/58897.html">https://ergou10086.github.io/posts/58897.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://ergou10086.github.io" target="_blank">ErgouTree's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Java%E6%8A%80%E6%9C%AF/">Java技术</a><a class="post-meta__tags" href="/tags/JavaWeb/">JavaWeb</a><a class="post-meta__tags" href="/tags/%E6%A1%86%E6%9E%B6%E7%9F%A5%E8%AF%86/">框架知识</a><a class="post-meta__tags" href="/tags/%E5%AD%A6%E4%B9%A0/">学习</a><a class="post-meta__tags" href="/tags/JavaEE/">JavaEE</a><a class="post-meta__tags" href="/tags/Spring%E7%B3%BB%E5%88%97/">Spring系列</a><a class="post-meta__tags" href="/tags/Java%E6%A1%86%E6%9E%B6/">Java框架</a><a class="post-meta__tags" href="/tags/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">源码分析</a><a class="post-meta__tags" href="/tags/Spring-Cloud/">Spring Cloud</a><a class="post-meta__tags" href="/tags/%E5%BE%AE%E6%9C%8D%E5%8A%A1/">微服务</a></div><div class="post-share"><div class="addtoany"><div class="a2a_kit a2a_kit_size_32 a2a_default_style"><a class="a2a_button_facebook"></a><a class="a2a_button_twitter"></a><a class="a2a_button_wechat"></a><a class="a2a_button_sina_weibo"></a><a class="a2a_button_facebook_messenger"></a><a class="a2a_button_email"></a><a class="a2a_button_copy_link"></a><a class="a2a_dd" target="_blank" rel="noopener" href="https://www.addtoany.com/share"></a></div></div><script async="async" src="https://static.addtoany.com/menu/page.js"></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/posts/28246.html" title="如何在IDEA中以不同端口开启同一个服务多个实例"><div class="cover" style="background: /images/posts/"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">如何在IDEA中以不同端口开启同一个服务多个实例</div></div><div class="info-2"><div class="info-item-1"> </div></div></div></a><a class="pagination-related" href="/posts/43175.html" title="SpringCloudpart6—Ribbon负载均衡原理，策略与实现"><img class="cover" src="/images/posts/cover_spring.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">SpringCloudpart6—Ribbon负载均衡原理，策略与实现</div></div><div class="info-2"><div class="info-item-1">...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/posts/43175.html" title="SpringCloudpart6—Ribbon负载均衡原理，策略与实现"><img class="cover" src="/images/posts/cover_spring.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-07-18</div><div class="info-item-2">SpringCloudpart6—Ribbon负载均衡原理，策略与实现</div></div><div class="info-2"><div class="info-item-1">...</div></div></div></a><a class="pagination-related" href="/posts/3648.html" title="Spring Cloud part1—理解微服务架构"><img class="cover" src="/images/posts/cover_java16.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-07-15</div><div class="info-item-2">Spring Cloud part1—理解微服务架构</div></div><div class="info-2"><div class="info-item-1">认识微服务架构 在入门Spring Cloud 之前，我们需要先了解下什么是微服务，在架构发展的过程中，项目开发遇到了哪些问题，以及Spring Cloud是用来解决什么问题的。 单体架构 vs 微服务架构的区别 在学习微服务之前，先了解它与传统单体架构的核心差异，能帮助我们更好地理解微服务的设计初衷 下图表示了单体架构到微服务架构的发展过程   image-20250710085009656  单体架构将所有功能模块（如用户管理、订单处理、支付系统等）打包在一个应用程序中，部署在单一服务器或集群上。  特点  代码集中在一个代码库，开发工具和技术栈统一 部署简单，只需打包成一个应用（如 JAR、WAR...</div></div></div></a><a class="pagination-related" href="/posts/4859.html" title="Spring Cloud part4—服务的拆分与调用的原则"><img class="cover" src="/images/posts/cover_main.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-07-17</div><div class="info-item-2">Spring Cloud part4—服务的拆分与调用的原则</div></div><div class="info-2"><div class="info-item-1">服务拆分 如何进行微服务的在设计之初的拆分 首先，微服务拆分之所以能显著提升企业需求响应速度，本质是通过架构解耦实现研发效能的非线性增长。 一般是从业务领域出发，按边界领域进行拆分，微服务的本质是 “业务服务化”，因此最核心的拆分依据是业务领域的自然边界。可以通过 “领域驱动设计（DDD）” 梳理业务模块，识别出独立的 “领域”，每个领域对应一个或多个微服务。  梳理业务流程：列出系统的核心业务流程（如电商的 “商品管理”“订单处理”“支付结算”“用户会员” 等）。 划分领域边界：每个业务流程中，识别出 “不可再分” 的独立业务单元（领域），这些单元应具备完整的业务能力，且与其他单元的依赖较弱。 定义服务职责：每个领域对应一个服务，明确其核心职责（如 “订单服务”...</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="gitalk-container"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/arp.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">ErgouTree</div><div class="author-info-description">I start a brand-new life with you.</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">167</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">87</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">60</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/ergou10086"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/ergou10086" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="/zjm88822201@126.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a><a class="social-icon" href="https://space.bilibili.com/142045656?spm_id_from=333.1007.0.0" target="_blank" title="bilibili"><i class="fas fa-brands fa-bilibili" style="color: #4a72be;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">作者长期陷入galgame和osu!maina4k中 祝他好运吧 对了 如果图片加载过慢 建议科学上网进行使用</div></div><div class="card-widget"><div class="item-headline"><i></i><span></span></div><div class="item-content"></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#spring-cloud-alibaba"><span class="toc-number">1.</span> <span class="toc-text">Spring Cloud Alibaba</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AFspring-cloud-alibaba"><span class="toc-number">1.1.</span> <span class="toc-text">什么是Spring Cloud Alibaba</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#spring-cloud-alibaba-%E6%A0%B8%E5%BF%83%E7%BB%84%E4%BB%B6%E5%8F%8A%E5%8A%9F%E8%83%BD"><span class="toc-number">1.2.</span> <span class="toc-text">Spring Cloud Alibaba
+核心组件及功能</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#nacos-%E4%B8%8E-erueka-%E6%9C%89%E4%BB%80%E4%B9%88%E5%8C%BA%E5%88%AB"><span class="toc-number">1.3.</span> <span class="toc-text">Nacos 与 Erueka 有什么区别</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#nacos-%E7%9A%84%E5%8E%9F%E7%90%86"><span class="toc-number">2.</span> <span class="toc-text">Nacos 的原理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#nacos-%E4%BB%8B%E7%BB%8D"><span class="toc-number">2.1.</span> <span class="toc-text">Nacos 介绍</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#nacos-%E6%9E%B6%E6%9E%84"><span class="toc-number">2.2.</span> <span class="toc-text">Nacos 架构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#nacos-%E7%9A%84%E6%95%B0%E6%8D%AE%E6%A8%A1%E5%9E%8B"><span class="toc-number">2.3.</span> <span class="toc-text">Nacos 的数据模型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%B4%E6%97%B6%E5%AE%9E%E4%BE%8B%E5%92%8C%E6%B0%B8%E4%B9%85%E5%AE%9E%E4%BE%8B"><span class="toc-number">2.4.</span> <span class="toc-text">临时实例和永久实例</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B3%A8%E5%86%8C%E4%B8%AD%E5%BF%83%E7%9A%84%E5%8E%9F%E7%90%86"><span class="toc-number">2.5.</span> <span class="toc-text">注册中心的原理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#nacos-%E6%9C%8D%E5%8A%A1%E5%8F%91%E7%8E%B0%E7%9A%84%E5%8E%9F%E7%90%86"><span class="toc-number">2.6.</span> <span class="toc-text">Nacos 服务发现的原理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#nacos-%E4%B8%AD%E7%9A%84%E5%BF%83%E8%B7%B3%E6%9C%BA%E5%88%B6"><span class="toc-number">2.7.</span> <span class="toc-text">Nacos 中的心跳机制</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#nacos-%E5%BF%83%E8%B7%B3%E6%9C%BA%E5%88%B6%E7%9A%84%E4%BF%9D%E6%B4%BB"><span class="toc-number">2.7.1.</span> <span class="toc-text">Nacos 心跳机制的保活</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#nacos-%E7%9A%84%E5%81%A5%E5%BA%B7%E6%A3%80%E6%9F%A5%E6%9C%BA%E5%88%B6"><span class="toc-number">2.7.2.</span> <span class="toc-text">Nacos 的健康检查机制</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E4%B8%80%E8%87%B4%E6%80%A7"><span class="toc-number">2.8.</span> <span class="toc-text">数据一致性</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%9C%8D%E5%8A%A1%E5%AE%9E%E4%BE%8B%E7%9A%84%E8%B4%A3%E4%BB%BB%E6%9C%BA%E5%88%B6"><span class="toc-number">2.8.1.</span> <span class="toc-text">服务实例的责任机制</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#cap-%E5%AE%9A%E7%90%86"><span class="toc-number">2.8.2.</span> <span class="toc-text">CAP 定理</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#base%E7%90%86%E8%AE%BA"><span class="toc-number">2.8.3.</span> <span class="toc-text">BASE理论</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#nacos-%E7%9A%84-ap-%E5%AE%9E%E7%8E%B0%E5%8F%AF%E7%94%A8%E6%80%A7%E4%BC%98%E5%85%88"><span class="toc-number">2.9.</span> <span class="toc-text">Nacos 的 AP 实现（可用性优先）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#nacos-%E7%9A%84-cp-%E5%AE%9E%E7%8E%B0"><span class="toc-number">2.10.</span> <span class="toc-text">Nacos 的 CP 实现</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/37868.html" title="赫炎的印加诺克攻略"><img src="/images/posts/cover_hy.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="赫炎的印加诺克攻略"/></a><div class="content"><a class="title" href="/posts/37868.html" title="赫炎的印加诺克攻略">赫炎的印加诺克攻略</a><time datetime="2025-07-19T15:54:17.000Z" title="发表于 2025-07-19 23:54:17">2025-07-19</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/43175.html" title="SpringCloudpart6—Ribbon负载均衡原理，策略与实现"><img src="/images/posts/cover_spring.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="SpringCloudpart6—Ribbon负载均衡原理，策略与实现"/></a><div class="content"><a class="title" href="/posts/43175.html" title="SpringCloudpart6—Ribbon负载均衡原理，策略与实现">SpringCloudpart6—Ribbon负载均衡原理，策略与实现</a><time datetime="2025-07-18T08:40:26.000Z" title="发表于 2025-07-18 16:40:26">2025-07-18</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/58897.html" title="Spring Cloud part7—Nacos注册中心的原理和使用"><img src="/images/posts/cover_theory2.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Spring Cloud part7—Nacos注册中心的原理和使用"/></a><div class="content"><a class="title" href="/posts/58897.html" title="Spring Cloud part7—Nacos注册中心的原理和使用">Spring Cloud part7—Nacos注册中心的原理和使用</a><time datetime="2025-07-18T08:39:47.000Z" title="发表于 2025-07-18 16:39:47">2025-07-18</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/28246.html" title="如何在IDEA中以不同端口开启同一个服务多个实例"><div style="background: /images/posts/"></div></a><div class="content"><a class="title" href="/posts/28246.html" title="如何在IDEA中以不同端口开启同一个服务多个实例">如何在IDEA中以不同端口开启同一个服务多个实例</a><time datetime="2025-07-18T07:09:58.000Z" title="发表于 2025-07-18 15:09:58">2025-07-18</time></div></div></div></div></div></div></main><div class="fps-display"><span id="fps">FPS: 60</span></div><footer id="footer" style="background-image: url(/images/posts/cover_theory2.jpg);"><div id="footer-wrap"><div class="copyright">&copy;2024 - 2025 By ErgouTree</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">忘れたくない思い、ありますか？ <br>,<span id="realtime_duration" style="font-family: monospace;"></span>,<br><a href="https://icp.gov.moe/?keyword=20257009" target="_blank">萌ICP备20257009号</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><a class="icon-V hidden" onclick="switchNightMode()" title="日间和夜间模式切换"><svg width="25" height="25" viewBox="0 0 1024 1024"><use id="modeicon" xlink:href="#icon-moon"></use></svg></a><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="chat-btn" type="button" title="聊天" style="display:none"><i class="fas fa-comment"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (true) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script><script>(() => {
+  const applyThemeDefaultsConfig = theme => {
+    if (theme === 'dark-mode') {
+      Chart.defaults.color = "rgba(255, 255, 255, 0.8)"
+      Chart.defaults.borderColor = "rgba(255, 255, 255, 0.2)"
+      Chart.defaults.scale.ticks.backdropColor = "transparent"
+    } else {
+      Chart.defaults.color = "rgba(0, 0, 0, 0.8)"
+      Chart.defaults.borderColor = "rgba(0, 0, 0, 0.1)"
+      Chart.defaults.scale.ticks.backdropColor = "transparent"
+    }
+  }
+
+  // Recursively traverse the config object and automatically apply theme-specific color schemes
+  const applyThemeConfig = (obj, theme) => {
+    if (typeof obj !== 'object' || obj === null) return
+
+    Object.keys(obj).forEach(key => {
+      const value = obj[key]
+      // If the property is an object and has theme-specific options, apply them
+      if (typeof value === 'object' && value !== null) {
+        if (value[theme]) {
+          obj[key] = value[theme] // Apply the value for the current theme
+        } else {
+          // Recursively process child objects
+          applyThemeConfig(value, theme)
+        }
+      }
+    })
+  }
+
+  const runChartJS = ele => {
+    window.loadChartJS = true
+
+    Array.from(ele).forEach((item, index) => {
+      const chartSrc = item.firstElementChild
+      const chartID = item.getAttribute('data-chartjs-id') || ('chartjs-' + index) // Use custom ID or default ID
+      const width = item.getAttribute('data-width')
+      const existingCanvas = document.getElementById(chartID)
+
+      // If a canvas already exists, remove it to avoid rendering duplicates
+      if (existingCanvas) {
+          existingCanvas.parentNode.remove()
+      }
+
+      const chartDefinition = chartSrc.textContent
+      const canvas = document.createElement('canvas')
+      canvas.id = chartID
+
+      const div = document.createElement('div')
+      div.className = 'chartjs-wrap'
+
+      if (width) {
+        div.style.width = width
+      }
+
+      div.appendChild(canvas)
+      chartSrc.insertAdjacentElement('afterend', div)
+
+      const ctx = document.getElementById(chartID).getContext('2d')
+
+      const config = JSON.parse(chartDefinition)
+
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark-mode' : 'light-mode'
+
+      // Set default styles (initial setup)
+      applyThemeDefaultsConfig(theme)
+
+      // Automatically traverse the config and apply dual-mode color schemes
+      applyThemeConfig(config, theme)
+
+      new Chart(ctx, config)
+    })
+  }
+
+  const loadChartJS = () => {
+    const chartJSEle = document.querySelectorAll('#article-container .chartjs-container')
+    if (chartJSEle.length === 0) return
+
+    window.loadChartJS ? runChartJS(chartJSEle) : btf.getScript('https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.min.js').then(() => runChartJS(chartJSEle))
+  }
+
+  // Listen for theme change events
+  btf.addGlobalFn('themeChange', loadChartJS, 'chartjs')
+  btf.addGlobalFn('encrypt', loadChartJS, 'chartjs')
+
+  window.pjax ? loadChartJS() : document.addEventListener('DOMContentLoaded', loadChartJS)
+})()</script><script>(function() {
+  const abcjsInit = function() {
+    const abcjsFn = function() {
+      setTimeout(function() {
+        const sheets = document.querySelectorAll(".abc-music-sheet")
+        for (let i = 0; i < sheets.length; i++) {
+          const ele = sheets[i]
+          if (ele.children.length > 0) continue
+
+          // Parse parameters from data-params attribute
+          let params = {}
+          const dp = ele.getAttribute("data-params")
+          if (dp) {
+            try {
+              params = JSON.parse(dp)
+            } catch (e) {
+              console.error("Failed to parse data-params:", e)
+            }
+          }
+
+          // Merge parsed parameters with the responsive option
+          // Ensures params content appears before responsive
+          const options = { ...params, responsive: "resize" }
+
+          // Render the music score using ABCJS.renderAbc
+          ABCJS.renderAbc(ele, ele.innerHTML, options)
+        }
+      }, 100)
+    }
+
+    if (typeof ABCJS === "object") {
+      abcjsFn()
+    } else {
+      btf.getScript("https://cdn.jsdelivr.net/npm/abcjs/dist/abcjs-basic-min.min.js").then(abcjsFn)
+    }
+  }
+
+  if (window.pjax) {
+    abcjsInit()
+  } else {
+    window.addEventListener("load", abcjsInit)
+  }
+
+  btf.addGlobalFn("encrypt", abcjsInit, "abcjs")
+})()</script><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = {"labels":["Gitalk","Comment"],"createIssueManually":false,"distractionFreeMode":false}
+
+  const commentCount = n => {
+    const isCommentCount = document.querySelector('#post-meta .gitalk-comment-count')
+    if (isCommentCount) {
+      isCommentCount.textContent= n
+    }
+  }
+
+  const initGitalk = (el, path) => {
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGitalk = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+
+    const gitalk = new Gitalk({
+      clientID: 'Ov23li3vDQANiUddL4XB',
+      clientSecret: '5c9a56d02995340fca117809cd414662aadce6ff',
+      repo: 'HexoComment',
+      owner: 'ergou10086',
+      admin: ['ergou10086'],
+      updateCountCallback: commentCount,
+      ...option,
+      id: isShuoshuo ? path : (option && option.id) || '34e809c0588813ab4877dfa67cfbb0c7'
+    })
+
+    gitalk.render('gitalk-container')
+  }
+
+  const loadGitalk = async(el, path) => {
+    if (typeof Gitalk === 'function') initGitalk(el, path)
+    else {
+      await btf.getCSS('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.css')
+      await btf.getScript('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.js')
+      initGitalk(el, path)
+    }
+  }
+
+  if (isShuoshuo) {
+    'Gitalk' === 'Gitalk'
+      ? window.shuoshuoComment = { loadComment: loadGitalk }
+      : window.loadOtherComment = loadGitalk
+    return
+  }
+
+  if ('Gitalk' === 'Gitalk' || !false) {
+    if (false) btf.loadComment(document.getElementById('gitalk-container'), loadGitalk)
+    else loadGitalk()
+  } else {
+    window.loadOtherComment = loadGitalk
+  }
+})()</script></div><div class="aplayer no-destroy" data-id="13587761608" data-server="netease" data-type="playlist" data-fixed="true" data-autoplay="false" data-lrcType="-1"> </div><script src="https://cdn.jsdelivr.net/npm/abcjs@7.1.2/dist/abcjs-basic-min.js"></script><script src="/js/sun_moon.js" async></script><script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.7/dayjs.min.js"></script><script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.7/plugin/duration.min.js"></script><script src="/scripts/realtime.js"></script><script src="/scripts/random.js"></script><script defer="defer" id="ribbon" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-ribbon.min.js" size="150" alpha="0.6" zIndex="-1" mobile="null" data-click="true"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = false;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><script id="click-heart" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/click-heart.min.js" async="async" mobile="false"></script><script>(() => {
+  window.ChatraID = '4bzb546NSBoJcrNyu'
+  window.Chatra = window.Chatra || function() {
+    (window.Chatra.q = window.Chatra.q || []).push(arguments)
+  }
+
+  btf.getScript('https://call.chatra.io/chatra.js').then(() => {
+    const isChatBtn = true
+    const isChatHideShow = true
+
+    if (isChatBtn) {
+      const close = () => {
+        Chatra('minimizeWidget')
+        Chatra('hide')
+      }
+
+      const open = () => {
+        Chatra('openChat', true)
+        Chatra('show')
+      }
+
+      window.ChatraSetup = { startHidden: true }
+    
+      window.chatBtnFn = () => document.getElementById('chatra').classList.contains('chatra--expanded') ? close() : open()
+
+      document.getElementById('chat-btn').style.display = 'block'
+    } else if (isChatHideShow) {
+      window.chatBtn = {
+        hide: () => Chatra('hide'),
+        show: () => Chatra('show')
+      }
+    }
+  })
+})()</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/metingjs/dist/Meting.min.js"></script><script>(() => {
+  const destroyAplayer = () => {
+    if (window.aplayers) {
+      for (let i = 0; i < window.aplayers.length; i++) {
+        if (!window.aplayers[i].options.fixed) {
+          window.aplayers[i].destroy()
+        }
+      }
+    }
+  }
+
+  const runMetingJS = () => {
+    typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+  }
+
+  btf.addGlobalFn('pjaxSend', destroyAplayer, 'destroyAplayer')
+  btf.addGlobalFn('pjaxComplete', loadMeting, 'runMetingJS')
+})()</script><script src="https://cdn.jsdelivr.net/npm/pjax/pjax.min.js"></script><script>(() => {
+  const pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+  window.pjax = new Pjax({
+    elements: 'a:not([target="_blank"]):not([href="/music/"])',
+    selectors: pjaxSelectors,
+    cacheBust: false,
+    analytics: false,
+    scrollRestoration: false
+  })
+
+  const triggerPjaxFn = (val) => {
+    if (!val) return
+    Object.values(val).forEach(fn => fn())
+  }
+
+  document.addEventListener('pjax:send', () => {
+    // removeEventListener
+    btf.removeGlobalFnEvent('pjaxSendOnce')
+    btf.removeGlobalFnEvent('themeChange')
+
+    // reset readmode
+    const $bodyClassList = document.body.classList
+    if ($bodyClassList.contains('read-mode')) $bodyClassList.remove('read-mode')
+
+    triggerPjaxFn(window.globalFn.pjaxSend)
+  })
+
+  document.addEventListener('pjax:complete', () => {
+    btf.removeGlobalFnEvent('pjaxCompleteOnce')
+    document.querySelectorAll('script[data-pjax]').forEach(item => {
+      const newScript = document.createElement('script')
+      const content = item.text || item.textContent || item.innerHTML || ""
+      Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+      newScript.appendChild(document.createTextNode(content))
+      item.parentNode.replaceChild(newScript, item)
+    })
+
+    triggerPjaxFn(window.globalFn.pjaxComplete)
+  })
+
+  document.addEventListener('pjax:error', e => {
+    if (e.request.status === 404) {
+      const usePjax = true
+      true 
+        ? (usePjax ? pjax.loadUrl('/404.html') : window.location.href = '/404.html')
+        : window.location.href = e.request.responseURL
+    }
+  })
+})()</script><script src="/js/fps-display.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><!-- hexo injector body_end start --><script data-pjax>
+  function butterfly_swiper_injector_config(){
+    var parent_div_git = document.getElementById('recent-posts');
+    var item_html = '<div class="recent-post-item" style="height: auto;width: 100%"><div class="blog-slider swiper-container-fade swiper-container-horizontal" id="swiper_container"><div class="blog-slider__wrp swiper-wrapper" style="transition-duration: 0ms;"><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_database.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-14</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt="">结构化查询语言SQL</a><div class="blog-slider__text">SQL基本很常用的语句都在这里了，本质上是当初为了应付数据库考试整理的，后来发现还蛮有用的很方便查常用的语句</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java4.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-22</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt="">SpringBoot part0?INF-SpringBoot这个框架都需要学习什么</a><div class="blog-slider__text">主要围绕Spring Boot中重要知识来简洁或详细的说明，其中部分不够完全，持续更新</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java11.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-15</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt="">关于Lombok在高版本IDEA中注解处理不生效的问题解决</a><div class="blog-slider__text">基本上是彻底的解决了用 IDEA 新建 Spring Boot 项目时候会产生的 Lombok 注解处理失效的各种问题</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_实用.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-05</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt="">个人向galgame原声带或相关音乐整理及其资源</a><div class="blog-slider__text">整理了我喜欢的galgame ost或者衍生的音乐专辑，部分资源是自己扒盘扒下来的，部分来自鸟白岛放映厅</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_math.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-17</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt="">对书上证明样本方差是总体方差的无偏估计量的解析</a><div class="blog-slider__text">对书上证明样本方差是总体方差的无偏估计量的解析，高等教育出版社-华科大版本</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_alog.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-04-24</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt="">第十五届蓝桥杯Java国赛B组D题-园丁题解</a><div class="blog-slider__text">第十五届蓝桥杯Java国赛B组D题-园丁题解，该题解已经发布到洛谷社区中并且被全站推荐</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java4.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-04-29</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt="">操作系统之处理机的死锁部分概述</a><div class="blog-slider__text">对操作系统之处理机的死锁部分知识的总结，包括代码复现</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_lb.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-09</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt="">Little Busters!EX游戏攻略</a><div class="blog-slider__text">整理了一份详细清晰的Little Busters！EX的游戏攻略，因为我自己也在推，就顺手整理了一份方便查阅的md文档</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java9.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-16</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt="">Spring Boot中使用Hibernate框架</a><div class="blog-slider__text">对学习完Hibernate的应用部分，主要围绕Spring Boot中使用Hibernate框架，建议学习完 Hibernate 框架再看</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div></div><div class="blog-slider__pagination swiper-pagination-clickable swiper-pagination-bullets"></div></div></div>';
+    console.log('已挂载butterfly_swiper')
+    parent_div_git.insertAdjacentHTML("afterbegin",item_html)
+    }
+  var elist = 'undefined'.split(',');
+  var cpage = location.pathname;
+  var epage = '/';
+  var flag = 0;
+
+  for (var i=0;i<elist.length;i++){
+    if (cpage.includes(elist[i])){
+      flag++;
+    }
+  }
+
+  if ((epage ==='all')&&(flag == 0)){
+    butterfly_swiper_injector_config();
+  }
+  else if (epage === cpage){
+    butterfly_swiper_injector_config();
+  }
+  </script><script defer src="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper.min.js"></script><script defer data-pjax src="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper_init.js"></script><!-- hexo injector body_end end --></body></html>
