@@ -1,0 +1,912 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>数学物理方程之弦振动方程模型的建立 | ErgouTree's Blog</title><meta name="author" content="ErgouTree"><meta name="copyright" content="ErgouTree"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="数学物理方程模型前言 介绍 《数学物理方程》是数学领域偏微分方程方向的最基本的入门课程。 数学物理以研究物理问题为目标的数学理论和数学方法。它探讨物理现象的数学模型，即寻求物理现象的数学描述，并对模型已确立的物理问题研究其数学解法，然后根据解答来诠释和预见物理现象，或者根据物理事实来修正原有模型。 “数理”也叫“数学物理”，是数学和物理学的交叉领域，指应用特定的数学方法来研究物理学的某些部">
+<meta property="og:type" content="article">
+<meta property="og:title" content="数学物理方程之弦振动方程模型的建立">
+<meta property="og:url" content="https://ergou10086.github.io/posts/61953.html">
+<meta property="og:site_name" content="ErgouTree&#39;s Blog">
+<meta property="og:description" content="数学物理方程模型前言 介绍 《数学物理方程》是数学领域偏微分方程方向的最基本的入门课程。 数学物理以研究物理问题为目标的数学理论和数学方法。它探讨物理现象的数学模型，即寻求物理现象的数学描述，并对模型已确立的物理问题研究其数学解法，然后根据解答来诠释和预见物理现象，或者根据物理事实来修正原有模型。 “数理”也叫“数学物理”，是数学和物理学的交叉领域，指应用特定的数学方法来研究物理学的某些部">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://ergou10086.github.io/images/posts/cover_front.jpg">
+<meta property="article:published_time" content="2025-07-23T01:00:34.000Z">
+<meta property="article:modified_time" content="2025-07-23T01:01:37.986Z">
+<meta property="article:author" content="ErgouTree">
+<meta property="article:tag" content="数学">
+<meta property="article:tag" content="物理">
+<meta property="article:tag" content="数学建模">
+<meta property="article:tag" content="定理证明">
+<meta property="article:tag" content="数学物理方法">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ergou10086.github.io/images/posts/cover_front.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "数学物理方程之弦振动方程模型的建立",
+  "url": "https://ergou10086.github.io/posts/61953.html",
+  "image": "https://ergou10086.github.io/images/posts/cover_front.jpg",
+  "datePublished": "2025-07-23T01:00:34.000Z",
+  "dateModified": "2025-07-23T01:01:37.986Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "ErgouTree",
+      "url": "https://github.com/ergou10086"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/pi.ico"><link rel="canonical" href="https://ergou10086.github.io/posts/61953.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//hm.baidu.com"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!true && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?https://hm.baidu.com/hm.js?a6ab1b78e2c6320b664f31e8b9bf0e36";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+btf.addGlobalFn('pjaxComplete', () => {
+  _hmt.push(['_trackPageview',window.location.pathname])
+}, 'baidu_analytics')
+</script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.json","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":true},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: {"chs_to_cht":"已切换为繁体中文","cht_to_chs":"已切换为简体中文","day_to_night":"已切换为深色模式","night_to_day":"已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#1f1f1f","position":"bottom-left"},
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '数学物理方程之弦振动方程模型的建立',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css"><svg aria-hidden="true" style="position:absolute; overflow:hidden; width:0; height:0"><symbol id="icon-sun" viewBox="0 0 1024 1024"><path d="M960 512l-128 128v192h-192l-128 128-128-128H192v-192l-128-128 128-128V192h192l128-128 128 128h192v192z" fill="#FFD878" p-id="8420"></path><path d="M736 512a224 224 0 1 0-448 0 224 224 0 1 0 448 0z" fill="#FFE4A9" p-id="8421"></path><path d="M512 109.248L626.752 224H800v173.248L914.752 512 800 626.752V800h-173.248L512 914.752 397.248 800H224v-173.248L109.248 512 224 397.248V224h173.248L512 109.248M512 64l-128 128H192v192l-128 128 128 128v192h192l128 128 128-128h192v-192l128-128-128-128V192h-192l-128-128z" fill="#4D5152" p-id="8422"></path><path d="M512 320c105.888 0 192 86.112 192 192s-86.112 192-192 192-192-86.112-192-192 86.112-192 192-192m0-32a224 224 0 1 0 0 448 224 224 0 0 0 0-448z" fill="#4D5152" p-id="8423"></path></symbol><symbol id="icon-moon" viewBox="0 0 1024 1024"><path d="M611.370667 167.082667a445.013333 445.013333 0 0 1-38.4 161.834666 477.824 477.824 0 0 1-244.736 244.394667 445.141333 445.141333 0 0 1-161.109334 38.058667 85.077333 85.077333 0 0 0-65.066666 135.722666A462.08 462.08 0 1 0 747.093333 102.058667a85.077333 85.077333 0 0 0-135.722666 65.024z" fill="#FFB531" p-id="11345"></path><path d="M329.728 274.133333l35.157333-35.157333a21.333333 21.333333 0 1 0-30.165333-30.165333l-35.157333 35.157333-35.114667-35.157333a21.333333 21.333333 0 0 0-30.165333 30.165333l35.114666 35.157333-35.114666 35.157334a21.333333 21.333333 0 1 0 30.165333 30.165333l35.114667-35.157333 35.157333 35.157333a21.333333 21.333333 0 1 0 30.165333-30.165333z" fill="#030835" p-id="11346"></path></symbol></svg><link rel="stylesheet" href="/css/custom.css"><!-- hexo injector head_end start --><link rel="stylesheet" href="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiperstyle.css" media="print" onload="this.media='all'"><!-- hexo injector head_end end --><meta name="generator" content="Hexo 7.3.0"></head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js/pace.min.js"></script><div id="web_bg" style="background: linear-gradient(20deg, #0062be, #925696, #cc426e, #fb0347);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/arp.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">175</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">88</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">62</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-images"></i><span> Gallery</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/games/"><i class="fa-fw fas fa-game"></i><span> GalGame</span></a></li><li><a class="site-page child" href="/video/"><i class="fa-fw fas fa-video"></i><span> Video</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div><div class="menus_item"><a class="site-page" href="javascript:randomPost();"><span> Random</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/images/posts/cover_front.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">ErgouTree's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">数学物理方程之弦振动方程模型的建立</span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-images"></i><span> Gallery</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/games/"><i class="fa-fw fas fa-game"></i><span> GalGame</span></a></li><li><a class="site-page child" href="/video/"><i class="fa-fw fas fa-video"></i><span> Video</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div><div class="menus_item"><a class="site-page" href="javascript:randomPost();"><span> Random</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div><div id="randomPost"><a class="site-page social-icon search" href="javascript:;" onclick="randomPost()" title="随机访问一篇文章"><i class="fas fa-circle-notch fa-fw"></i></a></div></nav><div id="post-info"><h1 class="post-title">数学物理方程之弦振动方程模型的建立<a class="post-edit-link" href="https://github.com/ergou10086/ergou10086.github.io/edit/main/source/_posts/_posts/数学物理方程之弦振动方程模型的建立.md" title="编辑" target="_blank"><i class="fas fa-pencil-alt"></i></a></h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2025-07-23T01:00:34.000Z" title="发表于 2025-07-23 09:00:34">2025-07-23</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2025-07-23T01:01:37.986Z" title="更新于 2025-07-23 09:01:37">2025-07-23</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%95%B0%E5%AD%A6%E7%B1%BB/">数学类</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%95%B0%E5%AD%A6%E7%B1%BB/%E6%95%B0%E5%AD%A6%E7%89%A9%E7%90%86%E6%96%B9%E7%A8%8B/">数学物理方程</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">4.3k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>15分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span><span class="post-meta-separator">|</span><span class="post-meta-commentcount"><i class="far fa-comments fa-fw post-meta-icon"></i><span class="post-meta-label">评论数:</span><a href="/posts/61953.html#post-comment"><span class="gitalk-comment-count"><i class="fa-solid fa-spinner fa-spin"></i></span></a></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="数学物理方程模型前言">数学物理方程模型前言</h2>
+<h3 id="介绍">介绍</h3>
+<p>《数学物理方程》是数学领域偏微分方程方向的最基本的入门课程。</p>
+<p>数学物理以研究物理问题为目标的数学理论和数学方法。它探讨物理现象的数学模型，即寻求物理现象的数学描述，并对模型已确立的物理问题研究其数学解法，然后根据解答来诠释和预见物理现象，或者根据物理事实来修正原有模型。</p>
+<p>“数理”也叫“数学物理”，是数学和物理学的交叉领域，指应用特定的数学方法来研究物理学的某些部分。对应的数学方法也叫数学物理方法。</p>
+<p>所以说，使用数学语言描述物理现象的方程就是数学物理方程，通常是反映物理量之间关系的偏微分方程，积分方程或常微分方程。这些方程帮助我们理解自然现象的规律性，并且为科学研究提供了工具。</p>
+<p>偏微分方程理论：</p>
+<ul>
+<li>主要研究具有实际背景的偏微分方程或偏微分方程组，是数学的基础学科之一，在数学领域占据着核心地位。</li>
+<li>涉及领域十分广泛：如物理、力学、化学、生物、经济等自然科学、社会科学和工程技术领域，还与其他数学分支有紧密的联系。</li>
+<li>近年来偏微分方程也应用于计算机图像处理及金融、保险等领域。</li>
+</ul>
+<p>数学物理方程具有如下特点</p>
+<ol type="1">
+<li><strong>数学理论、解题方法与物理实际有机结合</strong>
+可以学到：如何根据物理现象建立偏微分方程模型及寻找求解方法，并用偏微分方程有关理论来解释物理现象。</li>
+<li><strong>需要综合应用多门数学学科知识</strong>
+可以巩固、复习有关数学学科知识，提高综合运用这些知识的能力，如《数学分析》《常微分方程》《线性代数》《复变函数》《实变函数与泛函分析》等。</li>
+</ol>
+<h3 id="数学物理方程的研究方法">数学物理方程的研究方法</h3>
+<p>如何从物理的实际问题中导出数理方程呢？基本步骤如下 <span class="math display">$$
+物理模型\xrightarrow{定量化}数学模型
+$$</span></p>
+<ol type="1">
+<li>建立坐标系</li>
+<li>选择表征所研究过程的物理量，因为表征物理量的选择常常是建立一个新方程的起点</li>
+<li>寻找（嗯猜）物理过程所遵守的物理定律或者物理公理</li>
+<li>写出物理定律的表达式，即数学模型</li>
+</ol>
+<p>而数学物理方程的研究方法的一般步骤：</p>
+<ol type="1">
+<li>将物理问题归结为数学上的定解问题；</li>
+<li>求解定解问题；</li>
+<li>对求得的解给出物理解释。</li>
+</ol>
+<p>研究内容 - 适定性的概念：</p>
+<ol type="1">
+<li><strong>存在性</strong>：解是否存在。</li>
+<li><strong>唯一性</strong>：解是否唯一。</li>
+<li><strong>稳定性</strong>：解是否稳定。</li>
+</ol>
+<p>如果一个定解问题的解是存在的、唯一的，而且是稳定的，则称该定解问题是适定的。</p>
+<h3 id="基本概念">基本概念</h3>
+<ul>
+<li><p><strong>偏微分方程</strong>（PDE）：含有两个或两个以上自变量和未知函数以及未知函数的偏导数的关系式（含有多元未知函数的偏导数的方程）。</p></li>
+<li><p><strong>数学物理方程</strong>：从物理、力学等实际问题中产生的函数方程，主要是偏微分方程或积分方程。</p></li>
+<li><p><strong>偏微分方程的阶</strong>：方程中出现的未知函数最高阶偏导数的阶。</p></li>
+<li><p><strong>线性偏微分方程</strong>：，且方程中的系数都仅依赖于自变量(或者是常数)，那么这样的偏微分方程就称为线性偏微分方程，特别的，如果方程中的系数都是常数，则称为常系数偏微分方程。</p></li>
+<li><p><strong>非线性偏微分方程</strong>：非线性偏微分方程是各阶微分项有次数高于一的微分方程即为非线性偏微分方程，其实也就是不是线性的偏微分方程</p>
+<ul>
+<li><p>两个自变量的二阶线性偏微分方程的一般形式 <span class="math display"><em>a</em><sub>11</sub><em>u</em><sub><em>x</em><em>x</em></sub> + 2<em>a</em><sub>12</sub><em>u</em><sub><em>x</em><em>y</em></sub> + <em>a</em><sub>22</sub><em>u</em><sub><em>y</em><em>y</em></sub> + <em>b</em><sub>1</sub><em>u</em><sub><em>x</em></sub> + <em>b</em><sub>2</sub><em>u</em><sub><em>y</em></sub> + <em>c</em><em>u</em> + <em>f</em> = 0</span>
+其中，<span class="math inline"><em>a</em><sub><em>j</em></sub> = <em>a</em><sub><em>j</em></sub>(<em>x</em>, <em>y</em>), <em>b</em><sub><em>j</em></sub> = <em>b</em><sub><em>j</em></sub>(<em>x</em>, <em>y</em>), <em>c</em> = <em>c</em>(<em>x</em>, <em>y</em>), <em>f</em> = <em>f</em>(<em>x</em>, <em>y</em>)</span>为已知函数。</p>
+<ul>
+<li>如果<span class="math inline"><em>f</em> = 0</span>，则称上述方程为齐次方程；否则为非齐次方程。</li>
+<li><span class="math inline"><em>u</em><sub><em>t</em></sub> − <em>u</em><em>u</em><sub><em>x</em></sub> = 0</span>：1
+阶非线性 PDE（激波方程）</li>
+<li>两个自变量的二阶 PDE 一般形式：<span class="math inline"><em>F</em>(<em>x</em>, <em>y</em>, <em>u</em>, <em>u</em><sub><em>x</em></sub>, <em>u</em><sub><em>y</em></sub>, <em>u</em><sub><em>x</em><em>x</em></sub>, <em>u</em><sub><em>x</em><em>y</em></sub>, <em>u</em><sub><em>y</em><em>y</em></sub>) = 0</span></li>
+</ul></li>
+</ul></li>
+</ul>
+<p><strong>阶线性 PDE 示例</strong>：</p>
+<ul>
+<li>波动方程：<span class="math inline"><em>u</em><sub><em>t</em><em>t</em></sub> − <em>a</em><sup>2</sup><em>u</em><sub><em>x</em><em>x</em><em>x</em></sub> = <em>f</em>(<em>x</em>, <em>t</em>)</span></li>
+<li>热传导方程：<span class="math inline"><em>u</em><sub><em>t</em></sub> − <em>a</em><sup>2</sup><em>u</em><sub><em>x</em><em>x</em><em>x</em></sub> = <em>f</em>(<em>x</em>, <em>t</em>)</span></li>
+<li>位势方程：<span class="math inline">−(<em>u</em><sub><em>x</em><em>x</em></sub> + <em>u</em><sub><em>y</em><em>y</em></sub>) = <em>f</em>(<em>x</em>, <em>y</em>)</span></li>
+</ul>
+<h2 id="弦振动方程与定解条件">弦振动方程与定解条件</h2>
+<h3 id="引入">引入</h3>
+<p>演奏弦乐（二胡，提琴）的人用弓在弦上来回拉动，弓所接触的是弦的很小的一段，似乎只能引起这个小段的振动，实际上振动总是传播到整个弦，弦的各处都振动起来。</p>
+<p>弦振动方程是在 18
+世纪由达朗贝尔等人首先给予系统研究的。它是一大类偏微分方程的典型代表。</p>
+<h3 id="以弦振动为例进行物理问题的分析">以弦振动为例进行物理问题的分析</h3>
+<ol type="1">
+<li><p><strong>物理问题提法</strong></p>
+<p>一根拉紧的均匀柔软的细弦，两端固定，长为 <span class="math inline"><em>l</em></span>，在垂直于弦线的外力的作用下，弦在平衡位置附近作微小的横振动
+-
+振动方向与弦的平衡位置垂直。研究弦上各点在不同时刻的运动规律。</p></li>
+<li><p><strong>数学提法</strong></p>
+<p>建立坐标系：弦的平衡位置为 x 轴，两端分别固定在 <span class="math inline"><em>x</em> = 0</span> 和 <span class="math inline"><em>x</em> = <em>l</em></span> 处。<span class="math inline"><em>u</em>(<em>x</em>, <em>t</em>)</span>表示弦上横坐标为<span class="math inline"><em>x</em></span>的点在时刻t时沿垂直于 $ x$
+轴方向的位移，求<span class="math inline"><em>u</em>(<em>x</em>, <em>t</em>)</span>。</p>
+<figure>
+<img src="/posts/61953/image-20250722092338308.png" alt="image-20250722092338308">
+<figcaption aria-hidden="true">image-20250722092338308</figcaption>
+</figure></li>
+<li><p><strong>分析（理想化假设）</strong></p>
+<p>将实际问题归结为数学模型时，必须作一些理想化的假设，以便抓住问题的最本质的特征。在考察弦振动问题时的基本假设为：</p>
+<ul>
+<li>弦是均匀的，弦的截面直径与弦的长度相比可以忽略，弦的线密度 <span class="math inline"><em>ρ</em></span> 是常数。</li>
+<li>弦是柔软的，它在形变时不抵抗弯曲，弦上各质点间的张力方向与弦的切线方向一致，而弦的伸长形变与张力的关系服从胡克（Hooke）定律（即指在弹性限度内，物体的形变跟引起形变的外力成正比）。</li>
+<li>弦在某一平面内作微小横振动：即弦的位置始终在一直线段附近（平衡位置），而弦上各点均在同一平面内垂直于该直线的方向上作微小振动（<span class="math inline">|<em>u</em><sub><em>x</em></sub>| &lt;  &lt; 1</span>）（弦上一点的切线和横轴的夹角很小）。</li>
+<li>注意：弦是柔软的时候，也就是在放松的条件下，把弦弯成任意的形状，它都保持静止，绷紧后，相邻小段之间才开始有拉力，这种拉力就是弦中的张力，张力沿切线的方向。由于张力的作用，一个小段的振动必带动它的邻段，邻段又带动它自己的邻段，这样一个小段的振动必然传播到整个弦，这种振
+动的传播现象叫作波。</li>
+</ul></li>
+<li><p><strong>受力分析：</strong></p>
+<p>为了求弦上任意一点的运动规律，在弦上任取一小弦弧<span class="math inline">$\widehat{M_1M_2}$</span>进行考察。</p>
+<figure>
+<img src="/posts/61953/image-20250722092722224.png" alt="image-20250722092722224">
+<figcaption aria-hidden="true">image-20250722092722224</figcaption>
+</figure>
+<p>（我们首先证明张力为常数（即与位置和时间 无关）。假设<span class="math inline">$\widehat{M_1M_2}$</span>的弧长为<span class="math inline"><em>Δ</em><em>s</em></span> ）</p>
+<ul>
+<li><p>利用弧长公式可知： <span class="math display">$$
+\Delta s=\int_{x_1}^{x_2}\sqrt{1 + u_x^2}dx
+$$</span></p>
+<p><span class="math display">$$
+u_x=\frac{\partial u}{\partial x}
+$$</span></p></li>
+<li><p>由假定，弦只作微小振动，<span class="math inline"><em>u</em><sub><em>x</em></sub><sup>2</sup></span>与
+1 相比可以忽略不计，从而<span class="math inline"><em>Δ</em><em>s</em> ≈ <em>x</em><sub>2</sub> − <em>x</em><sub>1</sub></span>，可以认为这段弦在振动过程中并未伸长，因此由胡克定律知道，弦上每一点所受的张力在运动过程中保持不变，即张力与时间无关。接下来,
+我们只须说明张力与位置 <span class="math inline"><em>x</em></span>
+无关。</p></li>
+<li><p>弦只作横向振动，张力在 <span class="math inline"><em>x</em></span> 轴方向分量的代数和为零，即：</p>
+<p><img src="/posts/61953/image-20250722092913927.png" alt="image-20250722092913927"> <span class="math display"><em>T</em><sub>2</sub>cos <em>α</em><sub>2</sub> − <em>T</em><sub>1</sub>cos <em>α</em><sub>1</sub> = 0</span>
+由于小振动： <span class="math display"><em>α</em><sub>1</sub> → 0, <em>α</em><sub>2</sub> → 0, cos <em>α</em><sub>1</sub> → 1, cos <em>α</em><sub>1</sub> → 1</span>
+于是上式可以写成<span class="math inline"><em>T</em><sub>1</sub> = <em>T</em><sub>2</sub></span>，即张力也不随位置而异，综上，张力是常数，记作<span class="math inline"><em>T</em></span></p></li>
+</ul></li>
+</ol>
+<h3 id="结合分析进行数学物理方程的导出">结合分析进行数学物理方程的导出</h3>
+<p>回顾一下动量守恒定律：物体在某一时段内动量的增量等于作
+用在该物体上所有外力在该时段内所产生冲量</p>
+<p>所以，下面使用动量守恒定律推导一维弦振动方程：</p>
+<p>在弦上任取小段 <span class="math inline">[<em>x</em>, <em>x</em> + <em>Δ</em><em>x</em>]</span>，考察弦段在
+<span class="math inline">[<em>t</em>, <em>t</em> + <em>Δ</em><em>t</em>]</span>
+时段内冲量和动量的变化情况</p>
+<p>结合动量守恒，有： <span class="math display">动量|<sub><em>t</em> = <em>t</em> + <em>Δ</em><em>t</em></sub> − 动量|<sub><em>t</em> = <em>t</em></sub> = 所有外力产生的冲量|<sub>[<em>t</em>, <em>t</em> + <em>Δ</em><em>t</em>]</sub></span>
+动量微元为 <span class="math display"><em>ρ</em><em>v</em>(<em>x</em>, <em>t</em>)<em>d</em><em>x</em></span>
+冲量微元为 <span class="math display"><em>F</em>(<em>x</em>, <em>t</em>)<em>d</em><em>t</em></span></p>
+<p><strong>情形一：弦不受外力作用时</strong></p>
+<p>动量守恒：动量的变化量等于所有外力产生的冲量。</p>
+<p>一方面，计算动量守恒公式左边动量的变化量：</p>
+<p>在 <span class="math inline"><em>t</em></span> 时刻弦段 <span class="math inline">[<em>x</em>, <em>x</em> + <em>Δ</em><em>x</em>]</span>
+的动量为 <span class="math display">$$
+     \int_{x}^{x+\Delta x} \rho \frac{\partial u(x, t)}{\partial t} dx
+$$</span> 在 <span class="math inline"><em>t</em> + <em>Δ</em><em>t</em></span> 时刻弦段
+<span class="math inline">[<em>x</em>, <em>x</em> + <em>Δ</em><em>x</em>]</span>
+的动量为 <span class="math display">$$
+     \int_{x}^{x+\Delta x} \rho \frac{\partial u(x, t+\Delta
+t)}{\partial t} dx
+$$</span> 所以，从时刻 <span class="math inline"><em>t</em></span>
+到时刻 <span class="math inline"><em>t</em> + <em>Δ</em><em>t</em></span> 弦段 <span class="math inline">[<em>x</em>, <em>x</em> + <em>Δ</em><em>x</em>]</span>
+的动量增加量为 <span class="math display">$$
+\int_{x}^{x+\Delta x} \rho \left[ \frac{\partial u(x, t+\Delta
+t)}{\partial t} - \frac{\partial u(x, t)}{\partial t} \right] dx
+$$</span> 另一方面，计算动量守恒公式中右边弦段 <span class="math inline">[<em>x</em>, <em>x</em> + <em>Δ</em><em>x</em>]</span>
+所受外力在时段 <span class="math inline">[<em>t</em>, <em>t</em> + <em>Δ</em><em>t</em>]</span>
+产生的冲量</p>
+<p>对于弦段 <span class="math inline">[<em>x</em>, <em>x</em> + <em>Δ</em><em>x</em>]</span>
+张力在 <span class="math inline"><em>x</em></span> 轴的垂直方向的合力为
+<span class="math display">$$
+   \begin{aligned}
+   &amp;= T \frac{\partial u(x+\Delta x, t)}{\partial x} - T
+\frac{\partial u(x, t)}{\partial x} \\
+   &amp;= T \left[ \frac{\partial u(x+\Delta x, t)}{\partial x} -
+\frac{\partial u(x, t)}{\partial x} \right]
+   \end{aligned}
+$$</span> <img src="/posts/61953/image-20250722094218748.png" alt="image-20250722094218748"></p>
+<p><span class="math display">$$
+\int_{t}^{t+\Delta t} \int_{x}^{x+\Delta x} T \frac{\partial^2 u(x,
+t)}{\partial x^2} dxdt = \int_{x}^{x+\Delta x} \int_{t}^{t+\Delta t}
+\rho \frac{\partial^2 u(x, t)}{\partial t^2} dtdx \tag{1.1}
+$$</span></p>
+<p>即 <span class="math display">$$
+\int_{t}^{t+\Delta t} \int_{x}^{x+\Delta x} T \frac{\partial^2 u(x,
+t)}{\partial x^2} dxdt = \int_{t}^{t+\Delta t} \int_{x}^{x+\Delta x}
+\rho \frac{\partial^2 u(x, t)}{\partial t^2} dxdt
+$$</span> 由 <span class="math inline"><em>Δ</em><em>x</em>, <em>Δ</em><em>t</em></span>
+的任意性知 <span class="math display">$$
+\rho \frac{\partial^2 u(x, t)}{\partial t^2} - T \frac{\partial^2 u(x,
+t)}{\partial x^2} = 0
+$$</span></p>
+<p>或者 <span class="math display">$$
+\frac{\partial^2 u(x, t)}{\partial t^2} - a^2 \frac{\partial^2 u(x,
+t)}{\partial x^2} = 0, \tag{1.2}
+$$</span> 其中 <span class="math inline">$a^2 = \frac{T}{\rho} &gt;
+0$</span></p>
+<p>这就是不受外力作用下的弦振动所满足的方程！</p>
+<p><strong>情形二：存在外力作用时</strong></p>
+<p>设作用在点 <span class="math inline"><em>x</em></span>
+处的外力线密度为 <span class="math inline"><em>F</em>(<em>x</em>, <em>t</em>)</span>，其方向垂直于
+<span class="math inline"><em>x</em></span> 轴</p>
+<p>则在小段弦<span class="math inline">[<em>x</em>, <em>x</em> + <em>Δ</em><em>x</em>]</span>所受的外力为
+<span class="math display">∫<sub><em>x</em></sub><sup><em>x</em> + <em>Δ</em><em>x</em></sup><em>F</em>(<em>x</em>, <em>t</em>)<em>d</em><em>x</em></span>
+其在时段<span class="math inline">[<em>t</em>, <em>t</em> + <em>Δ</em><em>t</em>]</span>
+产生的冲量为 <span class="math display">∫<sub><em>x</em></sub><sup><em>x</em> + <em>Δ</em><em>x</em></sup>∫<sub><em>t</em></sub><sup><em>t</em> + <em>Δ</em><em>t</em></sup><em>F</em>(<em>x</em>, <em>τ</em>)<em>d</em><em>τ</em><em>d</em><em>x</em></span>
+于是上述的方程的左端应该增加这一项，得到 <span class="math display">$$
+\int_{t}^{t+\Delta t} \int_{x}^{x+\Delta x} \left[ T \frac{\partial^2
+u(x, t)}{\partial x^2} - \rho \frac{\partial^2 u(x, t)}{\partial t^2} +
+F(x, t) \right] dxdt = 0
+$$</span></p>
+<p>这样外力作用下的弦振动方程为 <span class="math display">$$
+\frac{\partial^2 u(x, t)}{\partial t^2} - a^2 \frac{\partial^2 u(x,
+t)}{\partial x^2} = f(x, t), \tag{1.3}
+$$</span></p>
+<p>其中 <span class="math inline">$f = \frac{F}{\rho}$</span>
+表示单位质量在 <span class="math inline"><em>x</em></span> 点处时刻
+<span class="math inline"><em>t</em></span> 所受的外力。</p>
+<p><strong>总之：</strong></p>
+<ul>
+<li><p>无外力作用的弦振动方程： <span class="math display">$$
+\frac{\partial^2 u}{\partial t^2}-a^2\frac{\partial^2 u}{\partial x^2}=0
+$$</span></p></li>
+<li><p>外力作用下的弦振动方程： <span class="math display">$$
+\frac{\partial^2 u}{\partial t^2}-a^2\frac{\partial^2 u}{\partial
+x^2}=f(x,t)
+$$</span> 其中 <span class="math inline"><em>f</em></span>
+称为非齐次项。</p></li>
+</ul>
+<p>弦振动方程也叫波动方程，因为它描述的是一种振动或波动现象。</p>
+<p>类似地，可以推导二维波动方程（如薄膜振动）和三维波动方程（如电磁波、声波的传播等），形式分别为：</p>
+<ul>
+<li><p>二维： <span class="math display">$$
+\frac{\partial^2 u}{\partial t^2}=a^2\left(\frac{\partial^2 u}{\partial
+x^2}+\frac{\partial^2 u}{\partial y^2}\right)+f(x,y,t)
+$$</span></p></li>
+<li><p>三维 <span class="math display">$$
+\frac{\partial^2 u}{\partial t^2}=a^2\left(\frac{\partial^2 u}{\partial
+x^2}+\frac{\partial^2 u}{\partial y^2}+\frac{\partial^2 u}{\partial
+z^2}\right)+f(x,y,z,t)
+$$</span></p></li>
+</ul>
+<p>一般地，<span class="math inline"><em>n</em></span>
+维波动方程可写为： <span class="math display">$$
+\frac{\partial^2 u}{\partial t^2}=a^2\Delta u + f(x,t)
+$$</span> 其中 <span class="math display">$$
+\Delta=\sum_{i = 1}^n\frac{\partial^2}{\partial x_i^2}
+$$</span> 表示 n 维拉普拉斯算子。</p>
+<h3 id="推导定解条件">推导定解条件</h3>
+<p>对于一个确定的物理过程，仅建立表征该过程的物理量 u
+所满足的方程还是不够的，还要附加
+一定的条件，这些条件应该恰恰足以说明系统的初始状态以及边界上的物理情况。</p>
+<p>所以说，定解条件包括 初始条件 和 边界条件</p>
+<ul>
+<li><p>初始条件：表征某过程“初始”时刻状态的条件。
+对于弦振动问题来说，初始条件指的是弦在 “初始”时刻的位移和速度 <span class="math display">$$
+\begin{cases}
+\left.u\right|_{t = 0}=\varphi(x)&amp;\text{初始位移}\\
+\left.\frac{\partial u}{\partial t}\right|_{t =
+0}=\psi(x)&amp;\text{初始速度}
+\end{cases}
+$$</span></p></li>
+<li><p>边界条件：表征某过程的物理量在系统的边界上
+所满足的物理条件。</p></li>
+</ul>
+<p>对于弦振动问题而言，有三种基本类型：</p>
+<ol type="1">
+<li><p><strong>第一类边界条件（狄利克雷 Dirichlet）</strong></p>
+<p>弦的一端的运动规律已知，以 <span class="math inline"><em>x</em> = 0</span> 为例，若以 <span class="math inline"><em>μ</em><sub>1</sub>(<em>t</em>)</span>表示其运动规律，则边界条件可以表达为：
+<span class="math display"><em>u</em>|<sub><em>x</em> = 0</sub> = <em>μ</em><sub>1</sub>(<em>t</em>)</span>
+为非齐次边界条件；</p>
+<p>特别地，若 <span class="math display"><em>u</em>|<sub><em>x</em> = 0</sub> = 0</span>
+为齐次边界条件。</p></li>
+<li><p><strong>第二类边界条件（诺伊曼 Neumann）</strong></p>
+<p>若弦的一端（例如 ）在垂直于 轴的直线
+上自由滑动，且不受到垂直方向的外力，这种边界称为自由边界</p>
+<p>根据边界微元右端的张力沿垂直方向的分量是<span class="math inline">$T_0 \frac{\partial u}{\partial x}$</span></p>
+<p>得出，若弦的一端自由滑动且不受垂直方向外力，在自由边界成立如下 <span class="math display">$$
+\left.\frac{\partial u}{\partial x}\right|_{x = 0}=0
+$$</span> 为齐次边界条件。</p>
+<p>若边界张力沿垂直方向分量是 <span class="math inline"><em>t</em></span>的一个已知函数， 则相应的边界条件为
+<span class="math display">$$
+\left.\frac{\partial u}{\partial x}\right|_{x = 0}=\mu_2(t)
+$$</span> 为非齐次边界条件；</p></li>
+<li><p><strong>第三类边界条件（鲁宾 Robin）</strong></p>
+<p>若弦的一端（例如<span class="math inline"><em>x</em> = <em>l</em></span>）固定在弹性支承上，并且弹性支承的伸缩符合胡克定律，若支承的位置为
+<span class="math inline"><em>u</em> = 0</span>，则在 u
+端点的值表示支承在该点的伸长。弦对支承拉力的垂直方向分量为<span class="math inline">$-T_0 \frac{\partial u}{\partial x}$</span></p>
+<p>由胡克定律得 <span class="math display">$$
+-\left.T_0\frac{\partial u}{\partial x}\right|_{x = l}=\left.k
+u\right|_{x = l}
+$$</span> 因此，在弹性支承的情况下，边界条件如下 <span class="math display">$$
+\left.\left(\frac{\partial u}{\partial x}+\alpha u\right)\right|_{x =
+l}=0
+$$</span> 为齐次边界条件，其中<span class="math inline">$\alpha=\frac{k}{T_0}$</span>是已知正数。</p>
+<p>更普遍的非齐次边界条件为，其中<span class="math inline"><em>μ</em><sub>3</sub>(<em>t</em>)</span>是 t
+的已知函数 <span class="math display">$$
+\left.\left(\frac{\partial u}{\partial x}+\alpha u\right)\right|_{x =
+l}=\mu_3(t)
+$$</span></p></li>
+</ol>
+<h3 id="解决定解问题">解决定解问题</h3>
+<p>上面我们说了，定解条件（从方程中确定解的条件）：初始条件和边界条件的统称</p>
+<p>定解问题就是由偏微分方程和定解条件联立所得到的问题</p>
+<p>弦振动方程的初边值问题 （也叫混合问题）：</p>
+<blockquote>
+<p>弦振动方程+两个初始条件+ 边界条件</p>
+</blockquote>
+<p>弦振动方程的第一初边值（Dirichlet）问题： <span class="math display">$$
+\begin{cases}
+\frac{\partial^2 u}{\partial t^2} - a^2 \frac{\partial^2 u}{\partial
+x^2} = f(x, t), &amp; 0 \leq x \leq l,\ t &gt; 0, \\
+u(x, 0) = \varphi(x),\ u_t(x, 0) = \psi(x), &amp; 0 \leq x \leq l, \\
+u(0, t) = g_1(t),\ u(l, t) = g_2(t), &amp; t \geq 0.
+\end{cases}
+$$</span></p>
+<p>弦振动方程的第二初边值（Neumann）问题： <span class="math display">$$
+\begin{cases}
+\frac{\partial^2 u}{\partial t^2} - a^2 \frac{\partial^2 u}{\partial
+x^2} = f(x, t), &amp; 0 \leq x \leq l,\ t &gt; 0, \\
+u(x, 0) = \varphi(x),\ u_t(x, 0) = \psi(x), &amp; 0 \leq x \leq l, \\
+-\frac{\partial u(0, t)}{\partial x} = g_1(t),\ \frac{\partial u(l,
+t)}{\partial x} = g_2(t), &amp; t \geq 0.
+\end{cases}
+$$</span></p>
+<p>弦振动方程的第三初边值（Robin）问题 <span class="math display">$$
+\begin{cases}
+\frac{\partial^2 u}{\partial t^2} - a^2 \frac{\partial^2 u}{\partial
+x^2} = f(x, t), &amp; 0 \leq x \leq l,\ t &gt; 0, \\
+u(x, 0) = \varphi(x),\ u_t(x, 0) = \psi(x), &amp; 0 \leq x \leq l, \\
+\left. \left( -\frac{\partial u}{\partial x} + \alpha u \right)
+\right|_{x=0} = g_1(t),\ \left. \left( \frac{\partial u}{\partial x} +
+\alpha u \right) \right|_{x=l} = g_2(t), &amp; t \geq 0.
+\end{cases}
+$$</span></p>
+<p>弦振动方程的初值问题（也叫柯西(Cauchy)问题）：方程+初始条件 <span class="math display">$$
+\begin{cases}
+\frac{\partial^2 u}{\partial t^2} - a^2 \frac{\partial^2 u}{\partial
+x^2} = f(x, t), &amp; -\infty &lt; x &lt; +\infty,\ t &gt; 0, \\
+u(x, 0) = \varphi(x),\ u_t(x, 0) = \psi(x), &amp; -\infty &lt; x &lt;
++\infty.
+\end{cases}
+$$</span> <strong>混合问题和柯西问题是两类基本的定解问题</strong></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a target="_blank" rel="noopener" href="https://github.com/ergou10086">ErgouTree</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://ergou10086.github.io/posts/61953.html">https://ergou10086.github.io/posts/61953.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://ergou10086.github.io" target="_blank">ErgouTree's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E6%95%B0%E5%AD%A6/">数学</a><a class="post-meta__tags" href="/tags/%E7%89%A9%E7%90%86/">物理</a><a class="post-meta__tags" href="/tags/%E6%95%B0%E5%AD%A6%E5%BB%BA%E6%A8%A1/">数学建模</a><a class="post-meta__tags" href="/tags/%E5%AE%9A%E7%90%86%E8%AF%81%E6%98%8E/">定理证明</a><a class="post-meta__tags" href="/tags/%E6%95%B0%E5%AD%A6%E7%89%A9%E7%90%86%E6%96%B9%E6%B3%95/">数学物理方法</a></div><div class="post-share"><div class="addtoany"><div class="a2a_kit a2a_kit_size_32 a2a_default_style"><a class="a2a_button_facebook"></a><a class="a2a_button_twitter"></a><a class="a2a_button_wechat"></a><a class="a2a_button_sina_weibo"></a><a class="a2a_button_facebook_messenger"></a><a class="a2a_button_email"></a><a class="a2a_button_copy_link"></a><a class="a2a_dd" target="_blank" rel="noopener" href="https://www.addtoany.com/share"></a></div></div><script async="async" src="https://static.addtoany.com/menu/page.js"></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width" href="/posts/38102.html" title="数学物理方程波动方程的解法之达朗贝尔方法"><img class="cover" src="/images/posts/cover_teach5.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">数学物理方程波动方程的解法之达朗贝尔方法</div></div><div class="info-2"><div class="info-item-1">波动方程的求解 波动方程是描述波传播现象的基本偏微分方程，在物理、工程等领域有着广泛应用，例如弦的振动、声波、电磁波的传播等。理解波动方程的解法及其物理意义是数理方程学习的核心内容之一 达朗贝尔公式 达朗贝尔公式解法也叫行波法，旨在一维波动方程求定解问题，主要用于求解无界区域内的一维波动方程定解问题。尽管其适用范围有限，但它在波动问题中具有独特的优点，是数理方程的基本解法之一。 因为行波法只能用于求解无界区域内波动方程的定 解问题。虽有很大的局限性，但对于波动问题有其特殊的优点，所以该法是数理方程的基本解法之一。 弦振动方程的达朗贝尔解法 问题和方程的引入 如果我们所考察的弦线长度很长，而我们需要知道的又只是在较短时间且离开边界较远的一段范围内的振动情况，那么边界条件的影响就可以忽略，所以不妨把所考察弦线的长度视为无限。 我们首先考察无限长弦的自由振动问题，其定解问题形式如下： $$ \begin{cases} u_{tt} = a^2 u_{xx} + f(x, t) &amp; (-\infty &lt; x &lt; +\infty, t...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/posts/38102.html" title="数学物理方程波动方程的解法之达朗贝尔方法"><img class="cover" src="/images/posts/cover_teach5.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-07-23</div><div class="info-item-2">数学物理方程波动方程的解法之达朗贝尔方法</div></div><div class="info-2"><div class="info-item-1">波动方程的求解 波动方程是描述波传播现象的基本偏微分方程，在物理、工程等领域有着广泛应用，例如弦的振动、声波、电磁波的传播等。理解波动方程的解法及其物理意义是数理方程学习的核心内容之一 达朗贝尔公式 达朗贝尔公式解法也叫行波法，旨在一维波动方程求定解问题，主要用于求解无界区域内的一维波动方程定解问题。尽管其适用范围有限，但它在波动问题中具有独特的优点，是数理方程的基本解法之一。 因为行波法只能用于求解无界区域内波动方程的定 解问题。虽有很大的局限性，但对于波动问题有其特殊的优点，所以该法是数理方程的基本解法之一。 弦振动方程的达朗贝尔解法 问题和方程的引入 如果我们所考察的弦线长度很长，而我们需要知道的又只是在较短时间且离开边界较远的一段范围内的振动情况，那么边界条件的影响就可以忽略，所以不妨把所考察弦线的长度视为无限。 我们首先考察无限长弦的自由振动问题，其定解问题形式如下： $$ \begin{cases} u_{tt} = a^2 u_{xx} + f(x, t) &amp; (-\infty &lt; x &lt; +\infty, t...</div></div></div></a><a class="pagination-related" href="/posts/47136.html" title="推导theta&#x3D;0纵剖面上的抽水降落曲线公式"><img class="cover" src="/images/posts/cover_config.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-06-03</div><div class="info-item-2">推导theta&#x3D;0纵剖面上的抽水降落曲线公式</div></div><div class="info-2"><div class="info-item-1">推导 θ = 0 纵剖面上的抽水降落曲线公式 根据辐射井的抽水降落曲面模型论文内容，θ = 0 纵剖面是沿着辐射管方向的剖面。推导分为两个区域：辐射管范围内的垂直渗流区（0 ≤ ρ ≤ l + r）和辐射管范围外的水平渗流区（l + r ≤ ρ ≤ R）。以下是详细推导过程：  1. 垂直渗流区 (0 ≤ ρ ≤ l + r) 基本假设： 在垂直渗流区（辐射管范围内），地下水运动以垂向渗流为主，其核心特征是：  近井处水力坡度平缓（水位变化小） 远离井处水力坡度陡峭（水位变化大） 水位差变化率与当前位置水位差成正比  数学表述为： ΔT(ρ, 0) = ω ⋅ T(ρ, 0) ⋅ ΔρΔT(ρ, 0) = ω ⋅ T(ρ, 0) ⋅ Δρ 其中：  T(ρ, 0) = H(ρ, 0) − Hs（点(ρ, 0)与竖井水位差） ω：垂直渗流区特征参数（常数） Δρ：径向距离增量  在垂直渗流区，水位高度 T(ρ, 0) 的增长率为常数 ω。这意味着单位距离 Δρ 内，T(ρ, 0) 的增量与 T(ρ, 0)...</div></div></div></a><a class="pagination-related" href="/posts/null.html" title="MATLAB part1-入门介绍和基础语法"><img class="cover" src="/images/posts/cover_matlab.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-06-03</div><div class="info-item-2">MATLAB part1-入门介绍和基础语法</div></div><div class="info-2"><div class="info-item-1">MATLAB...</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="gitalk-container"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/arp.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">ErgouTree</div><div class="author-info-description">I start a brand-new life with you.</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">175</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">88</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">62</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/ergou10086"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/ergou10086" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="/zjm88822201@126.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a><a class="social-icon" href="https://space.bilibili.com/142045656?spm_id_from=333.1007.0.0" target="_blank" title="bilibili"><i class="fas fa-brands fa-bilibili" style="color: #4a72be;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">作者长期陷入galgame和osu!maina4k中 祝他好运吧 对了 如果图片加载过慢 建议科学上网进行使用</div></div><div class="card-widget"><div class="item-headline"><i></i><span></span></div><div class="item-content"></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%95%B0%E5%AD%A6%E7%89%A9%E7%90%86%E6%96%B9%E7%A8%8B%E6%A8%A1%E5%9E%8B%E5%89%8D%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text">数学物理方程模型前言</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%8B%E7%BB%8D"><span class="toc-number">1.1.</span> <span class="toc-text">介绍</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E5%AD%A6%E7%89%A9%E7%90%86%E6%96%B9%E7%A8%8B%E7%9A%84%E7%A0%94%E7%A9%B6%E6%96%B9%E6%B3%95"><span class="toc-number">1.2.</span> <span class="toc-text">数学物理方程的研究方法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5"><span class="toc-number">1.3.</span> <span class="toc-text">基本概念</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BC%A6%E6%8C%AF%E5%8A%A8%E6%96%B9%E7%A8%8B%E4%B8%8E%E5%AE%9A%E8%A7%A3%E6%9D%A1%E4%BB%B6"><span class="toc-number">2.</span> <span class="toc-text">弦振动方程与定解条件</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BC%95%E5%85%A5"><span class="toc-number">2.1.</span> <span class="toc-text">引入</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%A5%E5%BC%A6%E6%8C%AF%E5%8A%A8%E4%B8%BA%E4%BE%8B%E8%BF%9B%E8%A1%8C%E7%89%A9%E7%90%86%E9%97%AE%E9%A2%98%E7%9A%84%E5%88%86%E6%9E%90"><span class="toc-number">2.2.</span> <span class="toc-text">以弦振动为例进行物理问题的分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BB%93%E5%90%88%E5%88%86%E6%9E%90%E8%BF%9B%E8%A1%8C%E6%95%B0%E5%AD%A6%E7%89%A9%E7%90%86%E6%96%B9%E7%A8%8B%E7%9A%84%E5%AF%BC%E5%87%BA"><span class="toc-number">2.3.</span> <span class="toc-text">结合分析进行数学物理方程的导出</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8E%A8%E5%AF%BC%E5%AE%9A%E8%A7%A3%E6%9D%A1%E4%BB%B6"><span class="toc-number">2.4.</span> <span class="toc-text">推导定解条件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%A7%A3%E5%86%B3%E5%AE%9A%E8%A7%A3%E9%97%AE%E9%A2%98"><span class="toc-number">2.5.</span> <span class="toc-text">解决定解问题</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/61953.html" title="数学物理方程之弦振动方程模型的建立"><img src="/images/posts/cover_front.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="数学物理方程之弦振动方程模型的建立"/></a><div class="content"><a class="title" href="/posts/61953.html" title="数学物理方程之弦振动方程模型的建立">数学物理方程之弦振动方程模型的建立</a><time datetime="2025-07-23T01:00:34.000Z" title="发表于 2025-07-23 09:00:34">2025-07-23</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/38102.html" title="数学物理方程波动方程的解法之达朗贝尔方法"><img src="/images/posts/cover_teach5.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="数学物理方程波动方程的解法之达朗贝尔方法"/></a><div class="content"><a class="title" href="/posts/38102.html" title="数学物理方程波动方程的解法之达朗贝尔方法">数学物理方程波动方程的解法之达朗贝尔方法</a><time datetime="2025-07-23T00:51:36.000Z" title="发表于 2025-07-23 08:51:36">2025-07-23</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/17776.html" title="ISLAND攻略"><img src="/images/posts/cover_island.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="ISLAND攻略"/></a><div class="content"><a class="title" href="/posts/17776.html" title="ISLAND攻略">ISLAND攻略</a><time datetime="2025-07-23T00:19:57.000Z" title="发表于 2025-07-23 08:19:57">2025-07-23</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/58454.html" title="Spring Cloud part11—Nacos配置中心的使用实践"><img src="/images/posts/cover_springboot2.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Spring Cloud part11—Nacos配置中心的使用实践"/></a><div class="content"><a class="title" href="/posts/58454.html" title="Spring Cloud part11—Nacos配置中心的使用实践">Spring Cloud part11—Nacos配置中心的使用实践</a><time datetime="2025-07-23T00:17:26.000Z" title="发表于 2025-07-23 08:17:26">2025-07-23</time></div></div></div></div></div></div></main><div class="fps-display"><span id="fps">FPS: 60</span></div><footer id="footer" style="background-image: url(/images/posts/cover_front.jpg);"><div id="footer-wrap"><div class="copyright">&copy;2024 - 2025 By ErgouTree</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">忘れたくない思い、ありますか？ <br>,<span id="realtime_duration" style="font-family: monospace;"></span>,<br><a href="https://icp.gov.moe/?keyword=20257009" target="_blank">萌ICP备20257009号</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><a class="icon-V hidden" onclick="switchNightMode()" title="日间和夜间模式切换"><svg width="25" height="25" viewBox="0 0 1024 1024"><use id="modeicon" xlink:href="#icon-moon"></use></svg></a><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="chat-btn" type="button" title="聊天" style="display:none"><i class="fas fa-comment"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (true) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script><script>(() => {
+  const applyThemeDefaultsConfig = theme => {
+    if (theme === 'dark-mode') {
+      Chart.defaults.color = "rgba(255, 255, 255, 0.8)"
+      Chart.defaults.borderColor = "rgba(255, 255, 255, 0.2)"
+      Chart.defaults.scale.ticks.backdropColor = "transparent"
+    } else {
+      Chart.defaults.color = "rgba(0, 0, 0, 0.8)"
+      Chart.defaults.borderColor = "rgba(0, 0, 0, 0.1)"
+      Chart.defaults.scale.ticks.backdropColor = "transparent"
+    }
+  }
+
+  // Recursively traverse the config object and automatically apply theme-specific color schemes
+  const applyThemeConfig = (obj, theme) => {
+    if (typeof obj !== 'object' || obj === null) return
+
+    Object.keys(obj).forEach(key => {
+      const value = obj[key]
+      // If the property is an object and has theme-specific options, apply them
+      if (typeof value === 'object' && value !== null) {
+        if (value[theme]) {
+          obj[key] = value[theme] // Apply the value for the current theme
+        } else {
+          // Recursively process child objects
+          applyThemeConfig(value, theme)
+        }
+      }
+    })
+  }
+
+  const runChartJS = ele => {
+    window.loadChartJS = true
+
+    Array.from(ele).forEach((item, index) => {
+      const chartSrc = item.firstElementChild
+      const chartID = item.getAttribute('data-chartjs-id') || ('chartjs-' + index) // Use custom ID or default ID
+      const width = item.getAttribute('data-width')
+      const existingCanvas = document.getElementById(chartID)
+
+      // If a canvas already exists, remove it to avoid rendering duplicates
+      if (existingCanvas) {
+          existingCanvas.parentNode.remove()
+      }
+
+      const chartDefinition = chartSrc.textContent
+      const canvas = document.createElement('canvas')
+      canvas.id = chartID
+
+      const div = document.createElement('div')
+      div.className = 'chartjs-wrap'
+
+      if (width) {
+        div.style.width = width
+      }
+
+      div.appendChild(canvas)
+      chartSrc.insertAdjacentElement('afterend', div)
+
+      const ctx = document.getElementById(chartID).getContext('2d')
+
+      const config = JSON.parse(chartDefinition)
+
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark-mode' : 'light-mode'
+
+      // Set default styles (initial setup)
+      applyThemeDefaultsConfig(theme)
+
+      // Automatically traverse the config and apply dual-mode color schemes
+      applyThemeConfig(config, theme)
+
+      new Chart(ctx, config)
+    })
+  }
+
+  const loadChartJS = () => {
+    const chartJSEle = document.querySelectorAll('#article-container .chartjs-container')
+    if (chartJSEle.length === 0) return
+
+    window.loadChartJS ? runChartJS(chartJSEle) : btf.getScript('https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.min.js').then(() => runChartJS(chartJSEle))
+  }
+
+  // Listen for theme change events
+  btf.addGlobalFn('themeChange', loadChartJS, 'chartjs')
+  btf.addGlobalFn('encrypt', loadChartJS, 'chartjs')
+
+  window.pjax ? loadChartJS() : document.addEventListener('DOMContentLoaded', loadChartJS)
+})()</script><script>(function() {
+  const abcjsInit = function() {
+    const abcjsFn = function() {
+      setTimeout(function() {
+        const sheets = document.querySelectorAll(".abc-music-sheet")
+        for (let i = 0; i < sheets.length; i++) {
+          const ele = sheets[i]
+          if (ele.children.length > 0) continue
+
+          // Parse parameters from data-params attribute
+          let params = {}
+          const dp = ele.getAttribute("data-params")
+          if (dp) {
+            try {
+              params = JSON.parse(dp)
+            } catch (e) {
+              console.error("Failed to parse data-params:", e)
+            }
+          }
+
+          // Merge parsed parameters with the responsive option
+          // Ensures params content appears before responsive
+          const options = { ...params, responsive: "resize" }
+
+          // Render the music score using ABCJS.renderAbc
+          ABCJS.renderAbc(ele, ele.innerHTML, options)
+        }
+      }, 100)
+    }
+
+    if (typeof ABCJS === "object") {
+      abcjsFn()
+    } else {
+      btf.getScript("https://cdn.jsdelivr.net/npm/abcjs/dist/abcjs-basic-min.min.js").then(abcjsFn)
+    }
+  }
+
+  if (window.pjax) {
+    abcjsInit()
+  } else {
+    window.addEventListener("load", abcjsInit)
+  }
+
+  btf.addGlobalFn("encrypt", abcjsInit, "abcjs")
+})()</script><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = {"labels":["Gitalk","Comment"],"createIssueManually":false,"distractionFreeMode":false}
+
+  const commentCount = n => {
+    const isCommentCount = document.querySelector('#post-meta .gitalk-comment-count')
+    if (isCommentCount) {
+      isCommentCount.textContent= n
+    }
+  }
+
+  const initGitalk = (el, path) => {
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGitalk = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+
+    const gitalk = new Gitalk({
+      clientID: 'Ov23li3vDQANiUddL4XB',
+      clientSecret: '5c9a56d02995340fca117809cd414662aadce6ff',
+      repo: 'HexoComment',
+      owner: 'ergou10086',
+      admin: ['ergou10086'],
+      updateCountCallback: commentCount,
+      ...option,
+      id: isShuoshuo ? path : (option && option.id) || '1c7ced5306f4867887c2ccc5e5b291ab'
+    })
+
+    gitalk.render('gitalk-container')
+  }
+
+  const loadGitalk = async(el, path) => {
+    if (typeof Gitalk === 'function') initGitalk(el, path)
+    else {
+      await btf.getCSS('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.css')
+      await btf.getScript('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.js')
+      initGitalk(el, path)
+    }
+  }
+
+  if (isShuoshuo) {
+    'Gitalk' === 'Gitalk'
+      ? window.shuoshuoComment = { loadComment: loadGitalk }
+      : window.loadOtherComment = loadGitalk
+    return
+  }
+
+  if ('Gitalk' === 'Gitalk' || !false) {
+    if (false) btf.loadComment(document.getElementById('gitalk-container'), loadGitalk)
+    else loadGitalk()
+  } else {
+    window.loadOtherComment = loadGitalk
+  }
+})()</script></div><div class="aplayer no-destroy" data-id="13587761608" data-server="netease" data-type="playlist" data-fixed="true" data-autoplay="false" data-lrcType="-1"> </div><script src="https://cdn.jsdelivr.net/npm/abcjs@7.1.2/dist/abcjs-basic-min.js"></script><script src="/js/sun_moon.js" async></script><script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.7/dayjs.min.js"></script><script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.7/plugin/duration.min.js"></script><script src="/scripts/realtime.js"></script><script src="/scripts/random.js"></script><script defer="defer" id="ribbon" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-ribbon.min.js" size="150" alpha="0.6" zIndex="-1" mobile="null" data-click="true"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = false;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><script id="click-heart" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/click-heart.min.js" async="async" mobile="false"></script><script>(() => {
+  window.ChatraID = '4bzb546NSBoJcrNyu'
+  window.Chatra = window.Chatra || function() {
+    (window.Chatra.q = window.Chatra.q || []).push(arguments)
+  }
+
+  btf.getScript('https://call.chatra.io/chatra.js').then(() => {
+    const isChatBtn = true
+    const isChatHideShow = true
+
+    if (isChatBtn) {
+      const close = () => {
+        Chatra('minimizeWidget')
+        Chatra('hide')
+      }
+
+      const open = () => {
+        Chatra('openChat', true)
+        Chatra('show')
+      }
+
+      window.ChatraSetup = { startHidden: true }
+    
+      window.chatBtnFn = () => document.getElementById('chatra').classList.contains('chatra--expanded') ? close() : open()
+
+      document.getElementById('chat-btn').style.display = 'block'
+    } else if (isChatHideShow) {
+      window.chatBtn = {
+        hide: () => Chatra('hide'),
+        show: () => Chatra('show')
+      }
+    }
+  })
+})()</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/metingjs/dist/Meting.min.js"></script><script>(() => {
+  const destroyAplayer = () => {
+    if (window.aplayers) {
+      for (let i = 0; i < window.aplayers.length; i++) {
+        if (!window.aplayers[i].options.fixed) {
+          window.aplayers[i].destroy()
+        }
+      }
+    }
+  }
+
+  const runMetingJS = () => {
+    typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+  }
+
+  btf.addGlobalFn('pjaxSend', destroyAplayer, 'destroyAplayer')
+  btf.addGlobalFn('pjaxComplete', loadMeting, 'runMetingJS')
+})()</script><script src="https://cdn.jsdelivr.net/npm/pjax/pjax.min.js"></script><script>(() => {
+  const pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+  window.pjax = new Pjax({
+    elements: 'a:not([target="_blank"]):not([href="/music/"])',
+    selectors: pjaxSelectors,
+    cacheBust: false,
+    analytics: false,
+    scrollRestoration: false
+  })
+
+  const triggerPjaxFn = (val) => {
+    if (!val) return
+    Object.values(val).forEach(fn => fn())
+  }
+
+  document.addEventListener('pjax:send', () => {
+    // removeEventListener
+    btf.removeGlobalFnEvent('pjaxSendOnce')
+    btf.removeGlobalFnEvent('themeChange')
+
+    // reset readmode
+    const $bodyClassList = document.body.classList
+    if ($bodyClassList.contains('read-mode')) $bodyClassList.remove('read-mode')
+
+    triggerPjaxFn(window.globalFn.pjaxSend)
+  })
+
+  document.addEventListener('pjax:complete', () => {
+    btf.removeGlobalFnEvent('pjaxCompleteOnce')
+    document.querySelectorAll('script[data-pjax]').forEach(item => {
+      const newScript = document.createElement('script')
+      const content = item.text || item.textContent || item.innerHTML || ""
+      Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+      newScript.appendChild(document.createTextNode(content))
+      item.parentNode.replaceChild(newScript, item)
+    })
+
+    triggerPjaxFn(window.globalFn.pjaxComplete)
+  })
+
+  document.addEventListener('pjax:error', e => {
+    if (e.request.status === 404) {
+      const usePjax = true
+      true 
+        ? (usePjax ? pjax.loadUrl('/404.html') : window.location.href = '/404.html')
+        : window.location.href = e.request.responseURL
+    }
+  })
+})()</script><script src="/js/fps-display.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><!-- hexo injector body_end start --><script data-pjax>
+  function butterfly_swiper_injector_config(){
+    var parent_div_git = document.getElementById('recent-posts');
+    var item_html = '<div class="recent-post-item" style="height: auto;width: 100%"><div class="blog-slider swiper-container-fade swiper-container-horizontal" id="swiper_container"><div class="blog-slider__wrp swiper-wrapper" style="transition-duration: 0ms;"><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_database.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-14</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt="">结构化查询语言SQL</a><div class="blog-slider__text">SQL基本很常用的语句都在这里了，本质上是当初为了应付数据库考试整理的，后来发现还蛮有用的很方便查常用的语句</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java4.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-22</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt="">SpringBoot part0?INF-SpringBoot这个框架都需要学习什么</a><div class="blog-slider__text">主要围绕Spring Boot中重要知识来简洁或详细的说明，其中部分不够完全，持续更新</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java11.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-15</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt="">关于Lombok在高版本IDEA中注解处理不生效的问题解决</a><div class="blog-slider__text">基本上是彻底的解决了用 IDEA 新建 Spring Boot 项目时候会产生的 Lombok 注解处理失效的各种问题</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_实用.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-05</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt="">个人向galgame原声带或相关音乐整理及其资源</a><div class="blog-slider__text">整理了我喜欢的galgame ost或者衍生的音乐专辑，部分资源是自己扒盘扒下来的，部分来自鸟白岛放映厅</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_math.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-17</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt="">对书上证明样本方差是总体方差的无偏估计量的解析</a><div class="blog-slider__text">对书上证明样本方差是总体方差的无偏估计量的解析，高等教育出版社-华科大版本</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_alog.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-04-24</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt="">第十五届蓝桥杯Java国赛B组D题-园丁题解</a><div class="blog-slider__text">第十五届蓝桥杯Java国赛B组D题-园丁题解，该题解已经发布到洛谷社区中并且被全站推荐</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java4.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-04-29</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt="">操作系统之处理机的死锁部分概述</a><div class="blog-slider__text">对操作系统之处理机的死锁部分知识的总结，包括代码复现</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_lb.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-09</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt="">Little Busters!EX游戏攻略</a><div class="blog-slider__text">整理了一份详细清晰的Little Busters！EX的游戏攻略，因为我自己也在推，就顺手整理了一份方便查阅的md文档</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java9.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-16</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt="">Spring Boot中使用Hibernate框架</a><div class="blog-slider__text">对学习完Hibernate的应用部分，主要围绕Spring Boot中使用Hibernate框架，建议学习完 Hibernate 框架再看</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div></div><div class="blog-slider__pagination swiper-pagination-clickable swiper-pagination-bullets"></div></div></div>';
+    console.log('已挂载butterfly_swiper')
+    parent_div_git.insertAdjacentHTML("afterbegin",item_html)
+    }
+  var elist = 'undefined'.split(',');
+  var cpage = location.pathname;
+  var epage = '/';
+  var flag = 0;
+
+  for (var i=0;i<elist.length;i++){
+    if (cpage.includes(elist[i])){
+      flag++;
+    }
+  }
+
+  if ((epage ==='all')&&(flag == 0)){
+    butterfly_swiper_injector_config();
+  }
+  else if (epage === cpage){
+    butterfly_swiper_injector_config();
+  }
+  </script><script defer src="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper.min.js"></script><script defer data-pjax src="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper_init.js"></script><!-- hexo injector body_end end --></body></html>

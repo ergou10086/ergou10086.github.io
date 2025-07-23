@@ -1,0 +1,957 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Spring Cloud part11—Nacos配置中心的使用实践 | ErgouTree's Blog</title><meta name="author" content="ErgouTree"><meta name="copyright" content="ErgouTree"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="Nacos 配置中心的实践 Nacos 配置中心的基本实践和配置刷新实践 复习一下 Maven 等来导入 Naocs 相关依赖的内容 首先我们声明项目的版本信息 1234567891011121314151617181920212223242526272829303132&lt;!--  只声明依赖，不引入依赖 --&gt;&lt;dependencyManagement&gt;">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spring Cloud part11—Nacos配置中心的使用实践">
+<meta property="og:url" content="https://ergou10086.github.io/posts/58454.html">
+<meta property="og:site_name" content="ErgouTree&#39;s Blog">
+<meta property="og:description" content="Nacos 配置中心的实践 Nacos 配置中心的基本实践和配置刷新实践 复习一下 Maven 等来导入 Naocs 相关依赖的内容 首先我们声明项目的版本信息 1234567891011121314151617181920212223242526272829303132&lt;!--  只声明依赖，不引入依赖 --&gt;&lt;dependencyManagement&gt;">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://ergou10086.github.io/images/posts/cover_springboot2.jpg">
+<meta property="article:published_time" content="2025-07-23T00:17:26.000Z">
+<meta property="article:modified_time" content="2025-07-23T00:21:13.489Z">
+<meta property="article:author" content="ErgouTree">
+<meta property="article:tag" content="Java技术">
+<meta property="article:tag" content="JavaWeb">
+<meta property="article:tag" content="框架知识">
+<meta property="article:tag" content="学习">
+<meta property="article:tag" content="JavaEE">
+<meta property="article:tag" content="Spring系列">
+<meta property="article:tag" content="Java框架">
+<meta property="article:tag" content="配置相关">
+<meta property="article:tag" content="源码分析">
+<meta property="article:tag" content="Spring Cloud">
+<meta property="article:tag" content="微服务">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ergou10086.github.io/images/posts/cover_springboot2.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Spring Cloud part11—Nacos配置中心的使用实践",
+  "url": "https://ergou10086.github.io/posts/58454.html",
+  "image": "https://ergou10086.github.io/images/posts/cover_springboot2.jpg",
+  "datePublished": "2025-07-23T00:17:26.000Z",
+  "dateModified": "2025-07-23T00:21:13.489Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "ErgouTree",
+      "url": "https://github.com/ergou10086"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/pi.ico"><link rel="canonical" href="https://ergou10086.github.io/posts/58454.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//hm.baidu.com"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!true && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?https://hm.baidu.com/hm.js?a6ab1b78e2c6320b664f31e8b9bf0e36";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+btf.addGlobalFn('pjaxComplete', () => {
+  _hmt.push(['_trackPageview',window.location.pathname])
+}, 'baidu_analytics')
+</script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.json","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":true},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: {"chs_to_cht":"已切换为繁体中文","cht_to_chs":"已切换为简体中文","day_to_night":"已切换为深色模式","night_to_day":"已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#1f1f1f","position":"bottom-left"},
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Spring Cloud part11—Nacos配置中心的使用实践',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css"><svg aria-hidden="true" style="position:absolute; overflow:hidden; width:0; height:0"><symbol id="icon-sun" viewBox="0 0 1024 1024"><path d="M960 512l-128 128v192h-192l-128 128-128-128H192v-192l-128-128 128-128V192h192l128-128 128 128h192v192z" fill="#FFD878" p-id="8420"></path><path d="M736 512a224 224 0 1 0-448 0 224 224 0 1 0 448 0z" fill="#FFE4A9" p-id="8421"></path><path d="M512 109.248L626.752 224H800v173.248L914.752 512 800 626.752V800h-173.248L512 914.752 397.248 800H224v-173.248L109.248 512 224 397.248V224h173.248L512 109.248M512 64l-128 128H192v192l-128 128 128 128v192h192l128 128 128-128h192v-192l128-128-128-128V192h-192l-128-128z" fill="#4D5152" p-id="8422"></path><path d="M512 320c105.888 0 192 86.112 192 192s-86.112 192-192 192-192-86.112-192-192 86.112-192 192-192m0-32a224 224 0 1 0 0 448 224 224 0 0 0 0-448z" fill="#4D5152" p-id="8423"></path></symbol><symbol id="icon-moon" viewBox="0 0 1024 1024"><path d="M611.370667 167.082667a445.013333 445.013333 0 0 1-38.4 161.834666 477.824 477.824 0 0 1-244.736 244.394667 445.141333 445.141333 0 0 1-161.109334 38.058667 85.077333 85.077333 0 0 0-65.066666 135.722666A462.08 462.08 0 1 0 747.093333 102.058667a85.077333 85.077333 0 0 0-135.722666 65.024z" fill="#FFB531" p-id="11345"></path><path d="M329.728 274.133333l35.157333-35.157333a21.333333 21.333333 0 1 0-30.165333-30.165333l-35.157333 35.157333-35.114667-35.157333a21.333333 21.333333 0 0 0-30.165333 30.165333l35.114666 35.157333-35.114666 35.157334a21.333333 21.333333 0 1 0 30.165333 30.165333l35.114667-35.157333 35.157333 35.157333a21.333333 21.333333 0 1 0 30.165333-30.165333z" fill="#030835" p-id="11346"></path></symbol></svg><link rel="stylesheet" href="/css/custom.css"><!-- hexo injector head_end start --><link rel="stylesheet" href="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiperstyle.css" media="print" onload="this.media='all'"><!-- hexo injector head_end end --><meta name="generator" content="Hexo 7.3.0"></head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js/pace.min.js"></script><div id="web_bg" style="background: linear-gradient(20deg, #0062be, #925696, #cc426e, #fb0347);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/arp.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">175</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">88</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">62</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-images"></i><span> Gallery</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/games/"><i class="fa-fw fas fa-game"></i><span> GalGame</span></a></li><li><a class="site-page child" href="/video/"><i class="fa-fw fas fa-video"></i><span> Video</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div><div class="menus_item"><a class="site-page" href="javascript:randomPost();"><span> Random</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/images/posts/cover_springboot2.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">ErgouTree's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">Spring Cloud part11—Nacos配置中心的使用实践</span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-images"></i><span> Gallery</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/games/"><i class="fa-fw fas fa-game"></i><span> GalGame</span></a></li><li><a class="site-page child" href="/video/"><i class="fa-fw fas fa-video"></i><span> Video</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div><div class="menus_item"><a class="site-page" href="javascript:randomPost();"><span> Random</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div><div id="randomPost"><a class="site-page social-icon search" href="javascript:;" onclick="randomPost()" title="随机访问一篇文章"><i class="fas fa-circle-notch fa-fw"></i></a></div></nav><div id="post-info"><h1 class="post-title">Spring Cloud part11—Nacos配置中心的使用实践<a class="post-edit-link" href="https://github.com/ergou10086/ergou10086.github.io/edit/main/source/_posts/_posts/SpringCloudpart11—Nacos配置中心的使用实践.md" title="编辑" target="_blank"><i class="fas fa-pencil-alt"></i></a></h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2025-07-23T00:17:26.000Z" title="发表于 2025-07-23 08:17:26">2025-07-23</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2025-07-23T00:21:13.489Z" title="更新于 2025-07-23 08:21:13">2025-07-23</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Java%E5%AD%A6%E4%B9%A0/">Java学习</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Java%E5%AD%A6%E4%B9%A0/Spring%E7%B3%BB%E5%88%97/">Spring系列</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Java%E5%AD%A6%E4%B9%A0/Spring%E7%B3%BB%E5%88%97/Spring-Cloud/">Spring Cloud</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">7.1k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>32分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span><span class="post-meta-separator">|</span><span class="post-meta-commentcount"><i class="far fa-comments fa-fw post-meta-icon"></i><span class="post-meta-label">评论数:</span><a href="/posts/58454.html#post-comment"><span class="gitalk-comment-count"><i class="fa-solid fa-spinner fa-spin"></i></span></a></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="nacos-配置中心的实践">Nacos 配置中心的实践</h2>
+<h3 id="nacos-配置中心的基本实践和配置刷新实践">Nacos
+配置中心的基本实践和配置刷新实践</h3>
+<p>复习一下 Maven 等来导入 Naocs 相关依赖的内容</p>
+<p>首先我们声明项目的版本信息</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!--  只声明依赖，不引入依赖 --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependencyManagement</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependencies</span>&gt;</span></span><br><span class="line">        <span class="comment">&lt;!-- 声明springBoot版本 --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-dependencies<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">version</span>&gt;</span>$&#123;spring-boot.version&#125;<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">type</span>&gt;</span>pom<span class="tag">&lt;/<span class="name">type</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">scope</span>&gt;</span>import<span class="tag">&lt;/<span class="name">scope</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="comment">&lt;!-- 声明springCloud版本 --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.cloud<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-cloud-dependencies<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">version</span>&gt;</span>$&#123;spring-cloud.version&#125;<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">type</span>&gt;</span>pom<span class="tag">&lt;/<span class="name">type</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">scope</span>&gt;</span>import<span class="tag">&lt;/<span class="name">scope</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="comment">&lt;!-- 声明 springCloud Alibaba 版本 --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.alibaba.cloud<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-cloud-alibaba-dependencies<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">version</span>&gt;</span>$&#123;spring-cloud-alibaba.version&#125;<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">type</span>&gt;</span>pom<span class="tag">&lt;/<span class="name">type</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">scope</span>&gt;</span>import<span class="tag">&lt;/<span class="name">scope</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependencies</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependencyManagement</span>&gt;</span></span><br><span class="line">————————————————</span><br><span class="line">版权声明：本文为CSDN博主「张维鹏」的原创文章，遵循CC 4.0 BY-SA版权协议，转载请附上原文出处链接及本声明。</span><br><span class="line">原文链接：https://blog.csdn.net/a745233700/article/details/122916208</span><br></pre></td></tr></table></figure>
+<p>添加 nacos 配置中心的 maven 依赖：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!-- Nacos配置中心依赖 --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.alibaba.cloud<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-cloud-starter-alibaba-nacos-config<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">&lt;!-- Spring Cloud Bootstrap 依赖，用于加载bootstrap.yml --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.cloud<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-cloud-starter-bootstrap<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>添加如下配置文件，服务消费者也一样</p>
+<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">spring:</span></span><br><span class="line">  <span class="attr">application:</span></span><br><span class="line">    <span class="attr">name:</span> <span class="string">nacos-provider</span></span><br><span class="line">  <span class="attr">cloud:</span></span><br><span class="line">    <span class="attr">nacos:</span></span><br><span class="line">      <span class="attr">config:</span></span><br><span class="line">        <span class="attr">server-addr:</span> <span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span><span class="string">:8848</span></span><br><span class="line">        <span class="attr">file-extension:</span> <span class="string">yaml</span></span><br><span class="line">        <span class="comment"># 指定命名空间，默认为public</span></span><br><span class="line">        <span class="attr">namespace:</span> <span class="string">public</span></span><br><span class="line">        <span class="comment"># 指定配置组，默认为DEFAULT_GROUP</span></span><br><span class="line">        <span class="attr">group:</span> <span class="string">DEFAULT_GROUP</span></span><br></pre></td></tr></table></figure>
+<p>简要介绍一下 bootstrap 配置文件，，<code>bootstrap</code>
+配置文件是一种特殊的配置文件，其核心作用是<strong>在应用上下文初始化的早期阶段加载关键配置</strong>，为应用的启动和核心组件（如服务注册发现、配置中心等）的初始化提供必要参数。</p>
+<p>一般知道，<code>bootstrap</code>
+配置文件（<code>bootstrap.properties</code> 或
+<code>bootstrap.yaml</code>）的加载优先级高于普通的
+<code>application</code> 配置文件，会在 Spring
+应用上下文初始化的最早期被加载，所以一般微服务的时候用的更多</p>
+<p>别忘了启动 Nacos</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 进入Nacos目录</span></span><br><span class="line"><span class="built_in">cd</span> nacos/bin</span><br><span class="line"><span class="comment"># 启动Nacos服务器（单机模式）</span></span><br><span class="line">startup.cmd -m standalone</span><br></pre></td></tr></table></figure>
+<p>像这样创建配置，Data ID一般都是服务名+文件扩展名，然后往 Nacos
+的配置这块中把服务里面最基本的配置写进去就可以，当然你可以全都写进去</p>
+<figure>
+<img src="/posts/58454/image-20250721232622067.png" alt="image-20250721232622067">
+<figcaption aria-hidden="true">image-20250721232622067</figcaption>
+</figure>
+<p>配置的填写按照如下形式进行实现</p>
+<figure>
+<img src="/posts/58454/image-20250722232118765.png" alt="image-20250722232118765">
+<figcaption aria-hidden="true">image-20250722232118765</figcaption>
+</figure>
+<p>写一个配置的控制器类，方便能查看效果</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RestController</span></span><br><span class="line"><span class="meta">@RequestMapping(&quot;/config&quot;)</span></span><br><span class="line"><span class="meta">@RefreshScope</span>  <span class="comment">// 支持配置动态刷新</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ConfigController</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Value(&quot;$&#123;provider.config.name:default-name&#125;&quot;)</span></span><br><span class="line">    <span class="keyword">private</span> String name;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Value(&quot;$&#123;provider.config.version:1.0&#125;&quot;)</span></span><br><span class="line">    <span class="keyword">private</span> String version;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Value(&quot;$&#123;provider.config.env:local&#125;&quot;)</span></span><br><span class="line">    <span class="keyword">private</span> String env;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@GetMapping(&quot;/info&quot;)</span></span><br><span class="line">    <span class="keyword">public</span> Map&lt;String, String&gt; <span class="title function_">getConfigInfo</span><span class="params">()</span> &#123;</span><br><span class="line">        Map&lt;String, String&gt; configInfo = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">        configInfo.put(<span class="string">&quot;name&quot;</span>, name);</span><br><span class="line">        configInfo.put(<span class="string">&quot;version&quot;</span>, version);</span><br><span class="line">        configInfo.put(<span class="string">&quot;env&quot;</span>, env);</span><br><span class="line">        <span class="keyword">return</span> configInfo;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>再写一个监听器，监控配置更改的情况，避免出现假更新</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> edu.software.ergoutree.nacosprovider.listener;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.slf4j.Logger;</span><br><span class="line"><span class="keyword">import</span> org.slf4j.LoggerFactory;</span><br><span class="line"><span class="keyword">import</span> org.springframework.cloud.context.environment.EnvironmentChangeEvent;</span><br><span class="line"><span class="keyword">import</span> org.springframework.context.event.EventListener;</span><br><span class="line"><span class="keyword">import</span> org.springframework.stereotype.Component;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ConfigChangeListener</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">Logger</span> <span class="variable">logger</span> <span class="operator">=</span> LoggerFactory.getLogger(ConfigChangeListener.class);</span><br><span class="line"></span><br><span class="line">    <span class="meta">@EventListener</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">onEnvironmentChangeEvent</span><span class="params">(EnvironmentChangeEvent event)</span> &#123;</span><br><span class="line">        logger.info(<span class="string">&quot;配置发生变更，变更的属性: &#123;&#125;&quot;</span>, event.getKeys());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>然后试着访问上面我们配置的接口，可以看到是没问题的，我们接下来进行修改</p>
+<figure>
+<img src="/posts/58454/image-20250721232843800.png" alt="image-20250721232843800">
+<figcaption aria-hidden="true">image-20250721232843800</figcaption>
+</figure>
+<p>之后来验证动态刷新配置方面的情况，配置的动态刷新是配置中心最核心的功能之一</p>
+<p>你直接在spring里面修改和在 Nacos
+里面修改都可以，为了体现其配置中心性质））在 Nacos 改</p>
+<figure>
+<img src="/posts/58454/image-20250722165509868.png" alt="image-20250722165509868">
+<figcaption aria-hidden="true">image-20250722165509868</figcaption>
+</figure>
+<p>可以发现配置发生了修改，首先是监听器监听到了配置刷新的情况</p>
+<figure>
+<img src="/posts/58454/image-20250722170205972.png" alt="image-20250722170205972">
+<figcaption aria-hidden="true">image-20250722170205972</figcaption>
+</figure>
+<p>然后访问接口，可以发现打印出的配置发生了变更，至此Nacos最基本的配置中心和配置刷新的实践我们已经完成了</p>
+<figure>
+<img src="/posts/58454/image-20250722170247995.png" alt="image-20250722170247995">
+<figcaption aria-hidden="true">image-20250722170247995</figcaption>
+</figure>
+<h3 id="nacos-配置中心进行共享和扩展配置的实践">Nacos
+配置中心进行共享和扩展配置的实践</h3>
+<p>我们将在这里进行扩展配置和共享配置的配置实践，来看看 Nacos
+在共享和扩展配置的支持情况</p>
+<p>首先修改我们的两个模块的bootstrap.yml，添加对应的配置内容</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">spring:</span></span><br><span class="line">  <span class="attr">application:</span></span><br><span class="line">    <span class="attr">name:</span> <span class="string">nacos-provider</span></span><br><span class="line">  <span class="attr">cloud:</span></span><br><span class="line">    <span class="attr">nacos:</span></span><br><span class="line">      <span class="attr">config:</span></span><br><span class="line">        <span class="attr">server-addr:</span> <span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span><span class="string">:8848</span></span><br><span class="line">        <span class="attr">file-extension:</span> <span class="string">yaml</span></span><br><span class="line">        <span class="attr">namespace:</span> <span class="string">public</span></span><br><span class="line">        <span class="attr">group:</span> <span class="string">DEFAULT_GROUP</span></span><br><span class="line">        <span class="comment"># 添加共享配置</span></span><br><span class="line">        <span class="attr">shared-configs:</span></span><br><span class="line">          <span class="bullet">-</span> <span class="attr">data-id:</span> <span class="string">common-config.yaml</span></span><br><span class="line">            <span class="attr">group:</span> <span class="string">DEFAULT_GROUP</span></span><br><span class="line">            <span class="attr">refresh:</span> <span class="literal">true</span></span><br><span class="line">        <span class="comment"># 添加扩展配置</span></span><br><span class="line">        <span class="attr">extension-configs:</span></span><br><span class="line">          <span class="bullet">-</span> <span class="attr">data-id:</span> <span class="string">nacos-provider-ext.yaml</span></span><br><span class="line">            <span class="attr">group:</span> <span class="string">DEFAULT_GROUP</span></span><br><span class="line">            <span class="attr">refresh:</span> <span class="literal">true</span></span><br><span class="line">        <span class="comment"># 开启自动刷新</span></span><br><span class="line">        <span class="attr">refresh-enabled:</span> <span class="literal">true</span></span><br></pre></td></tr></table></figure>
+<p>之后，我们在 Nacos 中，我们将创建以下几类配置</p>
+<ol type="1">
+<li><p>应用特定配置：每个应用独有的配置，在上面我们创建过了，在这里说一嘴</p>
+<ul>
+<li>nacos-provider.yaml</li>
+<li>nacos-consumer.yaml</li>
+</ul></li>
+<li><p>共享配置：多个应用共享的配置</p>
+<ul>
+<li><p>common-config.yaml</p>
+<p>这一块你不用非要看我的这个，这个配置你自己想往上写什么就往上面写什么，之后刷新能看到清晰的变更就可以，其他别的配置也是一样的啊</p>
+<figure>
+<img src="/posts/58454/image-20250722171118833.png" alt="image-20250722171118833">
+<figcaption aria-hidden="true">image-20250722171118833</figcaption>
+</figure></li>
+</ul></li>
+<li><p>扩展配置：应用特定的扩展配置</p>
+<ul>
+<li><p>nacos-provider-ext.yaml</p></li>
+<li><p>nacos-consumer-ext.yaml</p></li>
+</ul></li>
+</ol>
+<p>创建使用共享配置的控制器，在nacos-provider模块中创建新的控制器类，然后在nacos-consumer模块中也创建相同的控制器。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RestController</span></span><br><span class="line"><span class="meta">@RequestMapping(&quot;/shared&quot;)</span></span><br><span class="line"><span class="meta">@RefreshScope</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">SharedConfigController</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 引用共享配置中的值</span></span><br><span class="line">    <span class="meta">@Value(&quot;$&#123;common.database.url:no-url&#125;&quot;)</span></span><br><span class="line">    <span class="keyword">private</span> String databaseUrl;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Value(&quot;$&#123;common.redis.host:localhost&#125;&quot;)</span></span><br><span class="line">    <span class="keyword">private</span> String redisHost;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Value(&quot;$&#123;common.logging.level.root:INFO&#125;&quot;)</span></span><br><span class="line">    <span class="keyword">private</span> String logLevel;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Value(&quot;$&#123;common.thread-pool.core-size:5&#125;&quot;)</span></span><br><span class="line">    <span class="keyword">private</span> Integer threadPoolCoreSize;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Value(&quot;$&#123;common.config-version:unknown&#125;&quot;)</span></span><br><span class="line">    <span class="keyword">private</span> String configVersion;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@GetMapping(&quot;/info&quot;)</span></span><br><span class="line">    <span class="keyword">public</span> Map&lt;String, Object&gt; <span class="title function_">getSharedConfigInfo</span><span class="params">()</span> &#123;</span><br><span class="line">        Map&lt;String, Object&gt; configInfo = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">        configInfo.put(<span class="string">&quot;databaseUrl&quot;</span>, databaseUrl);</span><br><span class="line">        configInfo.put(<span class="string">&quot;redisHost&quot;</span>, redisHost);</span><br><span class="line">        configInfo.put(<span class="string">&quot;logLevel&quot;</span>, logLevel);</span><br><span class="line">        configInfo.put(<span class="string">&quot;threadPoolCoreSize&quot;</span>, threadPoolCoreSize);</span><br><span class="line">        configInfo.put(<span class="string">&quot;configVersion&quot;</span>, configVersion);</span><br><span class="line">        <span class="keyword">return</span> configInfo;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>接下来我们测试共享的配置的情况，访问我们上面编写的接口，测试共享配置，验证两个服务是否显示相同的共享配置值：</p>
+<ul>
+<li><p>http://localhost:8087/shared/info (provider)</p>
+<figure>
+<img src="/posts/58454/image-20250722171545407.png" alt="image-20250722171545407">
+<figcaption aria-hidden="true">image-20250722171545407</figcaption>
+</figure></li>
+<li><p>http://localhost:8088/shared/info (consumer)</p>
+<figure>
+<img src="/posts/58454/image-20250722171559097.png" alt="image-20250722171559097">
+<figcaption aria-hidden="true">image-20250722171559097</figcaption>
+</figure></li>
+</ul>
+<p>这就是共享配置，所有服务都会配置上这个配置，当然，这个配置也可以被热更新，你可以试试</p>
+<p>我们继续来测试一下扩展配置，因为这两个的思路基本一致，所以放在一起了</p>
+<p>扩展配置允许应用加载多个配置文件，并按优先级覆盖，在Nacos控制台创建你的模块的扩展配置：</p>
+<figure>
+<img src="/posts/58454/image-20250722172229977.png" alt="image-20250722172229977">
+<figcaption aria-hidden="true">image-20250722172229977</figcaption>
+</figure>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Provider扩展配置</span></span><br><span class="line"><span class="attr">provider:</span></span><br><span class="line">  <span class="attr">ext:</span></span><br><span class="line">    <span class="attr">feature-toggle:</span> <span class="literal">true</span></span><br><span class="line">    <span class="attr">timeout:</span> <span class="number">5000</span></span><br><span class="line">    <span class="attr">retry-times:</span> <span class="number">3</span></span><br><span class="line">    <span class="attr">max-connections:</span> <span class="number">100</span></span><br><span class="line">    </span><br><span class="line">  <span class="comment"># 业务特定配置</span></span><br><span class="line">  <span class="attr">business:</span></span><br><span class="line">    <span class="attr">service-mode:</span> <span class="string">standard</span></span><br><span class="line">    <span class="attr">batch-size:</span> <span class="number">50</span></span><br><span class="line">    </span><br><span class="line">  <span class="comment"># 监控配置</span></span><br><span class="line">  <span class="attr">monitor:</span></span><br><span class="line">    <span class="attr">enabled:</span> <span class="literal">true</span></span><br><span class="line">    <span class="attr">interval:</span> <span class="number">60</span></span><br><span class="line">    </span><br><span class="line">  <span class="comment"># 配置版本信息</span></span><br><span class="line">  <span class="attr">ext-version:</span> <span class="string">v1.0.0</span></span><br><span class="line">  <span class="attr">update-time:</span> <span class="number">2023-04-01 10:00:00</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Consumer扩展配置</span></span><br><span class="line"><span class="attr">consumer:</span></span><br><span class="line">  <span class="attr">ext:</span></span><br><span class="line">    <span class="attr">feature-toggle:</span> <span class="literal">true</span></span><br><span class="line">    <span class="attr">timeout:</span> <span class="number">3000</span></span><br><span class="line">    <span class="attr">retry-times:</span> <span class="number">2</span></span><br><span class="line">    <span class="attr">max-connections:</span> <span class="number">50</span></span><br><span class="line">    </span><br><span class="line">  <span class="comment"># 业务特定配置</span></span><br><span class="line">  <span class="attr">business:</span></span><br><span class="line">    <span class="attr">service-mode:</span> <span class="string">simple</span></span><br><span class="line">    <span class="attr">batch-size:</span> <span class="number">20</span></span><br><span class="line">    </span><br><span class="line">  <span class="comment"># 监控配置</span></span><br><span class="line">  <span class="attr">monitor:</span></span><br><span class="line">    <span class="attr">enabled:</span> <span class="literal">true</span></span><br><span class="line">    <span class="attr">interval:</span> <span class="number">30</span></span><br><span class="line">    </span><br><span class="line">  <span class="comment"># 配置版本信息</span></span><br><span class="line">  <span class="attr">ext-version:</span> <span class="string">v1.0.0</span></span><br><span class="line">  <span class="attr">update-time:</span> <span class="number">2023-04-01 10:00:00</span></span><br></pre></td></tr></table></figure>
+<p>由于你上面的 bootstrap.yml 文件已经被修改，没改的记得改一下</p>
+<p>然后创建使用扩展配置的控制器，在nacos-provider模块中创建新的控制器类：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RestController</span></span><br><span class="line"><span class="meta">@RequestMapping(&quot;/extension&quot;)</span></span><br><span class="line"><span class="meta">@RefreshScope</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ExtensionConfigController</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 引用扩展配置中的值</span></span><br><span class="line">    <span class="meta">@Value(&quot;$&#123;provider.ext.feature-toggle:false&#125;&quot;)</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">boolean</span> featureToggle;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Value(&quot;$&#123;provider.ext.timeout:1000&#125;&quot;)</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> timeout;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Value(&quot;$&#123;provider.ext.retry-times:1&#125;&quot;)</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> retryTimes;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Value(&quot;$&#123;provider.business.service-mode:basic&#125;&quot;)</span></span><br><span class="line">    <span class="keyword">private</span> String serviceMode;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Value(&quot;$&#123;provider.monitor.interval:30&#125;&quot;)</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> monitorInterval;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Value(&quot;$&#123;provider.ext-version:unknown&#125;&quot;)</span></span><br><span class="line">    <span class="keyword">private</span> String extVersion;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@GetMapping(&quot;/info&quot;)</span></span><br><span class="line">    <span class="keyword">public</span> Map&lt;String, Object&gt; <span class="title function_">getExtensionConfigInfo</span><span class="params">()</span> &#123;</span><br><span class="line">        Map&lt;String, Object&gt; configInfo = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">        configInfo.put(<span class="string">&quot;featureToggle&quot;</span>, featureToggle);</span><br><span class="line">        configInfo.put(<span class="string">&quot;timeout&quot;</span>, timeout);</span><br><span class="line">        configInfo.put(<span class="string">&quot;retryTimes&quot;</span>, retryTimes);</span><br><span class="line">        configInfo.put(<span class="string">&quot;serviceMode&quot;</span>, serviceMode);</span><br><span class="line">        configInfo.put(<span class="string">&quot;monitorInterval&quot;</span>, monitorInterval);</span><br><span class="line">        configInfo.put(<span class="string">&quot;extVersion&quot;</span>, extVersion);</span><br><span class="line">        <span class="keyword">return</span> configInfo;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在nacos-consumer模块中创建类似的控制器，但使用consumer前缀的配置。</p>
+<p>然后测试扩展配置</p>
+<ol type="1">
+<li><p>启动nacos-provider和nacos-consumer服务</p></li>
+<li><p>访问以下URL测试扩展配置：</p>
+<ul>
+<li><p>http://localhost:8087/extension/info (provider)</p>
+<figure>
+<img src="/posts/58454/image-20250722172538430.png" alt="image-20250722172538430">
+<figcaption aria-hidden="true">image-20250722172538430</figcaption>
+</figure></li>
+<li><p>http://localhost:8088/extension/info (consumer)</p>
+<figure>
+<img src="/posts/58454/image-20250722172600568.png" alt="image-20250722172600568">
+<figcaption aria-hidden="true">image-20250722172600568</figcaption>
+</figure></li>
+</ul></li>
+<li><p>验证两个服务是否分别显示各自的扩展配置值</p></li>
+</ol>
+<h3 id="nacos-配置优先级文件">Nacos 配置优先级文件</h3>
+<p>Nacos配置加载优先级（从高到低）：</p>
+<ol type="1">
+<li>应用特定配置：{spring.application.name}-{profile}.{file-extension}</li>
+<li>应用默认配置：{spring.application.name}.{file-extension}</li>
+<li>扩展配置：extension-configs（按照配置顺序，数组中靠后的优先级更高）</li>
+<li>共享配置：shared-configs（按照配置顺序，数组中靠后的优先级更高）</li>
+</ol>
+<p>在Nacos控制台修改以下配置，<code>nacos-provider.yaml</code>：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 应用默认配置</span></span><br><span class="line"><span class="attr">overlap:</span></span><br><span class="line">  <span class="attr">config:</span></span><br><span class="line">    <span class="attr">value:</span> <span class="string">&quot;from-application-default&quot;</span></span><br><span class="line">    <span class="attr">source:</span> <span class="string">&quot;application-default&quot;</span></span><br></pre></td></tr></table></figure>
+<p><code>nacos-provider-ext.yaml</code>也要进行修改，添加重叠配置</p>
+<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 原有扩展配置保持不变...</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 添加重叠配置</span></span><br><span class="line"><span class="attr">overlap:</span></span><br><span class="line">  <span class="attr">config:</span></span><br><span class="line">    <span class="attr">value:</span> <span class="string">&quot;from-extension&quot;</span></span><br><span class="line">    <span class="attr">source:</span> <span class="string">&quot;extension-config&quot;</span></span><br></pre></td></tr></table></figure>
+<p><code>common-config.yaml</code>也要进行修改，添加重叠配置</p>
+<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 原有共享配置保持不变...</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 添加重叠配置</span></span><br><span class="line"><span class="attr">overlap:</span></span><br><span class="line">  <span class="attr">config:</span></span><br><span class="line">    <span class="attr">value:</span> <span class="string">&quot;from-shared&quot;</span></span><br><span class="line">    <span class="attr">source:</span> <span class="string">&quot;shared-config&quot;</span></span><br></pre></td></tr></table></figure>
+<p>就像这样</p>
+<figure>
+<img src="/posts/58454/image-20250722172915287.png" alt="image-20250722172915287">
+<figcaption aria-hidden="true">image-20250722172915287</figcaption>
+</figure>
+<p>在nacos-provider模块中创建新的控制器类：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> edu.software.ergoutree.nacosprovider.controller;</span><br><span class="line"></span><br><span class="line"><span class="meta">@RestController</span></span><br><span class="line"><span class="meta">@RequestMapping(&quot;/priority&quot;)</span></span><br><span class="line"><span class="meta">@RefreshScope</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ConfigPriorityController</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Value(&quot;$&#123;overlap.config.value:default&#125;&quot;)</span></span><br><span class="line">    <span class="keyword">private</span> String overlapValue;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Value(&quot;$&#123;overlap.config.source:none&#125;&quot;)</span></span><br><span class="line">    <span class="keyword">private</span> String overlapSource;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@GetMapping(&quot;/test&quot;)</span></span><br><span class="line">    <span class="keyword">public</span> Map&lt;String, String&gt; <span class="title function_">testConfigPriority</span><span class="params">()</span> &#123;</span><br><span class="line">        Map&lt;String, String&gt; result = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">        result.put(<span class="string">&quot;overlapValue&quot;</span>, overlapValue);</span><br><span class="line">        result.put(<span class="string">&quot;overlapSource&quot;</span>, overlapSource);</span><br><span class="line">        <span class="keyword">return</span> result;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>测试配置优先级</p>
+<ol type="1">
+<li><p>启动nacos-provider服务</p></li>
+<li><p>访问 http://localhost:8087/priority/test</p>
+<figure>
+<img src="/posts/58454/image-20250722173523081.png" alt="image-20250722173523081">
+<figcaption aria-hidden="true">image-20250722173523081</figcaption>
+</figure></li>
+<li><p>验证显示的值是否为”from-application-default”（应用特定配置优先级最高）</p></li>
+</ol>
+<p>你也可以指定配置优先级的顺序</p>
+<p>在bootstrap.yml中调整extension-configs的顺序，添加多个扩展配置</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">spring:</span></span><br><span class="line">  <span class="attr">cloud:</span></span><br><span class="line">    <span class="attr">nacos:</span></span><br><span class="line">      <span class="attr">config:</span></span><br><span class="line">        <span class="attr">extension-configs:</span></span><br><span class="line">          <span class="bullet">-</span> <span class="attr">data-id:</span> <span class="string">ext-config-1.yaml</span></span><br><span class="line">            <span class="attr">group:</span> <span class="string">DEFAULT_GROUP</span></span><br><span class="line">            <span class="attr">refresh:</span> <span class="literal">true</span></span><br><span class="line">          <span class="bullet">-</span> <span class="attr">data-id:</span> <span class="string">ext-config-2.yaml</span></span><br><span class="line">            <span class="attr">group:</span> <span class="string">DEFAULT_GROUP</span></span><br><span class="line">            <span class="attr">refresh:</span> <span class="literal">true</span></span><br><span class="line">          <span class="bullet">-</span> <span class="attr">data-id:</span> <span class="string">nacos-provider-ext.yaml</span></span><br><span class="line">            <span class="attr">group:</span> <span class="string">DEFAULT_GROUP</span></span><br><span class="line">            <span class="attr">refresh:</span> <span class="literal">true</span></span><br></pre></td></tr></table></figure>
+<p>在Nacos中创建这些配置文件，并在每个文件中设置不同的overlap.config值，然后测试最终生效的是哪个值。</p>
+<h3 id="nacos-多环境配置">Nacos 多环境配置</h3>
+<p>首先还是要先创建多环境的配置文件，在Nacos控制台下创建以下配置，nacos-provider-dev.yaml:</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 开发环境配置</span></span><br><span class="line"><span class="attr">provider:</span></span><br><span class="line">  <span class="attr">config:</span></span><br><span class="line">    <span class="attr">name:</span> <span class="string">nacos-provider-dev</span></span><br><span class="line">    <span class="attr">version:</span> <span class="number">1.0</span><span class="number">.1</span></span><br><span class="line">    <span class="attr">env:</span> <span class="string">dev</span></span><br><span class="line">  </span><br><span class="line">  <span class="attr">env-specific:</span></span><br><span class="line">    <span class="attr">debug-mode:</span> <span class="literal">true</span></span><br><span class="line">    <span class="attr">mock-enabled:</span> <span class="literal">true</span></span><br></pre></td></tr></table></figure>
+<p>nacos-provider-test.yaml:</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 测试环境配置</span></span><br><span class="line"><span class="attr">provider:</span></span><br><span class="line">  <span class="attr">config:</span></span><br><span class="line">    <span class="attr">name:</span> <span class="string">nacos-provider-test</span></span><br><span class="line">    <span class="attr">version:</span> <span class="number">1.0</span><span class="number">.2</span></span><br><span class="line">    <span class="attr">env:</span> <span class="string">test</span></span><br><span class="line">  </span><br><span class="line">  <span class="attr">env-specific:</span></span><br><span class="line">    <span class="attr">debug-mode:</span> <span class="literal">false</span></span><br><span class="line">    <span class="attr">mock-enabled:</span> <span class="literal">true</span></span><br></pre></td></tr></table></figure>
+<p>nacos-provider-prod.yaml:</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 生产环境配置</span></span><br><span class="line"><span class="attr">provider:</span></span><br><span class="line">  <span class="attr">config:</span></span><br><span class="line">    <span class="attr">name:</span> <span class="string">nacos-provider-prod</span></span><br><span class="line">    <span class="attr">version:</span> <span class="number">1.0</span><span class="number">.3</span></span><br><span class="line">    <span class="attr">env:</span> <span class="string">prod</span></span><br><span class="line">  </span><br><span class="line">  <span class="attr">env-specific:</span></span><br><span class="line">    <span class="attr">debug-mode:</span> <span class="literal">false</span></span><br><span class="line">    <span class="attr">mock-enabled:</span> <span class="literal">false</span></span><br></pre></td></tr></table></figure>
+<p>然后需要修改bootstrap.yml支持多环境，在nacos-provider的bootstrap.yml中添加：</p>
+<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">spring:</span></span><br><span class="line">  <span class="attr">cloud:</span></span><br><span class="line">    <span class="attr">nacos:</span></span><br><span class="line">      <span class="attr">config:</span></span><br><span class="line">        <span class="comment"># 支持多环境配置</span></span><br><span class="line">        <span class="attr">prefix:</span> <span class="string">$&#123;spring.application.name&#125;</span></span><br><span class="line">        <span class="comment"># 激活的环境配置</span></span><br><span class="line">        <span class="attr">profiles:</span></span><br><span class="line">          <span class="attr">active:</span> <span class="string">$&#123;spring.profiles.active:dev&#125;</span></span><br></pre></td></tr></table></figure>
+<p>之后创建环境特定控制器用于验证情况</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> edu.software.ergoutree.nacosprovider.controller;</span><br><span class="line"></span><br><span class="line"><span class="meta">@RestController</span></span><br><span class="line"><span class="meta">@RequestMapping(&quot;/env&quot;)</span></span><br><span class="line"><span class="meta">@RefreshScope</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">EnvironmentConfigController</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Environment environment;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">EnvironmentConfigController</span><span class="params">(Environment environment)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.environment = environment;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Value(&quot;$&#123;provider.config.name:default-name&#125;&quot;)</span></span><br><span class="line">    <span class="keyword">private</span> String name;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Value(&quot;$&#123;provider.config.env:default&#125;&quot;)</span></span><br><span class="line">    <span class="keyword">private</span> String env;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Value(&quot;$&#123;provider.env-specific.debug-mode:false&#125;&quot;)</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">boolean</span> debugMode;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Value(&quot;$&#123;provider.env-specific.mock-enabled:false&#125;&quot;)</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">boolean</span> mockEnabled;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@GetMapping(&quot;/info&quot;)</span></span><br><span class="line">    <span class="keyword">public</span> Map&lt;String, Object&gt; <span class="title function_">getEnvConfigInfo</span><span class="params">()</span> &#123;</span><br><span class="line">        Map&lt;String, Object&gt; configInfo = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">        configInfo.put(<span class="string">&quot;name&quot;</span>, name);</span><br><span class="line">        configInfo.put(<span class="string">&quot;env&quot;</span>, env);</span><br><span class="line">        configInfo.put(<span class="string">&quot;debugMode&quot;</span>, debugMode);</span><br><span class="line">        configInfo.put(<span class="string">&quot;mockEnabled&quot;</span>, mockEnabled);</span><br><span class="line">        configInfo.put(<span class="string">&quot;activeProfile&quot;</span>, </span><br><span class="line">            environment.getActiveProfiles().length &gt; <span class="number">0</span> ? </span><br><span class="line">            environment.getActiveProfiles()[<span class="number">0</span>] : <span class="string">&quot;default&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> configInfo;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>测试多环境配置，先使用不同的环境变量启动nacos-provider，当然你上面指定了也是一样的：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 开发环境</span></span><br><span class="line">java -jar -Dspring.profiles.active=dev nacos-provider-0.0.1-SNAPSHOT.jar</span><br><span class="line"></span><br><span class="line"><span class="comment"># 测试环境</span></span><br><span class="line">java -jar -Dspring.profiles.active=<span class="built_in">test</span> nacos-provider-0.0.1-SNAPSHOT.jar --server.port=8089</span><br><span class="line"></span><br><span class="line"><span class="comment"># 生产环境</span></span><br><span class="line">java -jar -Dspring.profiles.active=prod nacos-provider-0.0.1-SNAPSHOT.jar --server.port=8090</span><br></pre></td></tr></table></figure>
+<p>分别访问不同端口的服务，验证是否加载了对应环境的配置：</p>
+<ul>
+<li>http://localhost:8087/env/info (dev)</li>
+<li>http://localhost:8089/env/info (test)</li>
+<li>http://localhost:8090/env/info (prod)</li>
+</ul>
+<h3 id="nacos-实现环境隔离">Nacos 实现环境隔离</h3>
+<p>Nacos的环境隔离主要是通过 Namespace 和 Group
+实现的，Namespace是最粗粒度的隔离，在机器有限的情况下，往往通过Namespace进行环境隔离。不同的命名空间下，可以存在相同的
+Group 或 Data ID 的配置。</p>
+<p>Namespace是Nacos实现环境隔离的最外层概念，不同Namespace之间的服务和配置是完全隔离的。</p>
+<p>我们新建一个命名空间</p>
+<figure>
+<img src="/posts/58454/image-20250722231649363.png" alt="image-20250722231649363">
+<figcaption aria-hidden="true">image-20250722231649363</figcaption>
+</figure>
+<p>在Nacos控制台，切换到”配置管理” -&gt;
+“配置列表”，在新建的命名空间中创建相应的配置：</p>
+<figure>
+<img src="/posts/58454/image-20250722233512731.png" alt="image-20250722233512731">
+<figcaption aria-hidden="true">image-20250722233512731</figcaption>
+</figure>
+<p>然后修改应用配置使用不同的命名空间，创建bootstrap-prod.yml:</p>
+<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">spring:</span></span><br><span class="line">  <span class="attr">cloud:</span></span><br><span class="line">    <span class="attr">nacos:</span></span><br><span class="line">      <span class="attr">config:</span></span><br><span class="line">        <span class="attr">namespace:</span> <span class="string">prod</span></span><br><span class="line">        <span class="attr">server-addr:</span> <span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span><span class="string">:8848</span></span><br><span class="line">        <span class="attr">file-extension:</span> <span class="string">yaml</span></span><br><span class="line">        <span class="attr">group:</span> <span class="string">DEFAULT_GROUP</span></span><br><span class="line">        <span class="attr">refresh-enabled:</span> <span class="literal">true</span></span><br><span class="line">      <span class="attr">discovery:</span></span><br><span class="line">        <span class="attr">namespace:</span> <span class="string">prod</span></span><br><span class="line">        <span class="attr">server-addr:</span> <span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span><span class="string">:8848</span></span><br></pre></td></tr></table></figure>
+<p>修改主配置文件bootstrap.yml以引用环境特定配置：</p>
+<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">spring:</span></span><br><span class="line">  <span class="attr">application:</span></span><br><span class="line">    <span class="attr">name:</span> <span class="string">nacos-provider</span></span><br><span class="line">  <span class="attr">profiles:</span></span><br><span class="line">    <span class="attr">active:</span> <span class="string">$&#123;NACOS_ENV:prod&#125;</span>  </span><br></pre></td></tr></table></figure>
+<p>注意，在这里如果你其他配置配置过命名空间的内容，需要划掉，因为会影响服务发现和配置的命名空间的处理导致看不到服务，而且建议命名空间直接配置id</p>
+<p>创建命名空间测试控制器，方便观察效果</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> edu.software.ergoutree.nacosprovider.controller;</span><br><span class="line"><span class="meta">@RestController</span></span><br><span class="line"><span class="meta">@RequestMapping(&quot;/namespace&quot;)</span></span><br><span class="line"><span class="meta">@RefreshScope</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">NamespaceController</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Value(&quot;$&#123;provider.config.name:unknown&#125;&quot;)</span></span><br><span class="line">    <span class="keyword">private</span> String name;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Value(&quot;$&#123;provider.config.env:unknown&#125;&quot;)</span></span><br><span class="line">    <span class="keyword">private</span> String env;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Value(&quot;$&#123;provider.database.url:unknown&#125;&quot;)</span></span><br><span class="line">    <span class="keyword">private</span> String dbUrl;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Value(&quot;$&#123;provider.database.username:unknown&#125;&quot;)</span></span><br><span class="line">    <span class="keyword">private</span> String dbUsername;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Value(&quot;$&#123;spring.cloud.nacos.config.namespace:unknown&#125;&quot;)</span></span><br><span class="line">    <span class="keyword">private</span> String configNamespace;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Value(&quot;$&#123;spring.cloud.nacos.discovery.namespace:unknown&#125;&quot;)</span></span><br><span class="line">    <span class="keyword">private</span> String discoveryNamespace;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@GetMapping(&quot;/info&quot;)</span></span><br><span class="line">    <span class="keyword">public</span> Map&lt;String, String&gt; <span class="title function_">getNamespaceInfo</span><span class="params">()</span> &#123;</span><br><span class="line">        Map&lt;String, String&gt; info = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">        info.put(<span class="string">&quot;name&quot;</span>, name);</span><br><span class="line">        info.put(<span class="string">&quot;env&quot;</span>, env);</span><br><span class="line">        info.put(<span class="string">&quot;dbUrl&quot;</span>, dbUrl);</span><br><span class="line">        info.put(<span class="string">&quot;dbUsername&quot;</span>, dbUsername);</span><br><span class="line">        info.put(<span class="string">&quot;configNamespace&quot;</span>, configNamespace);</span><br><span class="line">        info.put(<span class="string">&quot;discoveryNamespace&quot;</span>, discoveryNamespace);</span><br><span class="line">        <span class="keyword">return</span> info;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>启动项目，查看效果</p>
+<figure>
+<img src="/posts/58454/image-20250722234010671.png" alt="image-20250722234010671">
+<figcaption aria-hidden="true">image-20250722234010671</figcaption>
+</figure>
+<figure>
+<img src="/posts/58454/image-20250722235330743.png" alt="image-20250722235330743">
+<figcaption aria-hidden="true">image-20250722235330743</figcaption>
+</figure>
+<p>我们访问一下我们控制器中的接口，来确认配置拉取是否正常</p>
+<figure>
+<img src="/posts/58454/image-20250722235400314.png" alt="image-20250722235400314">
+<figcaption aria-hidden="true">image-20250722235400314</figcaption>
+</figure>
+<h3 id="nacos-实现集群配置">Nacos 实现集群配置</h3>
+<p>上面我们实现环境隔离是使用的 Namespace，这次我们使用 Group
+进行分组的集群配置</p>
+<p>这次对 nacos-consumer 模块进行配置，因为他有多个实例</p>
+<p>建立分组，CLUSTER_GROUP，在我们上面的命名空间 cloud-prod
+下，因为真正进行这种集群配置一般都是在生产环境，开发环境是很少这样的</p>
+<p>新建配置，把我们消费者的服务注册到 Nacos
+中，设置好对应的组和命名空间</p>
+<figure>
+<img src="/posts/58454/image-20250723001003456.png" alt="image-20250723001003456">
+<figcaption aria-hidden="true">image-20250723001003456</figcaption>
+</figure>
+<p>然后创建你对应实例的配置文件，然后正确指定实例启动的配置文件，以我其中的一个杭州的实例为例子，把服务的命名空间和集群，组等内容都配置好</p>
+<figure class="highlight properties"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 应用名称</span></span><br><span class="line"><span class="attr">spring.application.name</span>=<span class="string">nacos-consumer</span></span><br><span class="line"><span class="comment"># 应用端口号</span></span><br><span class="line"><span class="attr">server.port</span>=<span class="string">8088</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment"># Nacos服务地址</span></span><br><span class="line"><span class="attr">spring.cloud.nacos.discovery.server-addr</span>=<span class="string">127.0.0.1:8848</span></span><br><span class="line"><span class="comment"># 命名空间</span></span><br><span class="line"><span class="attr">spring.cloud.nacos.discovery.namespace</span>=<span class="string">7d31e4b6-cfe4-4045-973b-f91847c06442</span></span><br><span class="line"><span class="comment"># 分组</span></span><br><span class="line"><span class="attr">spring.cloud.nacos.discovery.group</span>=<span class="string">CLUSTER_GROUP</span></span><br><span class="line"><span class="comment"># 集群名称 - 杭州集群</span></span><br><span class="line"><span class="attr">spring.cloud.nacos.discovery.cluster-name</span>=<span class="string">HZ</span></span><br><span class="line"><span class="comment"># 元数据 - 实例标识</span></span><br><span class="line"><span class="attr">spring.cloud.nacos.discovery.metadata.instance-id</span>=<span class="string">consumer-hz-1</span></span><br><span class="line"><span class="attr">spring.cloud.nacos.discovery.metadata.version</span>=<span class="string">1.0.0</span></span><br><span class="line"><span class="attr">spring.cloud.nacos.discovery.metadata.env</span>=<span class="string">cluster</span></span><br><span class="line"><span class="attr">spring.cloud.nacos.discovery.metadata.region</span>=<span class="string">hangzhou</span></span><br><span class="line"><span class="comment"># 权重配置</span></span><br><span class="line"><span class="attr">spring.cloud.nacos.discovery.weight</span>=<span class="string">1</span></span><br><span class="line"><span class="comment"># 日志配置</span></span><br><span class="line"><span class="attr">logging.level.com.alibaba.cloud.nacos</span>=<span class="string">DEBUG</span></span><br><span class="line"><span class="attr">logging.level.edu.software.ergoutree</span>=<span class="string">DEBUG</span></span><br></pre></td></tr></table></figure>
+<figure>
+<img src="/posts/58454/image-20250723001159091.png" alt="image-20250723001159091">
+<figcaption aria-hidden="true">image-20250723001159091</figcaption>
+</figure>
+<p>修改其中的 bootstrap.yml 配置文件，确保配置被正确引用</p>
+<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">spring:</span></span><br><span class="line">  <span class="attr">application:</span></span><br><span class="line">    <span class="attr">name:</span> <span class="string">nacos-consumer</span></span><br><span class="line">  <span class="attr">profiles:</span></span><br><span class="line">    <span class="attr">active:</span> <span class="string">$&#123;NACOS_ENV:cluster&#125;</span></span><br></pre></td></tr></table></figure>
+<p>注意，如果你在其他位置配置过命名空间和分组等内容，清除掉，除非你进行了正确的配置引用</p>
+<p>写一个健康检查的控制器方便我们进行配置的验证</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> edu.software.ergoutree.nacosconsumer.controller;</span><br><span class="line"></span><br><span class="line"><span class="meta">@RestController</span></span><br><span class="line"><span class="meta">@RequestMapping(&quot;/registration&quot;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">RegistrationStatusController</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">Logger</span> <span class="variable">log</span> <span class="operator">=</span> LoggerFactory.getLogger(RegistrationStatusController.class);</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> NacosDiscoveryProperties nacosDiscoveryProperties;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> NacosServiceManager nacosServiceManager;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Value(&quot;$&#123;spring.application.name&#125;&quot;)</span></span><br><span class="line">    <span class="keyword">private</span> String applicationName;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Value(&quot;$&#123;spring.cloud.nacos.discovery.cluster-name:DEFAULT&#125;&quot;)</span></span><br><span class="line">    <span class="keyword">private</span> String clusterName;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Value(&quot;$&#123;spring.cloud.nacos.discovery.group:DEFAULT_GROUP&#125;&quot;)</span></span><br><span class="line">    <span class="keyword">private</span> String group;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Value(&quot;$&#123;spring.cloud.nacos.discovery.namespace:public&#125;&quot;)</span></span><br><span class="line">    <span class="keyword">private</span> String namespace;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Value(&quot;$&#123;server.port&#125;&quot;)</span></span><br><span class="line">    <span class="keyword">private</span> String serverPort;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 检查当前服务是否已成功注册到Nacos</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> 注册状态信息</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@GetMapping(&quot;/status&quot;)</span></span><br><span class="line">    <span class="keyword">public</span> Map&lt;String, Object&gt; <span class="title function_">checkRegistrationStatus</span><span class="params">()</span> &#123;</span><br><span class="line">        Map&lt;String, Object&gt; result = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">        result.put(<span class="string">&quot;applicationName&quot;</span>, applicationName);</span><br><span class="line">        result.put(<span class="string">&quot;clusterName&quot;</span>, clusterName);</span><br><span class="line">        result.put(<span class="string">&quot;group&quot;</span>, group);</span><br><span class="line">        result.put(<span class="string">&quot;namespace&quot;</span>, namespace);</span><br><span class="line">        result.put(<span class="string">&quot;port&quot;</span>, serverPort);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="comment">// 获取Nacos命名服务</span></span><br><span class="line">            <span class="type">NamingService</span> <span class="variable">namingService</span> <span class="operator">=</span> nacosServiceManager.getNamingService(nacosDiscoveryProperties.getNacosProperties());</span><br><span class="line">            </span><br><span class="line">            <span class="comment">// 查询当前服务的所有实例</span></span><br><span class="line">            List&lt;Instance&gt; instances = namingService.getAllInstances(applicationName, group);</span><br><span class="line">            </span><br><span class="line">            <span class="comment">// 查找当前实例</span></span><br><span class="line">            <span class="type">boolean</span> <span class="variable">found</span> <span class="operator">=</span> <span class="literal">false</span>;</span><br><span class="line">            <span class="keyword">for</span> (Instance instance : instances) &#123;</span><br><span class="line">                <span class="keyword">if</span> (String.valueOf(instance.getPort()).equals(serverPort) &amp;&amp; </span><br><span class="line">                    clusterName.equals(instance.getClusterName())) &#123;</span><br><span class="line">                    found = <span class="literal">true</span>;</span><br><span class="line">                    result.put(<span class="string">&quot;registered&quot;</span>, <span class="literal">true</span>);</span><br><span class="line">                    result.put(<span class="string">&quot;healthy&quot;</span>, instance.isHealthy());</span><br><span class="line">                    result.put(<span class="string">&quot;weight&quot;</span>, instance.getWeight());</span><br><span class="line">                    result.put(<span class="string">&quot;metadata&quot;</span>, instance.getMetadata());</span><br><span class="line">                    result.put(<span class="string">&quot;instanceId&quot;</span>, instance.getInstanceId());</span><br><span class="line">                    <span class="keyword">break</span>;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            </span><br><span class="line">            <span class="keyword">if</span> (!found) &#123;</span><br><span class="line">                result.put(<span class="string">&quot;registered&quot;</span>, <span class="literal">false</span>);</span><br><span class="line">                result.put(<span class="string">&quot;message&quot;</span>, <span class="string">&quot;实例未在Nacos中注册&quot;</span>);</span><br><span class="line">            &#125;</span><br><span class="line">            </span><br><span class="line">            <span class="comment">// 添加所有实例信息</span></span><br><span class="line">            result.put(<span class="string">&quot;totalInstances&quot;</span>, instances.size());</span><br><span class="line">            result.put(<span class="string">&quot;allInstancesInfo&quot;</span>, instances);</span><br><span class="line">            </span><br><span class="line">        &#125; <span class="keyword">catch</span> (NacosException e) &#123;</span><br><span class="line">            log.error(<span class="string">&quot;查询Nacos注册状态失败&quot;</span>, e);</span><br><span class="line">            result.put(<span class="string">&quot;registered&quot;</span>, <span class="literal">false</span>);</span><br><span class="line">            result.put(<span class="string">&quot;error&quot;</span>, e.getErrMsg());</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">return</span> result;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 提供一个简单的HTML页面展示注册状态</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> HTML格式的注册状态</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@GetMapping(&quot;/status/html&quot;)</span></span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">checkRegistrationStatusHtml</span><span class="params">()</span> &#123;</span><br><span class="line">        Map&lt;String, Object&gt; status = checkRegistrationStatus();</span><br><span class="line">        </span><br><span class="line">        <span class="type">StringBuilder</span> <span class="variable">html</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">StringBuilder</span>();</span><br><span class="line">        html.append(<span class="string">&quot;&lt;!DOCTYPE html&gt;&lt;html&gt;&lt;head&gt;&lt;title&gt;Nacos注册状态&lt;/title&gt;&quot;</span>);</span><br><span class="line">        html.append(<span class="string">&quot;&lt;style&gt;body&#123;font-family:Arial;margin:20px;&#125; table&#123;border-collapse:collapse;width:100%;&#125; &quot;</span>);</span><br><span class="line">        html.append(<span class="string">&quot;th,td&#123;border:1px solid #ddd;padding:8px;text-align:left;&#125; &quot;</span>);</span><br><span class="line">        html.append(<span class="string">&quot;th&#123;background-color:#f2f2f2;&#125; tr:nth-child(even)&#123;background-color:#f9f9f9;&#125; &quot;</span>);</span><br><span class="line">        html.append(<span class="string">&quot;.success&#123;color:green;&#125; .error&#123;color:red;&#125;&lt;/style&gt;&lt;/head&gt;&lt;body&gt;&quot;</span>);</span><br><span class="line">        </span><br><span class="line">        html.append(<span class="string">&quot;&lt;h1&gt;Nacos服务注册状态&lt;/h1&gt;&quot;</span>);</span><br><span class="line">        html.append(<span class="string">&quot;&lt;h2&gt;基本信息&lt;/h2&gt;&quot;</span>);</span><br><span class="line">        html.append(<span class="string">&quot;&lt;table&gt;&quot;</span>);</span><br><span class="line">        html.append(<span class="string">&quot;&lt;tr&gt;&lt;th&gt;应用名称&lt;/th&gt;&lt;td&gt;&quot;</span>).append(status.get(<span class="string">&quot;applicationName&quot;</span>)).append(<span class="string">&quot;&lt;/td&gt;&lt;/tr&gt;&quot;</span>);</span><br><span class="line">        html.append(<span class="string">&quot;&lt;tr&gt;&lt;th&gt;集群名称&lt;/th&gt;&lt;td&gt;&quot;</span>).append(status.get(<span class="string">&quot;clusterName&quot;</span>)).append(<span class="string">&quot;&lt;/td&gt;&lt;/tr&gt;&quot;</span>);</span><br><span class="line">        html.append(<span class="string">&quot;&lt;tr&gt;&lt;th&gt;分组&lt;/th&gt;&lt;td&gt;&quot;</span>).append(status.get(<span class="string">&quot;group&quot;</span>)).append(<span class="string">&quot;&lt;/td&gt;&lt;/tr&gt;&quot;</span>);</span><br><span class="line">        html.append(<span class="string">&quot;&lt;tr&gt;&lt;th&gt;命名空间&lt;/th&gt;&lt;td&gt;&quot;</span>).append(status.get(<span class="string">&quot;namespace&quot;</span>)).append(<span class="string">&quot;&lt;/td&gt;&lt;/tr&gt;&quot;</span>);</span><br><span class="line">        html.append(<span class="string">&quot;&lt;tr&gt;&lt;th&gt;端口&lt;/th&gt;&lt;td&gt;&quot;</span>).append(status.get(<span class="string">&quot;port&quot;</span>)).append(<span class="string">&quot;&lt;/td&gt;&lt;/tr&gt;&quot;</span>);</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 注册状态</span></span><br><span class="line">        <span class="type">boolean</span> <span class="variable">registered</span> <span class="operator">=</span> status.containsKey(<span class="string">&quot;registered&quot;</span>) ? (Boolean) status.get(<span class="string">&quot;registered&quot;</span>) : <span class="literal">false</span>;</span><br><span class="line">        html.append(<span class="string">&quot;&lt;tr&gt;&lt;th&gt;注册状态&lt;/th&gt;&lt;td class=&#x27;&quot;</span>).append(registered ? <span class="string">&quot;success&quot;</span> : <span class="string">&quot;error&quot;</span>).append(<span class="string">&quot;&#x27;&gt;&quot;</span>);</span><br><span class="line">        html.append(registered ? <span class="string">&quot;已注册&quot;</span> : <span class="string">&quot;未注册&quot;</span>).append(<span class="string">&quot;&lt;/td&gt;&lt;/tr&gt;&quot;</span>);</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">if</span> (registered) &#123;</span><br><span class="line">            html.append(<span class="string">&quot;&lt;tr&gt;&lt;th&gt;健康状态&lt;/th&gt;&lt;td class=&#x27;&quot;</span>).append((Boolean) status.get(<span class="string">&quot;healthy&quot;</span>) ? <span class="string">&quot;success&quot;</span> : <span class="string">&quot;error&quot;</span>).append(<span class="string">&quot;&#x27;&gt;&quot;</span>);</span><br><span class="line">            html.append((Boolean) status.get(<span class="string">&quot;healthy&quot;</span>) ? <span class="string">&quot;健康&quot;</span> : <span class="string">&quot;不健康&quot;</span>).append(<span class="string">&quot;&lt;/td&gt;&lt;/tr&gt;&quot;</span>);</span><br><span class="line">            html.append(<span class="string">&quot;&lt;tr&gt;&lt;th&gt;权重&lt;/th&gt;&lt;td&gt;&quot;</span>).append(status.get(<span class="string">&quot;weight&quot;</span>)).append(<span class="string">&quot;&lt;/td&gt;&lt;/tr&gt;&quot;</span>);</span><br><span class="line">            html.append(<span class="string">&quot;&lt;tr&gt;&lt;th&gt;实例ID&lt;/th&gt;&lt;td&gt;&quot;</span>).append(status.get(<span class="string">&quot;instanceId&quot;</span>)).append(<span class="string">&quot;&lt;/td&gt;&lt;/tr&gt;&quot;</span>);</span><br><span class="line">            html.append(<span class="string">&quot;&lt;tr&gt;&lt;th&gt;元数据&lt;/th&gt;&lt;td&gt;&quot;</span>).append(status.get(<span class="string">&quot;metadata&quot;</span>)).append(<span class="string">&quot;&lt;/td&gt;&lt;/tr&gt;&quot;</span>);</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (status.containsKey(<span class="string">&quot;message&quot;</span>)) &#123;</span><br><span class="line">            html.append(<span class="string">&quot;&lt;tr&gt;&lt;th&gt;消息&lt;/th&gt;&lt;td class=&#x27;error&#x27;&gt;&quot;</span>).append(status.get(<span class="string">&quot;message&quot;</span>)).append(<span class="string">&quot;&lt;/td&gt;&lt;/tr&gt;&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">if</span> (status.containsKey(<span class="string">&quot;error&quot;</span>)) &#123;</span><br><span class="line">            html.append(<span class="string">&quot;&lt;tr&gt;&lt;th&gt;错误&lt;/th&gt;&lt;td class=&#x27;error&#x27;&gt;&quot;</span>).append(status.get(<span class="string">&quot;error&quot;</span>)).append(<span class="string">&quot;&lt;/td&gt;&lt;/tr&gt;&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        html.append(<span class="string">&quot;&lt;/table&gt;&quot;</span>);</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 所有实例信息</span></span><br><span class="line">        <span class="keyword">if</span> (status.containsKey(<span class="string">&quot;allInstancesInfo&quot;</span>)) &#123;</span><br><span class="line">            List&lt;Instance&gt; instances = (List&lt;Instance&gt;) status.get(<span class="string">&quot;allInstancesInfo&quot;</span>);</span><br><span class="line">            html.append(<span class="string">&quot;&lt;h2&gt;所有实例 (&quot;</span>).append(instances.size()).append(<span class="string">&quot;)&lt;/h2&gt;&quot;</span>);</span><br><span class="line">            </span><br><span class="line">            <span class="keyword">if</span> (!instances.isEmpty()) &#123;</span><br><span class="line">                html.append(<span class="string">&quot;&lt;table&gt;&quot;</span>);</span><br><span class="line">                html.append(<span class="string">&quot;&lt;tr&gt;&lt;th&gt;实例ID&lt;/th&gt;&lt;th&gt;IP&lt;/th&gt;&lt;th&gt;端口&lt;/th&gt;&lt;th&gt;集群&lt;/th&gt;&lt;th&gt;健康状态&lt;/th&gt;&lt;th&gt;权重&lt;/th&gt;&lt;th&gt;元数据&lt;/th&gt;&lt;/tr&gt;&quot;</span>);</span><br><span class="line">                </span><br><span class="line">                <span class="keyword">for</span> (Instance instance : instances) &#123;</span><br><span class="line">                    html.append(<span class="string">&quot;&lt;tr&gt;&quot;</span>);</span><br><span class="line">                    html.append(<span class="string">&quot;&lt;td&gt;&quot;</span>).append(instance.getInstanceId()).append(<span class="string">&quot;&lt;/td&gt;&quot;</span>);</span><br><span class="line">                    html.append(<span class="string">&quot;&lt;td&gt;&quot;</span>).append(instance.getIp()).append(<span class="string">&quot;&lt;/td&gt;&quot;</span>);</span><br><span class="line">                    html.append(<span class="string">&quot;&lt;td&gt;&quot;</span>).append(instance.getPort()).append(<span class="string">&quot;&lt;/td&gt;&quot;</span>);</span><br><span class="line">                    html.append(<span class="string">&quot;&lt;td&gt;&quot;</span>).append(instance.getClusterName()).append(<span class="string">&quot;&lt;/td&gt;&quot;</span>);</span><br><span class="line">                    html.append(<span class="string">&quot;&lt;td class=&#x27;&quot;</span>).append(instance.isHealthy() ? <span class="string">&quot;success&quot;</span> : <span class="string">&quot;error&quot;</span>).append(<span class="string">&quot;&#x27;&gt;&quot;</span>);</span><br><span class="line">                    html.append(instance.isHealthy() ? <span class="string">&quot;健康&quot;</span> : <span class="string">&quot;不健康&quot;</span>).append(<span class="string">&quot;&lt;/td&gt;&quot;</span>);</span><br><span class="line">                    html.append(<span class="string">&quot;&lt;td&gt;&quot;</span>).append(instance.getWeight()).append(<span class="string">&quot;&lt;/td&gt;&quot;</span>);</span><br><span class="line">                    html.append(<span class="string">&quot;&lt;td&gt;&quot;</span>).append(instance.getMetadata()).append(<span class="string">&quot;&lt;/td&gt;&quot;</span>);</span><br><span class="line">                    html.append(<span class="string">&quot;&lt;/tr&gt;&quot;</span>);</span><br><span class="line">                &#125;</span><br><span class="line">                </span><br><span class="line">                html.append(<span class="string">&quot;&lt;/table&gt;&quot;</span>);</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                html.append(<span class="string">&quot;&lt;p class=&#x27;error&#x27;&gt;没有找到任何实例&lt;/p&gt;&quot;</span>);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        html.append(<span class="string">&quot;&lt;p&gt;&lt;a href=&#x27;/cluster-consumer/services&#x27;&gt;查看服务列表&lt;/a&gt; | &quot;</span>);</span><br><span class="line">        html.append(<span class="string">&quot;&lt;a href=&#x27;/cluster-consumer/self-info&#x27;&gt;查看自身信息&lt;/a&gt; | &quot;</span>);</span><br><span class="line">        html.append(<span class="string">&quot;&lt;a href=&#x27;/cluster-consumer/health&#x27;&gt;健康检查&lt;/a&gt;&lt;/p&gt;&quot;</span>);</span><br><span class="line">        </span><br><span class="line">        html.append(<span class="string">&quot;&lt;/body&gt;&lt;/html&gt;&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> html.toString();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>我们启动项目，来验证一下配置的配置情况</p>
+<p>访问控制器上面定义的端口，确认集群的服务状态</p>
+<figure>
+<img src="/posts/58454/image-20250723002508765.png" alt="image-20250723002508765">
+<figcaption aria-hidden="true">image-20250723002508765</figcaption>
+</figure>
+<figure>
+<img src="/posts/58454/image-20250723002601526.png" alt="image-20250723002601526">
+<figcaption aria-hidden="true">image-20250723002601526</figcaption>
+</figure>
+<p>这时候有人就要问了，为什么你上面的那个沈阳实例这里不显示啊，是不是Nacos
+配置错了</p>
+<p>其实吧，挺抽象的，你 Nacos
+再配置错，他其实也不会影响到你的服务启动的配置，可能只会影响到你服务发现和注册这些配置的内容，为什么发现不了其实还是端口被占用，因为
+QQ 使用的是 8092端口</p>
+<p>接下来访问对应的端口来测试一下配置情况，我这里一个实例展示一个</p>
+<figure>
+<img src="/posts/58454/image-20250723003150923.png" alt="image-20250723003150923">
+<figcaption aria-hidden="true">image-20250723003150923</figcaption>
+</figure>
+<p>吐槽一下，我这个写的好想 Erueka</p>
+<figure>
+<img src="/posts/58454/image-20250723003123355.png" alt="image-20250723003123355">
+<figcaption aria-hidden="true">image-20250723003123355</figcaption>
+</figure>
+<figure>
+<img src="/posts/58454/image-20250723003218659.png" alt="image-20250723003218659">
+<figcaption aria-hidden="true">image-20250723003218659</figcaption>
+</figure>
+<p>这下更想 Erueka 了，太难绷了</p>
+<figure>
+<img src="/posts/58454/image-20250723003301843.png" alt="image-20250723003301843">
+<figcaption aria-hidden="true">image-20250723003301843</figcaption>
+</figure>
+<p>之前的一些实践，方便查阅</p>
+<h2 id="nacos-服务注册与订阅的详细使用">Nacos
+服务注册与订阅的详细使用</h2>
+<h3 id="nacos-的安装与配置">nacos 的安装与配置</h3>
+<p>https://github.com/alibaba/nacos/releases</p>
+<p>下载之后进入到bin文件目录，点击startup.cmd，启动项目：</p>
+<figure>
+<img src="/posts/58454/image-20250710143458140.png" alt="image-20250710143458140">
+<figcaption aria-hidden="true">image-20250710143458140</figcaption>
+</figure>
+<p>需要以单机模式启动</p>
+<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 单机模式</span></span><br><span class="line"><span class="string">startup.cmd</span> <span class="string">-m</span> <span class="string">standalone</span></span><br></pre></td></tr></table></figure>
+<p>需要让你输入一些 nacos
+的安全配置，用于不同场景的身份验证和权限控制。分别是生成和验证 JWT
+的，用于 Nacos Server 集群间通信时的身份验证和服务身份标识，用于标识当前
+Nacos Server 的身份（如集群中的唯一 ID）。</p>
+<figure>
+<img src="/posts/58454/image-20250710143842460.png" alt="image-20250710143842460">
+<figcaption aria-hidden="true">image-20250710143842460</figcaption>
+</figure>
+<p>在浏览器地址输入<code>http://localhost:8848/nacos/index.html</code>,默认
+nacos 账号密码都是 nacos</p>
+<p>至此，nacos已经启动成功，我们可以访问地址：
+http://169.254.27.253:8080/index.html
+访问nacos的页面。如果需要登录，默认的用户名和密码都是nacos</p>
+<figure>
+<img src="/posts/58454/image-20250710235629676.png" alt="image-20250710235629676">
+<figcaption aria-hidden="true">image-20250710235629676</figcaption>
+</figure>
+<p>打开mysql数据库，进行配置，打开Nacos配置]文件
+<code>$&#123;nacos-server.path&#125;/conf/application.properties</code></p>
+<figure>
+<img src="/posts/58454/image-20250719183639366.png" alt="image-20250719183639366">
+<figcaption aria-hidden="true">image-20250719183639366</figcaption>
+</figure>
+<p>因为 nacos 也是一个 Spring 项目，所以说配置文件肯定也是
+application.properties，设置正确的数据库平台为MySQL</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">spring.datasource.platform=mysql</span></span><br></pre></td></tr></table></figure>
+<p>配置数据库连接信息</p>
+<figure class="highlight properties"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">db.url</span>=<span class="string">jdbc:mysql://你的数据库地址:端口/数据库名?useUnicode=true&amp;characterEncoding=utf8&amp;autoReconnect=true&amp;serverTimezone=UTC</span></span><br><span class="line"><span class="attr">db.user</span>=<span class="string">你的数据库用户名</span></span><br><span class="line"><span class="attr">db.password</span>=<span class="string">你的数据库密码</span></span><br></pre></td></tr></table></figure>
+<h3 id="nacos-在-spring-cloud-中的服务发现">Nacos 在 Spring Cloud
+中的服务发现</h3>
+<p>创建服务提供者模块
+nacos-provider，服务提供者是提供接口的微服务，需注册到 Nacos。</p>
+<p>添加依赖</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependencies</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!-- Spring Web（提供 HTTP 接口） --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-web<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!-- Nacos 服务注册发现 --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.alibaba.cloud<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-cloud-starter-alibaba-nacos-discovery<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependencies</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>配置文件配置，服务消费者和提供者是差不多的，都需要有这个配置，剩下的就是你自己编辑了</p>
+<figure class="highlight properties"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 应用名称，也是注册到Nacos的服务名</span></span><br><span class="line"><span class="attr">spring.application.name</span>=<span class="string">nacos-consumer</span></span><br><span class="line"><span class="comment"># 应用端口号</span></span><br><span class="line"><span class="attr">server.port</span>=<span class="string">8088</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment"># Nacos服务地址</span></span><br><span class="line"><span class="attr">spring.cloud.nacos.discovery.server-addr</span>=<span class="string">127.0.0.1:8848</span></span><br><span class="line"><span class="comment"># 命名空间，默认为public</span></span><br><span class="line"><span class="attr">spring.cloud.nacos.discovery.namespace</span>=<span class="string">public</span></span><br></pre></td></tr></table></figure>
+<p>写一个控制器，然后对应的主类也要加上服务发现的注解</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 服务提供者控制器</span></span><br><span class="line"><span class="comment"> * 提供REST API接口供消费者调用</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@RestController</span></span><br><span class="line"><span class="meta">@RequestMapping(&quot;/provider&quot;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ProviderController</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 注入服务端口号，用于识别是哪个实例提供的服务</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Value(&quot;$&#123;server.port&#125;&quot;)</span></span><br><span class="line">    <span class="keyword">private</span> String serverPort;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 提供一个简单的问候服务</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> name 名称参数</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> 问候语</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@GetMapping(&quot;/hello/&#123;name&#125;&quot;)</span></span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">hello</span><span class="params">(<span class="meta">@PathVariable</span> String name)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">&quot;你好，&quot;</span> + name + <span class="string">&quot;！这是来自端口号为 &quot;</span> + serverPort + <span class="string">&quot; 的服务提供者的响应&quot;</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 提供服务实例信息</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> 服务信息</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@GetMapping(&quot;/info&quot;)</span></span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">info</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">&quot;服务提供者实例，端口号：&quot;</span> + serverPort;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>创建服务消费者模块 nacos-consumer，服务消费者通过 Nacos 发现 Provider
+并调用其接口。依赖是一样的，写一个消费者的控制器，并且把主启动类也加上对应的服务发现注解</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 服务消费者控制器</span></span><br><span class="line"><span class="comment"> * 通过Nacos服务发现调用服务提供者的接口</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@RestController</span></span><br><span class="line"><span class="meta">@RequestMapping(&quot;/consumer&quot;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ConsumerController</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 注入RestTemplate，用于发起HTTP请求</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> RestTemplate restTemplate;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 注入DiscoveryClient，用于获取服务实例信息</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> DiscoveryClient discoveryClient;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 服务提供者的应用名称</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">String</span> <span class="variable">SERVICE_NAME</span> <span class="operator">=</span> <span class="string">&quot;nacos-provider&quot;</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 通过负载均衡方式调用服务提供者的hello接口</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> name 名称参数</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> 服务提供者返回的结果</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@GetMapping(&quot;/hello/&#123;name&#125;&quot;)</span></span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">hello</span><span class="params">(<span class="meta">@PathVariable</span> String name)</span> &#123;</span><br><span class="line">        <span class="comment">// 使用服务名称调用，RestTemplate会根据负载均衡策略选择一个实例</span></span><br><span class="line">        <span class="keyword">return</span> restTemplate.getForObject(<span class="string">&quot;http://&quot;</span> + SERVICE_NAME + <span class="string">&quot;/provider/hello/&quot;</span> + name, String.class);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 获取服务提供者的信息</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> 服务提供者的信息</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@GetMapping(&quot;/provider-info&quot;)</span></span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">getProviderInfo</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> restTemplate.getForObject(<span class="string">&quot;http://&quot;</span> + SERVICE_NAME + <span class="string">&quot;/provider/info&quot;</span>, String.class);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 获取所有服务提供者实例的信息</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> 所有服务提供者实例的信息</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@GetMapping(&quot;/discovery&quot;)</span></span><br><span class="line">    <span class="keyword">public</span> Object <span class="title function_">discovery</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="comment">// 获取服务列表</span></span><br><span class="line">        List&lt;String&gt; services = discoveryClient.getServices();</span><br><span class="line">        <span class="type">StringBuilder</span> <span class="variable">sb</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">StringBuilder</span>();</span><br><span class="line">        sb.append(<span class="string">&quot;所有服务: &quot;</span>).append(services).append(<span class="string">&quot;&lt;br/&gt;&quot;</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 获取指定服务的所有实例</span></span><br><span class="line">        List&lt;ServiceInstance&gt; instances = discoveryClient.getInstances(SERVICE_NAME);</span><br><span class="line">        sb.append(SERVICE_NAME).append(<span class="string">&quot;服务的实例数量: &quot;</span>).append(instances.size()).append(<span class="string">&quot;&lt;br/&gt;&quot;</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 输出每个实例的详细信息</span></span><br><span class="line">        <span class="keyword">for</span> (ServiceInstance instance : instances) &#123;</span><br><span class="line">            sb.append(<span class="string">&quot;ID: &quot;</span>).append(instance.getInstanceId())</span><br><span class="line">                    .append(<span class="string">&quot;, Host: &quot;</span>).append(instance.getHost())</span><br><span class="line">                    .append(<span class="string">&quot;, Port: &quot;</span>).append(instance.getPort())</span><br><span class="line">                    .append(<span class="string">&quot;, URI: &quot;</span>).append(instance.getUri())</span><br><span class="line">                    .append(<span class="string">&quot;&lt;br/&gt;&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> sb.toString();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>别忘了把 Nacos 服务跑起来</p>
+<figure>
+<img src="/posts/58454/image-20250720135020472.png" alt="image-20250720135020472">
+<figcaption aria-hidden="true">image-20250720135020472</figcaption>
+</figure>
+<p>先启动服务提供模块，启动后，服务会注册到Nacos，再启动服务消费模块，启动后，服务也会注册到Nacos</p>
+<figure>
+<img src="/posts/58454/image-20250720135335215.png" alt="image-20250720135335215">
+<figcaption aria-hidden="true">image-20250720135335215</figcaption>
+</figure>
+<figure>
+<img src="/posts/58454/image-20250720135359470.png" alt="image-20250720135359470">
+<figcaption aria-hidden="true">image-20250720135359470</figcaption>
+</figure>
+<figure>
+<img src="/posts/58454/image-20250720135444385.png" alt="image-20250720135444385">
+<figcaption aria-hidden="true">image-20250720135444385</figcaption>
+</figure>
+<figure>
+<img src="/posts/58454/image-20250720135550702.png" alt="image-20250720135550702">
+<figcaption aria-hidden="true">image-20250720135550702</figcaption>
+</figure>
+<p>可以看到这些模块正常工作，也是可以被正常注册和发现的，然后在这里我们可以进行服务管理、配置管理等操作。</p>
+<p>这只是最基本的 Spring Cloud 整合 Nacos
+注册中心的简单实例，之后我们的各种演示都会基于这个基础上进行</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a target="_blank" rel="noopener" href="https://github.com/ergou10086">ErgouTree</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://ergou10086.github.io/posts/58454.html">https://ergou10086.github.io/posts/58454.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://ergou10086.github.io" target="_blank">ErgouTree's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Java%E6%8A%80%E6%9C%AF/">Java技术</a><a class="post-meta__tags" href="/tags/JavaWeb/">JavaWeb</a><a class="post-meta__tags" href="/tags/%E6%A1%86%E6%9E%B6%E7%9F%A5%E8%AF%86/">框架知识</a><a class="post-meta__tags" href="/tags/%E5%AD%A6%E4%B9%A0/">学习</a><a class="post-meta__tags" href="/tags/JavaEE/">JavaEE</a><a class="post-meta__tags" href="/tags/Spring%E7%B3%BB%E5%88%97/">Spring系列</a><a class="post-meta__tags" href="/tags/Java%E6%A1%86%E6%9E%B6/">Java框架</a><a class="post-meta__tags" href="/tags/%E9%85%8D%E7%BD%AE%E7%9B%B8%E5%85%B3/">配置相关</a><a class="post-meta__tags" href="/tags/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">源码分析</a><a class="post-meta__tags" href="/tags/Spring-Cloud/">Spring Cloud</a><a class="post-meta__tags" href="/tags/%E5%BE%AE%E6%9C%8D%E5%8A%A1/">微服务</a></div><div class="post-share"><div class="addtoany"><div class="a2a_kit a2a_kit_size_32 a2a_default_style"><a class="a2a_button_facebook"></a><a class="a2a_button_twitter"></a><a class="a2a_button_wechat"></a><a class="a2a_button_sina_weibo"></a><a class="a2a_button_facebook_messenger"></a><a class="a2a_button_email"></a><a class="a2a_button_copy_link"></a><a class="a2a_dd" target="_blank" rel="noopener" href="https://www.addtoany.com/share"></a></div></div><script async="async" src="https://static.addtoany.com/menu/page.js"></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/posts/43051.html" title="数学物理方程中三类典型模型的建立之弦振动方程与定解条件"><img class="cover" src="/images/posts/cover_tech3.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">数学物理方程中三类典型模型的建立之弦振动方程与定解条件</div></div><div class="info-2"><div class="info-item-1">...</div></div></div></a><a class="pagination-related" href="/posts/17776.html" title="ISLAND攻略"><img class="cover" src="/images/posts/cover_island.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">ISLAND攻略</div></div><div class="info-2"><div class="info-item-1">枢都 夏莲 夏篇路线  左边 Rinne Save 01 ……切那 (→有本事说出我的名字啊) (→不要爱上我啊) 我是三千界切那, 请多指教 Save 02 准备[对时间旅行者装备] [(→纱罗是我老婆) (→钟爱夏莲) 我觉得凛音很可爱 Save 03 放弃使命 (→进行时间旅行) 寻找粘合剂 (→按3部构成的节奏讲) 按2小时的节奏讲 (→还是放弃吧) 攻略玖音 Save 04 与夏莲和纱罗一起去游泳 Save 05 在这个岛上找到真正的自己 我是这个时代的人 Save 06 接受现在  夏莲路线 ​ Save 07  (→我错了) (→抱歉) 对不起 Save 08 昨天的事 (→因为迷上你了) (→因为爱你) 因为喜欢你 (→一起离开岛吧) (→去说服你父亲) 和我交往吧 我喜欢夏莲 夏莲 End  End 回收 ◆Load 1 我就是我 End → 轮回的终结 ◆Load 2 ……莫名其妙 End → 第二位时间旅行者 ◆Load 3 执行使命 End...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/posts/13639.html" title="Spring Cloud part10—Nacos在配置中心上的原理剖析"><img class="cover" src="/images/posts/cover_wish.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-07-22</div><div class="info-item-2">Spring Cloud part10—Nacos在配置中心上的原理剖析</div></div><div class="info-2"><div class="info-item-1">Nacos 配置中心原理解析 Nacos 配置中心的主要作用 本来我寻思把这篇文章放到负载均衡那个讲的，结构感觉那样会很长，我感觉没有人想读论文那样长的技术博客，就算了 在分布式系统中，配置管理面临三大核心挑战：配置分散（多服务、多环境配置散落在各节点）、更新繁琐（修改配置需重启服务）、一致性难保证（多节点配置易出现不一致）。Nacos 配置中心的核心作用就是解决这些问题  配置集中化管理 将所有服务的配置（如数据库连接、接口地址、限流规则等）集中存储在 Nacos Server，替代传统的本地配置文件（如 application.yml），避免配置分散在各服务节点的文件系统中，便于统一维护。 动态配置更新 支持配置在运行时动态修改并生效，无需重启服务。例如：修改数据库连接池参数、调整日志级别、更新限流阈值等，通过 Nacos 推送机制实时同步到所有相关服务，极大提升系统灵活性。 多维度配置隔离 通过「命名空间（Namespace）+ 分组（Group）+ Data ID」三级结构，实现多环境（如 dev/test/prod）、多业务（如支付...</div></div></div></a><a class="pagination-related" href="/posts/58897.html" title="Spring Cloud part7—Nacos注册中心的原理和使用"><img class="cover" src="/images/posts/cover_theory2.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-07-18</div><div class="info-item-2">Spring Cloud part7—Nacos注册中心的原理和使用</div></div><div class="info-2"><div class="info-item-1">Spring Cloud Alibaba 什么是Spring Cloud Alibaba Spring Cloud Alibaba 是阿里巴巴基于 Spring Cloud 规范开发的微服务生态体系，旨在为开发者提供一套完整的微服务解决方案，Spring Cloud Alibaba 生态以 Nacos、Sentinel、Seata 为核心，整合了网关、消息队列等组件，形成了一套适合国内企业的微服务解决方案。其优势在于组件一体化、高性能、本土化适配，尤其适合对稳定性和并发能力要求高的业务场景。 Spring Cloud Alibaba 核心组件及功能 Spring Cloud Alibaba 与 Spring 官方提供的 Spring Cloud 生态的不同，就基本都是体现在组件的不同上，基本Spring Cloud 生态的该有的各种组件类型，Spring Cloud Alibaba 也基本都有 Spring Cloud...</div></div></div></a><a class="pagination-related" href="/posts/43175.html" title="SpringCloudpart6—Ribbon负载均衡原理，策略与实现"><img class="cover" src="/images/posts/cover_spring.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-07-18</div><div class="info-item-2">SpringCloudpart6—Ribbon负载均衡原理，策略与实现</div></div><div class="info-2"><div class="info-item-1">...</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="gitalk-container"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/arp.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">ErgouTree</div><div class="author-info-description">I start a brand-new life with you.</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">175</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">88</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">62</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/ergou10086"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/ergou10086" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="/zjm88822201@126.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a><a class="social-icon" href="https://space.bilibili.com/142045656?spm_id_from=333.1007.0.0" target="_blank" title="bilibili"><i class="fas fa-brands fa-bilibili" style="color: #4a72be;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">作者长期陷入galgame和osu!maina4k中 祝他好运吧 对了 如果图片加载过慢 建议科学上网进行使用</div></div><div class="card-widget"><div class="item-headline"><i></i><span></span></div><div class="item-content"></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#nacos-%E9%85%8D%E7%BD%AE%E4%B8%AD%E5%BF%83%E7%9A%84%E5%AE%9E%E8%B7%B5"><span class="toc-number">1.</span> <span class="toc-text">Nacos 配置中心的实践</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#nacos-%E9%85%8D%E7%BD%AE%E4%B8%AD%E5%BF%83%E7%9A%84%E5%9F%BA%E6%9C%AC%E5%AE%9E%E8%B7%B5%E5%92%8C%E9%85%8D%E7%BD%AE%E5%88%B7%E6%96%B0%E5%AE%9E%E8%B7%B5"><span class="toc-number">1.1.</span> <span class="toc-text">Nacos
+配置中心的基本实践和配置刷新实践</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#nacos-%E9%85%8D%E7%BD%AE%E4%B8%AD%E5%BF%83%E8%BF%9B%E8%A1%8C%E5%85%B1%E4%BA%AB%E5%92%8C%E6%89%A9%E5%B1%95%E9%85%8D%E7%BD%AE%E7%9A%84%E5%AE%9E%E8%B7%B5"><span class="toc-number">1.2.</span> <span class="toc-text">Nacos
+配置中心进行共享和扩展配置的实践</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#nacos-%E9%85%8D%E7%BD%AE%E4%BC%98%E5%85%88%E7%BA%A7%E6%96%87%E4%BB%B6"><span class="toc-number">1.3.</span> <span class="toc-text">Nacos 配置优先级文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#nacos-%E5%A4%9A%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE"><span class="toc-number">1.4.</span> <span class="toc-text">Nacos 多环境配置</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#nacos-%E5%AE%9E%E7%8E%B0%E7%8E%AF%E5%A2%83%E9%9A%94%E7%A6%BB"><span class="toc-number">1.5.</span> <span class="toc-text">Nacos 实现环境隔离</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#nacos-%E5%AE%9E%E7%8E%B0%E9%9B%86%E7%BE%A4%E9%85%8D%E7%BD%AE"><span class="toc-number">1.6.</span> <span class="toc-text">Nacos 实现集群配置</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#nacos-%E6%9C%8D%E5%8A%A1%E6%B3%A8%E5%86%8C%E4%B8%8E%E8%AE%A2%E9%98%85%E7%9A%84%E8%AF%A6%E7%BB%86%E4%BD%BF%E7%94%A8"><span class="toc-number">2.</span> <span class="toc-text">Nacos
+服务注册与订阅的详细使用</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#nacos-%E7%9A%84%E5%AE%89%E8%A3%85%E4%B8%8E%E9%85%8D%E7%BD%AE"><span class="toc-number">2.1.</span> <span class="toc-text">nacos 的安装与配置</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#nacos-%E5%9C%A8-spring-cloud-%E4%B8%AD%E7%9A%84%E6%9C%8D%E5%8A%A1%E5%8F%91%E7%8E%B0"><span class="toc-number">2.2.</span> <span class="toc-text">Nacos 在 Spring Cloud
+中的服务发现</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/61953.html" title="数学物理方程之弦振动方程模型的建立"><img src="/images/posts/cover_front.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="数学物理方程之弦振动方程模型的建立"/></a><div class="content"><a class="title" href="/posts/61953.html" title="数学物理方程之弦振动方程模型的建立">数学物理方程之弦振动方程模型的建立</a><time datetime="2025-07-23T01:00:34.000Z" title="发表于 2025-07-23 09:00:34">2025-07-23</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/38102.html" title="数学物理方程波动方程的解法之达朗贝尔方法"><img src="/images/posts/cover_teach5.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="数学物理方程波动方程的解法之达朗贝尔方法"/></a><div class="content"><a class="title" href="/posts/38102.html" title="数学物理方程波动方程的解法之达朗贝尔方法">数学物理方程波动方程的解法之达朗贝尔方法</a><time datetime="2025-07-23T00:51:36.000Z" title="发表于 2025-07-23 08:51:36">2025-07-23</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/17776.html" title="ISLAND攻略"><img src="/images/posts/cover_island.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="ISLAND攻略"/></a><div class="content"><a class="title" href="/posts/17776.html" title="ISLAND攻略">ISLAND攻略</a><time datetime="2025-07-23T00:19:57.000Z" title="发表于 2025-07-23 08:19:57">2025-07-23</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/58454.html" title="Spring Cloud part11—Nacos配置中心的使用实践"><img src="/images/posts/cover_springboot2.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Spring Cloud part11—Nacos配置中心的使用实践"/></a><div class="content"><a class="title" href="/posts/58454.html" title="Spring Cloud part11—Nacos配置中心的使用实践">Spring Cloud part11—Nacos配置中心的使用实践</a><time datetime="2025-07-23T00:17:26.000Z" title="发表于 2025-07-23 08:17:26">2025-07-23</time></div></div></div></div></div></div></main><div class="fps-display"><span id="fps">FPS: 60</span></div><footer id="footer" style="background-image: url(/images/posts/cover_springboot2.jpg);"><div id="footer-wrap"><div class="copyright">&copy;2024 - 2025 By ErgouTree</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">忘れたくない思い、ありますか？ <br>,<span id="realtime_duration" style="font-family: monospace;"></span>,<br><a href="https://icp.gov.moe/?keyword=20257009" target="_blank">萌ICP备20257009号</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><a class="icon-V hidden" onclick="switchNightMode()" title="日间和夜间模式切换"><svg width="25" height="25" viewBox="0 0 1024 1024"><use id="modeicon" xlink:href="#icon-moon"></use></svg></a><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="chat-btn" type="button" title="聊天" style="display:none"><i class="fas fa-comment"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (true) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script><script>(() => {
+  const applyThemeDefaultsConfig = theme => {
+    if (theme === 'dark-mode') {
+      Chart.defaults.color = "rgba(255, 255, 255, 0.8)"
+      Chart.defaults.borderColor = "rgba(255, 255, 255, 0.2)"
+      Chart.defaults.scale.ticks.backdropColor = "transparent"
+    } else {
+      Chart.defaults.color = "rgba(0, 0, 0, 0.8)"
+      Chart.defaults.borderColor = "rgba(0, 0, 0, 0.1)"
+      Chart.defaults.scale.ticks.backdropColor = "transparent"
+    }
+  }
+
+  // Recursively traverse the config object and automatically apply theme-specific color schemes
+  const applyThemeConfig = (obj, theme) => {
+    if (typeof obj !== 'object' || obj === null) return
+
+    Object.keys(obj).forEach(key => {
+      const value = obj[key]
+      // If the property is an object and has theme-specific options, apply them
+      if (typeof value === 'object' && value !== null) {
+        if (value[theme]) {
+          obj[key] = value[theme] // Apply the value for the current theme
+        } else {
+          // Recursively process child objects
+          applyThemeConfig(value, theme)
+        }
+      }
+    })
+  }
+
+  const runChartJS = ele => {
+    window.loadChartJS = true
+
+    Array.from(ele).forEach((item, index) => {
+      const chartSrc = item.firstElementChild
+      const chartID = item.getAttribute('data-chartjs-id') || ('chartjs-' + index) // Use custom ID or default ID
+      const width = item.getAttribute('data-width')
+      const existingCanvas = document.getElementById(chartID)
+
+      // If a canvas already exists, remove it to avoid rendering duplicates
+      if (existingCanvas) {
+          existingCanvas.parentNode.remove()
+      }
+
+      const chartDefinition = chartSrc.textContent
+      const canvas = document.createElement('canvas')
+      canvas.id = chartID
+
+      const div = document.createElement('div')
+      div.className = 'chartjs-wrap'
+
+      if (width) {
+        div.style.width = width
+      }
+
+      div.appendChild(canvas)
+      chartSrc.insertAdjacentElement('afterend', div)
+
+      const ctx = document.getElementById(chartID).getContext('2d')
+
+      const config = JSON.parse(chartDefinition)
+
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark-mode' : 'light-mode'
+
+      // Set default styles (initial setup)
+      applyThemeDefaultsConfig(theme)
+
+      // Automatically traverse the config and apply dual-mode color schemes
+      applyThemeConfig(config, theme)
+
+      new Chart(ctx, config)
+    })
+  }
+
+  const loadChartJS = () => {
+    const chartJSEle = document.querySelectorAll('#article-container .chartjs-container')
+    if (chartJSEle.length === 0) return
+
+    window.loadChartJS ? runChartJS(chartJSEle) : btf.getScript('https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.min.js').then(() => runChartJS(chartJSEle))
+  }
+
+  // Listen for theme change events
+  btf.addGlobalFn('themeChange', loadChartJS, 'chartjs')
+  btf.addGlobalFn('encrypt', loadChartJS, 'chartjs')
+
+  window.pjax ? loadChartJS() : document.addEventListener('DOMContentLoaded', loadChartJS)
+})()</script><script>(function() {
+  const abcjsInit = function() {
+    const abcjsFn = function() {
+      setTimeout(function() {
+        const sheets = document.querySelectorAll(".abc-music-sheet")
+        for (let i = 0; i < sheets.length; i++) {
+          const ele = sheets[i]
+          if (ele.children.length > 0) continue
+
+          // Parse parameters from data-params attribute
+          let params = {}
+          const dp = ele.getAttribute("data-params")
+          if (dp) {
+            try {
+              params = JSON.parse(dp)
+            } catch (e) {
+              console.error("Failed to parse data-params:", e)
+            }
+          }
+
+          // Merge parsed parameters with the responsive option
+          // Ensures params content appears before responsive
+          const options = { ...params, responsive: "resize" }
+
+          // Render the music score using ABCJS.renderAbc
+          ABCJS.renderAbc(ele, ele.innerHTML, options)
+        }
+      }, 100)
+    }
+
+    if (typeof ABCJS === "object") {
+      abcjsFn()
+    } else {
+      btf.getScript("https://cdn.jsdelivr.net/npm/abcjs/dist/abcjs-basic-min.min.js").then(abcjsFn)
+    }
+  }
+
+  if (window.pjax) {
+    abcjsInit()
+  } else {
+    window.addEventListener("load", abcjsInit)
+  }
+
+  btf.addGlobalFn("encrypt", abcjsInit, "abcjs")
+})()</script><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = {"labels":["Gitalk","Comment"],"createIssueManually":false,"distractionFreeMode":false}
+
+  const commentCount = n => {
+    const isCommentCount = document.querySelector('#post-meta .gitalk-comment-count')
+    if (isCommentCount) {
+      isCommentCount.textContent= n
+    }
+  }
+
+  const initGitalk = (el, path) => {
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGitalk = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+
+    const gitalk = new Gitalk({
+      clientID: 'Ov23li3vDQANiUddL4XB',
+      clientSecret: '5c9a56d02995340fca117809cd414662aadce6ff',
+      repo: 'HexoComment',
+      owner: 'ergou10086',
+      admin: ['ergou10086'],
+      updateCountCallback: commentCount,
+      ...option,
+      id: isShuoshuo ? path : (option && option.id) || '49b8e8b7f6236233b3828025c74a8362'
+    })
+
+    gitalk.render('gitalk-container')
+  }
+
+  const loadGitalk = async(el, path) => {
+    if (typeof Gitalk === 'function') initGitalk(el, path)
+    else {
+      await btf.getCSS('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.css')
+      await btf.getScript('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.js')
+      initGitalk(el, path)
+    }
+  }
+
+  if (isShuoshuo) {
+    'Gitalk' === 'Gitalk'
+      ? window.shuoshuoComment = { loadComment: loadGitalk }
+      : window.loadOtherComment = loadGitalk
+    return
+  }
+
+  if ('Gitalk' === 'Gitalk' || !false) {
+    if (false) btf.loadComment(document.getElementById('gitalk-container'), loadGitalk)
+    else loadGitalk()
+  } else {
+    window.loadOtherComment = loadGitalk
+  }
+})()</script></div><div class="aplayer no-destroy" data-id="13587761608" data-server="netease" data-type="playlist" data-fixed="true" data-autoplay="false" data-lrcType="-1"> </div><script src="https://cdn.jsdelivr.net/npm/abcjs@7.1.2/dist/abcjs-basic-min.js"></script><script src="/js/sun_moon.js" async></script><script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.7/dayjs.min.js"></script><script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.7/plugin/duration.min.js"></script><script src="/scripts/realtime.js"></script><script src="/scripts/random.js"></script><script defer="defer" id="ribbon" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-ribbon.min.js" size="150" alpha="0.6" zIndex="-1" mobile="null" data-click="true"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = false;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><script id="click-heart" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/click-heart.min.js" async="async" mobile="false"></script><script>(() => {
+  window.ChatraID = '4bzb546NSBoJcrNyu'
+  window.Chatra = window.Chatra || function() {
+    (window.Chatra.q = window.Chatra.q || []).push(arguments)
+  }
+
+  btf.getScript('https://call.chatra.io/chatra.js').then(() => {
+    const isChatBtn = true
+    const isChatHideShow = true
+
+    if (isChatBtn) {
+      const close = () => {
+        Chatra('minimizeWidget')
+        Chatra('hide')
+      }
+
+      const open = () => {
+        Chatra('openChat', true)
+        Chatra('show')
+      }
+
+      window.ChatraSetup = { startHidden: true }
+    
+      window.chatBtnFn = () => document.getElementById('chatra').classList.contains('chatra--expanded') ? close() : open()
+
+      document.getElementById('chat-btn').style.display = 'block'
+    } else if (isChatHideShow) {
+      window.chatBtn = {
+        hide: () => Chatra('hide'),
+        show: () => Chatra('show')
+      }
+    }
+  })
+})()</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/metingjs/dist/Meting.min.js"></script><script>(() => {
+  const destroyAplayer = () => {
+    if (window.aplayers) {
+      for (let i = 0; i < window.aplayers.length; i++) {
+        if (!window.aplayers[i].options.fixed) {
+          window.aplayers[i].destroy()
+        }
+      }
+    }
+  }
+
+  const runMetingJS = () => {
+    typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+  }
+
+  btf.addGlobalFn('pjaxSend', destroyAplayer, 'destroyAplayer')
+  btf.addGlobalFn('pjaxComplete', loadMeting, 'runMetingJS')
+})()</script><script src="https://cdn.jsdelivr.net/npm/pjax/pjax.min.js"></script><script>(() => {
+  const pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+  window.pjax = new Pjax({
+    elements: 'a:not([target="_blank"]):not([href="/music/"])',
+    selectors: pjaxSelectors,
+    cacheBust: false,
+    analytics: false,
+    scrollRestoration: false
+  })
+
+  const triggerPjaxFn = (val) => {
+    if (!val) return
+    Object.values(val).forEach(fn => fn())
+  }
+
+  document.addEventListener('pjax:send', () => {
+    // removeEventListener
+    btf.removeGlobalFnEvent('pjaxSendOnce')
+    btf.removeGlobalFnEvent('themeChange')
+
+    // reset readmode
+    const $bodyClassList = document.body.classList
+    if ($bodyClassList.contains('read-mode')) $bodyClassList.remove('read-mode')
+
+    triggerPjaxFn(window.globalFn.pjaxSend)
+  })
+
+  document.addEventListener('pjax:complete', () => {
+    btf.removeGlobalFnEvent('pjaxCompleteOnce')
+    document.querySelectorAll('script[data-pjax]').forEach(item => {
+      const newScript = document.createElement('script')
+      const content = item.text || item.textContent || item.innerHTML || ""
+      Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+      newScript.appendChild(document.createTextNode(content))
+      item.parentNode.replaceChild(newScript, item)
+    })
+
+    triggerPjaxFn(window.globalFn.pjaxComplete)
+  })
+
+  document.addEventListener('pjax:error', e => {
+    if (e.request.status === 404) {
+      const usePjax = true
+      true 
+        ? (usePjax ? pjax.loadUrl('/404.html') : window.location.href = '/404.html')
+        : window.location.href = e.request.responseURL
+    }
+  })
+})()</script><script src="/js/fps-display.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><!-- hexo injector body_end start --><script data-pjax>
+  function butterfly_swiper_injector_config(){
+    var parent_div_git = document.getElementById('recent-posts');
+    var item_html = '<div class="recent-post-item" style="height: auto;width: 100%"><div class="blog-slider swiper-container-fade swiper-container-horizontal" id="swiper_container"><div class="blog-slider__wrp swiper-wrapper" style="transition-duration: 0ms;"><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_database.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-14</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt="">结构化查询语言SQL</a><div class="blog-slider__text">SQL基本很常用的语句都在这里了，本质上是当初为了应付数据库考试整理的，后来发现还蛮有用的很方便查常用的语句</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java4.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-22</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt="">SpringBoot part0?INF-SpringBoot这个框架都需要学习什么</a><div class="blog-slider__text">主要围绕Spring Boot中重要知识来简洁或详细的说明，其中部分不够完全，持续更新</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java11.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-15</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt="">关于Lombok在高版本IDEA中注解处理不生效的问题解决</a><div class="blog-slider__text">基本上是彻底的解决了用 IDEA 新建 Spring Boot 项目时候会产生的 Lombok 注解处理失效的各种问题</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_实用.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-05</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt="">个人向galgame原声带或相关音乐整理及其资源</a><div class="blog-slider__text">整理了我喜欢的galgame ost或者衍生的音乐专辑，部分资源是自己扒盘扒下来的，部分来自鸟白岛放映厅</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_math.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-17</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt="">对书上证明样本方差是总体方差的无偏估计量的解析</a><div class="blog-slider__text">对书上证明样本方差是总体方差的无偏估计量的解析，高等教育出版社-华科大版本</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_alog.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-04-24</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt="">第十五届蓝桥杯Java国赛B组D题-园丁题解</a><div class="blog-slider__text">第十五届蓝桥杯Java国赛B组D题-园丁题解，该题解已经发布到洛谷社区中并且被全站推荐</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java4.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-04-29</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt="">操作系统之处理机的死锁部分概述</a><div class="blog-slider__text">对操作系统之处理机的死锁部分知识的总结，包括代码复现</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_lb.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-09</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt="">Little Busters!EX游戏攻略</a><div class="blog-slider__text">整理了一份详细清晰的Little Busters！EX的游戏攻略，因为我自己也在推，就顺手整理了一份方便查阅的md文档</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java9.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-16</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt="">Spring Boot中使用Hibernate框架</a><div class="blog-slider__text">对学习完Hibernate的应用部分，主要围绕Spring Boot中使用Hibernate框架，建议学习完 Hibernate 框架再看</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div></div><div class="blog-slider__pagination swiper-pagination-clickable swiper-pagination-bullets"></div></div></div>';
+    console.log('已挂载butterfly_swiper')
+    parent_div_git.insertAdjacentHTML("afterbegin",item_html)
+    }
+  var elist = 'undefined'.split(',');
+  var cpage = location.pathname;
+  var epage = '/';
+  var flag = 0;
+
+  for (var i=0;i<elist.length;i++){
+    if (cpage.includes(elist[i])){
+      flag++;
+    }
+  }
+
+  if ((epage ==='all')&&(flag == 0)){
+    butterfly_swiper_injector_config();
+  }
+  else if (epage === cpage){
+    butterfly_swiper_injector_config();
+  }
+  </script><script defer src="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper.min.js"></script><script defer data-pjax src="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper_init.js"></script><!-- hexo injector body_end end --></body></html>
