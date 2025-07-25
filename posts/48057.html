@@ -1,0 +1,1074 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>SpringCloudpart13—Feign的使用等实践讲解 | ErgouTree's Blog</title><meta name="author" content="ErgouTree"><meta name="copyright" content="ErgouTree"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="Fegin 实践 使用 Fegin 的步骤编写 Http 客户端的步骤 首先肯定要添加项目依赖，你需要什么放什么，我都放出来了在这里 12345678910111213141516171819202122232425&lt;dependencies&gt;    &lt;!-- Spring Cloud OpenFeign --&gt;    &lt;dependency&gt;">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SpringCloudpart13—Feign的使用等实践讲解">
+<meta property="og:url" content="https://ergou10086.github.io/posts/48057.html">
+<meta property="og:site_name" content="ErgouTree&#39;s Blog">
+<meta property="og:description" content="Fegin 实践 使用 Fegin 的步骤编写 Http 客户端的步骤 首先肯定要添加项目依赖，你需要什么放什么，我都放出来了在这里 12345678910111213141516171819202122232425&lt;dependencies&gt;    &lt;!-- Spring Cloud OpenFeign --&gt;    &lt;dependency&gt;">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://ergou10086.github.io/images/posts/cover_java15.jpg">
+<meta property="article:published_time" content="2025-07-25T06:31:29.000Z">
+<meta property="article:modified_time" content="2025-07-25T06:33:27.375Z">
+<meta property="article:author" content="ErgouTree">
+<meta property="article:tag" content="Java技术">
+<meta property="article:tag" content="JavaWeb">
+<meta property="article:tag" content="框架知识">
+<meta property="article:tag" content="学习">
+<meta property="article:tag" content="JavaEE">
+<meta property="article:tag" content="Spring系列">
+<meta property="article:tag" content="Java框架">
+<meta property="article:tag" content="配置相关">
+<meta property="article:tag" content="Spring Cloud">
+<meta property="article:tag" content="微服务">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ergou10086.github.io/images/posts/cover_java15.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "SpringCloudpart13—Feign的使用等实践讲解",
+  "url": "https://ergou10086.github.io/posts/48057.html",
+  "image": "https://ergou10086.github.io/images/posts/cover_java15.jpg",
+  "datePublished": "2025-07-25T06:31:29.000Z",
+  "dateModified": "2025-07-25T06:33:27.375Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "ErgouTree",
+      "url": "https://github.com/ergou10086"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/pi.ico"><link rel="canonical" href="https://ergou10086.github.io/posts/48057.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//hm.baidu.com"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!true && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?https://hm.baidu.com/hm.js?a6ab1b78e2c6320b664f31e8b9bf0e36";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+btf.addGlobalFn('pjaxComplete', () => {
+  _hmt.push(['_trackPageview',window.location.pathname])
+}, 'baidu_analytics')
+</script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.json","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":true},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: {"chs_to_cht":"已切换为繁体中文","cht_to_chs":"已切换为简体中文","day_to_night":"已切换为深色模式","night_to_day":"已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#1f1f1f","position":"bottom-left"},
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'SpringCloudpart13—Feign的使用等实践讲解',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css"><svg aria-hidden="true" style="position:absolute; overflow:hidden; width:0; height:0"><symbol id="icon-sun" viewBox="0 0 1024 1024"><path d="M960 512l-128 128v192h-192l-128 128-128-128H192v-192l-128-128 128-128V192h192l128-128 128 128h192v192z" fill="#FFD878" p-id="8420"></path><path d="M736 512a224 224 0 1 0-448 0 224 224 0 1 0 448 0z" fill="#FFE4A9" p-id="8421"></path><path d="M512 109.248L626.752 224H800v173.248L914.752 512 800 626.752V800h-173.248L512 914.752 397.248 800H224v-173.248L109.248 512 224 397.248V224h173.248L512 109.248M512 64l-128 128H192v192l-128 128 128 128v192h192l128 128 128-128h192v-192l128-128-128-128V192h-192l-128-128z" fill="#4D5152" p-id="8422"></path><path d="M512 320c105.888 0 192 86.112 192 192s-86.112 192-192 192-192-86.112-192-192 86.112-192 192-192m0-32a224 224 0 1 0 0 448 224 224 0 0 0 0-448z" fill="#4D5152" p-id="8423"></path></symbol><symbol id="icon-moon" viewBox="0 0 1024 1024"><path d="M611.370667 167.082667a445.013333 445.013333 0 0 1-38.4 161.834666 477.824 477.824 0 0 1-244.736 244.394667 445.141333 445.141333 0 0 1-161.109334 38.058667 85.077333 85.077333 0 0 0-65.066666 135.722666A462.08 462.08 0 1 0 747.093333 102.058667a85.077333 85.077333 0 0 0-135.722666 65.024z" fill="#FFB531" p-id="11345"></path><path d="M329.728 274.133333l35.157333-35.157333a21.333333 21.333333 0 1 0-30.165333-30.165333l-35.157333 35.157333-35.114667-35.157333a21.333333 21.333333 0 0 0-30.165333 30.165333l35.114666 35.157333-35.114666 35.157334a21.333333 21.333333 0 1 0 30.165333 30.165333l35.114667-35.157333 35.157333 35.157333a21.333333 21.333333 0 1 0 30.165333-30.165333z" fill="#030835" p-id="11346"></path></symbol></svg><link rel="stylesheet" href="/css/custom.css"><!-- hexo injector head_end start --><link rel="stylesheet" href="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiperstyle.css" media="print" onload="this.media='all'"><!-- hexo injector head_end end --><meta name="generator" content="Hexo 7.3.0"></head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js/pace.min.js"></script><div id="web_bg" style="background: linear-gradient(20deg, #0062be, #925696, #cc426e, #fb0347);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/arp.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">177</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">88</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">62</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-images"></i><span> Gallery</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/games/"><i class="fa-fw fas fa-game"></i><span> GalGame</span></a></li><li><a class="site-page child" href="/video/"><i class="fa-fw fas fa-video"></i><span> Video</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div><div class="menus_item"><a class="site-page" href="javascript:randomPost();"><span> Random</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/images/posts/cover_java15.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">ErgouTree's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">SpringCloudpart13—Feign的使用等实践讲解</span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-images"></i><span> Gallery</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/games/"><i class="fa-fw fas fa-game"></i><span> GalGame</span></a></li><li><a class="site-page child" href="/video/"><i class="fa-fw fas fa-video"></i><span> Video</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div><div class="menus_item"><a class="site-page" href="javascript:randomPost();"><span> Random</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div><div id="randomPost"><a class="site-page social-icon search" href="javascript:;" onclick="randomPost()" title="随机访问一篇文章"><i class="fas fa-circle-notch fa-fw"></i></a></div></nav><div id="post-info"><h1 class="post-title">SpringCloudpart13—Feign的使用等实践讲解<a class="post-edit-link" href="https://github.com/ergou10086/ergou10086.github.io/edit/main/source/_posts/_posts/SpringCloudpart13—Feign的使用等实践讲解.md" title="编辑" target="_blank"><i class="fas fa-pencil-alt"></i></a></h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2025-07-25T06:31:29.000Z" title="发表于 2025-07-25 14:31:29">2025-07-25</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2025-07-25T06:33:27.375Z" title="更新于 2025-07-25 14:33:27">2025-07-25</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Java%E5%AD%A6%E4%B9%A0/">Java学习</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Java%E5%AD%A6%E4%B9%A0/Spring%E7%B3%BB%E5%88%97/">Spring系列</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Java%E5%AD%A6%E4%B9%A0/Spring%E7%B3%BB%E5%88%97/Spring-Cloud/">Spring Cloud</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">9.3k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>35分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span><span class="post-meta-separator">|</span><span class="post-meta-commentcount"><i class="far fa-comments fa-fw post-meta-icon"></i><span class="post-meta-label">评论数:</span><a href="/posts/48057.html#post-comment"><span class="gitalk-comment-count"><i class="fa-solid fa-spinner fa-spin"></i></span></a></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="fegin-实践">Fegin 实践</h2>
+<h3 id="使用-fegin-的步骤编写-http-客户端的步骤">使用 Fegin 的步骤编写
+Http 客户端的步骤</h3>
+<p>首先肯定要添加项目依赖，你需要什么放什么，我都放出来了在这里</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependencies</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!-- Spring Cloud OpenFeign --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.cloud<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-cloud-starter-openfeign<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">&lt;!-- 服务注册发现（以 Eureka 为例）--&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.cloud<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-cloud-starter-netflix-eureka-client<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">&lt;!-- 负载均衡 --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.cloud<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-cloud-starter-loadbalancer<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">&lt;!-- 熔断器（可选）--&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.cloud<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-cloud-starter-circuitbreaker-resilience4j<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependencies</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>然后需要启用 Fegin 客户端，在主启动类上添加
+<code>@EnableFeignClients</code> 注解：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@SpringBootApplication</span></span><br><span class="line"><span class="meta">@EnableEurekaClient</span></span><br><span class="line"><span class="meta">@EnableFeignClients</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Application</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        SpringApplication.run(Application.class, args);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>接下来需要继续创建 Feign 客户端接口，这是 Feign
+的核心，通过接口定义来声明 HTTP 调用：</p>
+<p>与 RestTemple 不同的是， Feign
+的接口需要在上面标注注解，来表明你的请求方式</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@FeignClient(</span></span><br><span class="line"><span class="meta">    name = &quot;user-service&quot;,           // 服务名称</span></span><br><span class="line"><span class="meta">    path = &quot;/api/v1&quot;,               // 基础路径</span></span><br><span class="line"><span class="meta">    fallback = UserServiceFallback.class  // 降级处理类</span></span><br><span class="line"><span class="meta">)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">UserServiceClient</span> &#123;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// GET 请求</span></span><br><span class="line">    <span class="meta">@GetMapping(&quot;/users/&#123;id&#125;&quot;)</span></span><br><span class="line">    UserDTO <span class="title function_">getUserById</span><span class="params">(<span class="meta">@PathVariable(&quot;id&quot;)</span> Long id)</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// GET 请求带查询参数</span></span><br><span class="line">    <span class="meta">@GetMapping(&quot;/users&quot;)</span></span><br><span class="line">    List&lt;UserDTO&gt; <span class="title function_">getUsers</span><span class="params">(</span></span><br><span class="line"><span class="params">        <span class="meta">@RequestParam(&quot;page&quot;)</span> <span class="type">int</span> page,</span></span><br><span class="line"><span class="params">        <span class="meta">@RequestParam(&quot;size&quot;)</span> <span class="type">int</span> size,</span></span><br><span class="line"><span class="params">        <span class="meta">@RequestParam(value = &quot;name&quot;, required = false)</span> String name</span></span><br><span class="line"><span class="params">    )</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// POST 请求</span></span><br><span class="line">    <span class="meta">@PostMapping(&quot;/users&quot;)</span></span><br><span class="line">    UserDTO <span class="title function_">createUser</span><span class="params">(<span class="meta">@RequestBody</span> CreateUserRequest request)</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// PUT 请求</span></span><br><span class="line">    <span class="meta">@PutMapping(&quot;/users/&#123;id&#125;&quot;)</span></span><br><span class="line">    UserDTO <span class="title function_">updateUser</span><span class="params">(</span></span><br><span class="line"><span class="params">        <span class="meta">@PathVariable(&quot;id&quot;)</span> Long id,</span></span><br><span class="line"><span class="params">        <span class="meta">@RequestBody</span> UpdateUserRequest request</span></span><br><span class="line"><span class="params">    )</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// DELETE 请求</span></span><br><span class="line">    <span class="meta">@DeleteMapping(&quot;/users/&#123;id&#125;&quot;)</span></span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">deleteUser</span><span class="params">(<span class="meta">@PathVariable(&quot;id&quot;)</span> Long id)</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 带请求头的请求</span></span><br><span class="line">    <span class="meta">@GetMapping(&quot;/users/profile&quot;)</span></span><br><span class="line">    UserDTO <span class="title function_">getUserProfile</span><span class="params">(<span class="meta">@RequestHeader(&quot;Authorization&quot;)</span> String token)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>到这里，基本的 http
+客户端的控制器已经构建出来了，但是接下来我们继续看看如何做其他事情</p>
+<p>使用 Feign 如何进行服务间的远程调用，在 Service 层直接注入 Feign
+接口，调用其方法即可完成远程服务调用，这样 Feign
+就把远程间的调用被简化为普通的方法调用，代码清晰且聚焦业务逻辑。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Service</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">OrderService</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 注入 Feign 客户端接口</span></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> UserServiceClient userClient;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 创建订单时，调用用户服务查询用户信息</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> OrderDTO <span class="title function_">createOrder</span><span class="params">(CreateOrderRequest request)</span> &#123;</span><br><span class="line">        <span class="comment">// 1. 调用用户服务，查询用户详情（远程调用）</span></span><br><span class="line">        <span class="type">UserDTO</span> <span class="variable">user</span> <span class="operator">=</span> userClient.getUserById(request.getUserId());</span><br><span class="line">        <span class="keyword">if</span> (user == <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(<span class="string">&quot;用户不存在&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 2. 调用用户服务，检查用户状态（远程调用，带查询参数）</span></span><br><span class="line">        List&lt;UserDTO&gt; validUsers = userClient.getUsers(<span class="number">0</span>, <span class="number">1</span>, user.getUsername());</span><br><span class="line">        <span class="keyword">if</span> (validUsers.isEmpty()) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(<span class="string">&quot;用户状态异常&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 3. 业务逻辑：创建订单（本地操作）</span></span><br><span class="line">        <span class="type">OrderDTO</span> <span class="variable">order</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">OrderDTO</span>();</span><br><span class="line">        order.setUserId(user.getId());</span><br><span class="line">        order.setUserName(user.getUsername());</span><br><span class="line">        order.setProductId(request.getProductId());</span><br><span class="line">        order.setAmount(request.getAmount());</span><br><span class="line">        order.setStatus(<span class="string">&quot;PENDING&quot;</span>);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> order;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>当远程服务不可用或响应超时，为避免级联失败，可通过
+<code>fallback</code> 实现降级逻辑进行熔断处理</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 1. 定义降级处理类（实现 Feign 接口）</span></span><br><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">UserServiceFallback</span> <span class="keyword">implements</span> <span class="title class_">UserServiceClient</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 对 getUserById 接口的降级实现</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> UserDTO <span class="title function_">getUserById</span><span class="params">(Long id)</span> &#123;</span><br><span class="line">        log.warn(<span class="string">&quot;调用用户服务查询用户 &#123;&#125; 失败，触发降级&quot;</span>, id);</span><br><span class="line">        <span class="comment">// 返回默认值或容错数据</span></span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">UserDTO</span>(id, <span class="string">&quot;默认用户&quot;</span>, <span class="string">&quot;unknown@example.com&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 其他方法的降级实现...</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> List&lt;UserDTO&gt; <span class="title function_">getUsers</span><span class="params">(<span class="type">int</span> page, <span class="type">int</span> size, String name)</span> &#123;</span><br><span class="line">        log.warn(<span class="string">&quot;调用用户服务分页查询失败，触发降级&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> Collections.emptyList();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 省略其他方法的降级实现...</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 2. 在 Feign 接口中关联降级类（已在 @FeignClient 中通过 fallback 指定）</span></span><br></pre></td></tr></table></figure>
+<p>在 <code>application.yml</code> 中进行 Feign 的相关配置可以</p>
+<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Feign 配置</span></span><br><span class="line"><span class="attr">feign:</span></span><br><span class="line">  <span class="attr">client:</span></span><br><span class="line">    <span class="attr">config:</span></span><br><span class="line">      <span class="attr">default:</span>  <span class="comment"># 全局配置</span></span><br><span class="line">        <span class="attr">connectTimeout:</span> <span class="number">5000</span></span><br><span class="line">        <span class="attr">readTimeout:</span> <span class="number">10000</span></span><br><span class="line">        <span class="attr">loggerLevel:</span> <span class="string">basic</span></span><br><span class="line">      <span class="attr">user-service:</span>  <span class="comment"># 特定服务配置</span></span><br><span class="line">        <span class="attr">connectTimeout:</span> <span class="number">3000</span></span><br><span class="line">        <span class="attr">readTimeout:</span> <span class="number">8000</span></span><br><span class="line">        <span class="attr">loggerLevel:</span> <span class="string">full</span></span><br><span class="line">  <span class="attr">compression:</span></span><br><span class="line">    <span class="attr">request:</span></span><br><span class="line">      <span class="attr">enabled:</span> <span class="literal">true</span></span><br><span class="line">      <span class="attr">mime-types:</span> <span class="string">text/xml,application/xml,application/json</span></span><br><span class="line">    <span class="attr">response:</span></span><br><span class="line">      <span class="attr">enabled:</span> <span class="literal">true</span></span><br><span class="line">  <span class="attr">hystrix:</span></span><br><span class="line">    <span class="attr">enabled:</span> <span class="literal">true</span></span><br></pre></td></tr></table></figure>
+<p>当然自定义 Feign 配置也可通过配置类或属性自定义 Feign
+的行为（如超时时间、日志级别等）</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 自定义 Feign 配置类</span></span><br><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">FeignConfig</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 配置日志级别（仅在开发环境使用，生产环境建议关闭）</span></span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    Logger.Level <span class="title function_">feignLoggerLevel</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> Logger.Level.FULL;  <span class="comment">// 打印完整日志（请求头、请求体、响应等）</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 配置超时时间（通过 Request.Options）</span></span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="keyword">public</span> Request.Options <span class="title function_">requestOptions</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Request</span>.Options(</span><br><span class="line">            Duration.ofSeconds(<span class="number">2</span>),  <span class="comment">// 连接超时时间</span></span><br><span class="line">            Duration.ofSeconds(<span class="number">5</span>)   <span class="comment">// 读取超时时间</span></span><br><span class="line">        );</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 在 Feign 接口中指定配置类</span></span><br><span class="line"><span class="meta">@FeignClient(</span></span><br><span class="line"><span class="meta">    name = &quot;user-service&quot;,</span></span><br><span class="line"><span class="meta">    configuration = FeignConfig.class  // 应用自定义配置</span></span><br><span class="line"><span class="meta">)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">UserServiceClient</span> &#123; ... &#125;</span><br></pre></td></tr></table></figure>
+<p>提取出最核心的内容，我们来总结一下 Fegin 的使用的步骤</p>
+<ul>
+<li>引入依赖</li>
+<li>添加 <code>@EnableFeginClients</code> 注解</li>
+<li>编写 FeignClient 接口</li>
+<li>使用 FeginClient 中定义的方法代替 RestTemple</li>
+</ul>
+<h3 id="使用-feign-进行服务调用实践">使用 Feign 进行服务调用实践</h3>
+<p>在之前我们讲解了基本的步骤，这次我们详细的进行 Fegin 的开发使用</p>
+<p>我们需要准备模块，cloud-order 和 cloud-product 模块，在此基础上使用
+Fegin，这两个模块你自己写一下，随便写就行</p>
+<p>主要就是把实体类，repo
+两个内容写出来就行，然后就相当于是把控制器的内容放到 Fegin
+模块中写来了算是</p>
+<p>然后创建一个我们的 Feign 接口并添加 <code>@FeignClient</code>
+注解</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> edu.software.ergoutree.feginapi.client;</span><br><span class="line"></span><br><span class="line"><span class="meta">@FeignClient(name = &quot;cloudProduct&quot;, path = &quot;/product/api/products&quot;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">ProductClient</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 根据ID获取产品信息</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@GetMapping(&quot;/&#123;id&#125;&quot;)</span></span><br><span class="line">    ProductDTO <span class="title function_">getProductById</span><span class="params">(<span class="meta">@PathVariable(&quot;id&quot;)</span> Long id)</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 获取所有激活的产品</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@GetMapping(&quot;/active&quot;)</span></span><br><span class="line">    List&lt;ProductDTO&gt; <span class="title function_">getActiveProducts</span><span class="params">()</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 根据分类获取产品</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@GetMapping(&quot;/category&quot;)</span></span><br><span class="line">    List&lt;ProductDTO&gt; <span class="title function_">getProductsByCategory</span><span class="params">(<span class="meta">@RequestParam(&quot;category&quot;)</span> String category)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><span class="citation" data-cites="FeignClient">@FeignClient</span>
+注解中的 name 属性是一个任意的客户端名称，用于创建 Ribbon
+负载均衡器。</p>
+<p>注意，这里你对应的产品和订单的 Controller
+层就需要进行修改，也需要添加对应的发方法内容</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 获取所有激活的产品</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@GetMapping(&quot;/active&quot;)</span></span><br><span class="line">    <span class="keyword">public</span> ResponseEntity&lt;?&gt; getActiveProducts() &#123;</span><br><span class="line">        log.info(<span class="string">&quot;接收到获取激活产品列表请求&quot;</span>);</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            List&lt;Product&gt; products = productRepository.findByIsActiveTrue();</span><br><span class="line">            log.info(<span class="string">&quot;找到&#123;&#125;个激活产品&quot;</span>, products.size());</span><br><span class="line">            <span class="keyword">return</span> ResponseEntity.ok(products);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">            log.error(<span class="string">&quot;获取激活产品列表时发生错误&quot;</span>, e);</span><br><span class="line">            Map&lt;String, Object&gt; response = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">            response.put(<span class="string">&quot;message&quot;</span>, <span class="string">&quot;获取激活产品列表时发生错误: &quot;</span> + e.getMessage());</span><br><span class="line">            response.put(<span class="string">&quot;status&quot;</span>, <span class="string">&quot;ERROR&quot;</span>);</span><br><span class="line">            <span class="keyword">return</span> ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>总之，在 Feign 中创建客户端接口总结如下</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@FeignClient(name = &quot;服务名称&quot;, path = &quot;服务路径&quot;)</span></span><br><span class="line"><span class="keyword">public</span> interface 新客户端接口 &#123;</span><br><span class="line">    @请求方法(<span class="string">&quot;接口路径&quot;</span>)</span><br><span class="line">    返回类型 方法名(@参数注解 参数类型 参数名);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>创建 <code>TestController</code> 控制器，在其中调用 Client
+的方法，来测试 Feign 的服务调用的内容</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> edu.software.ergoutree.feginapi.controller;</span><br><span class="line"></span><br><span class="line"><span class="meta">@RestController</span></span><br><span class="line"><span class="meta">@RequestMapping(&quot;/api/test&quot;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">TestController</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> ProductClient productClient;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 测试Feign调用 - 获取产品信息</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@GetMapping(&quot;/product/&#123;id&#125;&quot;)</span></span><br><span class="line">    <span class="keyword">public</span> ProductDTO <span class="title function_">testGetProduct</span><span class="params">(<span class="meta">@PathVariable(&quot;id&quot;)</span> Long id)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> productClient.getProductById(id);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 测试Feign调用 - 获取激活产品列表</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@GetMapping(&quot;/products/active&quot;)</span></span><br><span class="line">    <span class="keyword">public</span> List&lt;ProductDTO&gt; <span class="title function_">testGetActiveProducts</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> productClient.getActiveProducts();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 测试Feign调用 - 根据分类获取产品</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@GetMapping(&quot;/products/category/&#123;category&#125;&quot;)</span></span><br><span class="line">    <span class="keyword">public</span> List&lt;ProductDTO&gt; <span class="title function_">testGetProductsByCategory</span><span class="params">(<span class="meta">@PathVariable(&quot;category&quot;)</span> String category)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> productClient.getProductsByCategory(category);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>最后，启动类添加<code>@EnableFeignClients</code>注解，来启用 Feign
+服务</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@SpringBootApplication</span></span><br><span class="line"><span class="meta">@EnableFeignClients(basePackages = &quot;edu.software.ergoutree.feginapi.client&quot;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">FeginApiApplication</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        SpringApplication.run(FeginApiApplication.class, args);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>现在我们启动这些所需要的模块，我们来看看服务正不正常</p>
+<figure>
+<img src="/posts/48057/../../../PersonalLearn/1.JavaLearn/Spring/Spring%20Cloud/markdown/Spring%20Cloud%20part12—Feign/image-20250723170538505.png" alt="image-20250723170538505">
+<figcaption aria-hidden="true">image-20250723170538505</figcaption>
+</figure>
+<p>666这个入开了（我指的服务）</p>
+<p>既然您的项目已经有了，并且Nacos中的服务都能正常发现，下面我将正式开始Feign的实践：</p>
+<p>我们先测试各个服务的基本功能是否正常，这一步不要忽略</p>
+<figure>
+<img src="/posts/48057/../../../PersonalLearn/1.JavaLearn/Spring/Spring%20Cloud/markdown/Spring%20Cloud%20part12—Feign/image-20250723171008224.png" alt="image-20250723171008224">
+<figcaption aria-hidden="true">image-20250723171008224</figcaption>
+</figure>
+<p>然后我们通过 fegin-api
+模块来测试Feign调用，根据上面的接口，我们获取一下产品信息试试，可以看到，程序不但实现了声明式的REST
+APT调用，同时还实现了客户端侧的负载均衡。</p>
+<figure>
+<img src="/posts/48057/../../../PersonalLearn/1.JavaLearn/Spring/Spring%20Cloud/markdown/Spring%20Cloud%20part12—Feign/image-20250723171804233.png" alt="image-20250723171804233">
+<figcaption aria-hidden="true">image-20250723171804233</figcaption>
+</figure>
+<p>666我们通过 Feign 调用了 cloud-product 的获取产品列表的服务</p>
+<h3 id="使用-feign-进行服务间调用实践">使用 Feign
+进行服务间调用实践</h3>
+<p>上面我们只是进行了 Feign
+调用了单个的服务，现在，我们要进阶修改，进行服务间调用的内容</p>
+<p>创建一个场景测试，例如：下单流程，需要调用产品服务检查库存，然后创建订单：</p>
+<p>在fegin-api
+的控制器中，添加一个方法，来进行订单的创建，一般服务间调用的方法都是
+post 请求，添加如下接口</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 创建订单</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@PostMapping</span></span><br><span class="line">    OrderDTO <span class="title function_">createOrder</span><span class="params">(<span class="meta">@RequestBody</span> Map&lt;String, Object&gt; orderData)</span>;</span><br></pre></td></tr></table></figure>
+<p>controller 层添加</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 创建订单（POST方法）</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">   <span class="meta">@PostMapping(&quot;/create-order&quot;)</span></span><br><span class="line">   <span class="keyword">public</span> ResponseEntity&lt;?&gt; createOrderDemo(<span class="meta">@RequestBody(required = false)</span> Map&lt;String, Object&gt; requestBody) &#123;</span><br><span class="line">       <span class="keyword">try</span> &#123;</span><br><span class="line">           log.info(<span class="string">&quot;接收到创建订单请求: &#123;&#125;&quot;</span>, requestBody);</span><br><span class="line"></span><br><span class="line">           <span class="comment">// 1. 检查产品是否存在</span></span><br><span class="line">           List&lt;Long&gt; productIds = (List&lt;Long&gt;) orderData.get(<span class="string">&quot;productIds&quot;</span>);</span><br><span class="line">           <span class="keyword">if</span> (productIds == <span class="literal">null</span> || productIds.isEmpty()) &#123;</span><br><span class="line">               log.warn(<span class="string">&quot;产品ID列表为空&quot;</span>);</span><br><span class="line">               Map&lt;String, Object&gt; error = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">               error.put(<span class="string">&quot;success&quot;</span>, <span class="literal">false</span>);</span><br><span class="line">               error.put(<span class="string">&quot;message&quot;</span>, <span class="string">&quot;产品ID列表不能为空&quot;</span>);</span><br><span class="line">               <span class="keyword">return</span> ResponseEntity.badRequest().body(error);</span><br><span class="line">           &#125;</span><br><span class="line"></span><br><span class="line">           <span class="keyword">try</span> &#123;</span><br><span class="line">               <span class="comment">// 2. 创建订单</span></span><br><span class="line">               log.info(<span class="string">&quot;开始创建订单&quot;</span>);</span><br><span class="line">               <span class="type">OrderDTO</span> <span class="variable">order</span> <span class="operator">=</span> orderClient.createOrder(orderData);</span><br><span class="line">               log.info(<span class="string">&quot;订单创建成功: &#123;&#125;&quot;</span>, order);</span><br><span class="line"></span><br><span class="line">               Map&lt;String, Object&gt; result = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">               result.put(<span class="string">&quot;success&quot;</span>, <span class="literal">true</span>);</span><br><span class="line">               result.put(<span class="string">&quot;message&quot;</span>, <span class="string">&quot;订单创建成功&quot;</span>);</span><br><span class="line">               result.put(<span class="string">&quot;orderId&quot;</span>, order.getId());</span><br><span class="line">               result.put(<span class="string">&quot;orderNumber&quot;</span>, order.getOrderNumber());</span><br><span class="line">               <span class="keyword">return</span> ResponseEntity.ok(result);</span><br><span class="line">           &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">               log.error(<span class="string">&quot;处理订单创建时出错&quot;</span>, e);</span><br><span class="line">               Map&lt;String, Object&gt; error = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">               error.put(<span class="string">&quot;success&quot;</span>, <span class="literal">false</span>);</span><br><span class="line">               error.put(<span class="string">&quot;message&quot;</span>, <span class="string">&quot;处理订单创建时出错: &quot;</span> + e.getMessage());</span><br><span class="line">               error.put(<span class="string">&quot;errorType&quot;</span>, e.getClass().getSimpleName());</span><br><span class="line">               <span class="keyword">return</span> ResponseEntity.status(<span class="number">500</span>).body(error);</span><br><span class="line">           &#125;</span><br><span class="line">       &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">           log.error(<span class="string">&quot;处理请求时出错&quot;</span>, e);</span><br><span class="line">           Map&lt;String, Object&gt; error = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">           error.put(<span class="string">&quot;success&quot;</span>, <span class="literal">false</span>);</span><br><span class="line">           error.put(<span class="string">&quot;message&quot;</span>, <span class="string">&quot;处理请求时出错: &quot;</span> + e.getMessage());</span><br><span class="line">           error.put(<span class="string">&quot;errorType&quot;</span>, e.getClass().getSimpleName());</span><br><span class="line">           <span class="keyword">return</span> ResponseEntity.status(<span class="number">500</span>).body(error);</span><br><span class="line">       &#125;</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+<p>多参数的URL也可以使用Map构建。当目标 url
+参数非常多时，可以使用这种方式简化Feign接口的编写。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@GetMapping(&quot;/user/getByUsernameAndAge&quot;)</span></span><br><span class="line">User <span class="title function_">getByUsernameAndAge2</span><span class="params">(<span class="meta">@RequestParam</span> Map&lt;String,Object&gt; userMap)</span>;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@GetMapping(&quot;/getByUsernameAndAge2&quot;)</span></span><br><span class="line"><span class="keyword">public</span>  User <span class="title function_">getByUsernameAndAge2</span><span class="params">()</span>&#123;</span><br><span class="line">    Map&lt;String,Object&gt; map=<span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">    map.put(<span class="string">&quot;username&quot;</span>,<span class="string">&quot;zhaoliu&quot;</span>);</span><br><span class="line">    map.put(<span class="string">&quot;age&quot;</span>,<span class="number">20</span>);</span><br><span class="line">    <span class="keyword">return</span> userClientFeign.getByUsernameAndAge2(map);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>一般我们的 post 请求包含会包含多个参数，可以按照这样的方式写</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@PostMapping(&quot;/user/add&quot;)</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">addUser</span><span class="params">(<span class="meta">@RequestBody</span> User user)</span>;</span><br></pre></td></tr></table></figure>
+<p>controller 层级里面可以加入，按实体类进行传递</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@PostMapping(&quot;/add&quot;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="type">int</span> <span class="title function_">getByUsernameAndAge2</span><span class="params">(<span class="meta">@RequestBody</span> User user)</span>&#123;</span><br><span class="line">    <span class="keyword">return</span> userClientFeign.addUser(user);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>当然你可以在配置文件中配置 Feign 一些常用内容</p>
+<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">feign:</span></span><br><span class="line">  <span class="attr">client:</span></span><br><span class="line">    <span class="attr">config:</span></span><br><span class="line">      <span class="attr">default:</span>  <span class="comment"># 默认配置</span></span><br><span class="line">        <span class="attr">connectTimeout:</span> <span class="number">5000</span>  <span class="comment"># 连接超时</span></span><br><span class="line">        <span class="attr">readTimeout:</span> <span class="number">5000</span>     <span class="comment"># 读取超时</span></span><br><span class="line">        <span class="attr">loggerLevel:</span> <span class="string">full</span>     <span class="comment"># 日志级别</span></span><br><span class="line">      <span class="attr">cloudProduct:</span>  <span class="comment"># 特定服务配置</span></span><br><span class="line">        <span class="attr">connectTimeout:</span> <span class="number">2000</span></span><br><span class="line">        <span class="attr">readTimeout:</span> <span class="number">3000</span></span><br><span class="line">  <span class="attr">compression:</span></span><br><span class="line">    <span class="attr">request:</span></span><br><span class="line">      <span class="attr">enabled:</span> <span class="literal">true</span>  <span class="comment"># 请求压缩</span></span><br><span class="line">    <span class="attr">response:</span></span><br><span class="line">      <span class="attr">enabled:</span> <span class="literal">true</span>  <span class="comment"># 响应压缩</span></span><br><span class="line">  <span class="attr">circuitbreaker:</span></span><br><span class="line">    <span class="attr">enabled:</span> <span class="literal">true</span>    <span class="comment"># 启用断路器</span></span><br></pre></td></tr></table></figure>
+<p>这样，我们在 fegin
+的控制器中，可以同时调用产品服务和订单服务进行订单的创建</p>
+<h3 id="feign-开发总结">Feign 开发总结</h3>
+<ol type="1">
+<li><p>我们要进行依赖引入，如果你的 fegin 的模块，我们一般引入
+<code>spring-cloud-starter-openfeign</code></p></li>
+<li><p>在上启动类上，用 <code>@EnableFeignClients</code> 开启 Feign
+功能，可指定扫描路径</p></li>
+<li><p>Feign 接口通过 <strong>注解 + 方法签名</strong> 映射 HTTP
+请求，核心规则总结和开发流程如下</p>
+<ol type="1">
+<li><p>用 <code>@FeignClient(name = "服务名")</code>
+绑定目标服务（服务名对应注册中心的服务 ID），支持指定
+URL（非注册中心场景：<code>url = "http://localhost:8080"</code>）。</p></li>
+<li><p>用 <code>@GetMapping/@PostMapping</code>
+等注解指定请求方式和路径，参数通过
+<code>@PathVariable</code>、<code>@RequestParam</code>、<code>@RequestBody</code>
+映射：</p>
+<ul>
+<li>复杂对象参数（如 <code>UserForm</code>）默认用
+<code>@RequestBody</code>，对应
+<code>Content-Type: application/json</code>。</li>
+<li>路径参数 <code>@PathVariable</code> 必须指定 value（如
+<code>@PathVariable("id")</code>），否则会报错。</li>
+<li>多个简单参数需用 <code>@RequestParam</code> 逐个指定</li>
+</ul></li>
+<li><p>Feign 支持通过配置类或属性文件定制行为，满足复杂场景需求</p>
+<p>全局配置</p>
+<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">feign:</span></span><br><span class="line">  <span class="attr">client:</span></span><br><span class="line">    <span class="attr">config:</span></span><br><span class="line">      <span class="attr">default:</span>  <span class="comment"># 所有服务生效</span></span><br><span class="line">        <span class="attr">connect-timeout:</span> <span class="number">5000</span>  <span class="comment"># 连接超时</span></span><br><span class="line">        <span class="attr">read-timeout:</span> <span class="number">10000</span>     <span class="comment"># 读取超时</span></span><br></pre></td></tr></table></figure>
+<p>局部配置</p>
+<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">feign:</span></span><br><span class="line">  <span class="attr">client:</span></span><br><span class="line">    <span class="attr">config:</span></span><br><span class="line">      <span class="attr">user-service:</span>  <span class="comment"># 服务名</span></span><br><span class="line">        <span class="attr">connect-timeout:</span> <span class="number">3000</span></span><br></pre></td></tr></table></figure></li>
+<li><p>如果你需要使用拦截器，用于统一处理请求（如添加鉴权头、日志打印）：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">AuthInterceptor</span> <span class="keyword">implements</span> <span class="title class_">RequestInterceptor</span> &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">apply</span><span class="params">(RequestTemplate template)</span> &#123;</span><br><span class="line">        <span class="comment">// 添加 Token 头</span></span><br><span class="line">        template.header(<span class="string">&quot;Authorization&quot;</span>, <span class="string">&quot;Bearer &quot;</span> + getToken());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>局部生效需在 <code>@FeignClient</code> 中指定配置类</p></li>
+<li><p>默认使用 Spring 的 <code>HttpMessageConverter</code>（支持
+JSON、表单等），可自定义编码</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Bean</span></span><br><span class="line"><span class="keyword">public</span> Encoder <span class="title function_">feignEncoder</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">SpringEncoder</span>(() -&gt; <span class="keyword">new</span> <span class="title class_">HttpMessageConverters</span>(<span class="keyword">new</span> <span class="title class_">GsonHttpMessageConverter</span>()));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>一般在进行 Feign
+开发的时候，我们会自定义异常的解码器，当服务返回非 200 状态码时，Feign
+会抛出 <code>FeignException</code>，可通过 <code>ErrorDecoder</code>
+自定义异常转换：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Bean</span></span><br><span class="line"><span class="keyword">public</span> ErrorDecoder <span class="title function_">errorDecoder</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> (methodKey, response) -&gt; &#123;</span><br><span class="line">        <span class="keyword">if</span> (response.status() == <span class="number">404</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">UserNotFoundException</span>(<span class="string">&quot;用户不存在&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(<span class="string">&quot;服务调用失败: &quot;</span> + response.reason());</span><br><span class="line">    &#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>在使用 Feign 的时候，我们会不止使用
+Feign，如果你需要需开启熔断功能，并指定降级方法（<code>fallback</code>
+或 <code>fallbackFactory</code>）,需要编写组件和配置文件</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@FeignClient(name = &quot;user-service&quot;, fallback = UserClientFallback.class)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">UserClient</span> &#123; ... &#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 降级实现类</span></span><br><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">UserClientFallback</span> <span class="keyword">implements</span> <span class="title class_">UserClient</span> &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> UserDTO <span class="title function_">getUserById</span><span class="params">(Long id, String name)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">UserDTO</span>(id, <span class="string">&quot;默认用户&quot;</span>, <span class="string">&quot;降级数据&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>推荐一个我习惯使用的多层的端口编写方式，服务端可将 Controller
+接口抽象为公共 API 接口（如 <code>UserApi</code>），Feign
+客户端直接继承，避免代码重复：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 公共 API 接口</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">UserApi</span> &#123;</span><br><span class="line">    <span class="meta">@GetMapping(&quot;/users/&#123;id&#125;&quot;)</span></span><br><span class="line">    UserDTO <span class="title function_">getUserById</span><span class="params">(<span class="meta">@PathVariable(&quot;id&quot;)</span> Long id)</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 服务端实现</span></span><br><span class="line"><span class="meta">@RestController</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">UserController</span> <span class="keyword">implements</span> <span class="title class_">UserApi</span> &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> UserDTO <span class="title function_">getUserById</span><span class="params">(Long id)</span> &#123; ... &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Feign 客户端</span></span><br><span class="line"><span class="meta">@FeignClient(name = &quot;user-service&quot;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">UserClient</span> <span class="keyword">extends</span> <span class="title class_">UserApi</span> &#123;&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>fegin 可能会涉及到把自己的模块作为依赖导入到其他模块中，但是
+Feign 客户端接口若被同一服务的其他组件调用，需注意扫描路径，避免
+<code>@FeignClient</code> 与 <code>@Service</code>
+形成循环依赖。</p></li>
+<li><p>启用连接池：Feign 默认使用 JDK 原生
+<code>URLConnection</code>（无连接池），推荐替换为 Apache HttpClient 或
+OkHttp：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>io.github.openfeign<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>feign-okhttp<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>并在配置中启用：<code>feign.okhttp.enabled: true</code>。</p></li>
+</ol></li>
+</ol>
+<h3 id="feign-的自定义配置">Feign 的自定义配置</h3>
+<p>虽然 Feign 会和其他 Spring
+组件一样，在自动装配和自动配置的时候就有了很完备的默认配置，但是万一部分不符合需求，你可以进行很高程度上的自定义，在实践中，你有两种主流方式来配置
+Feign，配置文件和配置类，这是和别的一样的</p>
+<p>在一般情况下，我们常用配置 Feign 的五个内容</p>
+<figure>
+<img src="/posts/48057/image-20250725102943036.png" alt="image-20250725102943036">
+<figcaption aria-hidden="true">image-20250725102943036</figcaption>
+</figure>
+<p>我们通常会配置日志的相关配置，因为 Feign
+貌似自身不会打印任何日志，一旦出问题（比如参数没传对、对方服务报错），你将无从下手。</p>
+<p>所以我们需要在 application.yml 中为你的 Feign
+客户端指定日志级别。</p>
+<p>Feign 的日志级别分为四种：</p>
+<ul>
+<li>NONE: 不记录任何日志（默认）。</li>
+<li>BASIC: 仅记录请求方法、URL、响应状态码及执行时间。</li>
+<li>HEADERS: 在 BASIC 基础上，增加请求和响应的头信息。</li>
+<li>FULL:
+记录所有请求与响应的明细，包括头信息、请求体、元数据。<strong>（调试）</strong></li>
+</ul>
+<p>一般日志常用的配置项目如下</p>
+<figure class="highlight properties"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 设置Feign全局日志级别（NONE/BASE/HEADERS/FULL）</span></span><br><span class="line"><span class="attr">feign.client.config.default.logger-level</span>=<span class="string">full</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment"># 格式：feign.client.config.【Feign客户端名称】.logger-level=级别</span></span><br><span class="line"><span class="comment"># 其中“Feign客户端名称”对应@FeignClient注解的name/value属性</span></span><br><span class="line"><span class="attr">feign.client.config.user-service.logger-level</span>=<span class="string">headers</span></span><br><span class="line"><span class="attr">feign.client.config.order-service.logger-level</span>=<span class="string">base</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment"># 开启Feign日志实现类的DEBUG级别日志（固定包路径）</span></span><br><span class="line"><span class="attr">logging.level.feign.Logger</span>=<span class="string">debug</span></span><br></pre></td></tr></table></figure>
+<p>例如</p>
+<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">logging:</span></span><br><span class="line">  <span class="attr">level:</span></span><br><span class="line">    <span class="comment"># 这里的 key 是你 @FeignClient 注解接口的完整包路径</span></span><br><span class="line">    <span class="comment"># 例如，你的接口是 com.example.clients.UserClient</span></span><br><span class="line">    <span class="attr">com.example.clients.UserClient:</span> <span class="string">FULL</span></span><br></pre></td></tr></table></figure>
+<p>虽然用配置文件足够简单，但你仍需要提供一个 Logger 的
+Bean。你可以在一个全局的 Feign
+配置类中定义它。在我们的日志文件比较复杂的时候，配置类更简单</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> feign.Logger;</span><br><span class="line"><span class="keyword">import</span> org.springframework.context.annotation.Bean;</span><br><span class="line"><span class="keyword">import</span> org.springframework.context.annotation.Configuration;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 这个 @Configuration 注解可以加，也可以不加。</span></span><br><span class="line"><span class="comment">// 如果不加，它就不会被Spring组件扫描到，只能在 @FeignClient 中显式指定。</span></span><br><span class="line"><span class="comment">// 这是一种很好的隔离方式，后面会详细讲。</span></span><br><span class="line"><span class="meta">@Configuration</span> </span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">GlobalFeignConfig</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    Logger.Level <span class="title function_">feignLoggerLevel</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="comment">// 这里定义了日志级别为 FULL</span></span><br><span class="line">        <span class="keyword">return</span> Logger.Level.FULL;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>然后，你需要告诉 Feign 去使用这个配置。你可以设置为全局默认配置：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Application.java</span></span><br><span class="line"><span class="meta">@SpringBootApplication</span></span><br><span class="line"><span class="meta">@EnableFeignClients(defaultConfiguration = GlobalFeignConfig.class)</span> <span class="comment">// 应用到所有 Feign 客户端</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MyApplication</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        SpringApplication.run(MyApplication.class, args);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>我们一般会<strong>组合使用</strong>。在 Java 配置类中提供
+Logger.Level Bean，然后在 application.yml
+中灵活控制具体哪个客户端在什么环境下开启哪个级别的日志。</p>
+<p>接下来，就是<strong>配置超时时间</strong>，防止服务雪崩</p>
+<p>这是生产环境<strong>必须配置</strong>的项。Feign
+默认的连接和读取超时时间较短（或依赖底层客户端的默认值），在高延迟网络或对方服务响应慢时，会频繁超时失败，或者长时间等待导致自身服务资源耗尽。</p>
+<p>为 Feign 调用设置合理的连接超时和读取超时。</p>
+<ul>
+<li><strong>连接超时 (Connect Timeout)</strong>:
+与目标服务器建立连接的最长时间。</li>
+<li><strong>读取超时 (Read Timeout)</strong>:
+建立连接后，等待服务器返回响应的最长时间。</li>
+</ul>
+<p>通过 application.yml
+配置这个是不推荐的，因为它在较新版本中可能不生效或被弃用，因为级别太低，而且好像会被覆盖</p>
+<p>最标准、最可靠的方式我们基本建一个Config，创建一个 Request.Options
+类型的 Bean。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// CustomFeignConfig.java</span></span><br><span class="line"><span class="keyword">import</span> feign.Request;</span><br><span class="line"><span class="keyword">import</span> org.springframework.context.annotation.Bean;</span><br><span class="line"><span class="keyword">import</span> java.util.concurrent.TimeUnit;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">CustomFeignConfig</span> &#123;</span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="keyword">public</span> Request.Options <span class="title function_">options</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="comment">// 参数： connectTimeout, connectTimeoutUnit, readTimeout, readTimeoutUnit, followRedirects</span></span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Request</span>.Options(</span><br><span class="line">            <span class="number">5</span>, TimeUnit.SECONDS,     <span class="comment">// 5秒连接超时</span></span><br><span class="line">            <span class="number">10</span>, TimeUnit.SECONDS,    <span class="comment">// 10秒读取超时</span></span><br><span class="line">            <span class="literal">true</span>                     <span class="comment">// 是否允许重定向</span></span><br><span class="line">        );</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>然后，将这个配置应用到具体的 Feign 客户端：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// UserClient.java</span></span><br><span class="line"><span class="keyword">import</span> org.springframework.cloud.openfeign.FeignClient;</span><br><span class="line"></span><br><span class="line"><span class="meta">@FeignClient(name = &quot;user-service&quot;, url = &quot;http://localhost:8081&quot;, configuration = CustomFeignConfig.class)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">UserClient</span> &#123;</span><br><span class="line">    <span class="comment">// ... methods</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>我们一般为不同的微服务调用设置不同的超时时间。调用一个执行复杂计算的服务，其超时时间应该比调用一个只读缓存的服务要长。因此，<strong>为每个
+FeignClient 创建独立的配置类是最佳实践</strong>。</p>
+<p><strong>自定义错误处理</strong></p>
+<p>如果 Feign 调用返回 4xx 或 5xx 状态码，它会统一抛出一个
+<code>FeignException</code>。我看到全是这玩意直接秒开哈气形态</p>
+<p>使用 ErrorDecoder，ErrorDecoder
+可以让你检查原始的响应信息，并根据自己的业务逻辑返回一个自定义的异常。</p>
+<p>创建一个自定义异常</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ResourceNotFoundException</span> <span class="keyword">extends</span> <span class="title class_">RuntimeException</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">ResourceNotFoundException</span><span class="params">(String message)</span> &#123;</span><br><span class="line">        <span class="built_in">super</span>(message);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>创建 ErrorDecoder 实现</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// CustomErrorDecoder.java</span></span><br><span class="line"><span class="keyword">import</span> feign.Response;</span><br><span class="line"><span class="keyword">import</span> feign.codec.ErrorDecoder;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">CustomErrorDecoder</span> <span class="keyword">implements</span> <span class="title class_">ErrorDecoder</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">ErrorDecoder</span> <span class="variable">defaultDecoder</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Default</span>();</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> Exception <span class="title function_">decode</span><span class="params">(String methodKey, Response response)</span> &#123;</span><br><span class="line">        <span class="comment">// 如果是 404 状态码</span></span><br><span class="line">        <span class="keyword">if</span> (response.status() == <span class="number">404</span>) &#123;</span><br><span class="line">            <span class="comment">// 这里可以根据 response.body() 的内容构造更详细的异常信息</span></span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">ResourceNotFoundException</span>(<span class="string">&quot;Resource not found for request: &quot;</span> + methodKey);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 其他情况，使用默认的解码器，抛出 FeignException</span></span><br><span class="line">        <span class="keyword">return</span> defaultDecoder.decode(methodKey, response);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在配置类中注册并应用</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// FeignWithErrorHandlingConfig.java</span></span><br><span class="line"><span class="keyword">import</span> feign.codec.ErrorDecoder;</span><br><span class="line"><span class="keyword">import</span> org.springframework.context.annotation.Bean;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">FeignWithErrorHandlingConfig</span> &#123;</span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="keyword">public</span> ErrorDecoder <span class="title function_">errorDecoder</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">CustomErrorDecoder</span>();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 应用到客户端</span></span><br><span class="line"><span class="meta">@FeignClient(name = &quot;any-service&quot;, configuration = FeignWithErrorHandlingConfig.class)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">AnyServiceClient</span> &#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>ErrorDecoder 是提升服务健壮性的利器。通过它，你的业务代码可以
+try-catch 特定的业务异常，使代码逻辑更清晰。</p>
+<p>全局配置 和 客户端独立配置的选择存在一个重要实践原则</p>
+<p>一个常见的困惑是：这些配置应该放在哪里？是全局共享还是每个客户端独立一份？</p>
+<ul>
+<li><strong>全局配置 (<span class="citation" data-cites="EnableFeignClients">@EnableFeignClients</span>(defaultConfiguration
+= …)):</strong>
+<ul>
+<li><strong>适用场景</strong>: 对所有客户端都通用的配置，如日志 Bean
+的提供、全局的分布式追踪拦截器。</li>
+<li><strong>优点</strong>: 配置一次，到处生效。</li>
+<li><strong>缺点</strong>:
+不够灵活，一个不当的全局配置（如过长的超时时间）会影响所有客户端。</li>
+</ul></li>
+<li><strong>客户端独立配置 (<span class="citation" data-cites="FeignClient">@FeignClient</span>(configuration =
+…)):</strong>
+<ul>
+<li><strong>适用场景</strong>: 针对特定服务的配置，如对 A
+服务的超时时间、对 B 服务的认证拦截器、对 C 服务的错误解码器。</li>
+<li><strong>优点</strong>:
+精准控制，隔离性好，互不影响。这是<strong>更推荐</strong>的方式。</li>
+<li><strong>缺点</strong>:
+如果多个客户端需要相同配置，会产生一些重复代码（可以通过继承配置类解决）。</li>
+</ul></li>
+</ul>
+<p>一般情况下我们会进行隔离配置类</p>
+<p>一个非常重要的技巧是：<strong>不要让你为 Feign 写的 <span class="citation" data-cites="Configuration">@Configuration</span>
+类被主应用的 <span class="citation" data-cites="ComponentScan">@ComponentScan</span> 扫描到！</strong></p>
+<p>如果 GlobalFeignConfig 被扫描到，它里面的 Bean（如
+Request.Options）会变成一个全局
+Bean，可能会影响到其他不想关的技术栈。</p>
+<p><strong>正确做法：</strong></p>
+<ol type="1">
+<li>不要在 Feign 的配置类上加 <code>@Configuration</code> 注解。</li>
+<li>或者，如果加了
+<code>@Configuration</code>，就把它放在一个不会被主应用扫描到的包里。</li>
+</ol>
+<p>这样，这个配置类就只对通过 <code>defaultConfiguration</code> 或
+<code>configuration</code> 属性显式指定的 Feign
+客户端生效，实现了完美隔离。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 正确的独立配置类</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MyClientConfig</span> &#123;</span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="keyword">public</span> feign.Retryer <span class="title function_">retryer</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="comment">// 配置一个重试器：初始间隔100ms，最大间隔1s，最多重试3次</span></span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">feign</span>.Retryer.Default(<span class="number">100</span>, <span class="number">1000</span>, <span class="number">3</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@FeignClient(name = &quot;resilient-service&quot;, configuration = MyClientConfig.class)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">ResilientClient</span> &#123; ... &#125;</span><br></pre></td></tr></table></figure>
+<h3 id="feign-的性能调优">Feign 的性能调优</h3>
+<h4 id="连接优化">连接优化</h4>
+<p>Feign 的性能优化已经很好了，在我们上文进行的 Feign
+的原理分析我们知道了，默认情况下，Feign 使用 Java 的
+<code>HttpURLConnection</code> 来发送 HTTP
+请求。它的问题是<strong>不支持连接池</strong>。</p>
+<p>这意味着每次 Feign 调用都可能需要经历一次完整的 TCP 三次握手和 TLS
+握手，然后连接被关闭。在高并发场景下，这会产生巨大的性能开销和资源浪费。</p>
+<p>一般我们会替换 Feign 底层的 HTTP 客户端为 <strong>Apache
+HttpClient</strong> 或
+<strong>OkHttpClient</strong>。它们都内置了强大的连接池管理。</p>
+<p>选择其中一个添加到你的 pom.xml 中。通常两者性能相近，Apache
+HttpClient 在 Spring 生态中更常见。</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>io.github.openfeign<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>feign-httpclient<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>在 <code>application.yml</code>
+中启用并配置连接池，一旦你添加了依赖，Spring Cloud Feign
+的自动配置机制会检测到它。你只需要在 <code>application.yml</code>
+中开启并调优即可。</p>
+<p>如果你对性能十分敏感，在这里关掉日志还能更进一步，连接池打印的日志挺多的</p>
+<p>以 Apache HttpClient 为例：</p>
+<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">feign:</span></span><br><span class="line">  <span class="comment"># 启用 Apache HttpClient 替代默认的 HttpURLConnection</span></span><br><span class="line">  <span class="attr">httpclient:</span></span><br><span class="line">    <span class="comment"># 启用开关</span></span><br><span class="line">    <span class="attr">enabled:</span> <span class="literal">true</span></span><br><span class="line">    <span class="comment"># 最大连接数（整个连接池的大小）</span></span><br><span class="line">    <span class="comment"># 把它想象成你的车库里总共能停多少辆车</span></span><br><span class="line">    <span class="attr">max-connections:</span> <span class="number">200</span></span><br><span class="line">    <span class="comment"># 每个路由（即每个目标主机）的最大连接数</span></span><br><span class="line">    <span class="comment"># 把它想象成通往某个特定目的地（如&quot;user-service&quot;）有几条专用车道</span></span><br><span class="line">    <span class="attr">max-connections-per-route:</span> <span class="number">50</span></span><br><span class="line">    <span class="comment"># 从连接池获取连接的超时时间，单位毫秒</span></span><br><span class="line">    <span class="attr">connection-timer-repeat:</span> <span class="number">1000</span></span><br><span class="line">    <span class="comment"># 连接存活时间</span></span><br><span class="line">    <span class="attr">time-to-live:</span> <span class="number">900</span></span><br><span class="line">    <span class="attr">time-to-live-unit:</span> <span class="string">SECONDS</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>在任何生产项目中，这都应该是标准操作。</p></li>
+<li><p><strong>如何设置池大小</strong>：<code>max-connections</code> 和
+<code>max-connections-per-route</code> 的值需要根据你的应用的
+QPS（每秒查询率）和下游服务的数量进行压测和调整。初始值可以设为 200 和
+50，然后通过监控工具（如
+Micrometer、Prometheus）观察连接池的使用情况来微调。</p></li>
+<li><p>过小的连接池会在高并发时导致请求排队等待连接，增加响应延迟；过大的连接池会占用过多内存和文件句柄。</p></li>
+</ul>
+<h4 id="数据传输优化">数据传输优化</h4>
+<p>在微服务之间传输巨大的 JSON
+对象会消耗大量的网络带宽，增加网络传输时间，成为性能瓶颈，尤其是在跨机房或公网调用时。我们需要减少网络传输的数据量。常用的解决方案如下</p>
+<ol type="1">
+<li><strong>启用 GZIP 压缩</strong>：对请求体和响应体进行压缩。</li>
+<li><strong>更换更高效的序列化库</strong>（微优化）。</li>
+</ol>
+<p>在<code>application.yml</code>中开启 GZIP 压缩</p>
+<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">feign:</span></span><br><span class="line">  <span class="attr">compression:</span></span><br><span class="line">    <span class="attr">request:</span></span><br><span class="line">      <span class="comment"># 开启请求体压缩</span></span><br><span class="line">      <span class="attr">enabled:</span> <span class="literal">true</span></span><br><span class="line">      <span class="comment"># 指定哪些 MIME 类型的内容需要压缩</span></span><br><span class="line">      <span class="attr">mime-types:</span></span><br><span class="line">        <span class="bullet">-</span> <span class="string">text/xml</span></span><br><span class="line">        <span class="bullet">-</span> <span class="string">application/xml</span></span><br><span class="line">        <span class="bullet">-</span> <span class="string">application/json</span></span><br><span class="line">      <span class="comment"># 请求体达到多大时才进行压缩（单位：字节），太小的数据压缩反而浪费CPU</span></span><br><span class="line">      <span class="attr">min-request-size:</span> <span class="number">2048</span></span><br><span class="line">    <span class="attr">response:</span></span><br><span class="line">      <span class="comment"># 开启响应体压缩</span></span><br><span class="line">      <span class="attr">enabled:</span> <span class="literal">true</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li><strong>这里存在一个权衡</strong>：压缩会消耗 CPU，但能大幅减少网络
+I/O。对于目前大多数应用来说，CPU
+资源相对廉价，而网络延迟是主要矛盾，因此<strong>开启压缩通常是明智之举</strong>。</li>
+<li>min-request-size
+是一个很好的调优参数，避免为几十个字节的小请求执行压缩操作。</li>
+</ul>
+<p>当然你也可以更换 JSON 序列库，Spring Boot 默认使用
+Jackson。在绝大多数情况下，它的性能已经足够好。但如果你在性能分析中发现序列化/反序列化是应用的热点，可以考虑更换为
+GSON 或其他更高性能的库。</p>
+<p>这是一个<strong>微优化</strong>。除非有明确的性能瓶颈证据，否则坚持使用默认的
+Jackson 即可，避免引入新的技术栈和潜在的兼容性问题。</p>
+<h4 id="异步优化">异步优化</h4>
+<p>串行到并行的优化也很关键</p>
+<p>在一个业务逻辑中，你可能需要调用多个不同的微服务来组装数据（比如，获取订单详情时，需要调用用户服务、商品服务、库存服务）。默认的
+Feign
+调用是<strong>同步阻塞</strong>的，这意味着这些调用会一个接一个地执行，总耗时是所有调用耗时之和。</p>
+<p>一般情况下我们会将多个独立的 Feign
+调用并行化执行，将总耗时缩短为其中最慢的那个调用的耗时。</p>
+<p>结合 Spring 的 <code>@Async</code> 和 <code>CompletableFuture</code>
+来异步执行 Feign 调用。</p>
+<p>在启动类开启异步支持</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@EnableAsync</span></span><br><span class="line"><span class="meta">@SpringBootApplication</span></span><br><span class="line"><span class="meta">@EnableFeignClients</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MyApplication</span> &#123; ... &#125;</span><br></pre></td></tr></table></figure>
+<p>创建一个专门的 Service，将 Feign 的同步调用封装在异步方法中。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Service</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">AggregationService</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> UserClient userClient;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> ProductClient productClient;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Async</span> <span class="comment">// 关键注解：表示该方法将在独立的线程池中异步执行</span></span><br><span class="line">    <span class="keyword">public</span> CompletableFuture&lt;User&gt; <span class="title function_">getUserDetails</span><span class="params">(String userId)</span> &#123;</span><br><span class="line">        <span class="comment">// Feign 调用本身是同步的，但整个方法是异步的</span></span><br><span class="line">        <span class="type">User</span> <span class="variable">user</span> <span class="operator">=</span> userClient.getUserById(userId);</span><br><span class="line">        <span class="keyword">return</span> CompletableFuture.completedFuture(user);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Async</span></span><br><span class="line">    <span class="keyword">public</span> CompletableFuture&lt;Product&gt; <span class="title function_">getProductDetails</span><span class="params">(String productId)</span> &#123;</span><br><span class="line">        <span class="type">Product</span> <span class="variable">product</span> <span class="operator">=</span> productClient.getProductById(productId);</span><br><span class="line">        <span class="keyword">return</span> CompletableFuture.completedFuture(product);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在业务逻辑中并行编排，在你的主业务逻辑中，同时发起调用并等待所有结果返回。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RestController</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">OrderController</span> &#123;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> AggregationService aggregationService;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@GetMapping(&quot;/order-details&quot;)</span></span><br><span class="line">    <span class="keyword">public</span> Map&lt;String, Object&gt; <span class="title function_">getOrderDetails</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="comment">// 1. 同时发起两个异步调用</span></span><br><span class="line">        CompletableFuture&lt;User&gt; userFuture = aggregationService.getUserDetails(<span class="string">&quot;123&quot;</span>);</span><br><span class="line">        CompletableFuture&lt;Product&gt; productFuture = aggregationService.getProductDetails(<span class="string">&quot;p456&quot;</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 2. 等待所有异步任务完成</span></span><br><span class="line">        CompletableFuture.allOf(userFuture, productFuture).join();</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 3. 获取结果并组装</span></span><br><span class="line">        Map&lt;String, Object&gt; result = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            result.put(<span class="string">&quot;user&quot;</span>, userFuture.get());</span><br><span class="line">            result.put(<span class="string">&quot;product&quot;</span>, productFuture.get());</span><br><span class="line">        &#125; <span class="keyword">catch</span> (InterruptedException | ExecutionException e) &#123;</span><br><span class="line">            <span class="comment">// 异常处理</span></span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> result;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这是一种<strong>架构层面的优化</strong>，效果非常显著。但需要注意配置和管理
+Spring 的异步线程池（TaskExecutor），避免线程池耗尽。</p>
+<h4 id="负载均衡优化">负载均衡优化</h4>
+<p>负载均衡的方面我们也可以进行优化</p>
+<p>默认的轮询（Round-robin）策略无法感知下游服务的真实负载和健康状况，可能将请求发送给一个响应缓慢或即将崩溃的实例。而且默认
+Feign
+不进行重试。如果配置了重试，它可能会对<strong>非幂等</strong>的写操作（如
+POST）进行重试，导致数据重复。</p>
+<p>在分析原理的时候我们知道Feign是无缝集成Spring Cloud LoadBalancer
+(替代了 Ribbon)的， 提供了灵活的策略。在 application.yml
+中配置，为特定服务指定不同的负载均衡策略。</p>
+<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">spring:</span></span><br><span class="line">  <span class="attr">cloud:</span></span><br><span class="line">    <span class="attr">loadbalancer:</span></span><br><span class="line">      <span class="attr">clients:</span></span><br><span class="line">        <span class="comment"># 为 &quot;user-service&quot; 这个服务配置</span></span><br><span class="line">        <span class="attr">user-service:</span></span><br><span class="line">          <span class="comment"># Spring Cloud LoadBalancer 默认是轮询</span></span><br><span class="line">          <span class="comment"># 如果想用随机，需要自定义实现一个 ReactorLoadBalancer</span></span><br><span class="line">          <span class="comment"># 但我们可以利用其缓存能力</span></span><br><span class="line">          <span class="attr">cache:</span></span><br><span class="line">            <span class="attr">enabled:</span> <span class="literal">true</span></span><br><span class="line">            <span class="attr">ttl:</span> <span class="string">5s</span> <span class="comment"># 缓存5秒的服务实例列表，减少每次调用都去注册中心拉取</span></span><br></pre></td></tr></table></figure>
+<p>如果启用 Load Balancer 缓存 (spring.cloud.loadbalancer.cache.enabled:
+true) ，也是一个简单有效的优化，可以降低与服务注册中心的交互频率。</p>
+<p>对于更高级的策略，如<strong>基于响应时间的加权负载均衡</strong>，你需要自定义实现，参考我负载均衡那章</p>
+<h4 id="精细化重试策略">精细化重试策略</h4>
+<p>通过 Java 配置类自定义 Retryer。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// SmartRetryerConfig.java</span></span><br><span class="line"><span class="keyword">import</span> feign.Retryer;</span><br><span class="line"><span class="keyword">import</span> org.springframework.context.annotation.Bean;</span><br><span class="line"><span class="keyword">import</span> java.util.concurrent.TimeUnit;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">SmartRetryerConfig</span> &#123;</span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="keyword">public</span> Retryer <span class="title function_">feignRetryer</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="comment">// 不要使用 Retryer.NEVER_RETRY (默认)</span></span><br><span class="line">        <span class="comment">// 或者 Retryer.Default (会对所有请求重试)</span></span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 我们可以实现自己的 Retryer，决定何时重试</span></span><br><span class="line">        <span class="comment">// 但一个更简单的做法是在 Feign 之外，使用 Resilience4J 的 Retry 模块，</span></span><br><span class="line">        <span class="comment">// 它可以更精细地控制对哪些异常、哪些方法进行重试。</span></span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 这里我们先配置一个标准的重试器</span></span><br><span class="line">        <span class="comment">// 参数：初始间隔，最大间隔，最大重试次数 (不含首次)</span></span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Retryer</span>.Default(<span class="number">100</span>, TimeUnit.SECONDS.toMillis(<span class="number">1L</span>), <span class="number">3</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><strong>幂等性警告</strong>：切记，Feign 的重试对 POST
+等非幂等操作有风险。</li>
+<li><strong>最佳实践</strong>：将重试逻辑交给更专业的熔断降级组件，如
+<strong>Resilience4J</strong>。你可以用它的 <span class="citation" data-cites="Retry">@Retry</span> 注解来包裹 Feign
+调用方法，并精确配置重试的条件（如只对 IOException 或 5xx
+错误重试），而对 4xx 业务错误不重试。这比 Feign 内置的 Retryer
+更强大、更安全。</li>
+</ul>
+<h2 id="feign-的最佳实践">Feign 的最佳实践</h2>
+<h3 id="方式一继承给消费者的-feignclient-和提供者的-controller-定义统一的父接口作为标准">方式一：继承，给消费者的
+FeignClient 和提供者的 Controller 定义统一的父接口作为标准</h3>
+<figure>
+<img src="/posts/48057/image-20250725105147954.png" alt="image-20250725105147954">
+<figcaption aria-hidden="true">image-20250725105147954</figcaption>
+</figure>
+<p>首先，这个接口的目的是让消费者基于这些声明的信息，去发送一次 http
+请求，这个请求最终会到达对应服务的一个实例的Controller中</p>
+<figure>
+<img src="/posts/48057/image-20250725105300611.png" alt="image-20250725105300611">
+<figcaption aria-hidden="true">image-20250725105300611</figcaption>
+</figure>
+<p>整个方法的声明，除了方法名，都是一样的，那么既然都一样，可以不可以进行抽取，肯定可以</p>
+<p>所以我们创建一个共享接口（API模块）来统一服务契约，既然<strong>服务提供方
+(Provider)</strong>在 Controller 中定义接口，包括 <span class="citation" data-cites="RequestMapping">@RequestMapping</span>, <span class="citation" data-cites="PathVariable">@PathVariable</span>, <span class="citation" data-cites="RequestBody">@RequestBody</span>
+等注解，以及方法的参数和返回类型。<strong>服务消费方
+(Consumer)</strong>又在 FeignClient
+接口中，<strong>必须一模一样地</strong>再声明一遍这些注解、参数和返回类型。</p>
+<p>这种方式存在巨大的问题，为了解决上述问题，我们引入一个专门的
+<strong>API 模块</strong>。里面写好其中的API，然后 Client 和 Controller
+直接继承就可以了。</p>
+<figure>
+<img src="/posts/48057/image-20250725110044562.png" alt="image-20250725110044562">
+<figcaption aria-hidden="true">image-20250725110044562</figcaption>
+</figure>
+<p>但是 Spring 官方不推荐这么做</p>
+<figure>
+<img src="/posts/48057/image-20250725110147923.png" alt="image-20250725110147923">
+<figcaption aria-hidden="true">image-20250725110147923</figcaption>
+</figure>
+<p>这会造成紧耦合，仔细一想，从 API 都耦合了，一炸都炸，成鞭炮了</p>
+<p>而且对 SpringMVC
+这招不好使，父接口方法的参数列表参数是继承不下来的，自己还得写一篇</p>
+<p>但是面向契约的思想还是很好的</p>
+<h3 id="方式二抽取-将-feignclient-抽取为独立的模块并且把接口有关的pojo默认的-feign-配置都放到这个模块中提供过所有的消费者使用">方式二：抽取
+将 FeignClient 抽取为独立的模块，并且把接口有关的POJO，默认的 Feign
+配置都放到这个模块中，提供过所有的消费者使用</h3>
+<p>这就是最现代，最常用，目前最佳的方式了，我也是这样，无数人也是这样</p>
+<p>在 Maven 项目中，这通常是一个独立的 jar 包模块。</p>
+<p><strong>这个模块的核心定位是：定义服务之间通信的“合同”</strong>。</p>
+<figure>
+<img src="/posts/48057/image-20250725110600600.png" alt="image-20250725110600600">
+<figcaption aria-hidden="true">image-20250725110600600</figcaption>
+</figure>
+<p>在你的多模块 Maven 项目中，创建一个新的 jar 模块，例如
+feign-api。这个模块非常轻量，它<strong>只包含</strong></p>
+<ol type="1">
+<li>项目中共享的接口定义。</li>
+<li>接口中用到的 DTO (Data Transfer Object) 或 POJO 类（如 User,
+ResultVO 等）。</li>
+</ol>
+<p>这个模块<strong>不包含</strong>任何具体的业务实现逻辑，也没有复杂的依赖。</p>
+<p>之后在 feign-api
+模块中定义共享接口，我们将原来分散在两边的定义，统一放在 user-api
+模块中。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 在 user-api 模块中</span></span><br><span class="line"><span class="keyword">package</span> com.example.user.api;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.springframework.web.bind.annotation.GetMapping;</span><br><span class="line"><span class="keyword">import</span> org.springframework.web.bind.annotation.PathVariable;</span><br><span class="line"><span class="keyword">import</span> com.example.user.api.dto.UserDTO; <span class="comment">// DTO也定义在api模块</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 这就是那个“统一的父接口”或“服务契约”</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">UserApi</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 根据ID获取用户详情</span></span><br><span class="line"><span class="comment">     * 所有的 Spring MVC 注解都定义在这里，作为契约的一部分</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> id 用户ID</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> 用户数据</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@GetMapping(&quot;/user/&#123;id&#125;&quot;)</span></span><br><span class="line">    UserDTO <span class="title function_">findUserById</span><span class="params">(<span class="meta">@PathVariable(&quot;id&quot;)</span> Long id)</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// ... 其他接口定义</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>所有用于定义 HTTP 请求的注解（<span class="citation" data-cites="GetMapping">@GetMapping</span>, <span class="citation" data-cites="PostMapping">@PostMapping</span>, <span class="citation" data-cites="PathVariable">@PathVariable</span>, <span class="citation" data-cites="RequestParam">@RequestParam</span>, <span class="citation" data-cites="RequestBody">@RequestBody</span>
+等）都必须在这里声明。这里就是这份“合同”最核心的条款。</p>
+<p><strong>服务提供方 (Provider) 实现接口</strong></p>
+<p>在 user-service 项目中：</p>
+<ol type="1">
+<li>在其 pom.xml 中添加对 feign-api 模块的依赖。</li>
+<li>让 UserController <strong>实现</strong> (implements) 这个 UserApi
+接口。</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 在 user-service 模块中</span></span><br><span class="line"><span class="keyword">package</span> com.example.userservice.controller;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> com.example.user.api.UserApi; <span class="comment">// 引入 API 模块的接口</span></span><br><span class="line"><span class="keyword">import</span> com.example.user.api.dto.UserDTO;</span><br><span class="line"><span class="keyword">import</span> org.springframework.web.bind.annotation.RestController;</span><br><span class="line"></span><br><span class="line"><span class="meta">@RestController</span> <span class="comment">// Controller 自身的注解依然保留</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">UserController</span> <span class="keyword">implements</span> <span class="title class_">UserApi</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// ... 注入 UserService</span></span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span> <span class="comment">// 使用 @Override 注解，让编译器帮你检查是否正确实现了接口方法</span></span><br><span class="line">    <span class="keyword">public</span> UserDTO <span class="title function_">findUserById</span><span class="params">(Long id)</span> &#123;</span><br><span class="line">        <span class="comment">// 这里是具体的业务实现逻辑</span></span><br><span class="line">        <span class="comment">// ...</span></span><br><span class="line">        <span class="keyword">return</span> userService.findById(id);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>UserController <strong>实现</strong> (implements)
+接口，提供了方法的具体业务逻辑。</li>
+<li>因为 Java 的注解继承机制，UserController 中的 findUserById
+方法自动继承了来自 UserApi 接口的所有注解 (<span class="citation" data-cites="GetMapping">@GetMapping</span>, <span class="citation" data-cites="PathVariable">@PathVariable</span>)。你无需在 Controller
+的方法上重复声明它们！</li>
+<li>使用 <span class="citation" data-cites="Override">@Override</span>
+是一个好习惯，如果接口方法签名发生变化，而实现类没有同步修改，编译器会立刻报错，将运行时风险提前到编译时解决。</li>
+</ul>
+<p><strong>服务消费方 (Consumer) 继承接口</strong></p>
+<p>在 order-service 项目中：</p>
+<ol type="1">
+<li>在其 pom.xml 中同样添加对 feign-api 模块的依赖。</li>
+<li>让 UserClient (Feign 客户端) <strong>继承</strong> (extends) 这个
+UserApi 接口。</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 在 order-service 模块中</span></span><br><span class="line"><span class="keyword">package</span> com.example.orderservice.client;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> com.example.user.api.UserApi; <span class="comment">// 引入 API 模块的接口</span></span><br><span class="line"><span class="keyword">import</span> org.springframework.cloud.openfeign.FeignClient;</span><br><span class="line"></span><br><span class="line"><span class="meta">@FeignClient(name = &quot;user-service&quot;)</span> <span class="comment">// FeignClient 的配置注解依然保留</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">UserClient</span> <span class="keyword">extends</span> <span class="title class_">UserApi</span> &#123;</span><br><span class="line">    <span class="comment">// 里面什么都不用写！</span></span><br><span class="line">    <span class="comment">// 它已经通过继承，拥有了 UserApi 中定义的所有方法签名和注解。</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>UserClient <strong>继承</strong> (extends)
+接口。对于一个接口来说，extends 意味着它包含了父接口的所有方法声明。因为
+Feign
+是为接口创建动态代理，所以它不需要方法的实现体，只需要方法的声明，这正是
+extends 所提供的。</li>
+<li><span class="citation" data-cites="FeignClient">@FeignClient</span>
+注解是 Feign
+自身需要的，用于指定目标服务名等配置，所以需要保留在子接口上。</li>
+<li>接口体是空的！这极大地简化了消费方的代码。</li>
+</ul>
+<p>这招带来的巨大优势体现在，<strong>单一事实来源</strong>，API
+契约被定义在唯一的 user-api 模块中。任何关于接口的疑问，都以此为准。</p>
+<p>如果需要修改接口，你只需要修改 feign-api 中的 UserApi 接口。</p>
+<ul>
+<li><strong>提供方
+(user-service)</strong>：会立刻出现编译错误，因为它实现的接口方法签名不匹配了，强制开发者去修正实现。</li>
+<li><strong>消费方
+(order-service)</strong>：无需任何改动，它会自动继承新的接口定义。
+这就将原来可能在生产环境才暴露的运行时错误，提前扼杀在了开发阶段的编译期。</li>
+</ul>
+<p><strong>代码复用与维护性</strong></p>
+<p>避免了大量的重复代码。修改和维护只在一处进行，所有依赖方都能自动享受到更新，大大提高了开发效率和代码质量。</p>
+<p><strong>清晰的模块边界与职责</strong></p>
+<p><code>feigm-api</code>
+模块清晰地定义了服务的边界和能力。其他团队的开发者只需要关心这个 API
+模块，就能知道如何与你的服务进行交互，而无需关心你的内部实现细节。</p>
+<p>但是如果要对外提供开放 API (Open API)，让第三方（可能使用不同语言，如
+Python, Go）来调用，则不应共享 Java jar
+包。此时应使用与语言无关的契约定义方式，如 <strong>OpenAPI (Swagger)
+规范</strong> 或 <strong>gRPC 的 .proto 文件</strong>。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a target="_blank" rel="noopener" href="https://github.com/ergou10086">ErgouTree</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://ergou10086.github.io/posts/48057.html">https://ergou10086.github.io/posts/48057.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://ergou10086.github.io" target="_blank">ErgouTree's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Java%E6%8A%80%E6%9C%AF/">Java技术</a><a class="post-meta__tags" href="/tags/JavaWeb/">JavaWeb</a><a class="post-meta__tags" href="/tags/%E6%A1%86%E6%9E%B6%E7%9F%A5%E8%AF%86/">框架知识</a><a class="post-meta__tags" href="/tags/%E5%AD%A6%E4%B9%A0/">学习</a><a class="post-meta__tags" href="/tags/JavaEE/">JavaEE</a><a class="post-meta__tags" href="/tags/Spring%E7%B3%BB%E5%88%97/">Spring系列</a><a class="post-meta__tags" href="/tags/Java%E6%A1%86%E6%9E%B6/">Java框架</a><a class="post-meta__tags" href="/tags/%E9%85%8D%E7%BD%AE%E7%9B%B8%E5%85%B3/">配置相关</a><a class="post-meta__tags" href="/tags/Spring-Cloud/">Spring Cloud</a><a class="post-meta__tags" href="/tags/%E5%BE%AE%E6%9C%8D%E5%8A%A1/">微服务</a></div><div class="post-share"><div class="addtoany"><div class="a2a_kit a2a_kit_size_32 a2a_default_style"><a class="a2a_button_facebook"></a><a class="a2a_button_twitter"></a><a class="a2a_button_wechat"></a><a class="a2a_button_sina_weibo"></a><a class="a2a_button_facebook_messenger"></a><a class="a2a_button_email"></a><a class="a2a_button_copy_link"></a><a class="a2a_dd" target="_blank" rel="noopener" href="https://www.addtoany.com/share"></a></div></div><script async="async" src="https://static.addtoany.com/menu/page.js"></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width" href="/posts/52858.html" title="Spring Cloud part12—Feign的工作原理及其源码分析"><img class="cover" src="/images/posts/cover_java5.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">Spring Cloud part12—Feign的工作原理及其源码分析</div></div><div class="info-2"><div class="info-item-1">Fegin 前言以及介绍 Fegin是做什么 首先，Fegin 是一个声明式的 HTTP 客户端，它的主要作用是简化微服务之间的 HTTP 调用流程。 通过 Feign，开发者可以像调用本地方法一样调用远程服务的接口，无需手动编写复杂的 HTTP 请求代码（如使用 RestTemplate 构建请求、处理响应等）。 Feign 不做任何请求处理，通过处理注解相关信息生成 Request，并对调用返回的数据进行解码，从而实现 简化 HTTP API 的开发，和 RestTemple 一样，Feign 基于接口和注解的方式，自动生成 HTTP 请求的实现，开发者只需定义接口并添加注解（如 @FeignClient），即可实现对远程服务的调用，大幅减少模板代码。 Spring Cloud 对Feign进行了增强，使得Feign支持了更多实用的注解，并整合了 Ribbon 和 Eureka，从而让 Feign 的使用更加方便。与 Spring Cloud 的集成更加一体化。 在Spring Cloud生态中，Feign...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/posts/13639.html" title="Spring Cloud part10—Nacos在配置中心上的原理剖析"><img class="cover" src="/images/posts/cover_wish.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-07-22</div><div class="info-item-2">Spring Cloud part10—Nacos在配置中心上的原理剖析</div></div><div class="info-2"><div class="info-item-1">Nacos 配置中心原理解析 Nacos 配置中心的主要作用 本来我寻思把这篇文章放到负载均衡那个讲的，结构感觉那样会很长，我感觉没有人想读论文那样长的技术博客，就算了 在分布式系统中，配置管理面临三大核心挑战：配置分散（多服务、多环境配置散落在各节点）、更新繁琐（修改配置需重启服务）、一致性难保证（多节点配置易出现不一致）。Nacos 配置中心的核心作用就是解决这些问题  配置集中化管理 将所有服务的配置（如数据库连接、接口地址、限流规则等）集中存储在 Nacos Server，替代传统的本地配置文件（如 application.yml），避免配置分散在各服务节点的文件系统中，便于统一维护。 动态配置更新 支持配置在运行时动态修改并生效，无需重启服务。例如：修改数据库连接池参数、调整日志级别、更新限流阈值等，通过 Nacos 推送机制实时同步到所有相关服务，极大提升系统灵活性。 多维度配置隔离 通过「命名空间（Namespace）+ 分组（Group）+ Data ID」三级结构，实现多环境（如 dev/test/prod）、多业务（如支付...</div></div></div></a><a class="pagination-related" href="/posts/58454.html" title="Spring Cloud part11—Nacos配置中心的使用实践"><img class="cover" src="/images/posts/cover_springboot2.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-07-23</div><div class="info-item-2">Spring Cloud part11—Nacos配置中心的使用实践</div></div><div class="info-2"><div class="info-item-1">Nacos 配置中心的实践 Nacos 配置中心的基本实践和配置刷新实践 复习一下 Maven 等来导入 Naocs 相关依赖的内容 首先我们声明项目的版本信息 1234567891011121314151617181920212223242526272829303132&lt;!--  只声明依赖，不引入依赖 --&gt;&lt;dependencyManagement&gt;    &lt;dependencies&gt;        &lt;!-- 声明springBoot版本 --&gt;        &lt;dependency&gt;            &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;            &lt;artifactId&gt;spring-boot-dependencies&lt;/artifactId&gt;           ...</div></div></div></a><a class="pagination-related" href="/posts/3648.html" title="Spring Cloud part1—理解微服务架构"><img class="cover" src="/images/posts/cover_java16.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-07-15</div><div class="info-item-2">Spring Cloud part1—理解微服务架构</div></div><div class="info-2"><div class="info-item-1">认识微服务架构 在入门Spring Cloud 之前，我们需要先了解下什么是微服务，在架构发展的过程中，项目开发遇到了哪些问题，以及Spring Cloud是用来解决什么问题的。 单体架构 vs 微服务架构的区别 在学习微服务之前，先了解它与传统单体架构的核心差异，能帮助我们更好地理解微服务的设计初衷 下图表示了单体架构到微服务架构的发展过程   image-20250710085009656  单体架构将所有功能模块（如用户管理、订单处理、支付系统等）打包在一个应用程序中，部署在单一服务器或集群上。  特点  代码集中在一个代码库，开发工具和技术栈统一 部署简单，只需打包成一个应用（如 JAR、WAR...</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="gitalk-container"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/arp.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">ErgouTree</div><div class="author-info-description">I start a brand-new life with you.</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">177</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">88</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">62</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/ergou10086"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/ergou10086" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="/zjm88822201@126.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a><a class="social-icon" href="https://space.bilibili.com/142045656?spm_id_from=333.1007.0.0" target="_blank" title="bilibili"><i class="fas fa-brands fa-bilibili" style="color: #4a72be;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">作者长期陷入galgame和osu!maina4k中 祝他好运吧 对了 如果图片加载过慢 建议科学上网进行使用</div></div><div class="card-widget"><div class="item-headline"><i></i><span></span></div><div class="item-content"></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#fegin-%E5%AE%9E%E8%B7%B5"><span class="toc-number">1.</span> <span class="toc-text">Fegin 实践</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8-fegin-%E7%9A%84%E6%AD%A5%E9%AA%A4%E7%BC%96%E5%86%99-http-%E5%AE%A2%E6%88%B7%E7%AB%AF%E7%9A%84%E6%AD%A5%E9%AA%A4"><span class="toc-number">1.1.</span> <span class="toc-text">使用 Fegin 的步骤编写
+Http 客户端的步骤</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8-feign-%E8%BF%9B%E8%A1%8C%E6%9C%8D%E5%8A%A1%E8%B0%83%E7%94%A8%E5%AE%9E%E8%B7%B5"><span class="toc-number">1.2.</span> <span class="toc-text">使用 Feign 进行服务调用实践</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8-feign-%E8%BF%9B%E8%A1%8C%E6%9C%8D%E5%8A%A1%E9%97%B4%E8%B0%83%E7%94%A8%E5%AE%9E%E8%B7%B5"><span class="toc-number">1.3.</span> <span class="toc-text">使用 Feign
+进行服务间调用实践</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#feign-%E5%BC%80%E5%8F%91%E6%80%BB%E7%BB%93"><span class="toc-number">1.4.</span> <span class="toc-text">Feign 开发总结</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#feign-%E7%9A%84%E8%87%AA%E5%AE%9A%E4%B9%89%E9%85%8D%E7%BD%AE"><span class="toc-number">1.5.</span> <span class="toc-text">Feign 的自定义配置</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#feign-%E7%9A%84%E6%80%A7%E8%83%BD%E8%B0%83%E4%BC%98"><span class="toc-number">1.6.</span> <span class="toc-text">Feign 的性能调优</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%BF%9E%E6%8E%A5%E4%BC%98%E5%8C%96"><span class="toc-number">1.6.1.</span> <span class="toc-text">连接优化</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E4%BC%A0%E8%BE%93%E4%BC%98%E5%8C%96"><span class="toc-number">1.6.2.</span> <span class="toc-text">数据传输优化</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%BC%82%E6%AD%A5%E4%BC%98%E5%8C%96"><span class="toc-number">1.6.3.</span> <span class="toc-text">异步优化</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E4%BC%98%E5%8C%96"><span class="toc-number">1.6.4.</span> <span class="toc-text">负载均衡优化</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%B2%BE%E7%BB%86%E5%8C%96%E9%87%8D%E8%AF%95%E7%AD%96%E7%95%A5"><span class="toc-number">1.6.5.</span> <span class="toc-text">精细化重试策略</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#feign-%E7%9A%84%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5"><span class="toc-number">2.</span> <span class="toc-text">Feign 的最佳实践</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%B9%E5%BC%8F%E4%B8%80%E7%BB%A7%E6%89%BF%E7%BB%99%E6%B6%88%E8%B4%B9%E8%80%85%E7%9A%84-feignclient-%E5%92%8C%E6%8F%90%E4%BE%9B%E8%80%85%E7%9A%84-controller-%E5%AE%9A%E4%B9%89%E7%BB%9F%E4%B8%80%E7%9A%84%E7%88%B6%E6%8E%A5%E5%8F%A3%E4%BD%9C%E4%B8%BA%E6%A0%87%E5%87%86"><span class="toc-number">2.1.</span> <span class="toc-text">方式一：继承，给消费者的
+FeignClient 和提供者的 Controller 定义统一的父接口作为标准</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%B9%E5%BC%8F%E4%BA%8C%E6%8A%BD%E5%8F%96-%E5%B0%86-feignclient-%E6%8A%BD%E5%8F%96%E4%B8%BA%E7%8B%AC%E7%AB%8B%E7%9A%84%E6%A8%A1%E5%9D%97%E5%B9%B6%E4%B8%94%E6%8A%8A%E6%8E%A5%E5%8F%A3%E6%9C%89%E5%85%B3%E7%9A%84pojo%E9%BB%98%E8%AE%A4%E7%9A%84-feign-%E9%85%8D%E7%BD%AE%E9%83%BD%E6%94%BE%E5%88%B0%E8%BF%99%E4%B8%AA%E6%A8%A1%E5%9D%97%E4%B8%AD%E6%8F%90%E4%BE%9B%E8%BF%87%E6%89%80%E6%9C%89%E7%9A%84%E6%B6%88%E8%B4%B9%E8%80%85%E4%BD%BF%E7%94%A8"><span class="toc-number">2.2.</span> <span class="toc-text">方式二：抽取
+将 FeignClient 抽取为独立的模块，并且把接口有关的POJO，默认的 Feign
+配置都放到这个模块中，提供过所有的消费者使用</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/48057.html" title="SpringCloudpart13—Feign的使用等实践讲解"><img src="/images/posts/cover_java15.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="SpringCloudpart13—Feign的使用等实践讲解"/></a><div class="content"><a class="title" href="/posts/48057.html" title="SpringCloudpart13—Feign的使用等实践讲解">SpringCloudpart13—Feign的使用等实践讲解</a><time datetime="2025-07-25T06:31:29.000Z" title="发表于 2025-07-25 14:31:29">2025-07-25</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/52858.html" title="Spring Cloud part12—Feign的工作原理及其源码分析"><img src="/images/posts/cover_java5.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Spring Cloud part12—Feign的工作原理及其源码分析"/></a><div class="content"><a class="title" href="/posts/52858.html" title="Spring Cloud part12—Feign的工作原理及其源码分析">Spring Cloud part12—Feign的工作原理及其源码分析</a><time datetime="2025-07-25T03:13:04.000Z" title="发表于 2025-07-25 11:13:04">2025-07-25</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/61953.html" title="数学物理方程之弦振动方程模型的建立"><img src="/images/posts/cover_front.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="数学物理方程之弦振动方程模型的建立"/></a><div class="content"><a class="title" href="/posts/61953.html" title="数学物理方程之弦振动方程模型的建立">数学物理方程之弦振动方程模型的建立</a><time datetime="2025-07-23T01:00:34.000Z" title="发表于 2025-07-23 09:00:34">2025-07-23</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/38102.html" title="数学物理方程波动方程的解法之达朗贝尔方法"><img src="/images/posts/cover_teach5.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="数学物理方程波动方程的解法之达朗贝尔方法"/></a><div class="content"><a class="title" href="/posts/38102.html" title="数学物理方程波动方程的解法之达朗贝尔方法">数学物理方程波动方程的解法之达朗贝尔方法</a><time datetime="2025-07-23T00:51:36.000Z" title="发表于 2025-07-23 08:51:36">2025-07-23</time></div></div></div></div></div></div></main><div class="fps-display"><span id="fps">FPS: 60</span></div><footer id="footer" style="background-image: url(/images/posts/cover_java15.jpg);"><div id="footer-wrap"><div class="copyright">&copy;2024 - 2025 By ErgouTree</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">忘れたくない思い、ありますか？ <br>,<span id="realtime_duration" style="font-family: monospace;"></span>,<br><a href="https://icp.gov.moe/?keyword=20257009" target="_blank">萌ICP备20257009号</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><a class="icon-V hidden" onclick="switchNightMode()" title="日间和夜间模式切换"><svg width="25" height="25" viewBox="0 0 1024 1024"><use id="modeicon" xlink:href="#icon-moon"></use></svg></a><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="chat-btn" type="button" title="聊天" style="display:none"><i class="fas fa-comment"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (true) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script><script>(() => {
+  const applyThemeDefaultsConfig = theme => {
+    if (theme === 'dark-mode') {
+      Chart.defaults.color = "rgba(255, 255, 255, 0.8)"
+      Chart.defaults.borderColor = "rgba(255, 255, 255, 0.2)"
+      Chart.defaults.scale.ticks.backdropColor = "transparent"
+    } else {
+      Chart.defaults.color = "rgba(0, 0, 0, 0.8)"
+      Chart.defaults.borderColor = "rgba(0, 0, 0, 0.1)"
+      Chart.defaults.scale.ticks.backdropColor = "transparent"
+    }
+  }
+
+  // Recursively traverse the config object and automatically apply theme-specific color schemes
+  const applyThemeConfig = (obj, theme) => {
+    if (typeof obj !== 'object' || obj === null) return
+
+    Object.keys(obj).forEach(key => {
+      const value = obj[key]
+      // If the property is an object and has theme-specific options, apply them
+      if (typeof value === 'object' && value !== null) {
+        if (value[theme]) {
+          obj[key] = value[theme] // Apply the value for the current theme
+        } else {
+          // Recursively process child objects
+          applyThemeConfig(value, theme)
+        }
+      }
+    })
+  }
+
+  const runChartJS = ele => {
+    window.loadChartJS = true
+
+    Array.from(ele).forEach((item, index) => {
+      const chartSrc = item.firstElementChild
+      const chartID = item.getAttribute('data-chartjs-id') || ('chartjs-' + index) // Use custom ID or default ID
+      const width = item.getAttribute('data-width')
+      const existingCanvas = document.getElementById(chartID)
+
+      // If a canvas already exists, remove it to avoid rendering duplicates
+      if (existingCanvas) {
+          existingCanvas.parentNode.remove()
+      }
+
+      const chartDefinition = chartSrc.textContent
+      const canvas = document.createElement('canvas')
+      canvas.id = chartID
+
+      const div = document.createElement('div')
+      div.className = 'chartjs-wrap'
+
+      if (width) {
+        div.style.width = width
+      }
+
+      div.appendChild(canvas)
+      chartSrc.insertAdjacentElement('afterend', div)
+
+      const ctx = document.getElementById(chartID).getContext('2d')
+
+      const config = JSON.parse(chartDefinition)
+
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark-mode' : 'light-mode'
+
+      // Set default styles (initial setup)
+      applyThemeDefaultsConfig(theme)
+
+      // Automatically traverse the config and apply dual-mode color schemes
+      applyThemeConfig(config, theme)
+
+      new Chart(ctx, config)
+    })
+  }
+
+  const loadChartJS = () => {
+    const chartJSEle = document.querySelectorAll('#article-container .chartjs-container')
+    if (chartJSEle.length === 0) return
+
+    window.loadChartJS ? runChartJS(chartJSEle) : btf.getScript('https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.min.js').then(() => runChartJS(chartJSEle))
+  }
+
+  // Listen for theme change events
+  btf.addGlobalFn('themeChange', loadChartJS, 'chartjs')
+  btf.addGlobalFn('encrypt', loadChartJS, 'chartjs')
+
+  window.pjax ? loadChartJS() : document.addEventListener('DOMContentLoaded', loadChartJS)
+})()</script><script>(function() {
+  const abcjsInit = function() {
+    const abcjsFn = function() {
+      setTimeout(function() {
+        const sheets = document.querySelectorAll(".abc-music-sheet")
+        for (let i = 0; i < sheets.length; i++) {
+          const ele = sheets[i]
+          if (ele.children.length > 0) continue
+
+          // Parse parameters from data-params attribute
+          let params = {}
+          const dp = ele.getAttribute("data-params")
+          if (dp) {
+            try {
+              params = JSON.parse(dp)
+            } catch (e) {
+              console.error("Failed to parse data-params:", e)
+            }
+          }
+
+          // Merge parsed parameters with the responsive option
+          // Ensures params content appears before responsive
+          const options = { ...params, responsive: "resize" }
+
+          // Render the music score using ABCJS.renderAbc
+          ABCJS.renderAbc(ele, ele.innerHTML, options)
+        }
+      }, 100)
+    }
+
+    if (typeof ABCJS === "object") {
+      abcjsFn()
+    } else {
+      btf.getScript("https://cdn.jsdelivr.net/npm/abcjs/dist/abcjs-basic-min.min.js").then(abcjsFn)
+    }
+  }
+
+  if (window.pjax) {
+    abcjsInit()
+  } else {
+    window.addEventListener("load", abcjsInit)
+  }
+
+  btf.addGlobalFn("encrypt", abcjsInit, "abcjs")
+})()</script><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = {"labels":["Gitalk","Comment"],"createIssueManually":false,"distractionFreeMode":false}
+
+  const commentCount = n => {
+    const isCommentCount = document.querySelector('#post-meta .gitalk-comment-count')
+    if (isCommentCount) {
+      isCommentCount.textContent= n
+    }
+  }
+
+  const initGitalk = (el, path) => {
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGitalk = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+
+    const gitalk = new Gitalk({
+      clientID: 'Ov23li3vDQANiUddL4XB',
+      clientSecret: '5c9a56d02995340fca117809cd414662aadce6ff',
+      repo: 'HexoComment',
+      owner: 'ergou10086',
+      admin: ['ergou10086'],
+      updateCountCallback: commentCount,
+      ...option,
+      id: isShuoshuo ? path : (option && option.id) || '6f93f2f42d09e59d3d8654141db1ef20'
+    })
+
+    gitalk.render('gitalk-container')
+  }
+
+  const loadGitalk = async(el, path) => {
+    if (typeof Gitalk === 'function') initGitalk(el, path)
+    else {
+      await btf.getCSS('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.css')
+      await btf.getScript('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.js')
+      initGitalk(el, path)
+    }
+  }
+
+  if (isShuoshuo) {
+    'Gitalk' === 'Gitalk'
+      ? window.shuoshuoComment = { loadComment: loadGitalk }
+      : window.loadOtherComment = loadGitalk
+    return
+  }
+
+  if ('Gitalk' === 'Gitalk' || !false) {
+    if (false) btf.loadComment(document.getElementById('gitalk-container'), loadGitalk)
+    else loadGitalk()
+  } else {
+    window.loadOtherComment = loadGitalk
+  }
+})()</script></div><div class="aplayer no-destroy" data-id="13587761608" data-server="netease" data-type="playlist" data-fixed="true" data-autoplay="false" data-lrcType="-1"> </div><script src="https://cdn.jsdelivr.net/npm/abcjs@7.1.2/dist/abcjs-basic-min.js"></script><script src="/js/sun_moon.js" async></script><script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.7/dayjs.min.js"></script><script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.7/plugin/duration.min.js"></script><script src="/scripts/realtime.js"></script><script src="/scripts/random.js"></script><script defer="defer" id="ribbon" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-ribbon.min.js" size="150" alpha="0.6" zIndex="-1" mobile="null" data-click="true"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = false;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><script id="click-heart" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/click-heart.min.js" async="async" mobile="false"></script><script>(() => {
+  window.ChatraID = '4bzb546NSBoJcrNyu'
+  window.Chatra = window.Chatra || function() {
+    (window.Chatra.q = window.Chatra.q || []).push(arguments)
+  }
+
+  btf.getScript('https://call.chatra.io/chatra.js').then(() => {
+    const isChatBtn = true
+    const isChatHideShow = true
+
+    if (isChatBtn) {
+      const close = () => {
+        Chatra('minimizeWidget')
+        Chatra('hide')
+      }
+
+      const open = () => {
+        Chatra('openChat', true)
+        Chatra('show')
+      }
+
+      window.ChatraSetup = { startHidden: true }
+    
+      window.chatBtnFn = () => document.getElementById('chatra').classList.contains('chatra--expanded') ? close() : open()
+
+      document.getElementById('chat-btn').style.display = 'block'
+    } else if (isChatHideShow) {
+      window.chatBtn = {
+        hide: () => Chatra('hide'),
+        show: () => Chatra('show')
+      }
+    }
+  })
+})()</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/metingjs/dist/Meting.min.js"></script><script>(() => {
+  const destroyAplayer = () => {
+    if (window.aplayers) {
+      for (let i = 0; i < window.aplayers.length; i++) {
+        if (!window.aplayers[i].options.fixed) {
+          window.aplayers[i].destroy()
+        }
+      }
+    }
+  }
+
+  const runMetingJS = () => {
+    typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+  }
+
+  btf.addGlobalFn('pjaxSend', destroyAplayer, 'destroyAplayer')
+  btf.addGlobalFn('pjaxComplete', loadMeting, 'runMetingJS')
+})()</script><script src="https://cdn.jsdelivr.net/npm/pjax/pjax.min.js"></script><script>(() => {
+  const pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+  window.pjax = new Pjax({
+    elements: 'a:not([target="_blank"]):not([href="/music/"])',
+    selectors: pjaxSelectors,
+    cacheBust: false,
+    analytics: false,
+    scrollRestoration: false
+  })
+
+  const triggerPjaxFn = (val) => {
+    if (!val) return
+    Object.values(val).forEach(fn => fn())
+  }
+
+  document.addEventListener('pjax:send', () => {
+    // removeEventListener
+    btf.removeGlobalFnEvent('pjaxSendOnce')
+    btf.removeGlobalFnEvent('themeChange')
+
+    // reset readmode
+    const $bodyClassList = document.body.classList
+    if ($bodyClassList.contains('read-mode')) $bodyClassList.remove('read-mode')
+
+    triggerPjaxFn(window.globalFn.pjaxSend)
+  })
+
+  document.addEventListener('pjax:complete', () => {
+    btf.removeGlobalFnEvent('pjaxCompleteOnce')
+    document.querySelectorAll('script[data-pjax]').forEach(item => {
+      const newScript = document.createElement('script')
+      const content = item.text || item.textContent || item.innerHTML || ""
+      Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+      newScript.appendChild(document.createTextNode(content))
+      item.parentNode.replaceChild(newScript, item)
+    })
+
+    triggerPjaxFn(window.globalFn.pjaxComplete)
+  })
+
+  document.addEventListener('pjax:error', e => {
+    if (e.request.status === 404) {
+      const usePjax = true
+      true 
+        ? (usePjax ? pjax.loadUrl('/404.html') : window.location.href = '/404.html')
+        : window.location.href = e.request.responseURL
+    }
+  })
+})()</script><script src="/js/fps-display.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><!-- hexo injector body_end start --><script data-pjax>
+  function butterfly_swiper_injector_config(){
+    var parent_div_git = document.getElementById('recent-posts');
+    var item_html = '<div class="recent-post-item" style="height: auto;width: 100%"><div class="blog-slider swiper-container-fade swiper-container-horizontal" id="swiper_container"><div class="blog-slider__wrp swiper-wrapper" style="transition-duration: 0ms;"><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_database.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-14</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt="">结构化查询语言SQL</a><div class="blog-slider__text">SQL基本很常用的语句都在这里了，本质上是当初为了应付数据库考试整理的，后来发现还蛮有用的很方便查常用的语句</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java4.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-22</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt="">SpringBoot part0?INF-SpringBoot这个框架都需要学习什么</a><div class="blog-slider__text">主要围绕Spring Boot中重要知识来简洁或详细的说明，其中部分不够完全，持续更新</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java11.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-15</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt="">关于Lombok在高版本IDEA中注解处理不生效的问题解决</a><div class="blog-slider__text">基本上是彻底的解决了用 IDEA 新建 Spring Boot 项目时候会产生的 Lombok 注解处理失效的各种问题</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_实用.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-05</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt="">个人向galgame原声带或相关音乐整理及其资源</a><div class="blog-slider__text">整理了我喜欢的galgame ost或者衍生的音乐专辑，部分资源是自己扒盘扒下来的，部分来自鸟白岛放映厅</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_math.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-17</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt="">对书上证明样本方差是总体方差的无偏估计量的解析</a><div class="blog-slider__text">对书上证明样本方差是总体方差的无偏估计量的解析，高等教育出版社-华科大版本</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_alog.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-04-24</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt="">第十五届蓝桥杯Java国赛B组D题-园丁题解</a><div class="blog-slider__text">第十五届蓝桥杯Java国赛B组D题-园丁题解，该题解已经发布到洛谷社区中并且被全站推荐</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java4.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-04-29</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt="">操作系统之处理机的死锁部分概述</a><div class="blog-slider__text">对操作系统之处理机的死锁部分知识的总结，包括代码复现</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_lb.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-09</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt="">Little Busters!EX游戏攻略</a><div class="blog-slider__text">整理了一份详细清晰的Little Busters！EX的游戏攻略，因为我自己也在推，就顺手整理了一份方便查阅的md文档</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java9.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-16</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt="">Spring Boot中使用Hibernate框架</a><div class="blog-slider__text">对学习完Hibernate的应用部分，主要围绕Spring Boot中使用Hibernate框架，建议学习完 Hibernate 框架再看</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div></div><div class="blog-slider__pagination swiper-pagination-clickable swiper-pagination-bullets"></div></div></div>';
+    console.log('已挂载butterfly_swiper')
+    parent_div_git.insertAdjacentHTML("afterbegin",item_html)
+    }
+  var elist = 'undefined'.split(',');
+  var cpage = location.pathname;
+  var epage = '/';
+  var flag = 0;
+
+  for (var i=0;i<elist.length;i++){
+    if (cpage.includes(elist[i])){
+      flag++;
+    }
+  }
+
+  if ((epage ==='all')&&(flag == 0)){
+    butterfly_swiper_injector_config();
+  }
+  else if (epage === cpage){
+    butterfly_swiper_injector_config();
+  }
+  </script><script defer src="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper.min.js"></script><script defer data-pjax src="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper_init.js"></script><!-- hexo injector body_end end --></body></html>
