@@ -1,0 +1,927 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Redis part1—介绍NoSQL和缓存技术 | ErgouTree's Blog</title><meta name="author" content="ErgouTree"><meta name="copyright" content="ErgouTree"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="介绍 Redis REmote DIctionary Server(Redis) 是一个由 Salvatore Sanfilippo 写的 key-value 存储系统，是跨平台的非关系型数据库。 Redis 是一个开源的使用 ANSI C 语言编写、遵守 BSD 协议、支持网络、可基于内存、分布式、可选持久性的键值对(Key-Value)存储数据库，并提供多种语言的 API。 Red">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Redis part1—介绍NoSQL和缓存技术">
+<meta property="og:url" content="https://ergou10086.github.io/posts/32715.html">
+<meta property="og:site_name" content="ErgouTree&#39;s Blog">
+<meta property="og:description" content="介绍 Redis REmote DIctionary Server(Redis) 是一个由 Salvatore Sanfilippo 写的 key-value 存储系统，是跨平台的非关系型数据库。 Redis 是一个开源的使用 ANSI C 语言编写、遵守 BSD 协议、支持网络、可基于内存、分布式、可选持久性的键值对(Key-Value)存储数据库，并提供多种语言的 API。 Red">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://ergou10086.github.io/images/posts/cover_config.jpg">
+<meta property="article:published_time" content="2025-09-24T07:07:06.000Z">
+<meta property="article:modified_time" content="2025-09-24T07:09:24.829Z">
+<meta property="article:author" content="ErgouTree">
+<meta property="article:tag" content="学习类">
+<meta property="article:tag" content="开发组件">
+<meta property="article:tag" content="数据库">
+<meta property="article:tag" content="Redis">
+<meta property="article:tag" content="NoSQL">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ergou10086.github.io/images/posts/cover_config.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Redis part1—介绍NoSQL和缓存技术",
+  "url": "https://ergou10086.github.io/posts/32715.html",
+  "image": "https://ergou10086.github.io/images/posts/cover_config.jpg",
+  "datePublished": "2025-09-24T07:07:06.000Z",
+  "dateModified": "2025-09-24T07:09:24.829Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "ErgouTree",
+      "url": "https://github.com/ergou10086"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/pi.ico"><link rel="canonical" href="https://ergou10086.github.io/posts/32715.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//hm.baidu.com"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!true && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?https://hm.baidu.com/hm.js?a6ab1b78e2c6320b664f31e8b9bf0e36";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+btf.addGlobalFn('pjaxComplete', () => {
+  _hmt.push(['_trackPageview',window.location.pathname])
+}, 'baidu_analytics')
+</script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.json","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":true},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: {"chs_to_cht":"已切换为繁体中文","cht_to_chs":"已切换为简体中文","day_to_night":"已切换为深色模式","night_to_day":"已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#1f1f1f","position":"bottom-left"},
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Redis part1—介绍NoSQL和缓存技术',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css"><svg aria-hidden="true" style="position:absolute; overflow:hidden; width:0; height:0"><symbol id="icon-sun" viewBox="0 0 1024 1024"><path d="M960 512l-128 128v192h-192l-128 128-128-128H192v-192l-128-128 128-128V192h192l128-128 128 128h192v192z" fill="#FFD878" p-id="8420"></path><path d="M736 512a224 224 0 1 0-448 0 224 224 0 1 0 448 0z" fill="#FFE4A9" p-id="8421"></path><path d="M512 109.248L626.752 224H800v173.248L914.752 512 800 626.752V800h-173.248L512 914.752 397.248 800H224v-173.248L109.248 512 224 397.248V224h173.248L512 109.248M512 64l-128 128H192v192l-128 128 128 128v192h192l128 128 128-128h192v-192l128-128-128-128V192h-192l-128-128z" fill="#4D5152" p-id="8422"></path><path d="M512 320c105.888 0 192 86.112 192 192s-86.112 192-192 192-192-86.112-192-192 86.112-192 192-192m0-32a224 224 0 1 0 0 448 224 224 0 0 0 0-448z" fill="#4D5152" p-id="8423"></path></symbol><symbol id="icon-moon" viewBox="0 0 1024 1024"><path d="M611.370667 167.082667a445.013333 445.013333 0 0 1-38.4 161.834666 477.824 477.824 0 0 1-244.736 244.394667 445.141333 445.141333 0 0 1-161.109334 38.058667 85.077333 85.077333 0 0 0-65.066666 135.722666A462.08 462.08 0 1 0 747.093333 102.058667a85.077333 85.077333 0 0 0-135.722666 65.024z" fill="#FFB531" p-id="11345"></path><path d="M329.728 274.133333l35.157333-35.157333a21.333333 21.333333 0 1 0-30.165333-30.165333l-35.157333 35.157333-35.114667-35.157333a21.333333 21.333333 0 0 0-30.165333 30.165333l35.114666 35.157333-35.114666 35.157334a21.333333 21.333333 0 1 0 30.165333 30.165333l35.114667-35.157333 35.157333 35.157333a21.333333 21.333333 0 1 0 30.165333-30.165333z" fill="#030835" p-id="11346"></path></symbol></svg><link rel="stylesheet" href="/css/custom.css"><!-- hexo injector head_end start --><link rel="stylesheet" href="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiperstyle.css" media="print" onload="this.media='all'"><!-- hexo injector head_end end --><meta name="generator" content="Hexo 7.3.0"></head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js/pace.min.js"></script><div id="web_bg" style="background: linear-gradient(20deg, #0062be, #925696, #cc426e, #fb0347);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/arp.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">196</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">104</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">71</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-images"></i><span> Gallery</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/games/"><i class="fa-fw fas fa-game"></i><span> GalGame</span></a></li><li><a class="site-page child" href="/video/"><i class="fa-fw fas fa-video"></i><span> Video</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div><div class="menus_item"><a class="site-page" href="javascript:randomPost();"><span> Random</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/images/posts/cover_config.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">ErgouTree's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">Redis part1—介绍NoSQL和缓存技术</span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-images"></i><span> Gallery</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/games/"><i class="fa-fw fas fa-game"></i><span> GalGame</span></a></li><li><a class="site-page child" href="/video/"><i class="fa-fw fas fa-video"></i><span> Video</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div><div class="menus_item"><a class="site-page" href="javascript:randomPost();"><span> Random</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div><div id="randomPost"><a class="site-page social-icon search" href="javascript:;" onclick="randomPost()" title="随机访问一篇文章"><i class="fas fa-circle-notch fa-fw"></i></a></div></nav><div id="post-info"><h1 class="post-title">Redis part1—介绍NoSQL和缓存技术<a class="post-edit-link" href="https://github.com/ergou10086/ergou10086.github.io/edit/main/source/_posts/_posts/Redispart1—介绍NoSQL和缓存技术.md" title="编辑" target="_blank"><i class="fas fa-pencil-alt"></i></a></h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2025-09-24T07:07:06.000Z" title="发表于 2025-09-24 15:07:06">2025-09-24</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2025-09-24T07:09:24.829Z" title="更新于 2025-09-24 15:09:24">2025-09-24</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%AD%A6%E4%B9%A0%E7%B1%BB/">学习类</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%AD%A6%E4%B9%A0%E7%B1%BB/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%AD%A6%E4%B9%A0%E7%B1%BB/%E6%95%B0%E6%8D%AE%E5%BA%93/NoSQL/">NoSQL</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%AD%A6%E4%B9%A0%E7%B1%BB/%E6%95%B0%E6%8D%AE%E5%BA%93/NoSQL/Redis/">Redis</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">3.6k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>11分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span><span class="post-meta-separator">|</span><span class="post-meta-commentcount"><i class="far fa-comments fa-fw post-meta-icon"></i><span class="post-meta-label">评论数:</span><a href="/posts/32715.html#post-comment"><span class="gitalk-comment-count"><i class="fa-solid fa-spinner fa-spin"></i></span></a></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="介绍-redis">介绍 Redis</h2>
+<p>REmote DIctionary Server(Redis) 是一个由 Salvatore Sanfilippo 写的
+key-value 存储系统，是跨平台的非关系型数据库。</p>
+<p>Redis 是一个开源的使用 ANSI C 语言编写、遵守 BSD
+协议、支持网络、可基于内存、分布式、可选持久性的键值对(Key-Value)存储数据库，并提供多种语言的
+API。</p>
+<p>Redis
+通常被称为数据结构服务器，因为值（value）可以是字符串(String)、哈希(Hash)、列表(list)、集合(sets)和有序集合(sorted
+sets)等类型。</p>
+<h3 id="redis-简介">Redis 简介</h3>
+<p>Redis（Remote Dictionary Server）是一个开源的内存数据库，遵守 BSD
+协议，它提供了一个高性能的键值（key-value）存储系统，常用于缓存、消息队列、会话存储等应用场景。</p>
+<ul>
+<li><strong>性能极高：</strong>Redis
+以其极高的性能而著称，能够支持每秒数十万次的读写操作24。这使得Redis成为处理高并发请求的理想选择，尤其是在需要快速响应的场景中，如缓存、会话管理、排行榜等。</li>
+<li><strong>丰富的数据类型：</strong>Redis
+不仅支持基本的键值存储，还提供了丰富的数据类型，包括字符串、列表、集合、哈希表、有序集合等。这些数据类型为开发者提供了灵活的数据操作能力，使得Redis可以适应各种不同的应用场景。</li>
+<li><strong>原子性操作：</strong>Redis
+的所有操作都是原子性的，这意味着操作要么完全执行，要么完全不执行。这种特性对于确保数据的一致性和完整性至关重要，尤其是在高并发环境下处理事务时。</li>
+<li><strong>持久化：</strong>Redis
+支持数据的持久化，可以将内存中的数据保存到磁盘中，以便在系统重启后恢复数据。这为
+Redis 提供了数据安全性，确保数据不会因为系统故障而丢失。</li>
+<li><strong>支持发布/订阅模式：</strong>Redis
+内置了发布/订阅模式（Pub/Sub），允许客户端之间通过消息传递进行通信。这使得
+Redis 可以作为消息队列和实时数据传输的平台。</li>
+<li><strong>单线程模型：</strong>尽管 Redis
+是单线程的，但它通过高效的事件驱动模型来处理并发请求，确保了高性能和低延迟。单线程模型也简化了并发控制的复杂性。</li>
+<li><strong>主从复制：</strong>Redis
+支持主从复制，可以通过从节点来备份数据或分担读请求，提高数据的可用性和系统的伸缩性。</li>
+<li><strong>应用场景广泛：</strong>Redis
+被广泛应用于各种场景，包括但不限于缓存系统、会话存储、排行榜、实时分析、地理空间数据索引等。</li>
+<li><strong>社区支持：</strong>Redis
+拥有一个活跃的开发者社区，提供了大量的文档、教程和第三方库，这为开发者提供了强大的支持和丰富的资源。</li>
+<li><strong>跨平台兼容性：</strong>Redis 可以在多种操作系统上运行，包括
+Linux、macOS 和 Windows，这使得它能够在不同的技术栈中灵活部署。</li>
+</ul>
+<h3 id="redis-与其他-key-value-存储有什么不同">Redis 与其他 key-value
+存储有什么不同</h3>
+<p>Redis 与其他 key-value
+存储系统的主要区别在于其提供了丰富的数据类型、高性能的读写能力、原子性操作、持久化机制、以及丰富的特性集。</p>
+<p>以下是 Redis 的一些独特之处：</p>
+<ul>
+<li><strong>丰富的数据类型：</strong>Redis 不仅仅支持简单的 key-value
+类型的数据，还提供了 list、set、zset（有序集合）、hash
+等数据结构的存储。这些数据类型可以更好地满足特定的业务需求，使得 Redis
+可以用于更广泛的应用场景。</li>
+<li><strong>高性能的读写能力：</strong>Redis 能读的速度是
+110000次/s，写的速度是 81000次/s。这种高性能主要得益于 Redis
+将数据存储在内存中，从而显著提高了数据的访问速度。</li>
+<li><strong>原子性操作：</strong>Redis
+的所有操作都是原子性的，这意味着操作要么完全执行，要么完全不执行。这种特性对于确保数据的一致性和完整性非常重要。</li>
+<li><strong>持久化机制：</strong>Redis
+支持数据的持久化，可以将内存中的数据保存在磁盘中，以便在系统重启后能够再次加载使用。这为
+Redis 提供了数据安全性，确保数据不会因为系统故障而丢失。</li>
+<li><strong>丰富的特性集：</strong>Redis 还支持
+publish/subscribe（发布/订阅）模式、通知、key
+过期等高级特性。这些特性使得 Redis
+可以用于消息队列、实时数据分析等复杂的应用场景。</li>
+<li><strong>主从复制和高可用性：</strong>Redis 支持 master-slave
+模式的数据备份，提供了数据的备份和主从复制功能，增强了数据的可用性和容错性。</li>
+<li><strong>支持 Lua 脚本：</strong>Redis 支持使用 Lua
+脚本来编写复杂的操作，这些脚本可以在服务器端执行，提供了更多的灵活性和强大的功能。</li>
+<li><strong>单线程模型：</strong>尽管 Redis
+是单线程的，但它通过高效的事件驱动模型来处理并发请求，确保了高性能和低延迟。</li>
+</ul>
+<h3 id="redis的安装">Redis的安装</h3>
+<p><strong>下载地址：</strong>https://github.com/redis-windows/redis-windows/releases。</p>
+<p>下载完了解压就行，然后配一下环境变量，把 redis 的目录加进去</p>
+<p>启动命令如下</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">redis-server.exe redis.windows.conf</span><br></pre></td></tr></table></figure>
+<h2 id="介绍-nosql">介绍 NoSQL</h2>
+<h3 id="什么是-nosql特点是什么">什么是 NoSQL，特点是什么</h3>
+<p>要学习 Redis，首先理解 NoSQL 的核心概念和特点非常重要，因为 Redis 是
+NoSQL 数据库中最具代表性的产品之一。</p>
+<p>NoSQL 的全称是 “<strong>Not Only SQL</strong>”（不仅仅是
+SQL），它是一类非关系型数据库的统称。与传统的关系型数据库（如
+MySQL、Oracle）不同，NoSQL
+不依赖于固定的表结构（Schema），也不强制遵循关系模型（如外键关联），而是采用更灵活的数据模型来存储和管理数据。</p>
+<p><strong>核心定位</strong>：NoSQL
+并非要取代关系型数据库，而是作为其补充，用于解决关系型数据库在特定场景下的瓶颈（如高并发、海量数据、灵活结构等）。</p>
+<p>NoSQL
+的兴起与互联网的快速发展密切相关。传统关系型数据库在以下场景中逐渐暴露出不足：</p>
+<ol type="1">
+<li><strong>海量数据存储</strong>：随着用户和业务增长，数据量从 GB
+级飙升到 TB 甚至 PB 级，关系型数据库的单表性能瓶颈明显。</li>
+<li><strong>高并发读写</strong>：如社交平台、电商秒杀等场景，需要每秒处理数万甚至数十万请求，关系型数据库的锁机制（表锁、行锁）会成为瓶颈。</li>
+<li><strong>灵活的数据结构</strong>：互联网业务需求多变（如商品属性、用户行为等），关系型数据库的固定
+Schema（表结构）难以快速适配。</li>
+<li><strong>分布式扩展</strong>：关系型数据库的
+“垂直扩展”（升级服务器配置）成本高，而
+“水平扩展”（多机集群）实现复杂（如分库分表需额外工具）。</li>
+</ol>
+<p>为解决这些问题，NoSQL
+数据库应运而生，它通过简化数据模型、优化分布式架构，在性能、扩展性和灵活性上做出了针对性设计。</p>
+<p>与关系型数据库相比，NoSQL 的核心特点可以总结为
+“<strong>灵活、高效、可扩展</strong>”，具体表现为：</p>
+<table>
+<colgroup>
+<col style="width: 7%">
+<col style="width: 35%">
+<col style="width: 57%">
+</colgroup>
+<thead>
+<tr>
+<th>对比维度</th>
+<th>关系型数据库（如 MySQL）</th>
+<th>NoSQL 数据库（如 Redis）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>数据模型</td>
+<td>基于表结构（行列），严格遵循 Schema</td>
+<td>多样化（键值、文档、列族等），Schema 灵活</td>
+</tr>
+<tr>
+<td>关系处理</td>
+<td>支持外键、JOIN 等复杂关系</td>
+<td>弱化关系，通常不支持 JOIN（需应用层处理）</td>
+</tr>
+<tr>
+<td>事务支持</td>
+<td>强事务（ACID 特性）</td>
+<td>多数支持弱事务（BASE 理论），部分支持强事务（如 Redis 的
+Multi）</td>
+</tr>
+<tr>
+<td>扩展性</td>
+<td>垂直扩展为主，水平扩展复杂</td>
+<td>天然支持水平扩展（分片、集群）</td>
+</tr>
+<tr>
+<td>查询能力</td>
+<td>支持复杂 SQL 查询（多表关联、聚合等）</td>
+<td>查询能力较简单，依赖特定 API</td>
+</tr>
+<tr>
+<td>适用场景</td>
+<td>结构化数据、强事务需求（如金融交易）</td>
+<td>非结构化数据、高并发、海量数据（如缓存、日志）</td>
+</tr>
+</tbody>
+</table>
+<h3 id="nosql的分类">NoSQL的分类</h3>
+<p>NoSQL
+并非单一类型的数据库，而是根据数据模型的不同分为四大类。其中，Redis 属于
+“键值存储” 类型，这是你学习 Redis 的核心定位。</p>
+<h4 id="键值存储key-value">1. 键值存储（Key-Value）</h4>
+<ul>
+<li><strong>数据模型</strong>：以 “键（Key）- 值（Value）”
+对存储数据，类似字典。Key 是唯一标识，Value
+可以是字符串、数字、二进制等（Redis 的 Value
+支持更复杂的结构，如列表、哈希等）。</li>
+<li><strong>特点</strong>：查询速度极快（O (1)
+复杂度），适合简单的读写操作。</li>
+<li><strong>代表产品</strong>：Redis、Memcached、RocksDB。</li>
+<li><strong>典型场景</strong>：缓存（如 Redis
+缓存热点数据）、会话存储（如用户登录状态）、计数器（如点赞数）。</li>
+</ul>
+<h4 id="文档存储document">2. 文档存储（Document）</h4>
+<ul>
+<li><strong>数据模型</strong>：以 “文档” 为单位存储，文档格式通常是
+JSON/BSON（类似字典的嵌套结构），支持复杂的嵌套字段。</li>
+<li><strong>特点</strong>：Schema
+灵活（同一集合的文档可以有不同字段），支持对文档内字段的查询。</li>
+<li><strong>代表产品</strong>：MongoDB、CouchDB。</li>
+<li><strong>典型场景</strong>：内容管理（如博客、新闻）、电商商品信息（不同商品属性差异大）。</li>
+</ul>
+<h4 id="列族存储column-family">3. 列族存储（Column-Family）</h4>
+<ul>
+<li><strong>数据模型</strong>：以 “列族”
+为单位组织数据，每个列族包含多个列，类似
+“二维表的垂直拆分”，适合按列查询。</li>
+<li><strong>特点</strong>：高写入性能，适合海量数据的离线分析。</li>
+<li><strong>代表产品</strong>：HBase、Cassandra。</li>
+<li><strong>典型场景</strong>：日志存储、时序数据（如监控指标）、大数据分析。</li>
+</ul>
+<h4 id="图存储graph">4. 图存储（Graph）</h4>
+<ul>
+<li><strong>数据模型</strong>：以 “节点（Node）” 和 “边（Edge）”
+存储数据，专注于描述实体间的关系（如社交网络中的 “好友关系”）。</li>
+<li><strong>特点</strong>：高效处理多对多关系，支持复杂的路径查询。</li>
+<li><strong>代表产品</strong>：Neo4j、JanusGraph。</li>
+<li><strong>典型场景</strong>：社交网络（好友推荐）、知识图谱（如百度百科的关联关系）。</li>
+</ul>
+<h2 id="redis数据库的结构">Redis数据库的结构</h2>
+<p>Redis 是一种基于内存的键值（Key-Value）型 NoSQL 数据库</p>
+<p>Redis 的核心是 “键值对”，但它的 Value
+支持多种复杂数据结构，这是其区别于普通键值数据库（如
+Memcached）的核心优势。</p>
+<ol type="1">
+<li>键（Key）的特点：</li>
+</ol>
+<ul>
+<li><strong>类型固定</strong>：Key
+只能是字符串（String），且最大长度不超过 512MB。</li>
+<li><strong>唯一性</strong>：每个 Key 在 Redis
+中是唯一的，类似关系型数据库的 “主键”。</li>
+<li><strong>命名规范</strong>：通常用 “业务：对象：ID: 属性”
+的格式命名（如 <code>user:100:name</code>），便于管理。</li>
+</ul>
+<ol start="2" type="1">
+<li><p>值（Value）的 5 种基本数据结构（核心！）：</p>
+<p>Redis 的 Value 支持多种结构，每种结构对应不同的使用场景：</p></li>
+</ol>
+<table>
+<colgroup>
+<col style="width: 18%">
+<col style="width: 46%">
+<col style="width: 35%">
+</colgroup>
+<thead>
+<tr>
+<th>数据结构</th>
+<th>说明</th>
+<th>典型场景</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>字符串（String）</td>
+<td>最简单的键值对，Value 可以是文本、数字或二进制（如图片）</td>
+<td>缓存用户信息、计数器（点赞数）、分布式锁</td>
+</tr>
+<tr>
+<td>哈希（Hash）</td>
+<td>类似 JSON 对象，由多个 “字段 - 值” 对组成（Field-Value）</td>
+<td>存储对象属性（如用户的姓名、年龄、性别）</td>
+</tr>
+<tr>
+<td>列表（List）</td>
+<td>有序的字符串集合，支持两端插入 / 删除，可看作 “双向链表”</td>
+<td>消息队列、最新消息列表（如朋友圈动态）</td>
+</tr>
+<tr>
+<td>集合（Set）</td>
+<td>无序的字符串集合，自动去重，支持交集、并集等运算</td>
+<td>标签（如文章标签）、好友关系（共同好友）</td>
+</tr>
+<tr>
+<td>有序集合（Sorted Set）</td>
+<td>类似 Set，但每个元素关联一个 “分数（Score）”，按分数排序</td>
+<td>排行榜（如游戏积分排名）、带权重的消息队列</td>
+</tr>
+</tbody>
+</table>
+<p>Redis 内部通过 “字典（Dict）” 管理所有键值对，类似 Python 的字典或
+Java 的 HashMap。</p>
+<ol type="1">
+<li><p><strong>顶层结构</strong>：Redis
+服务器维护一个全局字典（<code>redisDb</code> 结构中的
+<code>dict</code>），所有 Key-Value 对都存储在这个字典中。</p>
+<ul>
+<li>字典的 Key 是字符串对象（<code>robj</code> 结构，类型为
+<code>OBJ_STRING</code>）。</li>
+<li>字典的 Value 是多态对象（<code>robj</code>
+结构），根据实际类型指向不同的数据结构（如字符串、哈希表等）。</li>
+</ul></li>
+<li><p><strong>Value 的底层实现（优化细节）</strong>：</p>
+<p>Redis 会根据数据量自动选择更高效的底层结构（“编码转换”），例如：</p>
+<ul>
+<li>字符串（String）：短字符串用 <code>embstr</code>
+编码（内存连续），长字符串用 <code>raw</code> 编码。</li>
+<li>哈希（Hash）：元素少的时候用 “压缩列表（ZipList）”，多的时候用
+“哈希表（HashTable）”。</li>
+<li>列表（List）：元素少的时候用 “压缩列表”，多的时候用
+“双向链表（LinkedList）”。这种设计让 Redis
+在不同数据规模下都能保持高性能。</li>
+</ul></li>
+</ol>
+<p>用一个表格直观感受 Redis 结构的差异：</p>
+<table>
+<colgroup>
+<col style="width: 8%">
+<col style="width: 39%">
+<col style="width: 51%">
+</colgroup>
+<thead>
+<tr>
+<th>维度</th>
+<th>关系型数据库（如 MySQL）</th>
+<th>Redis</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>数据组织</td>
+<td>表（Table）→ 行（Row）→ 列（Column）</td>
+<td>数据库（DB）→ 键值对（Key-Value）→ Value 多结构</td>
+</tr>
+<tr>
+<td>结构约束</td>
+<td>严格 Schema（表结构固定）</td>
+<td>无 Schema，Value 结构灵活</td>
+</tr>
+<tr>
+<td>关系处理</td>
+<td>支持外键、JOIN 关联</td>
+<td>无内置关系，需通过应用层维护</td>
+</tr>
+<tr>
+<td>存储位置</td>
+<td>主要在磁盘</td>
+<td>主要在内存（可持久化到磁盘）</td>
+</tr>
+</tbody>
+</table>
+<h2 id="anotherredisdesktopmanager">AnotherRedisDesktopManager</h2>
+<p>以 AnotherRedisDesktopManager 这种可视化工具理解 Redis 结构</p>
+<figure>
+<img src="/posts/32715/image-20250924150230635.png" alt="image-20250924150230635">
+<figcaption aria-hidden="true">image-20250924150230635</figcaption>
+</figure>
+<p>Redis 是 <strong>C/S（客户端 -
+服务器）架构</strong>，客户端（如这个可视化工具、代码中的 Redis
+客户端库）需要通过 <strong>IP + 端口 + 密码（可选）</strong> 连接到
+Redis 服务器。界面中 “新建连接” 就是用于配置这些信息，建立与 Redis
+服务的通信。</p>
+<p>Redis 支持<strong>多个逻辑数据库</strong>，默认用数字
+<code>0 - 15</code> 标识（共 16 个），这是 Redis 内置的 “命名空间”
+机制，用于<strong>隔离不同业务的数据</strong>（类似关系型数据库的
+“库”，但更轻量）。每个数据库之间关系如下</p>
+<ul>
+<li><strong>相互独立</strong>：每个 <code>DB</code>
+是独立的键值空间，<code>DB1</code> 的 <code>key</code> 和
+<code>DB2</code> 的 <code>key</code> 互不干扰。</li>
+<li><strong>切换方式</strong>：客户端通过
+<code>SELECT &lt;dbid&gt;</code> 命令切换数据库（如
+<code>SELECT 1</code> 切换到 <code>DB1</code>）。</li>
+<li><strong>默认行为</strong>：Redis 客户端默认连接
+<code>DB0</code>，若需操作其他 <code>DB</code>，需显式切换。</li>
+</ul>
+<p>实际上，<code>DB</code> 数量可通过 Redis 配置文件
+<code>redis.conf</code> 中的 <code>databases</code>
+参数修改，但<strong>官方默认且推荐保持 16 个</strong></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a target="_blank" rel="noopener" href="https://github.com/ergou10086">ErgouTree</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://ergou10086.github.io/posts/32715.html">https://ergou10086.github.io/posts/32715.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://ergou10086.github.io" target="_blank">ErgouTree's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E5%AD%A6%E4%B9%A0%E7%B1%BB/">学习类</a><a class="post-meta__tags" href="/tags/%E5%BC%80%E5%8F%91%E7%BB%84%E4%BB%B6/">开发组件</a><a class="post-meta__tags" href="/tags/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a><a class="post-meta__tags" href="/tags/Redis/">Redis</a><a class="post-meta__tags" href="/tags/NoSQL/">NoSQL</a></div><div class="post-share"><div class="addtoany"><div class="a2a_kit a2a_kit_size_32 a2a_default_style"><a class="a2a_button_facebook"></a><a class="a2a_button_twitter"></a><a class="a2a_button_wechat"></a><a class="a2a_button_sina_weibo"></a><a class="a2a_button_facebook_messenger"></a><a class="a2a_button_email"></a><a class="a2a_button_copy_link"></a><a class="a2a_dd" target="_blank" rel="noopener" href="https://www.addtoany.com/share"></a></div></div><script async="async" src="https://static.addtoany.com/menu/page.js"></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/posts/37003.html" title="JWT深度解析和在Spring框架中的实践落地"><img class="cover" src="/images/posts/cover_jwt.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">JWT深度解析和在Spring框架中的实践落地</div></div><div class="info-2"><div class="info-item-1">什么是 JWT 在现代Web开发中，身份认证与授权是保障系统安全的核心环节。随着前后端分离架构和微服务的普及，传统基于Session的认证方式面临着跨域、服务器存储压力大等问题。而 JWT（JSON Web Token）作为一种轻量级、无状态的认证方案，凭借其自包含、可跨域、易扩展的特性，逐渐成为主流选择。 JWT全称为JSON Web Token，是基于RFC 7519标准定义的一种紧凑、自包含的令牌格式，用于在不同系统间安全地传递结构化的JSON数据。其核心价值在于“可验证性” 与“自包含性”：  可验证：通过数字签名确保数据未被篡改，接收方可通过签名反向验证令牌合法性； 自包含：令牌本身携带用户身份、权限、有效期等关键信息，无需频繁查询数据库或缓存； 跨平台兼容：基于JSON格式和Base64编码，支持所有主流编程语言和框架； 轻量灵活：体积远小于XML格式的令牌（如SAML），可通过URL、HTTP头或POST参数轻松传输。  跨域认证的问题 JSON Web Token（缩写...</div></div></div></a><a class="pagination-related" href="/posts/7686.html" title="Maven常见报错分析和在开发中使用的小技巧"><img class="cover" src="/images/posts/cover2x.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Maven常见报错分析和在开发中使用的小技巧</div></div><div class="info-2"><div class="info-item-1">纯属想到想到想到哪里写哪里了，我单纯就是顺着我的思路写个杂谈，大伙看一乐就行 Maven笑传之藏藏bean 可能这个问题，大家不嗷嗷鼓捣 Maven，可能一辈子碰不上好几次，但是我还是要说说，要不然白摸索了）） 一些通用的解决情况 孩子们，我是Maven，我又要找不到依赖了 实际上，有关于实际项目开发的过程中，因为 Maven 没法正常编译项目的原因，十个有八个会给你爆“找不到依赖”，这个问题藏的很深，而且那原因非常抽象，要么不知所云，要么你就不知道他为什么找不到。 如果你能通过先清除 IDEA 的缓存，然后经典三大步（clean，complie，package）就好了 那其实都不是问题，只是 Maven 在它能访问的仓库里，没找到你声明的依赖信息（或完整文件） 再说另一种情况 在线或离线网络环境中拷贝maven仓库到离线机器，使用maven加载项目，maven编译jar包找不到或者提示jar包信息不可用 然后我们进行了如下操作  常规 idea的 maven设置，确保 maven的版本， 配置文件保持一致， maven仓库可用 刷新...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/posts/37003.html" title="JWT深度解析和在Spring框架中的实践落地"><img class="cover" src="/images/posts/cover_jwt.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-09-23</div><div class="info-item-2">JWT深度解析和在Spring框架中的实践落地</div></div><div class="info-2"><div class="info-item-1">什么是 JWT 在现代Web开发中，身份认证与授权是保障系统安全的核心环节。随着前后端分离架构和微服务的普及，传统基于Session的认证方式面临着跨域、服务器存储压力大等问题。而 JWT（JSON Web Token）作为一种轻量级、无状态的认证方案，凭借其自包含、可跨域、易扩展的特性，逐渐成为主流选择。 JWT全称为JSON Web Token，是基于RFC 7519标准定义的一种紧凑、自包含的令牌格式，用于在不同系统间安全地传递结构化的JSON数据。其核心价值在于“可验证性” 与“自包含性”：  可验证：通过数字签名确保数据未被篡改，接收方可通过签名反向验证令牌合法性； 自包含：令牌本身携带用户身份、权限、有效期等关键信息，无需频繁查询数据库或缓存； 跨平台兼容：基于JSON格式和Base64编码，支持所有主流编程语言和框架； 轻量灵活：体积远小于XML格式的令牌（如SAML），可通过URL、HTTP头或POST参数轻松传输。  跨域认证的问题 JSON Web Token（缩写...</div></div></div></a><a class="pagination-related" href="/posts/42089.html" title="数据库相关概念与DBMS特色"><img class="cover" src="/images/posts/cover_theory.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-05-12</div><div class="info-item-2">数据库相关概念与DBMS特色</div></div><div class="info-2"><div class="info-item-1"> 数据库相关概念 数据管理   image-20250512195115041  数据：能够被记录且具有实际含义的已知事实 大数据 元数据：描述数据的数据 数据库管理系统 DBMS   image-20250512195253000  数据库与文件系统的对比：          文件系统 数据库     定义 管理存储磁盘上数据的存储、访问和管理方式的过程 可以轻松存储、访问、管理和更新的有组织的数据集合   数据一致性 数据不一致性高 维护数据一致性   结构 简单 复杂   数据共享 困难 容易   冗余 冗余度高 冗余度低   安全性 不是很安全 更加安全   备份与恢复 没有备份和恢复过程 有备份恢复过程    数据库系统...</div></div></div></a><a class="pagination-related" href="/posts/52820.html" title="CS好书整理汇总"><img class="cover" src="/images/posts/cover_theory.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-05-18</div><div class="info-item-2">CS好书整理汇总</div></div><div class="info-2"><div class="info-item-1">文章总体概括基于 CS自学指南 进行整理，个人之后再根据个人学习和查阅记录整理 由于版权原因，下面列举的图书中除了开源资源提供了链接，其他的资源请大家自行通过 libgen 查找。 资源汇总  Free Programming Books: 开源编程书籍资源汇总 CS Textbook Recommendations: 计算机科学方向推荐教材列表 C Book Guide and List: C语言相关的编程书籍推荐列表 C++ Book Guide and List: C++语言相关的编程书籍推荐列表 Python Book Guide and List: Python语言相关的编程书籍推荐列表 Computer Vision Textbook Recommendations: 计算机视觉方向推荐教材列表 Deep Learning Textbook Recommendations: 深度学习方向推荐教材列表  系统入门  Computer Systems: A Programmer’s Perspective...</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="gitalk-container"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/arp.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">ErgouTree</div><div class="author-info-description">I start a brand-new life with you.</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">196</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">104</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">71</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/ergou10086"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/ergou10086" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="/zjm88822201@126.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a><a class="social-icon" href="https://space.bilibili.com/142045656?spm_id_from=333.1007.0.0" target="_blank" title="bilibili"><i class="fas fa-brands fa-bilibili" style="color: #4a72be;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">作者长期陷入galgame和osu!maina4k中 祝他好运吧 对了 如果图片加载过慢 建议科学上网进行使用</div></div><div class="card-widget"><div class="item-headline"><i></i><span></span></div><div class="item-content"></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%8B%E7%BB%8D-redis"><span class="toc-number">1.</span> <span class="toc-text">介绍 Redis</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#redis-%E7%AE%80%E4%BB%8B"><span class="toc-number">1.1.</span> <span class="toc-text">Redis 简介</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#redis-%E4%B8%8E%E5%85%B6%E4%BB%96-key-value-%E5%AD%98%E5%82%A8%E6%9C%89%E4%BB%80%E4%B9%88%E4%B8%8D%E5%90%8C"><span class="toc-number">1.2.</span> <span class="toc-text">Redis 与其他 key-value
+存储有什么不同</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#redis%E7%9A%84%E5%AE%89%E8%A3%85"><span class="toc-number">1.3.</span> <span class="toc-text">Redis的安装</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%8B%E7%BB%8D-nosql"><span class="toc-number">2.</span> <span class="toc-text">介绍 NoSQL</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF-nosql%E7%89%B9%E7%82%B9%E6%98%AF%E4%BB%80%E4%B9%88"><span class="toc-number">2.1.</span> <span class="toc-text">什么是 NoSQL，特点是什么</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#nosql%E7%9A%84%E5%88%86%E7%B1%BB"><span class="toc-number">2.2.</span> <span class="toc-text">NoSQL的分类</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%94%AE%E5%80%BC%E5%AD%98%E5%82%A8key-value"><span class="toc-number">2.2.1.</span> <span class="toc-text">1. 键值存储（Key-Value）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%96%87%E6%A1%A3%E5%AD%98%E5%82%A8document"><span class="toc-number">2.2.2.</span> <span class="toc-text">2. 文档存储（Document）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%97%E6%97%8F%E5%AD%98%E5%82%A8column-family"><span class="toc-number">2.2.3.</span> <span class="toc-text">3. 列族存储（Column-Family）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%9B%BE%E5%AD%98%E5%82%A8graph"><span class="toc-number">2.2.4.</span> <span class="toc-text">4. 图存储（Graph）</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#redis%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E7%BB%93%E6%9E%84"><span class="toc-number">3.</span> <span class="toc-text">Redis数据库的结构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#anotherredisdesktopmanager"><span class="toc-number">4.</span> <span class="toc-text">AnotherRedisDesktopManager</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/7686.html" title="Maven常见报错分析和在开发中使用的小技巧"><img src="/images/posts/cover2x.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Maven常见报错分析和在开发中使用的小技巧"/></a><div class="content"><a class="title" href="/posts/7686.html" title="Maven常见报错分析和在开发中使用的小技巧">Maven常见报错分析和在开发中使用的小技巧</a><time datetime="2025-09-24T07:10:47.000Z" title="发表于 2025-09-24 15:10:47">2025-09-24</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/32715.html" title="Redis part1—介绍NoSQL和缓存技术"><img src="/images/posts/cover_config.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis part1—介绍NoSQL和缓存技术"/></a><div class="content"><a class="title" href="/posts/32715.html" title="Redis part1—介绍NoSQL和缓存技术">Redis part1—介绍NoSQL和缓存技术</a><time datetime="2025-09-24T07:07:06.000Z" title="发表于 2025-09-24 15:07:06">2025-09-24</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/37003.html" title="JWT深度解析和在Spring框架中的实践落地"><img src="/images/posts/cover_jwt.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="JWT深度解析和在Spring框架中的实践落地"/></a><div class="content"><a class="title" href="/posts/37003.html" title="JWT深度解析和在Spring框架中的实践落地">JWT深度解析和在Spring框架中的实践落地</a><time datetime="2025-09-23T07:02:45.000Z" title="发表于 2025-09-23 15:02:45">2025-09-23</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/11897.html" title="Maven Lifecycle详解"><img src="/images/posts/cover_main.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Maven Lifecycle详解"/></a><div class="content"><a class="title" href="/posts/11897.html" title="Maven Lifecycle详解">Maven Lifecycle详解</a><time datetime="2025-09-22T12:22:17.000Z" title="发表于 2025-09-22 20:22:17">2025-09-22</time></div></div></div></div></div></div></main><div class="fps-display"><span id="fps">FPS: 60</span></div><footer id="footer" style="background-image: url(/images/posts/cover_config.jpg);"><div id="footer-wrap"><div class="copyright">&copy;2024 - 2025 By ErgouTree</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">忘れたくない思い、ありますか？ <br>,<span id="realtime_duration" style="font-family: monospace;"></span>,<br><a href="https://icp.gov.moe/?keyword=20257009" target="_blank">萌ICP备20257009号</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><a class="icon-V hidden" onclick="switchNightMode()" title="日间和夜间模式切换"><svg width="25" height="25" viewBox="0 0 1024 1024"><use id="modeicon" xlink:href="#icon-moon"></use></svg></a><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="chat-btn" type="button" title="聊天" style="display:none"><i class="fas fa-comment"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (true) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script><script>(() => {
+  const applyThemeDefaultsConfig = theme => {
+    if (theme === 'dark-mode') {
+      Chart.defaults.color = "rgba(255, 255, 255, 0.8)"
+      Chart.defaults.borderColor = "rgba(255, 255, 255, 0.2)"
+      Chart.defaults.scale.ticks.backdropColor = "transparent"
+    } else {
+      Chart.defaults.color = "rgba(0, 0, 0, 0.8)"
+      Chart.defaults.borderColor = "rgba(0, 0, 0, 0.1)"
+      Chart.defaults.scale.ticks.backdropColor = "transparent"
+    }
+  }
+
+  // Recursively traverse the config object and automatically apply theme-specific color schemes
+  const applyThemeConfig = (obj, theme) => {
+    if (typeof obj !== 'object' || obj === null) return
+
+    Object.keys(obj).forEach(key => {
+      const value = obj[key]
+      // If the property is an object and has theme-specific options, apply them
+      if (typeof value === 'object' && value !== null) {
+        if (value[theme]) {
+          obj[key] = value[theme] // Apply the value for the current theme
+        } else {
+          // Recursively process child objects
+          applyThemeConfig(value, theme)
+        }
+      }
+    })
+  }
+
+  const runChartJS = ele => {
+    window.loadChartJS = true
+
+    Array.from(ele).forEach((item, index) => {
+      const chartSrc = item.firstElementChild
+      const chartID = item.getAttribute('data-chartjs-id') || ('chartjs-' + index) // Use custom ID or default ID
+      const width = item.getAttribute('data-width')
+      const existingCanvas = document.getElementById(chartID)
+
+      // If a canvas already exists, remove it to avoid rendering duplicates
+      if (existingCanvas) {
+          existingCanvas.parentNode.remove()
+      }
+
+      const chartDefinition = chartSrc.textContent
+      const canvas = document.createElement('canvas')
+      canvas.id = chartID
+
+      const div = document.createElement('div')
+      div.className = 'chartjs-wrap'
+
+      if (width) {
+        div.style.width = width
+      }
+
+      div.appendChild(canvas)
+      chartSrc.insertAdjacentElement('afterend', div)
+
+      const ctx = document.getElementById(chartID).getContext('2d')
+
+      const config = JSON.parse(chartDefinition)
+
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark-mode' : 'light-mode'
+
+      // Set default styles (initial setup)
+      applyThemeDefaultsConfig(theme)
+
+      // Automatically traverse the config and apply dual-mode color schemes
+      applyThemeConfig(config, theme)
+
+      new Chart(ctx, config)
+    })
+  }
+
+  const loadChartJS = () => {
+    const chartJSEle = document.querySelectorAll('#article-container .chartjs-container')
+    if (chartJSEle.length === 0) return
+
+    window.loadChartJS ? runChartJS(chartJSEle) : btf.getScript('https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.min.js').then(() => runChartJS(chartJSEle))
+  }
+
+  // Listen for theme change events
+  btf.addGlobalFn('themeChange', loadChartJS, 'chartjs')
+  btf.addGlobalFn('encrypt', loadChartJS, 'chartjs')
+
+  window.pjax ? loadChartJS() : document.addEventListener('DOMContentLoaded', loadChartJS)
+})()</script><script>(function() {
+  const abcjsInit = function() {
+    const abcjsFn = function() {
+      setTimeout(function() {
+        const sheets = document.querySelectorAll(".abc-music-sheet")
+        for (let i = 0; i < sheets.length; i++) {
+          const ele = sheets[i]
+          if (ele.children.length > 0) continue
+
+          // Parse parameters from data-params attribute
+          let params = {}
+          const dp = ele.getAttribute("data-params")
+          if (dp) {
+            try {
+              params = JSON.parse(dp)
+            } catch (e) {
+              console.error("Failed to parse data-params:", e)
+            }
+          }
+
+          // Merge parsed parameters with the responsive option
+          // Ensures params content appears before responsive
+          const options = { ...params, responsive: "resize" }
+
+          // Render the music score using ABCJS.renderAbc
+          ABCJS.renderAbc(ele, ele.innerHTML, options)
+        }
+      }, 100)
+    }
+
+    if (typeof ABCJS === "object") {
+      abcjsFn()
+    } else {
+      btf.getScript("https://cdn.jsdelivr.net/npm/abcjs/dist/abcjs-basic-min.min.js").then(abcjsFn)
+    }
+  }
+
+  if (window.pjax) {
+    abcjsInit()
+  } else {
+    window.addEventListener("load", abcjsInit)
+  }
+
+  btf.addGlobalFn("encrypt", abcjsInit, "abcjs")
+})()</script><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = {"labels":["Gitalk","Comment"],"createIssueManually":false,"distractionFreeMode":false}
+
+  const commentCount = n => {
+    const isCommentCount = document.querySelector('#post-meta .gitalk-comment-count')
+    if (isCommentCount) {
+      isCommentCount.textContent= n
+    }
+  }
+
+  const initGitalk = (el, path) => {
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGitalk = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+
+    const gitalk = new Gitalk({
+      clientID: 'Ov23li3vDQANiUddL4XB',
+      clientSecret: '5c9a56d02995340fca117809cd414662aadce6ff',
+      repo: 'HexoComment',
+      owner: 'ergou10086',
+      admin: ['ergou10086'],
+      updateCountCallback: commentCount,
+      ...option,
+      id: isShuoshuo ? path : (option && option.id) || '9d57ec905141ed4572a14ab9bd4c60d0'
+    })
+
+    gitalk.render('gitalk-container')
+  }
+
+  const loadGitalk = async(el, path) => {
+    if (typeof Gitalk === 'function') initGitalk(el, path)
+    else {
+      await btf.getCSS('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.css')
+      await btf.getScript('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.js')
+      initGitalk(el, path)
+    }
+  }
+
+  if (isShuoshuo) {
+    'Gitalk' === 'Gitalk'
+      ? window.shuoshuoComment = { loadComment: loadGitalk }
+      : window.loadOtherComment = loadGitalk
+    return
+  }
+
+  if ('Gitalk' === 'Gitalk' || !false) {
+    if (false) btf.loadComment(document.getElementById('gitalk-container'), loadGitalk)
+    else loadGitalk()
+  } else {
+    window.loadOtherComment = loadGitalk
+  }
+})()</script></div><div class="aplayer no-destroy" data-id="13587761608" data-server="netease" data-type="playlist" data-fixed="true" data-autoplay="false" data-lrcType="-1"> </div><script src="https://cdn.jsdelivr.net/npm/abcjs@7.1.2/dist/abcjs-basic-min.js"></script><script src="/js/sun_moon.js" async></script><script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.7/dayjs.min.js"></script><script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.7/plugin/duration.min.js"></script><script src="/scripts/realtime.js"></script><script src="/scripts/random.js"></script><script defer="defer" id="ribbon" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-ribbon.min.js" size="150" alpha="0.6" zIndex="-1" mobile="null" data-click="true"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = false;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><script id="click-heart" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/click-heart.min.js" async="async" mobile="false"></script><script>(() => {
+  window.ChatraID = '4bzb546NSBoJcrNyu'
+  window.Chatra = window.Chatra || function() {
+    (window.Chatra.q = window.Chatra.q || []).push(arguments)
+  }
+
+  btf.getScript('https://call.chatra.io/chatra.js').then(() => {
+    const isChatBtn = true
+    const isChatHideShow = true
+
+    if (isChatBtn) {
+      const close = () => {
+        Chatra('minimizeWidget')
+        Chatra('hide')
+      }
+
+      const open = () => {
+        Chatra('openChat', true)
+        Chatra('show')
+      }
+
+      window.ChatraSetup = { startHidden: true }
+    
+      window.chatBtnFn = () => document.getElementById('chatra').classList.contains('chatra--expanded') ? close() : open()
+
+      document.getElementById('chat-btn').style.display = 'block'
+    } else if (isChatHideShow) {
+      window.chatBtn = {
+        hide: () => Chatra('hide'),
+        show: () => Chatra('show')
+      }
+    }
+  })
+})()</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/metingjs/dist/Meting.min.js"></script><script>(() => {
+  const destroyAplayer = () => {
+    if (window.aplayers) {
+      for (let i = 0; i < window.aplayers.length; i++) {
+        if (!window.aplayers[i].options.fixed) {
+          window.aplayers[i].destroy()
+        }
+      }
+    }
+  }
+
+  const runMetingJS = () => {
+    typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+  }
+
+  btf.addGlobalFn('pjaxSend', destroyAplayer, 'destroyAplayer')
+  btf.addGlobalFn('pjaxComplete', loadMeting, 'runMetingJS')
+})()</script><script src="https://cdn.jsdelivr.net/npm/pjax/pjax.min.js"></script><script>(() => {
+  const pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+  window.pjax = new Pjax({
+    elements: 'a:not([target="_blank"]):not([href="/music/"])',
+    selectors: pjaxSelectors,
+    cacheBust: false,
+    analytics: false,
+    scrollRestoration: false
+  })
+
+  const triggerPjaxFn = (val) => {
+    if (!val) return
+    Object.values(val).forEach(fn => fn())
+  }
+
+  document.addEventListener('pjax:send', () => {
+    // removeEventListener
+    btf.removeGlobalFnEvent('pjaxSendOnce')
+    btf.removeGlobalFnEvent('themeChange')
+
+    // reset readmode
+    const $bodyClassList = document.body.classList
+    if ($bodyClassList.contains('read-mode')) $bodyClassList.remove('read-mode')
+
+    triggerPjaxFn(window.globalFn.pjaxSend)
+  })
+
+  document.addEventListener('pjax:complete', () => {
+    btf.removeGlobalFnEvent('pjaxCompleteOnce')
+    document.querySelectorAll('script[data-pjax]').forEach(item => {
+      const newScript = document.createElement('script')
+      const content = item.text || item.textContent || item.innerHTML || ""
+      Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+      newScript.appendChild(document.createTextNode(content))
+      item.parentNode.replaceChild(newScript, item)
+    })
+
+    triggerPjaxFn(window.globalFn.pjaxComplete)
+  })
+
+  document.addEventListener('pjax:error', e => {
+    if (e.request.status === 404) {
+      const usePjax = true
+      true 
+        ? (usePjax ? pjax.loadUrl('/404.html') : window.location.href = '/404.html')
+        : window.location.href = e.request.responseURL
+    }
+  })
+})()</script><script src="/js/fps-display.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><!-- hexo injector body_end start --><script data-pjax>
+  function butterfly_swiper_injector_config(){
+    var parent_div_git = document.getElementById('recent-posts');
+    var item_html = '<div class="recent-post-item" style="height: auto;width: 100%"><div class="blog-slider swiper-container-fade swiper-container-horizontal" id="swiper_container"><div class="blog-slider__wrp swiper-wrapper" style="transition-duration: 0ms;"><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_database.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-14</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt="">结构化查询语言SQL</a><div class="blog-slider__text">SQL基本很常用的语句都在这里了，本质上是当初为了应付数据库考试整理的，后来发现还蛮有用的很方便查常用的语句</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java4.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-22</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt="">SpringBoot part0?INF-SpringBoot这个框架都需要学习什么</a><div class="blog-slider__text">主要围绕Spring Boot中重要知识来简洁或详细的说明，其中部分不够完全，持续更新</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java11.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-15</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt="">关于Lombok在高版本IDEA中注解处理不生效的问题解决</a><div class="blog-slider__text">基本上是彻底的解决了用 IDEA 新建 Spring Boot 项目时候会产生的 Lombok 注解处理失效的各种问题</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_实用.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-05</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt="">个人向galgame原声带或相关音乐整理及其资源</a><div class="blog-slider__text">整理了我喜欢的galgame ost或者衍生的音乐专辑，部分资源是自己扒盘扒下来的，部分来自鸟白岛放映厅</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_math.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-17</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt="">对书上证明样本方差是总体方差的无偏估计量的解析</a><div class="blog-slider__text">对书上证明样本方差是总体方差的无偏估计量的解析，高等教育出版社-华科大版本</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_alog.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-04-24</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt="">第十五届蓝桥杯Java国赛B组D题-园丁题解</a><div class="blog-slider__text">第十五届蓝桥杯Java国赛B组D题-园丁题解，该题解已经发布到洛谷社区中并且被全站推荐</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java4.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-04-29</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt="">操作系统之处理机的死锁部分概述</a><div class="blog-slider__text">对操作系统之处理机的死锁部分知识的总结，包括代码复现</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_lb.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-09</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt="">Little Busters!EX游戏攻略</a><div class="blog-slider__text">整理了一份详细清晰的Little Busters！EX的游戏攻略，因为我自己也在推，就顺手整理了一份方便查阅的md文档</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java9.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-16</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt="">Spring Boot中使用Hibernate框架</a><div class="blog-slider__text">对学习完Hibernate的应用部分，主要围绕Spring Boot中使用Hibernate框架，建议学习完 Hibernate 框架再看</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div></div><div class="blog-slider__pagination swiper-pagination-clickable swiper-pagination-bullets"></div></div></div>';
+    console.log('已挂载butterfly_swiper')
+    parent_div_git.insertAdjacentHTML("afterbegin",item_html)
+    }
+  var elist = 'undefined'.split(',');
+  var cpage = location.pathname;
+  var epage = '/';
+  var flag = 0;
+
+  for (var i=0;i<elist.length;i++){
+    if (cpage.includes(elist[i])){
+      flag++;
+    }
+  }
+
+  if ((epage ==='all')&&(flag == 0)){
+    butterfly_swiper_injector_config();
+  }
+  else if (epage === cpage){
+    butterfly_swiper_injector_config();
+  }
+  </script><script defer src="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper.min.js"></script><script defer data-pjax src="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper_init.js"></script><!-- hexo injector body_end end --></body></html>
