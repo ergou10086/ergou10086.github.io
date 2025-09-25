@@ -1,0 +1,1241 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Spring Security part6—Spring Security的默认配置与过滤器链的自动装配 | ErgouTree's Blog</title><meta name="author" content="ErgouTree"><meta name="copyright" content="ErgouTree"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="Spring Security 默认配置源码分析 在 Spring Security 的官方文档中，说明了，它的配置为以下的默认实现。 12345678910111213141516@Beanpublic SecurityFilterChain filterChain(HttpSecurity http) throws Exception &#123;	http        &#x2F;&#x2F; 开启授">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spring Security part6—Spring Security的默认配置与过滤器链的自动装配">
+<meta property="og:url" content="https://ergou10086.github.io/posts/25670.html">
+<meta property="og:site_name" content="ErgouTree&#39;s Blog">
+<meta property="og:description" content="Spring Security 默认配置源码分析 在 Spring Security 的官方文档中，说明了，它的配置为以下的默认实现。 12345678910111213141516@Beanpublic SecurityFilterChain filterChain(HttpSecurity http) throws Exception &#123;	http        &#x2F;&#x2F; 开启授">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://ergou10086.github.io/images/posts/cover_docker2.jpg">
+<meta property="article:published_time" content="2025-09-25T06:19:17.000Z">
+<meta property="article:modified_time" content="2025-09-25T06:20:29.946Z">
+<meta property="article:author" content="ErgouTree">
+<meta property="article:tag" content="Java技术">
+<meta property="article:tag" content="JavaWeb">
+<meta property="article:tag" content="框架知识">
+<meta property="article:tag" content="学习">
+<meta property="article:tag" content="JavaEE">
+<meta property="article:tag" content="Spring系列">
+<meta property="article:tag" content="Java框架">
+<meta property="article:tag" content="源码分析">
+<meta property="article:tag" content="后端">
+<meta property="article:tag" content="Spring Security">
+<meta property="article:tag" content="计算机安全">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ergou10086.github.io/images/posts/cover_docker2.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Spring Security part6—Spring Security的默认配置与过滤器链的自动装配",
+  "url": "https://ergou10086.github.io/posts/25670.html",
+  "image": "https://ergou10086.github.io/images/posts/cover_docker2.jpg",
+  "datePublished": "2025-09-25T06:19:17.000Z",
+  "dateModified": "2025-09-25T06:20:29.946Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "ErgouTree",
+      "url": "https://github.com/ergou10086"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/pi.ico"><link rel="canonical" href="https://ergou10086.github.io/posts/25670.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//hm.baidu.com"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!true && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?https://hm.baidu.com/hm.js?a6ab1b78e2c6320b664f31e8b9bf0e36";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+btf.addGlobalFn('pjaxComplete', () => {
+  _hmt.push(['_trackPageview',window.location.pathname])
+}, 'baidu_analytics')
+</script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.json","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":true},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: {"chs_to_cht":"已切换为繁体中文","cht_to_chs":"已切换为简体中文","day_to_night":"已切换为深色模式","night_to_day":"已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#1f1f1f","position":"bottom-left"},
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Spring Security part6—Spring Security的默认配置与过滤器链的自动装配',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css"><svg aria-hidden="true" style="position:absolute; overflow:hidden; width:0; height:0"><symbol id="icon-sun" viewBox="0 0 1024 1024"><path d="M960 512l-128 128v192h-192l-128 128-128-128H192v-192l-128-128 128-128V192h192l128-128 128 128h192v192z" fill="#FFD878" p-id="8420"></path><path d="M736 512a224 224 0 1 0-448 0 224 224 0 1 0 448 0z" fill="#FFE4A9" p-id="8421"></path><path d="M512 109.248L626.752 224H800v173.248L914.752 512 800 626.752V800h-173.248L512 914.752 397.248 800H224v-173.248L109.248 512 224 397.248V224h173.248L512 109.248M512 64l-128 128H192v192l-128 128 128 128v192h192l128 128 128-128h192v-192l128-128-128-128V192h-192l-128-128z" fill="#4D5152" p-id="8422"></path><path d="M512 320c105.888 0 192 86.112 192 192s-86.112 192-192 192-192-86.112-192-192 86.112-192 192-192m0-32a224 224 0 1 0 0 448 224 224 0 0 0 0-448z" fill="#4D5152" p-id="8423"></path></symbol><symbol id="icon-moon" viewBox="0 0 1024 1024"><path d="M611.370667 167.082667a445.013333 445.013333 0 0 1-38.4 161.834666 477.824 477.824 0 0 1-244.736 244.394667 445.141333 445.141333 0 0 1-161.109334 38.058667 85.077333 85.077333 0 0 0-65.066666 135.722666A462.08 462.08 0 1 0 747.093333 102.058667a85.077333 85.077333 0 0 0-135.722666 65.024z" fill="#FFB531" p-id="11345"></path><path d="M329.728 274.133333l35.157333-35.157333a21.333333 21.333333 0 1 0-30.165333-30.165333l-35.157333 35.157333-35.114667-35.157333a21.333333 21.333333 0 0 0-30.165333 30.165333l35.114666 35.157333-35.114666 35.157334a21.333333 21.333333 0 1 0 30.165333 30.165333l35.114667-35.157333 35.157333 35.157333a21.333333 21.333333 0 1 0 30.165333-30.165333z" fill="#030835" p-id="11346"></path></symbol></svg><link rel="stylesheet" href="/css/custom.css"><!-- hexo injector head_end start --><link rel="stylesheet" href="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiperstyle.css" media="print" onload="this.media='all'"><!-- hexo injector head_end end --><meta name="generator" content="Hexo 7.3.0"></head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js/pace.min.js"></script><div id="web_bg" style="background: linear-gradient(20deg, #0062be, #925696, #cc426e, #fb0347);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/arp.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">199</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">105</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">72</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-images"></i><span> Gallery</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/games/"><i class="fa-fw fas fa-game"></i><span> GalGame</span></a></li><li><a class="site-page child" href="/video/"><i class="fa-fw fas fa-video"></i><span> Video</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div><div class="menus_item"><a class="site-page" href="javascript:randomPost();"><span> Random</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/images/posts/cover_docker2.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">ErgouTree's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">Spring Security part6—Spring Security的默认配置与过滤器链的自动装配</span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-images"></i><span> Gallery</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/games/"><i class="fa-fw fas fa-game"></i><span> GalGame</span></a></li><li><a class="site-page child" href="/video/"><i class="fa-fw fas fa-video"></i><span> Video</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div><div class="menus_item"><a class="site-page" href="javascript:randomPost();"><span> Random</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div><div id="randomPost"><a class="site-page social-icon search" href="javascript:;" onclick="randomPost()" title="随机访问一篇文章"><i class="fas fa-circle-notch fa-fw"></i></a></div></nav><div id="post-info"><h1 class="post-title">Spring Security part6—Spring Security的默认配置与过滤器链的自动装配<a class="post-edit-link" href="https://github.com/ergou10086/ergou10086.github.io/edit/main/source/_posts/_posts/SpringSecuritypart6—SpringSecurity的默认配置与过滤器链的自动装配.md" title="编辑" target="_blank"><i class="fas fa-pencil-alt"></i></a></h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2025-09-25T06:19:17.000Z" title="发表于 2025-09-25 14:19:17">2025-09-25</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2025-09-25T06:20:29.946Z" title="更新于 2025-09-25 14:20:29">2025-09-25</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Java%E5%AD%A6%E4%B9%A0/">Java学习</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Java%E5%AD%A6%E4%B9%A0/Spring%E7%B3%BB%E5%88%97/">Spring系列</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Java%E5%AD%A6%E4%B9%A0/Spring%E7%B3%BB%E5%88%97/Spring-Security/">Spring Security</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">7.8k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>28分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span><span class="post-meta-separator">|</span><span class="post-meta-commentcount"><i class="far fa-comments fa-fw post-meta-icon"></i><span class="post-meta-label">评论数:</span><a href="/posts/25670.html#post-comment"><span class="gitalk-comment-count"><i class="fa-solid fa-spinner fa-spin"></i></span></a></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="spring-security-默认配置源码分析">Spring Security
+默认配置源码分析</h2>
+<p>在 Spring Security
+的官方文档中，说明了，它的配置为以下的默认实现。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Bean</span></span><br><span class="line"><span class="keyword">public</span> SecurityFilterChain <span class="title function_">filterChain</span><span class="params">(HttpSecurity http)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">	http</span><br><span class="line">        <span class="comment">// 开启授权保护</span></span><br><span class="line">		.authorizeRequests(authorize -&gt; authorize</span><br><span class="line">             <span class="comment">// 所有请求开启授权保护</span></span><br><span class="line">			.anyRequest()</span><br><span class="line">             <span class="comment">// 已经认证的请求会被自动授权</span></span><br><span class="line">             .authenticated()</span><br><span class="line">		)</span><br><span class="line">        <span class="comment">// 自动使用表单的授权方式，也就是自动生成的登入表单和登出表单</span></span><br><span class="line">		.formLogin(withDefaults())</span><br><span class="line">        <span class="comment">// 使用基本授权方式</span></span><br><span class="line">		.httpBasic(withDefaults());</span><br><span class="line">	<span class="keyword">return</span> http.build();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>说明一下什么是使用表单的授权方式，什么是使用基本授权方式，注意这里的授权其实是认证））</p>
+<p>表单认证是<strong>基于页面表单的用户身份验证方式</strong>，适用于传统
+Web
+应用（有前端页面的场景）。默认行为就会自动生成一个简单的登录页面（包含用户名输入框、密码输入框、提交按钮）。</p>
+<p>可以按照下面这样自定义配置：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">http.formLogin(form -&gt; form</span><br><span class="line">    .loginPage(<span class="string">&quot;/custom-login&quot;</span>) <span class="comment">// 自定义登录页路径</span></span><br><span class="line">    .loginProcessingUrl(<span class="string">&quot;/do-login&quot;</span>) <span class="comment">// 处理登录请求的路径（默认/login）</span></span><br><span class="line">    .defaultSuccessUrl(<span class="string">&quot;/home&quot;</span>, <span class="literal">true</span>) <span class="comment">// 登录成功后跳转的页面</span></span><br><span class="line">    .failureUrl(<span class="string">&quot;/custom-login?error=true&quot;</span>) <span class="comment">// 登录失败后跳转的页面</span></span><br><span class="line">    .usernameParameter(<span class="string">&quot;user&quot;</span>) <span class="comment">// 自定义表单中用户名的参数名（默认username）</span></span><br><span class="line">    .passwordParameter(<span class="string">&quot;pass&quot;</span>) <span class="comment">// 自定义表单中密码的参数名（默认password）</span></span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+<p>HTTP Basic 认证就是基本认证，是<strong>基于 HTTP
+协议规范的认证方式</strong>，适用于 API
+接口（无前端页面的场景），通过请求头传递认证信息。当未认证用户访问受保护资源时，服务器不会重定向到登录页，而是返回
+<strong>401 Unauthorized</strong> 响应，并在响应头中添加
+<code>WWW-Authenticate: Basic realm="Realm"</code>。</p>
+<p>客户端（如浏览器、Postman、前端
+Ajax）收到响应后，会弹出一个<strong>系统级别的登录弹窗</strong>（由浏览器
+/ 客户端生成，非自定义页面）。认证信息通过 HTTP 头传递（Base64
+编码，<strong>不加密</strong>，生产环境需配合 HTTPS
+使用）。无默认登出机制（需手动清除请求头或关闭客户端）。</p>
+<p>而默认的15(16)个过滤器就是这些，好像我注销了一个配置，就有一个没装上</p>
+<figure>
+<img src="/posts/25670/image-20250921212452057.png" alt="image-20250921212452057">
+<figcaption aria-hidden="true">image-20250921212452057</figcaption>
+</figure>
+<p>在 Spring Security
+中，这些默认的过滤器在不同的配置器（<code>Configurer</code>）中被创建和配置，然后由<code>HttpSecurity</code>进行统一管理和组装，最终形成<code>DefaultSecurityFilterChain</code>
+。关于这个的内容下面会细说</p>
+<h2 id="spring-security-的自动配置">Spring Security 的自动配置</h2>
+<h3 id="httpsecurity-中加载了什么">HttpSecurity 中加载了什么</h3>
+<p>之前我们讲解的初始化配置只是在很简单的层面上做了一些介绍，方便后面的学习，在这里我们将有条理的分析整个Spring
+Security 自动配置</p>
+<p><code>HttpSecurity</code> 是 Spring Security 中<strong>配置 HTTP
+安全规则的核心入口类</strong></p>
+<p><code>HttpSecurity</code> 这个 bean
+算是最基础的底层配置了，它是Spring
+Security各种配置的基础，这个bean是Spring
+Security自动加载的，并且同时会默认帮我们完成了Spring
+Security完整功能的各项配置，我们先找到这个bean加载的位置：</p>
+<p>在<code>HttpSecurityConfiguration</code>类中，加载了<code>HttpSecurity</code></p>
+<figure>
+<img src="/posts/25670/image-20250921205517962.png" alt="image-20250921205517962">
+<figcaption aria-hidden="true">image-20250921205517962</figcaption>
+</figure>
+<figure>
+<img src="/posts/25670/image-20250921210339727.png" alt="image-20250921210339727">
+<figcaption aria-hidden="true">image-20250921210339727</figcaption>
+</figure>
+<p>Spring Security 对 Web 应用的保护，本质是对 <strong>“HTTP 请求”
+的拦截与规则校验 </strong>。<code>HttpSecurity</code> 就是负责定义这些
+“拦截规则” 的核心类，包括：</p>
+<ul>
+<li><p>哪些请求需要认证？</p>
+<p>由<code>AuthorizeHttpRequestsConfigurer</code>实现,<code>AuthorizeHttpRequestsConfigurer</code>是处理请求授权的核心配置器，其内部的<code>AuthorizationManagerRequestMatcherRegistry</code>提供了<code>requestMatchers()</code>、<code>permitAll()</code>、<code>authenticated()</code>等方法，用于定义
+“哪些请求需要认证”。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// HttpSecurity 中与请求授权相关的方法</span></span><br><span class="line"><span class="keyword">public</span> HttpSecurity <span class="title function_">authorizeHttpRequests</span><span class="params">(Customizer&lt;AuthorizeHttpRequestsConfigurer&lt;HttpSecurity&gt;.AuthorizationManagerRequestMatcherRegistry&gt; authorizeHttpRequestsCustomizer)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">    <span class="type">ApplicationContext</span> <span class="variable">context</span> <span class="operator">=</span> <span class="built_in">this</span>.getContext();</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 获取或创建 AuthorizeHttpRequestsConfigurer 配置器</span></span><br><span class="line">    AuthorizeHttpRequestsConfigurer&lt;HttpSecurity&gt; configurer = (AuthorizeHttpRequestsConfigurer) <span class="built_in">this</span>.getOrApply(<span class="keyword">new</span> <span class="title class_">AuthorizeHttpRequestsConfigurer</span>(context));</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 通过 Customizer 自定义授权规则（如哪些路径允许匿名、哪些需要认证）</span></span><br><span class="line">    authorizeHttpRequestsCustomizer.customize(configurer.getRegistry());</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">this</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>实际开发中，我们通过链式调用配置规则，例如</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">http.authorizeHttpRequests(auth -&gt; auth</span><br><span class="line">    .requestMatchers(<span class="string">&quot;/public/**&quot;</span>).permitAll() <span class="comment">// 公开路径，无需认证</span></span><br><span class="line">    .requestMatchers(<span class="string">&quot;/admin/**&quot;</span>).hasRole(<span class="string">&quot;ADMIN&quot;</span>) <span class="comment">// 管理员角色可访问</span></span><br><span class="line">    .anyRequest().authenticated() <span class="comment">// 其他请求必须认证</span></span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+<ul>
+<li>这些配置最终会转换为<code>Filter</code>（如<code>FilterSecurityInterceptor</code>），在请求到达时拦截并校验权限。</li>
+</ul></li>
+<li><p>用什么方式认证（表单登录、HTTP Basic、OAuth2 等）？</p>
+<p><code>HttpSecurity</code>通过不同的配置器支持多种认证方式，以下是最常用的几种：</p>
+<ul>
+<li><p>表单登录（<code>formLogin</code>）</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 表单登录配置方法</span></span><br><span class="line"><span class="keyword">public</span> HttpSecurity <span class="title function_">formLogin</span><span class="params">(Customizer&lt;FormLoginConfigurer&lt;HttpSecurity&gt;&gt; formLoginCustomizer)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">    <span class="comment">// 获取或创建 FormLoginConfigurer 配置器（负责表单登录逻辑）</span></span><br><span class="line">    FormLoginConfigurer&lt;HttpSecurity&gt; configurer = (FormLoginConfigurer) <span class="built_in">this</span>.getOrApply(<span class="keyword">new</span> <span class="title class_">FormLoginConfigurer</span>());</span><br><span class="line">    <span class="comment">// 自定义表单登录配置（如登录页URL、成功跳转页等）</span></span><br><span class="line">    formLoginCustomizer.customize(configurer);</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">this</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>FormLoginConfigurer</code>是处理表单登录的配置器，负责：
+<ul>
+<li>生成默认登录页（或指定自定义登录页<code>loginPage("/login")</code>）；</li>
+<li>处理登录请求（默认<code>/login</code>）、成功 / 失败跳转；</li>
+<li>生成<code>UsernamePasswordAuthenticationFilter</code>过滤器，拦截登录请求并校验用户名密码。</li>
+</ul></li>
+</ul></li>
+<li><p>HTTP Basic 认证</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// HTTP Basic 认证配置方法</span></span><br><span class="line"><span class="keyword">public</span> HttpSecurity <span class="title function_">httpBasic</span><span class="params">(Customizer&lt;HttpBasicConfigurer&lt;HttpSecurity&gt;&gt; httpBasicCustomizer)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">    <span class="comment">// 获取或创建 HttpBasicConfigurer 配置器（负责HTTP Basic认证）</span></span><br><span class="line">    HttpBasicConfigurer&lt;HttpSecurity&gt; configurer = (HttpBasicConfigurer) <span class="built_in">this</span>.getOrApply(<span class="keyword">new</span> <span class="title class_">HttpBasicConfigurer</span>());</span><br><span class="line">    <span class="comment">// 自定义HTTP Basic配置（如 Realm 名称）</span></span><br><span class="line">    httpBasicCustomizer.customize(configurer);</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">this</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>OAuth2 登录</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// OAuth2 登录配置方法（第三方登录，如GitHub、微信）</span></span><br><span class="line"><span class="keyword">public</span> HttpSecurity <span class="title function_">oauth2Login</span><span class="params">(Customizer&lt;OAuth2LoginConfigurer&lt;HttpSecurity&gt;&gt; oauth2LoginCustomizer)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">    OAuth2LoginConfigurer&lt;HttpSecurity&gt; configurer = (OAuth2LoginConfigurer) <span class="built_in">this</span>.getOrApply(<span class="keyword">new</span> <span class="title class_">OAuth2LoginConfigurer</span>());</span><br><span class="line">    oauth2LoginCustomizer.customize(configurer);</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">this</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>OAuth2LoginConfigurer</code>用于配置 OAuth2/OpenID Connect
+登录，支持第三方认证；</li>
+<li>会生成<code>OAuth2LoginAuthenticationFilter</code>，处理 OAuth2
+回调请求并完成认证。</li>
+</ul></li>
+</ul></li>
+<li><p>认证后如何授权（基于角色、权限）？</p>
+<p>授权逻辑与 “哪些请求需要认证”
+同属一个配置器，核心是通过<code>AuthorizationManager</code>校验用户权限是否匹配请求要求。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// AuthorizeHttpRequestsConfigurer 内部类，用于定义授权规则</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">AuthorizationManagerRequestMatcherRegistry</span> &#123;</span><br><span class="line">    <span class="comment">// 例如：配置某个路径需要特定角色</span></span><br><span class="line">    <span class="keyword">public</span> AuthorizationManagerRequestMatcherRegistry <span class="title function_">hasRole</span><span class="params">(String role)</span> &#123;</span><br><span class="line">        <span class="comment">// 内部会创建基于角色的 AuthorizationManager</span></span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">this</span>.access(<span class="built_in">this</span>.roleHierarchyAuthoritiesMapper(role));</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 配置某个路径允许匿名访问</span></span><br><span class="line">    <span class="keyword">public</span> AuthorizationManagerRequestMatcherRegistry <span class="title function_">permitAll</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">this</span>.access(AuthenticatedAuthorizationManager.permitAll());</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 配置其他请求必须认证</span></span><br><span class="line">    <span class="keyword">public</span> AuthorizationManagerRequestMatcherRegistry <span class="title function_">authenticated</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">this</span>.access(AuthenticatedAuthorizationManager.authenticated());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>授权规则最终会转换为<code>AuthorizationManager</code>（权限管理器），在请求拦截时校验：
+<ul>
+<li>用户是否拥有<code>hasRole("ADMIN")</code>要求的角色；</li>
+<li>请求是否符合<code>permitAll()</code>（无需认证）或<code>authenticated()</code>（必须认证）。</li>
+</ul></li>
+<li>底层由<code>FilterSecurityInterceptor</code>过滤器执行校验，不通过则抛出<code>AccessDeniedException</code>。</li>
+</ul></li>
+<li><p>如何处理跨站请求伪造（CSRF）、会话、异常？</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// CSRF 防护配置方法</span></span><br><span class="line"><span class="keyword">public</span> HttpSecurity <span class="title function_">csrf</span><span class="params">(Customizer&lt;CsrfConfigurer&lt;HttpSecurity&gt;&gt; csrfCustomizer)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">    <span class="type">ApplicationContext</span> <span class="variable">context</span> <span class="operator">=</span> <span class="built_in">this</span>.getContext();</span><br><span class="line">    <span class="comment">// 获取或创建 CsrfConfigurer 配置器（负责CSRF防护）</span></span><br><span class="line">    CsrfConfigurer&lt;HttpSecurity&gt; configurer = (CsrfConfigurer) <span class="built_in">this</span>.getOrApply(<span class="keyword">new</span> <span class="title class_">CsrfConfigurer</span>(context));</span><br><span class="line">    <span class="comment">// 自定义CSRF配置（如开启/关闭、令牌存储方式）</span></span><br><span class="line">    csrfCustomizer.customize(configurer);</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">this</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>如何处理会话？</p>
+<p><code>sessionManagement</code>配置</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 会话管理配置方法</span></span><br><span class="line"><span class="keyword">public</span> HttpSecurity <span class="title function_">sessionManagement</span><span class="params">(Customizer&lt;SessionManagementConfigurer&lt;HttpSecurity&gt;&gt; sessionManagementCustomizer)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">    <span class="comment">// 获取或创建 SessionManagementConfigurer 配置器（负责会话管理）</span></span><br><span class="line">    SessionManagementConfigurer&lt;HttpSecurity&gt; configurer = (SessionManagementConfigurer) <span class="built_in">this</span>.getOrApply(<span class="keyword">new</span> <span class="title class_">SessionManagementConfigurer</span>());</span><br><span class="line">    <span class="comment">// 自定义会话配置（如会话创建策略、超时时间）</span></span><br><span class="line">    sessionManagementCustomizer.customize(configurer);</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">this</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>如何处理异常</p>
+<p><code>exceptionHandling</code>配置</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 异常处理配置方法</span></span><br><span class="line"><span class="keyword">public</span> HttpSecurity <span class="title function_">exceptionHandling</span><span class="params">(Customizer&lt;ExceptionHandlingConfigurer&lt;HttpSecurity&gt;&gt; exceptionHandlingCustomizer)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">    <span class="comment">// 获取或创建 ExceptionHandlingConfigurer 配置器（负责异常处理）</span></span><br><span class="line">    ExceptionHandlingConfigurer&lt;HttpSecurity&gt; configurer = (ExceptionHandlingConfigurer) <span class="built_in">this</span>.getOrApply(<span class="keyword">new</span> <span class="title class_">ExceptionHandlingConfigurer</span>());</span><br><span class="line">    <span class="comment">// 自定义异常处理（如认证失败、授权失败的响应）</span></span><br><span class="line">    exceptionHandlingCustomizer.customize(configurer);</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">this</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>ExceptionHandlingConfigurer</code>用于配置认证 /
+授权过程中的异常处理，例如：
+<ul>
+<li>认证失败（<code>authenticationEntryPoint</code>）：配置未认证用户访问受保护资源时的响应（如跳转登录页或返回
+401 JSON）；</li>
+<li>授权失败（<code>accessDeniedHandler</code>）：配置已认证用户权限不足时的响应（如跳转拒绝页或返回
+403 JSON）。</li>
+</ul></li>
+<li>会生成<code>ExceptionTranslationFilter</code>过滤器，捕获并处理认证
+/ 授权异常。</li>
+</ul></li>
+</ul>
+<p>所以说，<code>HttpSecurity</code>
+基于<strong>建造者模式</strong>设计，同时通过
+配置器（Configurer）对不同安全模块进行解耦，上面说的都是配置器，每个配置器负责一个细分领域的配置</p>
+<p>然后这些配置器最终会生成对应的<code>Filter</code>（过滤器），由<code>HttpSecurity</code>统一组装为<code>DefaultSecurityFilterChain</code>，在
+HTTP 请求到达时按顺序拦截并应用规则，实现对 Web 应用的安全保护。</p>
+<table>
+<colgroup>
+<col style="width: 25%">
+<col style="width: 75%">
+</colgroup>
+<thead>
+<tr>
+<th>设计元素</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>建造者（Builder）</td>
+<td><code>HttpSecurity</code> 本身实现
+<code>SecurityBuilder</code>，负责最终构建
+<code>DefaultSecurityFilterChain</code></td>
+</tr>
+<tr>
+<td>配置器（Configurer）</td>
+<td>每个配置器对应一个安全模块（如 <code>FormLoginConfigurer</code>
+负责表单登录，<code>CsrfConfigurer</code> 负责 CSRF 防护），通过
+<code>HttpSecurity</code> 的 <code>xxxConfigurer()</code> 方法接入</td>
+</tr>
+</tbody>
+</table>
+<p>然后，<code>HttpSecurity</code> 通过不同的配置器，覆盖了 Web
+安全的全场景需求，以下是最常用的配置器：</p>
+<table>
+<colgroup>
+<col style="width: 21%">
+<col style="width: 28%">
+<col style="width: 49%">
+</colgroup>
+<thead>
+<tr>
+<th>配置器方法</th>
+<th>对应配置器类</th>
+<th>核心能力</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>formLogin()</code></td>
+<td><code>FormLoginConfigurer</code></td>
+<td>配置<strong>表单登录</strong>（自定义登录页、成功跳转、失败处理等）</td>
+</tr>
+<tr>
+<td><code>authorizeHttpRequests()</code></td>
+<td><code>AuthorizeHttpRequestsConfigurer</code></td>
+<td>配置<strong>请求授权规则</strong>（基于角色、权限、IP
+等控制访问）</td>
+</tr>
+<tr>
+<td><code>csrf()</code></td>
+<td><code>CsrfConfigurer</code></td>
+<td>配置<strong>CSRF 防护</strong>（开启 / 关闭、自定义令牌等）</td>
+</tr>
+<tr>
+<td><code>logout()</code></td>
+<td><code>LogoutConfigurer</code></td>
+<td>配置<strong>登出逻辑</strong>（登出 URL、成功跳转、清除会话等）</td>
+</tr>
+<tr>
+<td><code>sessionManagement()</code></td>
+<td><code>SessionManagementConfigurer</code></td>
+<td>配置<strong>会话管理</strong>（会话创建策略、超时时间、并发控制等）</td>
+</tr>
+<tr>
+<td><code>httpBasic()</code></td>
+<td><code>HttpBasicConfigurer</code></td>
+<td>配置<strong>HTTP Basic 认证</strong>（适合 API 场景）</td>
+</tr>
+<tr>
+<td><code>oauth2Login()</code></td>
+<td><code>OAuth2LoginConfigurer</code></td>
+<td>配置<strong>OAuth2 登录</strong>（第三方登录，如 GitHub、微信）</td>
+</tr>
+<tr>
+<td><code>exceptionHandling()</code></td>
+<td><code>ExceptionHandlingConfigurer</code></td>
+<td>配置<strong>异常处理</strong>（认证失败、授权失败的页面或 JSON
+响应）</td>
+</tr>
+</tbody>
+</table>
+<h3 id="httpsecurity自动装配的流程">HttpSecurity自动装配的流程</h3>
+<p>我们一点一点来看看，Spring Security 都帮我们怎么进行了
+<code>HttpSecurity</code> 的默认配置了</p>
+<figure>
+<img src="/posts/25670/image-20250921213035815.png" alt="image-20250921213035815">
+<figcaption aria-hidden="true">image-20250921213035815</figcaption>
+</figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// HttpSecurityConfiguration 中创建 HttpSecurity 的核心方法</span></span><br><span class="line"><span class="meta">@Bean</span></span><br><span class="line"><span class="meta">@Scope(&quot;prototype&quot;)</span></span><br><span class="line"><span class="keyword">public</span> HttpSecurity <span class="title function_">httpSecurity</span><span class="params">()</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">    <span class="comment">// 1. 初始化密码编码器（懒加载，自动适配环境中的 PasswordEncoder）</span></span><br><span class="line">    <span class="type">LazyPasswordEncoder</span> <span class="variable">passwordEncoder</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">LazyPasswordEncoder</span>(<span class="built_in">this</span>.context);</span><br><span class="line">    <span class="comment">// 2. 初始化 AuthenticationManagerBuilder（用于构建 AuthenticationManager）</span></span><br><span class="line">    <span class="type">AuthenticationManagerBuilder</span> <span class="variable">authenticationBuilder</span> <span class="operator">=</span> </span><br><span class="line">        <span class="keyword">new</span> <span class="title class_">DefaultPasswordEncoderAuthenticationManagerBuilder</span>(<span class="built_in">this</span>.objectPostProcessor, passwordEncoder);</span><br><span class="line">    authenticationBuilder.parentAuthenticationManager(<span class="built_in">this</span>.authenticationManager());</span><br><span class="line">    authenticationBuilder.authenticationEventPublisher(<span class="built_in">this</span>.getAuthenticationEventPublisher());</span><br><span class="line">    <span class="comment">// 3. 创建 HttpSecurity 实例，并传入核心组件（对象后置处理器、AuthenticationManagerBuilder、共享对象）</span></span><br><span class="line">    <span class="type">HttpSecurity</span> <span class="variable">http</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">HttpSecurity</span>(<span class="built_in">this</span>.objectPostProcessor, authenticationBuilder, <span class="built_in">this</span>.createSharedObjects());</span><br><span class="line">    <span class="comment">// 4. 配置 WebAsyncManager 集成过滤器（异步请求安全上下文传递）</span></span><br><span class="line">    <span class="type">WebAsyncManagerIntegrationFilter</span> <span class="variable">webAsyncManagerIntegrationFilter</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">WebAsyncManagerIntegrationFilter</span>();</span><br><span class="line">    webAsyncManagerIntegrationFilter.setSecurityContextHolderStrategy(<span class="built_in">this</span>.securityContextHolderStrategy);</span><br><span class="line">    <span class="comment">// 5. 应用默认配置：CSRF、异常处理、头部安全、会话管理、登出等</span></span><br><span class="line">    http</span><br><span class="line">        <span class="comment">// CSRF 防护</span></span><br><span class="line">        .csrf(Customizer.withDefaults())</span><br><span class="line">        <span class="comment">// 异步请求集成</span></span><br><span class="line">        .addFilter(webAsyncManagerIntegrationFilter)</span><br><span class="line">        <span class="comment">// 异常处理（默认配置）</span></span><br><span class="line">        .exceptionHandling(Customizer.withDefaults())</span><br><span class="line">        <span class="comment">// 头部安全（默认配置）</span></span><br><span class="line">        .headers(Customizer.withDefaults())</span><br><span class="line">        <span class="comment">//  会话管理（默认配置）</span></span><br><span class="line">        .sessionManagement(Customizer.withDefaults())</span><br><span class="line">        <span class="comment">// 登出（默认配置）</span></span><br><span class="line">        .logout(Customizer.withDefaults());</span><br><span class="line">    <span class="comment">// 6. 应用 CORS 配置（如果存在 CorsFilter Bean）</span></span><br><span class="line">    <span class="built_in">this</span>.applyCorsIfAvailable(http);</span><br><span class="line">    <span class="comment">// 7. 应用所有默认的 Configurer（如表单登录、HTTP Basic 等）</span></span><br><span class="line">    <span class="built_in">this</span>.applyDefaultConfigurers(http);</span><br><span class="line">    <span class="keyword">return</span> http;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>首先初始化了<code>AuthenticationManagerBuilder</code>，<code>httpSecurity</code>是重新new了一个<code>authenticationManagerBuilder</code>的，并且我们初始化的<code>authenticationManager</code>是放在
+builder 对象里的<code>parentAuthenticationManager</code>属性里的。</p>
+<p>然后我们看到<code>httpSecurity</code>的构造方法</p>
+<figure>
+<img src="/posts/25670/image-20250925123440533.png" alt="image-20250925123440533">
+<figcaption aria-hidden="true">image-20250925123440533</figcaption>
+</figure>
+<p>可以发现是往一个所谓的共享对象的 Map
+容器中放入了<code>authenticationManagerBuilder</code>对象</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">this</span>.setSharedObject(AuthenticationManagerBuilder.class, authenticationBuilder);</span><br></pre></td></tr></table></figure>
+<p>初始化的时候还放入了spring上下文对象</p>
+<figure>
+<img src="/posts/25670/image-20250925123712042.png" alt="image-20250925123712042">
+<figcaption aria-hidden="true">image-20250925123712042</figcaption>
+</figure>
+<p>可以发现<code>httpSecurity</code>的<code>sharedObjects</code>属性里放入了所谓需要共享的对象，另外注意这里<code>requestMatcherConfigurer</code>这个属性也进行了初始化。</p>
+<p>接下来就是使用<code>httpSecurity</code>进行了默认配置，在
+<code>HttpSecurity</code> 中，通过 <code>getOrApply</code>
+方法来获取或应用配置器（如
+<code>CsrfConfigurer</code>）。往上看你就会发现几乎所有的配置器都调用的了这个方法进行装配</p>
+<figure>
+<img src="/posts/25670/image-20250925124843207.png" alt="image-20250925124843207">
+<figcaption aria-hidden="true">image-20250925124843207</figcaption>
+</figure>
+<ul>
+<li>首先尝试从已有的配置器中获取指定类型（这里是
+<code>CsrfConfigurer</code> 类型）的配置器。</li>
+<li>如果存在，直接返回；如果不存在，就调用 <code>apply</code>
+方法来应用这个新的配置器。</li>
+</ul>
+<p>而 <code>apply</code> 方法会进一步调用 <code>add</code>
+方法，将配置器添加到 <code>configurers</code>
+集合中（<code>configurers</code> 是
+<code>AbstractConfiguredSecurityBuilder</code> 中的一个
+<code>LinkedHashMap</code>，用于存储各种配置器），这样就完成了配置器的注册，后续可以基于这些配置器来构建安全过滤链等安全相关功能。这里实际上就是将上面
+new 的 configure 放入了 configurers属性中了。</p>
+<p>接下来我们来看过滤器是如何装配的</p>
+<p><code>addFilter</code>方法顾名思义就是添加过滤器的方法</p>
+<figure>
+<img src="/posts/25670/image-20250925125035377.png" alt="image-20250925125035377">
+<figcaption aria-hidden="true">image-20250925125035377</figcaption>
+</figure>
+<ul>
+<li>首先从 <code>filterOrders</code> 中获取要添加的过滤器（如
+<code>WebAsyncManagerIntegrationFilter</code>）对应的顺序。<code>filterOrders</code>
+是 <code>FilterOrderRegistration</code>
+类型的对象，内部维护了过滤器类与顺序的映射关系。</li>
+<li>如果获取不到顺序，会抛出异常，提示需要使用
+<code>addFilterBefore</code> 或 <code>addFilterAfter</code>
+来指定过滤器顺序；如果获取到顺序，就将过滤器包装成
+<code>OrderedFilter</code>（包含过滤器实例和顺序）并添加到
+<code>filters</code> 列表中。</li>
+</ul>
+<p>最后装完的<code>filters</code> 是一个
+<code>ArrayList</code>，用于存储所有添加的过滤器（包装为
+<code>OrderedFilter</code>
+形式，带有顺序信息）。在构建安全过滤链时，这些过滤器会按照顺序被组织起来，对
+HTTP
+请求进行安全处理，比如身份验证、授权、跨站请求伪造（CSRF）防护等。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> List&lt;OrderedFilter&gt; filters = <span class="keyword">new</span> <span class="title class_">ArrayList</span>();</span><br></pre></td></tr></table></figure>
+<p>而决定其过滤器顺序的就是<code>filterOrders</code>， 是
+<code>FilterOrderRegistration</code> 类型，其内部通过
+<code>filterToOrder</code> 等结构维护了不同过滤器类对应的顺序。在
+<code>FilterOrderRegistration</code> 的构造方法中，会为各种 Spring
+Security 内置的过滤器（如
+<code>CsrfFilter</code>、<code>LogoutFilter</code>、<code>UsernamePasswordAuthenticationFilter</code>
+等）预先注册好顺序，这样在添加过滤器时，就能根据过滤器类获取到对应的顺序，从而保证过滤器在过滤链中有正确的执行顺序。</p>
+<p>这样，不同的过滤器就会按照预先定义的顺序在请求处理流程中依次执行，确保
+Spring Security 各项安全功能按正确逻辑生效。</p>
+<p>总结一下就是，<code>httpSecurity</code>默认初始化会出事后一个<code>authenticationManager</code>对象并放入一个<code>authenticationManagerBuilder</code>对象中，随后这个
+builder 对象会放入 httpSecurity 对象的
+<code>sharedObjects</code>属性中； 然后 httpSecurity
+会创建类如csrf，exceptionHandling等等的配置器，随后也放入 sharedObjects
+属性中。额案后将配置器添加到 <code>configurers</code>
+集合中，之后再搭建过滤器链，从 <code>filterOrders</code>
+中获取要添加的过滤器，在构建安全过滤链时，这些过滤器会按照顺序被组织起来，实现其功能，这样就联系上了前面进行的
+16 个默认过滤器的装配和各种配置的初始化。</p>
+<h2 id="httpsecurity如何构建过滤器链">HttpSecurity如何构建过滤器链</h2>
+<h3 id="httpsecurity如何构建defaultsecurityfilterchain过滤器链">HttpSecurity如何构建DefaultSecurityFilterChain过滤器链</h3>
+<p>那么其实<code>HttpSecurity</code> 的使命是<strong>构建
+<code>DefaultSecurityFilterChain</code>（安全过滤链）</strong>，流程分为两步</p>
+<p><strong>配置阶段：通过配置器定义规则</strong></p>
+<p>开发者通过 <code>HttpSecurity</code> 提供的配置器方法（如
+<code>formLogin()</code>、<code>authorizeHttpRequests()</code>），声明各类安全规则：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Bean</span></span><br><span class="line"><span class="keyword">public</span> SecurityFilterChain <span class="title function_">filterChain</span><span class="params">(HttpSecurity http)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">    http</span><br><span class="line">        <span class="comment">// 配置器1：表单登录</span></span><br><span class="line">        .formLogin(form -&gt; form</span><br><span class="line">            .loginPage(<span class="string">&quot;/login&quot;</span>)</span><br><span class="line">            .defaultSuccessUrl(<span class="string">&quot;/home&quot;</span>)</span><br><span class="line">        )</span><br><span class="line">        <span class="comment">// 配置器2：请求授权</span></span><br><span class="line">        .authorizeHttpRequests(auth -&gt; auth</span><br><span class="line">            .requestMatchers(<span class="string">&quot;/public/**&quot;</span>).permitAll()</span><br><span class="line">            .requestMatchers(<span class="string">&quot;/admin/**&quot;</span>).hasRole(<span class="string">&quot;ADMIN&quot;</span>)</span><br><span class="line">            .anyRequest().authenticated()</span><br><span class="line">        )</span><br><span class="line">        <span class="comment">// 配置器3：CSRF 防护</span></span><br><span class="line">        .csrf(csrf -&gt; csrf.disable());</span><br><span class="line">    <span class="keyword">return</span> http.build();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>每个配置器（如
+<code>FormLoginConfigurer</code>、<code>AuthorizeHttpRequestsConfigurer</code>）会将配置转换为<strong>具体的
+Filter（过滤器）</strong>，并注册到 <code>HttpSecurity</code> 中。</p>
+<p><strong>构建阶段：生成安全过滤链</strong></p>
+<figure>
+<img src="/posts/25670/image-20250925130218452.png" alt="image-20250925130218452">
+<figcaption aria-hidden="true">image-20250925130218452</figcaption>
+</figure>
+<p>当调用 <code>http.build()</code> 时，<code>HttpSecurity</code>
+会执行：</p>
+<ol type="1">
+<li>收集所有配置器生成的 Filter；</li>
+<li>按照预设顺序（由 <code>FilterOrderRegistration</code> 管理）排序
+Filter；</li>
+<li>结合请求匹配规则（<code>RequestMatcher</code>），封装为
+<code>DefaultSecurityFilterChain</code>；</li>
+<li>将 <code>DefaultSecurityFilterChain</code> 注册到 Spring Security
+过滤器链中，对 HTTP 请求进行拦截校验。</li>
+</ol>
+<p>我们展开说一下，<code>HttpSecurity</code> 继承自
+<code>AbstractConfiguredSecurityBuilder</code>，其 <code>build()</code>
+方法会触发配置器的初始化和过滤器的收集。</p>
+<h4 id="收集所有配置器生成的-filter">收集所有配置器生成的 Filter</h4>
+<p>核心逻辑在 <code>AbstractConfiguredSecurityBuilder</code> 的
+<code>doBuild()</code> 方法中，该方法会依次调用所有配置器（如
+<code>CsrfConfigurer</code>、<code>FormLoginConfigurer</code> 等）的
+<code>init()</code> 和 <code>configure()</code>
+方法，配置器在这些方法中生成对应的过滤器并添加到
+<code>HttpSecurity</code> 的 <code>filters</code> 列表中。</p>
+<figure>
+<img src="/posts/25670/image-20250925125759860.png" alt="image-20250925125759860">
+<figcaption aria-hidden="true">image-20250925125759860</figcaption>
+</figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">protected</span> <span class="keyword">final</span> O <span class="title function_">doBuild</span><span class="params">()</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">    <span class="keyword">synchronized</span> (<span class="built_in">this</span>.configurers) &#123;</span><br><span class="line">        <span class="built_in">this</span>.buildState = BuildState.INITIALIZING;</span><br><span class="line">        <span class="comment">// 初始化所有配置器（调用 configurer.init()）</span></span><br><span class="line">        init();</span><br><span class="line">        <span class="comment">// 配置所有配置器（调用 configurer.configure()）</span></span><br><span class="line">        <span class="built_in">this</span>.buildState = BuildState.CONFIGURING;</span><br><span class="line">        configure();</span><br><span class="line">        <span class="comment">// 执行实际构建（调用子类的 performBuild()）</span></span><br><span class="line">        <span class="built_in">this</span>.buildState = BuildState.BUILDING;</span><br><span class="line">        <span class="type">O</span> <span class="variable">result</span> <span class="operator">=</span> performBuild();</span><br><span class="line">        <span class="built_in">this</span>.buildState = BuildState.BUILT;</span><br><span class="line">        <span class="keyword">return</span> result;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>配置器生成过滤器的示例（以 <code>CsrfConfigurer</code>
+为例）,<code>CsrfConfigurer</code> 在 <code>configure()</code>
+方法中创建 <code>CsrfFilter</code> 并添加到 <code>HttpSecurity</code>
+的过滤器列表：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">configure</span><span class="params">(H http)</span> &#123;</span><br><span class="line">    <span class="type">CsrfFilter</span> <span class="variable">filter</span> <span class="operator">=</span> createCsrfFilter(http);</span><br><span class="line">    http.addFilter(filter); <span class="comment">// 添加到 HttpSecurity 的 filters 列表</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="按照预设顺序排序-filter"><strong>按照预设顺序排序
+Filter</strong></h4>
+<p>然后来到了第二步，过滤器的排序由 <code>FilterOrderRegistration</code>
+管理，最终在 <code>HttpSecurity</code> 的 <code>performBuild()</code>
+方法中完成排序。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">protected</span> DefaultSecurityFilterChain <span class="title function_">performBuild</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="comment">// 对过滤器按顺序排序（OrderComparator 基于 Ordered 接口的 getOrder()）</span></span><br><span class="line">    <span class="built_in">this</span>.filters.sort(OrderComparator.INSTANCE);</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 提取排序后的过滤器（去除 Ordered 包装）</span></span><br><span class="line">    List&lt;Filter&gt; sortedFilters = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;(<span class="built_in">this</span>.filters.size());</span><br><span class="line">    <span class="keyword">for</span> (Filter filter : <span class="built_in">this</span>.filters) &#123;</span><br><span class="line">        sortedFilters.add(((OrderedFilter) filter).filter);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 构建 DefaultSecurityFilterChain</span></span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">DefaultSecurityFilterChain</span>(<span class="built_in">this</span>.requestMatcher, sortedFilters);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>FilterOrderRegistration</code>
+预先定义了所有内置过滤器的顺序</p>
+<h4 id="封装为-defaultsecurityfilterchain"><strong>封装为
+<code>DefaultSecurityFilterChain</code></strong></h4>
+<p>排序完成后，<code>HttpSecurity</code>
+会将过滤器列表与请求匹配规则（<code>RequestMatcher</code>）结合，创建
+<code>DefaultSecurityFilterChain</code>
+实例。核心就是最后一步，前面都是排序</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">protected</span> DefaultSecurityFilterChain <span class="title function_">performBuild</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="comment">// ... 前面的排序逻辑省略 ...</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 结合请求匹配器和排序后的过滤器，创建 DefaultSecurityFilterChain</span></span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">DefaultSecurityFilterChain</span>(<span class="built_in">this</span>.requestMatcher, sortedFilters);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure>
+<img src="/posts/25670/image-20250925130009639.png" alt="image-20250925130009639">
+<figcaption aria-hidden="true">image-20250925130009639</figcaption>
+</figure>
+<p><code>DefaultSecurityFilterChain</code> 的构造方法如下</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">DefaultSecurityFilterChain</span> <span class="keyword">implements</span> <span class="title class_">SecurityFilterChain</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> RequestMatcher requestMatcher;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> List&lt;Filter&gt; filters;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">DefaultSecurityFilterChain</span><span class="params">(RequestMatcher requestMatcher, List&lt;Filter&gt; filters)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.requestMatcher = requestMatcher;</span><br><span class="line">        <span class="built_in">this</span>.filters = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;(filters);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 判断当前请求是否匹配该过滤链</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">matches</span><span class="params">(HttpServletRequest request)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">this</span>.requestMatcher.matches(request);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 获取过滤链中的过滤器</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> List&lt;Filter&gt; <span class="title function_">getFilters</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">this</span>.filters;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="注册到-spring-security-过滤器链"><strong>注册到 Spring Security
+过滤器链</strong></h4>
+<p><code>DefaultSecurityFilterChain</code> 生成后，会被注册到
+<code>FilterChainProxy</code> 中，而 <code>FilterChainProxy</code>
+作为一个顶级过滤器（<code>Filter</code>）被 Spring
+容器管理，最终拦截所有 HTTP 请求并应用对应的安全过滤链。</p>
+<p><code>FilterChainProxy</code>
+会根据请求匹配规则（<code>RequestMatcher</code>）选择对应的
+<code>DefaultSecurityFilterChain</code> 处理请求：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">FilterChainProxy</span> <span class="keyword">extends</span> <span class="title class_">GenericFilterBean</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> List&lt;SecurityFilterChain&gt; filterChains;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">doFilter</span><span class="params">(ServletRequest request, ServletResponse response, FilterChain chain)</span></span><br><span class="line">            <span class="keyword">throws</span> IOException, ServletException &#123;</span><br><span class="line">        doFilterInternal(request, response, chain);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">doFilterInternal</span><span class="params">(ServletRequest request, ServletResponse response, FilterChain chain)</span></span><br><span class="line">            <span class="keyword">throws</span> IOException, ServletException &#123;</span><br><span class="line">        <span class="type">HttpServletRequest</span> <span class="variable">httpRequest</span> <span class="operator">=</span> (HttpServletRequest) request;</span><br><span class="line">        <span class="type">HttpServletResponse</span> <span class="variable">httpResponse</span> <span class="operator">=</span> (HttpServletResponse) response;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 根据请求匹配规则选择对应的 SecurityFilterChain</span></span><br><span class="line">        List&lt;Filter&gt; filters = getFilters(httpRequest);</span><br><span class="line">        <span class="keyword">if</span> (filters == <span class="literal">null</span> || filters.isEmpty()) &#123;</span><br><span class="line">            chain.doFilter(request, response);</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 执行过滤链中的所有过滤器</span></span><br><span class="line">        <span class="type">VirtualFilterChain</span> <span class="variable">vfc</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">VirtualFilterChain</span>(chain, filters);</span><br><span class="line">        vfc.doFilter(httpRequest, httpResponse);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 根据请求匹配器获取对应的过滤器列表</span></span><br><span class="line">    <span class="keyword">private</span> List&lt;Filter&gt; <span class="title function_">getFilters</span><span class="params">(HttpServletRequest request)</span> &#123;</span><br><span class="line">        <span class="keyword">for</span> (SecurityFilterChain chain : <span class="built_in">this</span>.filterChains) &#123;</span><br><span class="line">            <span class="keyword">if</span> (chain.matches(request)) &#123;</span><br><span class="line">                <span class="keyword">return</span> chain.getFilters();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="httpsecurity如何初始化securityfilterchain过滤器链">HttpSecurity如何初始化SecurityFilterChain过滤器链</h3>
+<p>先回忆一下 Spring Security
+的过滤器叫<code>FilterChainProxy</code>，其中存储过滤器的属性叫<code>filterChains</code>，集合里元素的类型时<code>SecurityFilterChain</code>：</p>
+<figure>
+<img src="/posts/25670/image-20250925130455608.png" alt="image-20250925130455608">
+<figcaption aria-hidden="true">image-20250925130455608</figcaption>
+</figure>
+<p>因此，我们前面做了那么多，肯定是为了这个<code>SecurityFilterChain</code>来做准备的，下面我们看
+<code>SpringBootWebSecurityConfiguration</code> 这个类</p>
+<figure>
+<img src="/posts/25670/image-20250925130537156.png" alt="image-20250925130537156">
+<figcaption aria-hidden="true">image-20250925130537156</figcaption>
+</figure>
+<p>进入到这个方法也是很熟悉啊，我们之前说的<code>csrf()</code>、<code>formLogin()</code>
+等配置方法 实现模式完全一致，也是做了通过
+<strong>配置器（Configurer）</strong>
+收集用户的安全配置的工作（如授权规则、CSRF
+开关、登录页设置等），并在后续的 <code>build()</code>
+阶段由配置器生成对应的过滤器，最终整合到安全过滤链中。</p>
+<p>也是执行了<code>getOrApply</code>来管理配置器</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> HttpSecurity <span class="title function_">authorizeHttpRequests</span><span class="params">(Customizer&lt;AuthorizeHttpRequestsConfigurer&lt;HttpSecurity&gt;.AuthorizationManagerRequestMatcherRegistry&gt; authorizeHttpRequestsCustomizer)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">    <span class="comment">// 1. 获取 Spring 上下文</span></span><br><span class="line">    <span class="type">ApplicationContext</span> <span class="variable">context</span> <span class="operator">=</span> <span class="built_in">this</span>.getContext();</span><br><span class="line">    <span class="comment">// 2. 通过 getOrApply 获取/创建配置器，并获取其内部配置接口（AuthorizationManagerRequestMatcherRegistry）</span></span><br><span class="line">    authorizeHttpRequestsCustomizer.customize(((AuthorizeHttpRequestsConfigurer)<span class="built_in">this</span>.getOrApply(<span class="keyword">new</span> <span class="title class_">AuthorizeHttpRequestsConfigurer</span>(context))).getRegistry());</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">this</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>管中窥豹，我们可以得出，Spring Security 通过这种 <strong>“配置器模式
++ 链式调用”</strong>
+的设计，将分散的安全配置（授权、认证、防护等）统一管理，既保证了扩展性（可自定义配置器），又简化了使用方式（链式
+API）。</p>
+<figure>
+<img src="/posts/25670/image-20250925131342096.png" alt="image-20250925131342096">
+<figcaption aria-hidden="true">image-20250925131342096</figcaption>
+</figure>
+<p>从这个类结构图中我们不难发现，<code>HttpSecurity</code>和<code>AuthenticationManagerBuilder</code>都是这个
+builder 类的子类，所以说实现的逻辑都是一样的，但是，我们
+<code>HttpSecurity</code> 的构建就要复杂一点了</p>
+<p>前面我们知道了，<code>httpSecurity</code>初始化的时候创建了很多
+configure 并且最终是放入到他的 map 集合中的，之前我们提到了
+<code>doBuild()</code>方法实现了配置器生成对应的过滤器然后装配的，那么核心的流程就涉及到<code>init()</code>
+和 <code>configure()</code> 方法了，他们定义在
+<code>AbstractConfiguredSecurityBuilder</code>
+类中，是构建安全组件的核心方法。</p>
+<figure>
+<img src="/posts/25670/image-20250925132028518.png" alt="image-20250925132028518">
+<figcaption aria-hidden="true">image-20250925132028518</figcaption>
+</figure>
+<p><code>init()</code> 方法对所有已注册的
+<code>SecurityConfigurer</code>（如
+<code>CsrfConfigurer</code>、<code>AuthorizeHttpRequestsConfigurer</code>
+等）进行初始化操作。在初始化阶段，配置器可以做一些前置准备工作，比如设置一些基础的配置参数、初始化内部依赖等，但还不会实际生成过滤器等核心安全组件。可以看到它在构建过程的早期阶段，为后续的配置阶段做准备。而
+<code>beforeinit()</code>则涉及到了更早期的操作，类似 AOP 的前置消息</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">init</span><span class="params">()</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">    Collection&lt;SecurityConfigurer&lt;O, B&gt;&gt; configurers = getConfigurers();</span><br><span class="line">    <span class="keyword">for</span> (SecurityConfigurer&lt;O, B&gt; configurer : configurers) &#123;</span><br><span class="line">        configurer.init((B) <span class="built_in">this</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span> (SecurityConfigurer&lt;O, B&gt; configurer : <span class="built_in">this</span>.configurersAddedInInitializing) &#123;</span><br><span class="line">        configurer.init((B) <span class="built_in">this</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>configure()</code> 方法调用每个 <code>SecurityConfigurer</code>
+的 <code>configure</code>
+方法，让配置器根据用户的配置（比如授权规则、CSRF
+防护开关等）来生成对应的安全组件，像各种过滤器（<code>CsrfFilter</code>、<code>FilterSecurityInterceptor</code>
+等）就是在这个阶段由配置器创建并添加到 <code>HttpSecurity</code> 的
+<code>filters</code> 列表中的，可以看到他执行在 <code>init()</code>
+方法执行之后，是配置器实际发挥作用、生成安全组件的关键阶段。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">configure</span><span class="params">()</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">    Collection&lt;SecurityConfigurer&lt;O, B&gt;&gt; configurers = getConfigurers();</span><br><span class="line">    <span class="keyword">for</span> (SecurityConfigurer&lt;O, B&gt; configurer : configurers) &#123;</span><br><span class="line">        configurer.configure((B) <span class="built_in">this</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>init</code>方法和<code>configure</code>方法都是遍历的<code>configurers</code>然后执行每一个<code>configure</code>的配置方法的，<code>configurers</code>
+是一个 <strong>存储所有安全配置器的容器</strong>，定义如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// AbstractConfiguredSecurityBuilder 中定义</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> LinkedHashMap&lt;Class&lt;? <span class="keyword">extends</span> <span class="title class_">SecurityConfigurer</span>&lt;O, B&gt;&gt;, List&lt;SecurityConfigurer&lt;O, B&gt;&gt;&gt; configurers;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>这是一个
+<code>LinkedHashMap</code>，<strong>键是配置器的类型（<code>Class</code>）</strong>，<strong>值是该类型的配置器列表</strong>（通常一个类型只有一个配置器）。</li>
+<li>目的是按类型管理所有注册到 <code>HttpSecurity</code> 中的配置器（如
+<code>CsrfConfigurer</code>、<code>AuthorizeHttpRequestsConfigurer</code>
+等），方便后续遍历和操作。</li>
+</ul>
+<p><code>init()</code> 和 <code>configure()</code> 方法中遍历的
+<code>configurers</code>，正是通过 <code>getConfigurers()</code>
+方法提取的：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// AbstractConfiguredSecurityBuilder 中定义</span></span><br><span class="line"><span class="keyword">private</span> Collection&lt;SecurityConfigurer&lt;O, B&gt;&gt; <span class="title function_">getConfigurers</span><span class="params">()</span> &#123;</span><br><span class="line">    List&lt;SecurityConfigurer&lt;O, B&gt;&gt; result = <span class="keyword">new</span> <span class="title class_">ArrayList</span>();</span><br><span class="line">    <span class="comment">// 遍历 configurers 中所有类型的配置器列表，汇总为一个集合</span></span><br><span class="line">    <span class="keyword">for</span>(List&lt;SecurityConfigurer&lt;O, B&gt;&gt; configs : <span class="built_in">this</span>.configurers.values()) &#123;</span><br><span class="line">        result.addAll(configs);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>作用：将 <code>configurers</code>
+中按类型分组的配置器，汇总为一个扁平的 <code>Collection</code>，供
+<code>init()</code> 和 <code>configure()</code> 遍历。</li>
+<li>例如：如果注册了
+<code>CsrfConfigurer</code>、<code>FormLoginConfigurer</code>、<code>AuthorizeHttpRequestsConfigurer</code>，<code>getConfigurers()</code>
+会返回包含这三个配置器的集合。</li>
+</ul>
+<p>所有配置器（如 <code>CsrfConfigurer</code>）都实现了
+<code>SecurityConfigurer</code> 接口（通常继承
+<code>SecurityConfigurerAdapter</code>），因此都有 <code>init()</code>
+和 <code>configure()</code> 方法。我们挑<code>CsrfConfigurer</code>
+方法来实际看一下</p>
+<p>在 <code>HttpSecurity</code> 中，通过 <code>http.csrf()</code>
+方法触发 <code>CsrfConfigurer</code> 的创建与注册</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> CsrfConfigurer&lt;HttpSecurity&gt; <span class="title function_">csrf</span><span class="params">()</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        <span class="type">ApplicationContext</span> <span class="variable">context</span> <span class="operator">=</span> <span class="built_in">this</span>.getContext();</span><br><span class="line">        <span class="keyword">return</span> (CsrfConfigurer)<span class="built_in">this</span>.getOrApply(<span class="keyword">new</span> <span class="title class_">CsrfConfigurer</span>(context));</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>getOrApply(new CsrfConfigurer(context))</code>：若已存在
+<code>CsrfConfigurer</code>，直接返回；否则<strong>新建并注册</strong>到
+<code>configurers</code> 容器中。</li>
+</ul>
+<p><code>CsrfConfigurer</code> 虽未显式重写
+<code>init()</code>，但会继承父类 <code>AbstractHttpConfigurer</code> 的
+<code>init()</code>（空实现，可按需重写）。若有初始化逻辑，会在此阶段执行，新版本中，init()的流程貌似都交给了大家来处理</p>
+<p><code>CsrfConfigurer</code> 的 <code>configure()</code>
+是核心，负责创建 <code>CsrfFilter</code> 并注册到
+<code>HttpSecurity</code> 的过滤器链：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">configure</span><span class="params">(H http)</span> &#123;</span><br><span class="line">    <span class="comment">// 1. 创建 CsrfFilter，传入 CSRF 令牌仓库</span></span><br><span class="line">    <span class="type">CsrfFilter</span> <span class="variable">filter</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">CsrfFilter</span>(<span class="built_in">this</span>.csrfTokenRepository);</span><br><span class="line">    <span class="comment">// 2. 配置 CSRF 防护的请求匹配规则</span></span><br><span class="line">    <span class="type">RequestMatcher</span> <span class="variable">requireCsrfProtectionMatcher</span> <span class="operator">=</span> getRequireCsrfProtectionMatcher();</span><br><span class="line">    <span class="keyword">if</span> (requireCsrfProtectionMatcher != <span class="literal">null</span>) &#123;</span><br><span class="line">        filter.setRequireCsrfProtectionMatcher(requireCsrfProtectionMatcher);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 3. 配置访问拒绝处理器（处理 CSRF 校验失败）</span></span><br><span class="line">    <span class="type">AccessDeniedHandler</span> <span class="variable">accessDeniedHandler</span> <span class="operator">=</span> createAccessDeniedHandler(http);</span><br><span class="line">    filter.setAccessDeniedHandler(accessDeniedHandler);</span><br><span class="line">    <span class="comment">// 4. 与其他配置器联动（如 LogoutConfigurer、SessionManagementConfigurer）</span></span><br><span class="line">    LogoutConfigurer&lt;H&gt; logoutConfigurer = http.getConfigurer(LogoutConfigurer.class);</span><br><span class="line">    <span class="keyword">if</span> (logoutConfigurer != <span class="literal">null</span>) &#123;</span><br><span class="line">        logoutConfigurer.addLogoutHandler(<span class="keyword">new</span> <span class="title class_">CsrfLogoutHandler</span>(<span class="built_in">this</span>.csrfTokenRepository));</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 5. 注册过滤器到 HttpSecurity 的过滤器列表</span></span><br><span class="line">    http.addFilter(filter);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>当调用 <code>http.build()</code> 时，进入 <code>performBuild()</code>
+阶段,最终参与 <code>SecurityFilterChain</code> 构建：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">protected</span> DefaultSecurityFilterChain <span class="title function_">performBuild</span><span class="params">()</span> &#123;</span><br><span class="line">    ........</span><br><span class="line">    <span class="comment">// 1. 对所有过滤器（含 CsrfFilter、UsernamePasswordAuthenticationFilter 等）排序</span></span><br><span class="line">    <span class="built_in">this</span>.filters.sort(OrderComparator.INSTANCE);</span><br><span class="line">    List&lt;Filter&gt; sortedFilters = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;(<span class="built_in">this</span>.filters.size());</span><br><span class="line">    <span class="keyword">for</span> (Filter filter : <span class="built_in">this</span>.filters) &#123;</span><br><span class="line">        sortedFilters.add(filter);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 2. 结合请求匹配器，创建 DefaultSecurityFilterChain</span></span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">DefaultSecurityFilterChain</span>(<span class="built_in">this</span>.requestMatcher, sortedFilters);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里我们看到，它先把
+<code>filter</code>里面的过滤器排序，遍历然后放入到<code>sortedFilters</code>，最后创建了一个<code>DefaultSecurityFilterChain</code>对象，至此，一个<code>SecurityFilterChain</code>创建完毕，这里构造方法里还有个<code>requestMatcher</code>属性留意一下，其实就是
+Spring Security
+的<code>FilterChainProxy</code>中的<code>filterChains</code>是一个集合，所以支持多个，那当有多个<code>SecurityFilterChain</code>时，一个请求进来会使用哪个<code>SecurityFilterChain</code>就是由这个<code>requestMatcher</code>决定的</p>
+<p>此时，一个完整的 <code>SecurityFilterChain</code> 诞生了：它包含
+<strong>排序后的过滤器列表</strong>（如
+<code>CsrfFilter</code>、<code>UsernamePasswordAuthenticationFilter</code>
+等）和
+<strong>请求匹配规则</strong>（<code>requestMatcher</code>）。</p>
+<p>在 Spring Security 启动时，所有 <code>HttpSecurity</code> 构建的
+<code>DefaultSecurityFilterChain</code> 会被收集到
+<code>FilterChainProxy</code> 的 <code>filterChains</code> 集合中</p>
+<p>当用户发送请求（如
+<code>POST /web/user</code>）时，流程进入运行阶段，核心是通过
+<code>requestMatcher</code> 选择合适的过滤链：</p>
+<p>所有请求会先经过 <code>FilterChainProxy</code> 的
+<code>doFilter</code> 方法，这是 Spring Security 的 “守门人</p>
+<p><code>FilterChainProxy</code> 的 <code>doFilter</code>
+方法接收请求（Spring Security 过滤链的 “总入口”），是请求进入 Spring
+Security
+过滤链的第一步，核心逻辑如下，它作为所有安全过滤逻辑的入口，通过
+<code>doFilterInternal</code> 方法进入真正的过滤链匹配与执行流程</p>
+<figure>
+<img src="/posts/25670/image-20250925134702027.png" alt="image-20250925134702027">
+<figcaption aria-hidden="true">image-20250925134702027</figcaption>
+</figure>
+<p>在 <code>doFilterInternal</code> 方法中，会调用
+<code>getFilters</code> 方法<strong>筛选出与当前请求匹配的
+<code>SecurityFilterChain</code></strong>， <code>getFilters</code>
+方法遍历 <code>filterChains</code> 集合，通过每个链的
+<code>requestMatcher</code> 判断是否匹配当前请求：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">doFilterInternal</span><span class="params">(ServletRequest request, ServletResponse response, FilterChain chain)</span> <span class="keyword">throws</span> IOException, ServletException &#123;</span><br><span class="line">    <span class="comment">// 1. 对请求和响应做防火墙包装（安全增强）</span></span><br><span class="line">    <span class="type">FirewalledRequest</span> <span class="variable">firewallRequest</span> <span class="operator">=</span> <span class="built_in">this</span>.firewall.getFirewalledRequest((HttpServletRequest) request);</span><br><span class="line">    <span class="type">HttpServletResponse</span> <span class="variable">firewallResponse</span> <span class="operator">=</span> <span class="built_in">this</span>.firewall.getFirewalledResponse((HttpServletResponse) response);</span><br><span class="line">    <span class="comment">// 2. 关键：调用 getFilters 筛选匹配的 SecurityFilterChain，并获取其过滤器列表</span></span><br><span class="line">    List&lt;Filter&gt; filters = <span class="built_in">this</span>.getFilters((HttpServletRequest) firewallRequest);</span><br><span class="line">    <span class="keyword">if</span> (filters != <span class="literal">null</span> &amp;&amp; filters.size() != <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="comment">// 有匹配的过滤器链，执行过滤逻辑（装饰器模式包装后执行）</span></span><br><span class="line">        <span class="type">FilterChain</span> <span class="variable">reset</span> <span class="operator">=</span> (ServletRequest req, ServletResponse res) -&gt; &#123;</span><br><span class="line">            firewallRequest.reset();</span><br><span class="line">            chain.doFilter(req, res);</span><br><span class="line">        &#125;;</span><br><span class="line">        <span class="built_in">this</span>.filterChainDecorator.decorate(reset, filters).doFilter(firewallRequest, firewallResponse);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">// 无匹配的过滤器链，直接放行</span></span><br><span class="line">        firewallRequest.reset();</span><br><span class="line">        chain.doFilter(firewallRequest, firewallResponse);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure>
+<img src="/posts/25670/image-20250925134728027.png" alt="image-20250925134728027">
+<figcaption aria-hidden="true">image-20250925134728027</figcaption>
+</figure>
+<p><code>getFilters</code> 方法会遍历所有
+<code>SecurityFilterChain</code>，通过 <code>requestMatcher</code>
+判断是否匹配当前请求，一旦找到匹配的
+<code>SecurityFilterChain</code>，其包含的过滤器会按顺序执行</p>
+<p>其中<code>chain.matches(request)</code> —— 每个
+<code>SecurityFilterChain</code> 都有自己的
+<code>requestMatcher</code>（请求匹配器），只有当请求与
+<code>requestMatcher</code> 匹配时，才会使用该链的过滤器。</p>
+<figure>
+<img src="/posts/25670/image-20250925134752889.png" alt="image-20250925134752889">
+<figcaption aria-hidden="true">image-20250925134752889</figcaption>
+</figure>
+<p>那么<code>FilterChainsProxy</code>是从哪里来的呢，<code>FilterChainProxy</code>
+是 Spring Security
+过滤链的<strong>顶层代理过滤器</strong>，它的创建和注册与
+<code>WebSecurity</code> 密切相关</p>
+<figure>
+<img src="/posts/25670/image-20250925135647988.png" alt="image-20250925135647988">
+<figcaption aria-hidden="true">image-20250925135647988</figcaption>
+</figure>
+<p><code>WebSecurity</code> 是 Spring Security
+中<strong>管理全局安全过滤链</strong>的核心构建器（继承自
+<code>AbstractConfiguredSecurityBuilder</code>），它的
+<code>performBuild()</code> 方法最终会创建 <code>FilterChainProxy</code>
+实例，代码如下</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">protected</span> Filter <span class="title function_">performBuild</span><span class="params">()</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">    <span class="comment">// 1. 收集所有 SecurityFilterChain（包括忽略的请求链和业务过滤链）</span></span><br><span class="line">    List&lt;SecurityFilterChain&gt; securityFilterChains = <span class="keyword">new</span> <span class="title class_">ArrayList</span>();</span><br><span class="line">    <span class="comment">// ① 添加“忽略请求”对应的空过滤链（如配置的 ignoredRequests）</span></span><br><span class="line">    <span class="keyword">for</span>(RequestMatcher ignoredRequest : <span class="built_in">this</span>.ignoredRequests) &#123;</span><br><span class="line">        <span class="type">SecurityFilterChain</span> <span class="variable">securityFilterChain</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">DefaultSecurityFilterChain</span>(ignoredRequest, <span class="keyword">new</span> <span class="title class_">Filter</span>[<span class="number">0</span>]);</span><br><span class="line">        securityFilterChains.add(securityFilterChain);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// ② 添加通过 HttpSecurity 构建的业务过滤链</span></span><br><span class="line">    <span class="keyword">for</span>(SecurityBuilder&lt;? <span class="keyword">extends</span> <span class="title class_">SecurityFilterChain</span>&gt; securityFilterChainBuilder : <span class="built_in">this</span>.securityFilterChainBuilders) &#123;</span><br><span class="line">        <span class="type">SecurityFilterChain</span> <span class="variable">securityFilterChain</span> <span class="operator">=</span> securityFilterChainBuilder.build();</span><br><span class="line">        securityFilterChains.add(securityFilterChain);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 2. 创建 FilterChainProxy，传入所有收集到的 SecurityFilterChain</span></span><br><span class="line">    <span class="type">FilterChainProxy</span> <span class="variable">filterChainProxy</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FilterChainProxy</span>(securityFilterChains);</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 3. 配置防火墙、请求拒绝处理器等附加属性</span></span><br><span class="line">    <span class="keyword">if</span> (<span class="built_in">this</span>.httpFirewall != <span class="literal">null</span>) &#123;</span><br><span class="line">        filterChainProxy.setFirewall(<span class="built_in">this</span>.httpFirewall);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (<span class="built_in">this</span>.requestRejectedHandler != <span class="literal">null</span>) &#123;</span><br><span class="line">        filterChainProxy.setRequestRejectedHandler(<span class="built_in">this</span>.requestRejectedHandler);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 4. 如果开启调试模式，用 DebugFilter 包装</span></span><br><span class="line">    <span class="type">Filter</span> <span class="variable">result</span> <span class="operator">=</span> filterChainProxy;</span><br><span class="line">    <span class="keyword">if</span> (<span class="built_in">this</span>.debugEnabled) &#123;</span><br><span class="line">        result = <span class="keyword">new</span> <span class="title class_">DebugFilter</span>(filterChainProxy);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> result; <span class="comment">// 最终返回的就是 FilterChainProxy（或其包装类）</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>也就是说，<code>FilterChainProxy</code> 是 <code>WebSecurity</code>
+在 <code>performBuild()</code>
+方法中<strong>主动创建</strong>的，它的构造参数是所有收集到的
+<code>SecurityFilterChain</code>，而<code>WebSecurity</code>
+本身的初始化和 <code>FilterChainProxy</code> 的创建，依赖于 Spring
+Security 的<strong>自动配置机制</strong>，核心流程如下：</p>
+<ul>
+<li><p>当我们在项目中添加 <code>@EnableWebSecurity</code> 注解时，会导入
+<code>WebSecurityConfiguration</code> 配置类，这个类是
+<code>WebSecurity</code> 的 “孵化器”。</p></li>
+<li><p>在 <code>WebSecurityConfiguration</code> 中，会通过
+<code>@Bean</code> 方法创建 <code>WebSecurity</code>
+对象，并为其配置必要的依赖（如
+<code>ObjectPostProcessor</code>、<code>ApplicationContext</code>
+等）：</p>
+<figure>
+<img src="/posts/25670/image-20250925135925412.png" alt="image-20250925135925412">
+<figcaption aria-hidden="true">image-20250925135925412</figcaption>
+</figure></li>
+<li><p>然后，其中我们通过 <code>SecurityConfiguration</code> 中定义的
+<code>SecurityFilterChain</code> Bean，会被
+<code>WebSecurityConfiguration</code>
+自动收集，这个方法也就是<strong>接收并存储外部配置好的
+<code>SecurityFilterChain</code> 列表</strong></p>
+<figure>
+<img src="/posts/25670/image-20250925140031540.png" alt="image-20250925140031540">
+<figcaption aria-hidden="true">image-20250925140031540</figcaption>
+</figure></li>
+<li><p>然后通过这个方法过滤器被添加，通过
+<code>webSecurity.addSecurityFilterChainBuilder(...)</code> 方法添加到
+<code>WebSecurity</code> 的 <code>securityFilterChainBuilders</code>
+列表中（对应 <code>WebSecurity</code> 源码中的
+<code>securityFilterChainBuilders</code> 集合）。</p>
+<figure>
+<img src="/posts/25670/image-20250925140227493.png" alt="image-20250925140227493">
+<figcaption aria-hidden="true">image-20250925140227493</figcaption>
+</figure></li>
+<li><p>最后，当 Spring 容器初始化时，会调用 <code>WebSecurity</code> 的
+<code>build()</code> 方法（继承自
+<code>AbstractSecurityBuilder</code>），最终执行
+<code>performBuild()</code> 方法，创建 <code>FilterChainProxy</code>
+并作为 <code>@Bean</code> 注册到 Spring 容器中。而 webSecurity
+和httpSecurity 也是同一个父类，因此 webSecurity 的 build
+方法也是同样的逻辑</p></li>
+<li><p>至此，FilterChainsProxy也创建完毕了。</p></li>
+</ul>
+<p>最后，<code>FilterChainProxy</code> 作为 Spring 管理的
+<code>Filter</code> 类型 Bean，会被 Spring 的
+<code>DelegatingFilterProxy</code> 代理，并注册到 Servlet 容器（如
+Tomcat）的过滤器链中。</p>
+<p>流程如下：</p>
+<ol type="1">
+<li><p>Spring 容器启动时，<code>DelegatingFilterProxy</code> 作为
+Servlet 过滤器被注册（通过
+<code>AbstractSecurityWebApplicationInitializer</code>
+自动配置）。</p></li>
+<li><p><code>DelegatingFilterProxy</code> 会从 Spring 容器中查找名为
+<code>springSecurityFilterChain</code> 的 <code>Filter</code>
+Bean（默认就是 <code>WebSecurity</code> 构建的
+<code>FilterChainProxy</code>）。</p></li>
+<li><p>当请求到达 Servlet 容器时，会先经过
+<code>DelegatingFilterProxy</code>，再转发给
+<code>FilterChainProxy</code> 执行实际的安全过滤逻辑。</p></li>
+</ol>
+<p>然后我们就进行梳理<code>HttpSecurity</code> 初始化
+<code>SecurityFilterChain</code> 过滤器链的流程</p>
+<p>当调用 <code>http.build()</code>（<code>HttpSecurity</code> 继承自
+<code>SecurityBuilder</code>，<code>build</code>
+方法用于构建最终的安全组件）时，会触发以下关键步骤来初始化
+<code>SecurityFilterChain</code>：</p>
+<ul>
+<li><p>执行 <code>init()</code> 方法，遍历所有注册到
+<code>HttpSecurity</code> 的 <code>SecurityConfigurer</code>，调用它们的
+<code>init</code> 方法，完成配置器的初始化准备。</p></li>
+<li><p>执行 <code>configure()</code> 方法，再次遍历所有
+<code>SecurityConfigurer</code>，调用它们的 <code>configure</code>
+方法。在这个过程中，各个配置器会根据自身的配置逻辑，生成对应的过滤器，并将这些过滤器添加到
+<code>HttpSecurity</code> 的 <code>filters</code> 列表中。例如</p>
+<ul>
+<li><code>CsrfConfigurer</code> 会创建 <code>CsrfFilter</code> 并添加到
+<code>filters</code>；</li>
+<li><code>AuthorizeHttpRequestsConfigurer</code> 会创建
+<code>FilterSecurityInterceptor</code> 来处理授权规则，并添加到
+<code>filters</code>。</li>
+</ul></li>
+<li><p>构建 <code>DefaultSecurityFilterChain</code>，在
+<code>HttpSecurity</code> 的 <code>performBuild</code> 方法中，会对
+<code>filters</code> 列表中的过滤器按照预设的顺序（由
+<code>FilterOrderRegistration</code>
+管理）进行排序，然后结合请求匹配器（<code>RequestMatcher</code>，用于判断哪些请求需要经过该过滤链），创建
+<code>DefaultSecurityFilterChain</code> 实例</p></li>
+<li><p>注册 <code>SecurityFilterChain</code>，生成的
+<code>DefaultSecurityFilterChain</code> 会被注册到
+<code>FilterChainProxy</code> 中。<code>FilterChainProxy</code> 是
+Spring Security 过滤器链的代理，它会根据请求的匹配情况，选择对应的
+<code>SecurityFilterChain</code> 来处理请求，从而实现对 HTTP
+请求的安全拦截与校验。</p></li>
+</ul>
+<p>所以说，<code>HttpSecurity</code> 初始化
+<code>SecurityFilterChain</code> 过滤器链的过程，是通过
+<code>init()</code>
+方法初始化配置器，<code>configure()</code>方法让配置器生成过滤器，再对过滤器排序并结合请求匹配器构建
+<code>DefaultSecurityFilterChain</code>，最后将其注册到
+<code>FilterChainProxy</code> 中，以此来实现对 HTTP 请求的安全过滤。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a target="_blank" rel="noopener" href="https://github.com/ergou10086">ErgouTree</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://ergou10086.github.io/posts/25670.html">https://ergou10086.github.io/posts/25670.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://ergou10086.github.io" target="_blank">ErgouTree's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Java%E6%8A%80%E6%9C%AF/">Java技术</a><a class="post-meta__tags" href="/tags/JavaWeb/">JavaWeb</a><a class="post-meta__tags" href="/tags/%E6%A1%86%E6%9E%B6%E7%9F%A5%E8%AF%86/">框架知识</a><a class="post-meta__tags" href="/tags/%E5%AD%A6%E4%B9%A0/">学习</a><a class="post-meta__tags" href="/tags/JavaEE/">JavaEE</a><a class="post-meta__tags" href="/tags/Spring%E7%B3%BB%E5%88%97/">Spring系列</a><a class="post-meta__tags" href="/tags/Java%E6%A1%86%E6%9E%B6/">Java框架</a><a class="post-meta__tags" href="/tags/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">源码分析</a><a class="post-meta__tags" href="/tags/%E5%90%8E%E7%AB%AF/">后端</a><a class="post-meta__tags" href="/tags/Spring-Security/">Spring Security</a><a class="post-meta__tags" href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%AE%89%E5%85%A8/">计算机安全</a></div><div class="post-share"><div class="addtoany"><div class="a2a_kit a2a_kit_size_32 a2a_default_style"><a class="a2a_button_facebook"></a><a class="a2a_button_twitter"></a><a class="a2a_button_wechat"></a><a class="a2a_button_sina_weibo"></a><a class="a2a_button_facebook_messenger"></a><a class="a2a_button_email"></a><a class="a2a_button_copy_link"></a><a class="a2a_dd" target="_blank" rel="noopener" href="https://www.addtoany.com/share"></a></div></div><script async="async" src="https://static.addtoany.com/menu/page.js"></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/posts/51940.html" title="Redis part2—Redis的基本命令"><img class="cover" src="/images/posts/cover_redis.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">Redis part2—Redis的基本命令</div></div><div class="info-2"><div class="info-item-1">Redis的常用命令 Redis 的两种命令 Redis 有两种命令 在 Windows 的 cmd 命令提示符中，可以在不进入 Redis 内部终端的情况下执行 Redis 命令，一般格式是：redis-cli.exe [options] command [arguments] ，options 是连接相关的参数，command 是具体的 Redis 命令，arguments 是命令的参数。 关于这个部分的命令，常用的比较少，下面说的常用命令都是基于第二种 一般情况下，我们在 Redis 内部终端输入命令，要进入 Redis 内部终端，你需要先连接到 Redis 服务器，打开命令提示符，redis-server.exe redis.conf即可启动 。如果 Redis 已经启动，和MySQL 一样，Redis 也需要新建连接，在 Windows 环境下，可以进入 Redis 安装目录，之后使用如下格式的命令新建链接，执行 redis-cli.exe -h 127.0.0.1 -p 6379 （默认端口是...</div></div></div></a><a class="pagination-related" href="/posts/23012.html" title="ErgouTree菜谱之糖醋排骨"><img class="cover" src="/images/posts/cover_tech1.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">ErgouTree菜谱之糖醋排骨</div></div><div class="info-2"><div class="info-item-1">ErgouTree...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/posts/43454.html" title="Spring Security part2—从入门示例到底层配置的实际分析"><img class="cover" src="/images/posts/cover_java15.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-09-21</div><div class="info-item-2">Spring Security part2—从入门示例到底层配置的实际分析</div></div><div class="info-2"><div class="info-item-1">Spring Security 示例——实现最简单的身份认证 首先，我们会编写一个只有最基本功能的 Spring Security 程序，只有最基本的最简单的身份验证，之后我们会随着学习不断完善这个项目 Spring Security 接入 引入依赖，我们引入 Spring Security 对应的starter 1234&lt;dependency&gt;     &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;     &lt;artifactId&gt;spring-boot-starter-security&lt;/artifactId&gt;&lt;/dependency&gt; 引入依赖后，如果你直接就开始写，在尝试去访问接下来写的接口就会自动跳转到一个 Spring Security 的默认登陆页面，默认用户名是...</div></div></div></a><a class="pagination-related" href="/posts/44670.html" title="Spring Security part3—基于内存的用户认证及其源码分析"><img class="cover" src="/images/posts/cover_java20.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-09-21</div><div class="info-item-2">Spring Security part3—基于内存的用户认证及其源码分析</div></div><div class="info-2"><div class="info-item-1">自定义内存用户验证的配置 用户验证方式 基于内存的用户认证虽然用的比较少，但是这东西简单而且便捷 而 Spring Security 进行用户验证的方式有如下几种，特点也如下  基于内存的验证（In-Memory Authentication）  特点：用户信息直接配置在内存中，无需数据库或其他存储介质 适用场景：快速原型开发、测试环境或简单应用 优势：配置简单，无需额外依赖 局限：用户信息无法动态修改，重启应用后变更会丢失  基于数据库的验证（JDBC Authentication）  特点：通过 JDBC 连接数据库，从数据库表中读取用户信息 适用场景：需要持久化存储用户信息的应用 优势：用户信息可动态管理，支持大量用户 配置：需定义用户表和权限表结构，通过 JdbcUserDetailsManager 实现  基于自定义 UserDetailsService 的验证  特点：通过实现...</div></div></div></a><a class="pagination-related" href="/posts/6404.html" title="Spring Security part4—基于数据库的用户认证"><img class="cover" src="/images/posts/cover_teach4.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-09-22</div><div class="info-item-2">Spring Security part4—基于数据库的用户认证</div></div><div class="info-2"><div class="info-item-1">基于数据库的用户认证 在前面我们讲了 Spring Security 基于内存的用户认证，但是实际开发中肯定不能做到基于内存隔这就验证，所以说生产开发中，更多使用的还是基于数据库的动态用户认证 Spring Security 基于数据库的用户验证是实际项目中最常用的认证方式，相比基于内存的验证，它能实现用户数据的持久化存储和动态管理。 实际配置理解基于数据库的用户认证 基于数据库的验证与基于内存的验证核心流程一致，都是通过 Spring Security 的UserDetailsService接口加载用户信息，但数据来源从硬编码的内存数据改为数据库。 我们设计数据库表，通常需要两张核心表（用户表和角色表），采用多对多关系： 12345678910111213141516171819202122232425-- 用户表CREATE TABLE `sys_user` (  `id` bigint NOT NULL AUTO_INCREMENT,  `username` varchar(50) NOT NULL,  `password` varchar(100)...</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="gitalk-container"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/arp.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">ErgouTree</div><div class="author-info-description">I start a brand-new life with you.</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">199</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">105</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">72</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/ergou10086"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/ergou10086" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="/zjm88822201@126.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a><a class="social-icon" href="https://space.bilibili.com/142045656?spm_id_from=333.1007.0.0" target="_blank" title="bilibili"><i class="fas fa-brands fa-bilibili" style="color: #4a72be;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">作者长期陷入galgame和osu!maina4k中 祝他好运吧 对了 如果图片加载过慢 建议科学上网进行使用</div></div><div class="card-widget"><div class="item-headline"><i></i><span></span></div><div class="item-content"></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#spring-security-%E9%BB%98%E8%AE%A4%E9%85%8D%E7%BD%AE%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90"><span class="toc-number">1.</span> <span class="toc-text">Spring Security
+默认配置源码分析</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#spring-security-%E7%9A%84%E8%87%AA%E5%8A%A8%E9%85%8D%E7%BD%AE"><span class="toc-number">2.</span> <span class="toc-text">Spring Security 的自动配置</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#httpsecurity-%E4%B8%AD%E5%8A%A0%E8%BD%BD%E4%BA%86%E4%BB%80%E4%B9%88"><span class="toc-number">2.1.</span> <span class="toc-text">HttpSecurity 中加载了什么</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#httpsecurity%E8%87%AA%E5%8A%A8%E8%A3%85%E9%85%8D%E7%9A%84%E6%B5%81%E7%A8%8B"><span class="toc-number">2.2.</span> <span class="toc-text">HttpSecurity自动装配的流程</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#httpsecurity%E5%A6%82%E4%BD%95%E6%9E%84%E5%BB%BA%E8%BF%87%E6%BB%A4%E5%99%A8%E9%93%BE"><span class="toc-number">3.</span> <span class="toc-text">HttpSecurity如何构建过滤器链</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#httpsecurity%E5%A6%82%E4%BD%95%E6%9E%84%E5%BB%BAdefaultsecurityfilterchain%E8%BF%87%E6%BB%A4%E5%99%A8%E9%93%BE"><span class="toc-number">3.1.</span> <span class="toc-text">HttpSecurity如何构建DefaultSecurityFilterChain过滤器链</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%94%B6%E9%9B%86%E6%89%80%E6%9C%89%E9%85%8D%E7%BD%AE%E5%99%A8%E7%94%9F%E6%88%90%E7%9A%84-filter"><span class="toc-number">3.1.1.</span> <span class="toc-text">收集所有配置器生成的 Filter</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8C%89%E7%85%A7%E9%A2%84%E8%AE%BE%E9%A1%BA%E5%BA%8F%E6%8E%92%E5%BA%8F-filter"><span class="toc-number">3.1.2.</span> <span class="toc-text">按照预设顺序排序
+Filter</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%B0%81%E8%A3%85%E4%B8%BA-defaultsecurityfilterchain"><span class="toc-number">3.1.3.</span> <span class="toc-text">封装为
+DefaultSecurityFilterChain</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B3%A8%E5%86%8C%E5%88%B0-spring-security-%E8%BF%87%E6%BB%A4%E5%99%A8%E9%93%BE"><span class="toc-number">3.1.4.</span> <span class="toc-text">注册到 Spring Security
+过滤器链</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#httpsecurity%E5%A6%82%E4%BD%95%E5%88%9D%E5%A7%8B%E5%8C%96securityfilterchain%E8%BF%87%E6%BB%A4%E5%99%A8%E9%93%BE"><span class="toc-number">3.2.</span> <span class="toc-text">HttpSecurity如何初始化SecurityFilterChain过滤器链</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/23012.html" title="ErgouTree菜谱之糖醋排骨"><img src="/images/posts/cover_tech1.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="ErgouTree菜谱之糖醋排骨"/></a><div class="content"><a class="title" href="/posts/23012.html" title="ErgouTree菜谱之糖醋排骨">ErgouTree菜谱之糖醋排骨</a><time datetime="2025-09-25T06:27:11.000Z" title="发表于 2025-09-25 14:27:11">2025-09-25</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/25670.html" title="Spring Security part6—Spring Security的默认配置与过滤器链的自动装配"><img src="/images/posts/cover_docker2.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Spring Security part6—Spring Security的默认配置与过滤器链的自动装配"/></a><div class="content"><a class="title" href="/posts/25670.html" title="Spring Security part6—Spring Security的默认配置与过滤器链的自动装配">Spring Security part6—Spring Security的默认配置与过滤器链的自动装配</a><time datetime="2025-09-25T06:19:17.000Z" title="发表于 2025-09-25 14:19:17">2025-09-25</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/51940.html" title="Redis part2—Redis的基本命令"><img src="/images/posts/cover_redis.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis part2—Redis的基本命令"/></a><div class="content"><a class="title" href="/posts/51940.html" title="Redis part2—Redis的基本命令">Redis part2—Redis的基本命令</a><time datetime="2025-09-24T12:08:57.000Z" title="发表于 2025-09-24 20:08:57">2025-09-24</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/7686.html" title="Maven常见报错分析和在开发中使用的小技巧"><img src="/images/posts/cover2x.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Maven常见报错分析和在开发中使用的小技巧"/></a><div class="content"><a class="title" href="/posts/7686.html" title="Maven常见报错分析和在开发中使用的小技巧">Maven常见报错分析和在开发中使用的小技巧</a><time datetime="2025-09-24T07:10:47.000Z" title="发表于 2025-09-24 15:10:47">2025-09-24</time></div></div></div></div></div></div></main><div class="fps-display"><span id="fps">FPS: 60</span></div><footer id="footer" style="background-image: url(/images/posts/cover_docker2.jpg);"><div id="footer-wrap"><div class="copyright">&copy;2024 - 2025 By ErgouTree</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">忘れたくない思い、ありますか？ <br>,<span id="realtime_duration" style="font-family: monospace;"></span>,<br><a href="https://icp.gov.moe/?keyword=20257009" target="_blank">萌ICP备20257009号</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><a class="icon-V hidden" onclick="switchNightMode()" title="日间和夜间模式切换"><svg width="25" height="25" viewBox="0 0 1024 1024"><use id="modeicon" xlink:href="#icon-moon"></use></svg></a><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="chat-btn" type="button" title="聊天" style="display:none"><i class="fas fa-comment"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (true) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script><script>(() => {
+  const applyThemeDefaultsConfig = theme => {
+    if (theme === 'dark-mode') {
+      Chart.defaults.color = "rgba(255, 255, 255, 0.8)"
+      Chart.defaults.borderColor = "rgba(255, 255, 255, 0.2)"
+      Chart.defaults.scale.ticks.backdropColor = "transparent"
+    } else {
+      Chart.defaults.color = "rgba(0, 0, 0, 0.8)"
+      Chart.defaults.borderColor = "rgba(0, 0, 0, 0.1)"
+      Chart.defaults.scale.ticks.backdropColor = "transparent"
+    }
+  }
+
+  // Recursively traverse the config object and automatically apply theme-specific color schemes
+  const applyThemeConfig = (obj, theme) => {
+    if (typeof obj !== 'object' || obj === null) return
+
+    Object.keys(obj).forEach(key => {
+      const value = obj[key]
+      // If the property is an object and has theme-specific options, apply them
+      if (typeof value === 'object' && value !== null) {
+        if (value[theme]) {
+          obj[key] = value[theme] // Apply the value for the current theme
+        } else {
+          // Recursively process child objects
+          applyThemeConfig(value, theme)
+        }
+      }
+    })
+  }
+
+  const runChartJS = ele => {
+    window.loadChartJS = true
+
+    Array.from(ele).forEach((item, index) => {
+      const chartSrc = item.firstElementChild
+      const chartID = item.getAttribute('data-chartjs-id') || ('chartjs-' + index) // Use custom ID or default ID
+      const width = item.getAttribute('data-width')
+      const existingCanvas = document.getElementById(chartID)
+
+      // If a canvas already exists, remove it to avoid rendering duplicates
+      if (existingCanvas) {
+          existingCanvas.parentNode.remove()
+      }
+
+      const chartDefinition = chartSrc.textContent
+      const canvas = document.createElement('canvas')
+      canvas.id = chartID
+
+      const div = document.createElement('div')
+      div.className = 'chartjs-wrap'
+
+      if (width) {
+        div.style.width = width
+      }
+
+      div.appendChild(canvas)
+      chartSrc.insertAdjacentElement('afterend', div)
+
+      const ctx = document.getElementById(chartID).getContext('2d')
+
+      const config = JSON.parse(chartDefinition)
+
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark-mode' : 'light-mode'
+
+      // Set default styles (initial setup)
+      applyThemeDefaultsConfig(theme)
+
+      // Automatically traverse the config and apply dual-mode color schemes
+      applyThemeConfig(config, theme)
+
+      new Chart(ctx, config)
+    })
+  }
+
+  const loadChartJS = () => {
+    const chartJSEle = document.querySelectorAll('#article-container .chartjs-container')
+    if (chartJSEle.length === 0) return
+
+    window.loadChartJS ? runChartJS(chartJSEle) : btf.getScript('https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.min.js').then(() => runChartJS(chartJSEle))
+  }
+
+  // Listen for theme change events
+  btf.addGlobalFn('themeChange', loadChartJS, 'chartjs')
+  btf.addGlobalFn('encrypt', loadChartJS, 'chartjs')
+
+  window.pjax ? loadChartJS() : document.addEventListener('DOMContentLoaded', loadChartJS)
+})()</script><script>(function() {
+  const abcjsInit = function() {
+    const abcjsFn = function() {
+      setTimeout(function() {
+        const sheets = document.querySelectorAll(".abc-music-sheet")
+        for (let i = 0; i < sheets.length; i++) {
+          const ele = sheets[i]
+          if (ele.children.length > 0) continue
+
+          // Parse parameters from data-params attribute
+          let params = {}
+          const dp = ele.getAttribute("data-params")
+          if (dp) {
+            try {
+              params = JSON.parse(dp)
+            } catch (e) {
+              console.error("Failed to parse data-params:", e)
+            }
+          }
+
+          // Merge parsed parameters with the responsive option
+          // Ensures params content appears before responsive
+          const options = { ...params, responsive: "resize" }
+
+          // Render the music score using ABCJS.renderAbc
+          ABCJS.renderAbc(ele, ele.innerHTML, options)
+        }
+      }, 100)
+    }
+
+    if (typeof ABCJS === "object") {
+      abcjsFn()
+    } else {
+      btf.getScript("https://cdn.jsdelivr.net/npm/abcjs/dist/abcjs-basic-min.min.js").then(abcjsFn)
+    }
+  }
+
+  if (window.pjax) {
+    abcjsInit()
+  } else {
+    window.addEventListener("load", abcjsInit)
+  }
+
+  btf.addGlobalFn("encrypt", abcjsInit, "abcjs")
+})()</script><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = {"labels":["Gitalk","Comment"],"createIssueManually":false,"distractionFreeMode":false}
+
+  const commentCount = n => {
+    const isCommentCount = document.querySelector('#post-meta .gitalk-comment-count')
+    if (isCommentCount) {
+      isCommentCount.textContent= n
+    }
+  }
+
+  const initGitalk = (el, path) => {
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGitalk = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+
+    const gitalk = new Gitalk({
+      clientID: 'Ov23li3vDQANiUddL4XB',
+      clientSecret: '5c9a56d02995340fca117809cd414662aadce6ff',
+      repo: 'HexoComment',
+      owner: 'ergou10086',
+      admin: ['ergou10086'],
+      updateCountCallback: commentCount,
+      ...option,
+      id: isShuoshuo ? path : (option && option.id) || '9f9d33b457c8e2fa45fad0941c23ee3a'
+    })
+
+    gitalk.render('gitalk-container')
+  }
+
+  const loadGitalk = async(el, path) => {
+    if (typeof Gitalk === 'function') initGitalk(el, path)
+    else {
+      await btf.getCSS('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.css')
+      await btf.getScript('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.js')
+      initGitalk(el, path)
+    }
+  }
+
+  if (isShuoshuo) {
+    'Gitalk' === 'Gitalk'
+      ? window.shuoshuoComment = { loadComment: loadGitalk }
+      : window.loadOtherComment = loadGitalk
+    return
+  }
+
+  if ('Gitalk' === 'Gitalk' || !false) {
+    if (false) btf.loadComment(document.getElementById('gitalk-container'), loadGitalk)
+    else loadGitalk()
+  } else {
+    window.loadOtherComment = loadGitalk
+  }
+})()</script></div><div class="aplayer no-destroy" data-id="13587761608" data-server="netease" data-type="playlist" data-fixed="true" data-autoplay="false" data-lrcType="-1"> </div><script src="https://cdn.jsdelivr.net/npm/abcjs@7.1.2/dist/abcjs-basic-min.js"></script><script src="/js/sun_moon.js" async></script><script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.7/dayjs.min.js"></script><script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.7/plugin/duration.min.js"></script><script src="/scripts/realtime.js"></script><script src="/scripts/random.js"></script><script defer="defer" id="ribbon" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-ribbon.min.js" size="150" alpha="0.6" zIndex="-1" mobile="null" data-click="true"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = false;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><script id="click-heart" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/click-heart.min.js" async="async" mobile="false"></script><script>(() => {
+  window.ChatraID = '4bzb546NSBoJcrNyu'
+  window.Chatra = window.Chatra || function() {
+    (window.Chatra.q = window.Chatra.q || []).push(arguments)
+  }
+
+  btf.getScript('https://call.chatra.io/chatra.js').then(() => {
+    const isChatBtn = true
+    const isChatHideShow = true
+
+    if (isChatBtn) {
+      const close = () => {
+        Chatra('minimizeWidget')
+        Chatra('hide')
+      }
+
+      const open = () => {
+        Chatra('openChat', true)
+        Chatra('show')
+      }
+
+      window.ChatraSetup = { startHidden: true }
+    
+      window.chatBtnFn = () => document.getElementById('chatra').classList.contains('chatra--expanded') ? close() : open()
+
+      document.getElementById('chat-btn').style.display = 'block'
+    } else if (isChatHideShow) {
+      window.chatBtn = {
+        hide: () => Chatra('hide'),
+        show: () => Chatra('show')
+      }
+    }
+  })
+})()</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/metingjs/dist/Meting.min.js"></script><script>(() => {
+  const destroyAplayer = () => {
+    if (window.aplayers) {
+      for (let i = 0; i < window.aplayers.length; i++) {
+        if (!window.aplayers[i].options.fixed) {
+          window.aplayers[i].destroy()
+        }
+      }
+    }
+  }
+
+  const runMetingJS = () => {
+    typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+  }
+
+  btf.addGlobalFn('pjaxSend', destroyAplayer, 'destroyAplayer')
+  btf.addGlobalFn('pjaxComplete', loadMeting, 'runMetingJS')
+})()</script><script src="https://cdn.jsdelivr.net/npm/pjax/pjax.min.js"></script><script>(() => {
+  const pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+  window.pjax = new Pjax({
+    elements: 'a:not([target="_blank"]):not([href="/music/"])',
+    selectors: pjaxSelectors,
+    cacheBust: false,
+    analytics: false,
+    scrollRestoration: false
+  })
+
+  const triggerPjaxFn = (val) => {
+    if (!val) return
+    Object.values(val).forEach(fn => fn())
+  }
+
+  document.addEventListener('pjax:send', () => {
+    // removeEventListener
+    btf.removeGlobalFnEvent('pjaxSendOnce')
+    btf.removeGlobalFnEvent('themeChange')
+
+    // reset readmode
+    const $bodyClassList = document.body.classList
+    if ($bodyClassList.contains('read-mode')) $bodyClassList.remove('read-mode')
+
+    triggerPjaxFn(window.globalFn.pjaxSend)
+  })
+
+  document.addEventListener('pjax:complete', () => {
+    btf.removeGlobalFnEvent('pjaxCompleteOnce')
+    document.querySelectorAll('script[data-pjax]').forEach(item => {
+      const newScript = document.createElement('script')
+      const content = item.text || item.textContent || item.innerHTML || ""
+      Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+      newScript.appendChild(document.createTextNode(content))
+      item.parentNode.replaceChild(newScript, item)
+    })
+
+    triggerPjaxFn(window.globalFn.pjaxComplete)
+  })
+
+  document.addEventListener('pjax:error', e => {
+    if (e.request.status === 404) {
+      const usePjax = true
+      true 
+        ? (usePjax ? pjax.loadUrl('/404.html') : window.location.href = '/404.html')
+        : window.location.href = e.request.responseURL
+    }
+  })
+})()</script><script src="/js/fps-display.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><!-- hexo injector body_end start --><script data-pjax>
+  function butterfly_swiper_injector_config(){
+    var parent_div_git = document.getElementById('recent-posts');
+    var item_html = '<div class="recent-post-item" style="height: auto;width: 100%"><div class="blog-slider swiper-container-fade swiper-container-horizontal" id="swiper_container"><div class="blog-slider__wrp swiper-wrapper" style="transition-duration: 0ms;"><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_database.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-14</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt="">结构化查询语言SQL</a><div class="blog-slider__text">SQL基本很常用的语句都在这里了，本质上是当初为了应付数据库考试整理的，后来发现还蛮有用的很方便查常用的语句</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java4.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-22</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt="">SpringBoot part0?INF-SpringBoot这个框架都需要学习什么</a><div class="blog-slider__text">主要围绕Spring Boot中重要知识来简洁或详细的说明，其中部分不够完全，持续更新</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java11.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-15</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt="">关于Lombok在高版本IDEA中注解处理不生效的问题解决</a><div class="blog-slider__text">基本上是彻底的解决了用 IDEA 新建 Spring Boot 项目时候会产生的 Lombok 注解处理失效的各种问题</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_实用.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-05</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt="">个人向galgame原声带或相关音乐整理及其资源</a><div class="blog-slider__text">整理了我喜欢的galgame ost或者衍生的音乐专辑，部分资源是自己扒盘扒下来的，部分来自鸟白岛放映厅</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_math.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-17</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt="">对书上证明样本方差是总体方差的无偏估计量的解析</a><div class="blog-slider__text">对书上证明样本方差是总体方差的无偏估计量的解析，高等教育出版社-华科大版本</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_alog.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-04-24</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt="">第十五届蓝桥杯Java国赛B组D题-园丁题解</a><div class="blog-slider__text">第十五届蓝桥杯Java国赛B组D题-园丁题解，该题解已经发布到洛谷社区中并且被全站推荐</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java4.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-04-29</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt="">操作系统之处理机的死锁部分概述</a><div class="blog-slider__text">对操作系统之处理机的死锁部分知识的总结，包括代码复现</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_lb.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-09</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt="">Little Busters!EX游戏攻略</a><div class="blog-slider__text">整理了一份详细清晰的Little Busters！EX的游戏攻略，因为我自己也在推，就顺手整理了一份方便查阅的md文档</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java9.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-16</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt="">Spring Boot中使用Hibernate框架</a><div class="blog-slider__text">对学习完Hibernate的应用部分，主要围绕Spring Boot中使用Hibernate框架，建议学习完 Hibernate 框架再看</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div></div><div class="blog-slider__pagination swiper-pagination-clickable swiper-pagination-bullets"></div></div></div>';
+    console.log('已挂载butterfly_swiper')
+    parent_div_git.insertAdjacentHTML("afterbegin",item_html)
+    }
+  var elist = 'undefined'.split(',');
+  var cpage = location.pathname;
+  var epage = '/';
+  var flag = 0;
+
+  for (var i=0;i<elist.length;i++){
+    if (cpage.includes(elist[i])){
+      flag++;
+    }
+  }
+
+  if ((epage ==='all')&&(flag == 0)){
+    butterfly_swiper_injector_config();
+  }
+  else if (epage === cpage){
+    butterfly_swiper_injector_config();
+  }
+  </script><script defer src="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper.min.js"></script><script defer data-pjax src="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper_init.js"></script><!-- hexo injector body_end end --></body></html>
