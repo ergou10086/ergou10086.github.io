@@ -1,0 +1,956 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>MongoDB part4—在Spring项目中使用MongoDB | ErgouTree's Blog</title><meta name="author" content="ErgouTree"><meta name="copyright" content="ErgouTree"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="在Spring项目中如何使用MongoDB 在Spring项目遇到什么需求需要用到MongoDB 首先，MongoDB 是 NoSQL，其次，它是文档型数据库，它拥有灵活 schema、高写入性能、适合非结构化 &#x2F; 半结构化数据、水平扩展友好 一般在这样的情况下，我们考虑 MongoDB  存储非结构化 &#x2F; 半结构化数据 所以说，当数据结构灵活多变（如用户行为日志、商品属性（不同商品">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MongoDB part4—在Spring项目中使用MongoDB">
+<meta property="og:url" content="https://ergou10086.github.io/posts/32865.html">
+<meta property="og:site_name" content="ErgouTree&#39;s Blog">
+<meta property="og:description" content="在Spring项目中如何使用MongoDB 在Spring项目遇到什么需求需要用到MongoDB 首先，MongoDB 是 NoSQL，其次，它是文档型数据库，它拥有灵活 schema、高写入性能、适合非结构化 &#x2F; 半结构化数据、水平扩展友好 一般在这样的情况下，我们考虑 MongoDB  存储非结构化 &#x2F; 半结构化数据 所以说，当数据结构灵活多变（如用户行为日志、商品属性（不同商品">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://ergou10086.github.io/images/posts/cover_java15.jpg">
+<meta property="article:published_time" content="2025-10-30T09:30:28.000Z">
+<meta property="article:modified_time" content="2025-10-30T09:32:25.514Z">
+<meta property="article:author" content="ErgouTree">
+<meta property="article:tag" content="数据库">
+<meta property="article:tag" content="学习">
+<meta property="article:tag" content="开发组件">
+<meta property="article:tag" content="中间件">
+<meta property="article:tag" content="实用知识">
+<meta property="article:tag" content="分布式">
+<meta property="article:tag" content="数据库技术">
+<meta property="article:tag" content="MongoDB">
+<meta property="article:tag" content="NoSQL">
+<meta property="article:tag" content="索引">
+<meta property="article:tag" content="命令">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ergou10086.github.io/images/posts/cover_java15.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "MongoDB part4—在Spring项目中使用MongoDB",
+  "url": "https://ergou10086.github.io/posts/32865.html",
+  "image": "https://ergou10086.github.io/images/posts/cover_java15.jpg",
+  "datePublished": "2025-10-30T09:30:28.000Z",
+  "dateModified": "2025-10-30T09:32:25.514Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "ErgouTree",
+      "url": "https://github.com/ergou10086"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/pi.ico"><link rel="canonical" href="https://ergou10086.github.io/posts/32865.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//hm.baidu.com"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!true && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?https://hm.baidu.com/hm.js?a6ab1b78e2c6320b664f31e8b9bf0e36";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+btf.addGlobalFn('pjaxComplete', () => {
+  _hmt.push(['_trackPageview',window.location.pathname])
+}, 'baidu_analytics')
+</script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.json","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":true},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: {"chs_to_cht":"已切换为繁体中文","cht_to_chs":"已切换为简体中文","day_to_night":"已切换为深色模式","night_to_day":"已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#1f1f1f","position":"bottom-left"},
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'MongoDB part4—在Spring项目中使用MongoDB',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css"><svg aria-hidden="true" style="position:absolute; overflow:hidden; width:0; height:0"><symbol id="icon-sun" viewBox="0 0 1024 1024"><path d="M960 512l-128 128v192h-192l-128 128-128-128H192v-192l-128-128 128-128V192h192l128-128 128 128h192v192z" fill="#FFD878" p-id="8420"></path><path d="M736 512a224 224 0 1 0-448 0 224 224 0 1 0 448 0z" fill="#FFE4A9" p-id="8421"></path><path d="M512 109.248L626.752 224H800v173.248L914.752 512 800 626.752V800h-173.248L512 914.752 397.248 800H224v-173.248L109.248 512 224 397.248V224h173.248L512 109.248M512 64l-128 128H192v192l-128 128 128 128v192h192l128 128 128-128h192v-192l128-128-128-128V192h-192l-128-128z" fill="#4D5152" p-id="8422"></path><path d="M512 320c105.888 0 192 86.112 192 192s-86.112 192-192 192-192-86.112-192-192 86.112-192 192-192m0-32a224 224 0 1 0 0 448 224 224 0 0 0 0-448z" fill="#4D5152" p-id="8423"></path></symbol><symbol id="icon-moon" viewBox="0 0 1024 1024"><path d="M611.370667 167.082667a445.013333 445.013333 0 0 1-38.4 161.834666 477.824 477.824 0 0 1-244.736 244.394667 445.141333 445.141333 0 0 1-161.109334 38.058667 85.077333 85.077333 0 0 0-65.066666 135.722666A462.08 462.08 0 1 0 747.093333 102.058667a85.077333 85.077333 0 0 0-135.722666 65.024z" fill="#FFB531" p-id="11345"></path><path d="M329.728 274.133333l35.157333-35.157333a21.333333 21.333333 0 1 0-30.165333-30.165333l-35.157333 35.157333-35.114667-35.157333a21.333333 21.333333 0 0 0-30.165333 30.165333l35.114666 35.157333-35.114666 35.157334a21.333333 21.333333 0 1 0 30.165333 30.165333l35.114667-35.157333 35.157333 35.157333a21.333333 21.333333 0 1 0 30.165333-30.165333z" fill="#030835" p-id="11346"></path></symbol></svg><link rel="stylesheet" href="/css/custom.css"><!-- hexo injector head_end start --><link rel="stylesheet" href="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiperstyle.css" media="print" onload="this.media='all'"><!-- hexo injector head_end end --><meta name="generator" content="Hexo 7.3.0"></head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js/pace.min.js"></script><div id="web_bg" style="background: linear-gradient(20deg, #0062be, #925696, #cc426e, #fb0347);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/arp.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">220</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">127</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">79</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-images"></i><span> Gallery</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/games/"><i class="fa-fw fas fa-game"></i><span> GalGame</span></a></li><li><a class="site-page child" href="/video/"><i class="fa-fw fas fa-video"></i><span> Video</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div><div class="menus_item"><a class="site-page" href="javascript:randomPost();"><span> Random</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/images/posts/cover_java15.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">ErgouTree's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">MongoDB part4—在Spring项目中使用MongoDB</span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-images"></i><span> Gallery</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/games/"><i class="fa-fw fas fa-game"></i><span> GalGame</span></a></li><li><a class="site-page child" href="/video/"><i class="fa-fw fas fa-video"></i><span> Video</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div><div class="menus_item"><a class="site-page" href="javascript:randomPost();"><span> Random</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div><div id="randomPost"><a class="site-page social-icon search" href="javascript:;" onclick="randomPost()" title="随机访问一篇文章"><i class="fas fa-circle-notch fa-fw"></i></a></div></nav><div id="post-info"><h1 class="post-title">MongoDB part4—在Spring项目中使用MongoDB<a class="post-edit-link" href="https://github.com/ergou10086/ergou10086.github.io/edit/main/source/_posts/_posts/MongoDB-part4—在Spring项目中使用MongoDB.md" title="编辑" target="_blank"><i class="fas fa-pencil-alt"></i></a></h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2025-10-30T09:30:28.000Z" title="发表于 2025-10-30 17:30:28">2025-10-30</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2025-10-30T09:32:25.514Z" title="更新于 2025-10-30 17:32:25">2025-10-30</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%AD%A6%E4%B9%A0%E7%B1%BB/">学习类</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%AD%A6%E4%B9%A0%E7%B1%BB/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%AD%A6%E4%B9%A0%E7%B1%BB/%E6%95%B0%E6%8D%AE%E5%BA%93/NoSQL/">NoSQL</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%AD%A6%E4%B9%A0%E7%B1%BB/%E6%95%B0%E6%8D%AE%E5%BA%93/NoSQL/MongoDB/">MongoDB</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">7.1k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>31分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span><span class="post-meta-separator">|</span><span class="post-meta-commentcount"><i class="far fa-comments fa-fw post-meta-icon"></i><span class="post-meta-label">评论数:</span><a href="/posts/32865.html#post-comment"><span class="gitalk-comment-count"><i class="fa-solid fa-spinner fa-spin"></i></span></a></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="在spring项目中如何使用mongodb">在Spring项目中如何使用MongoDB</h2>
+<h3 id="在spring项目遇到什么需求需要用到mongodb">在Spring项目遇到什么需求需要用到MongoDB</h3>
+<p>首先，MongoDB 是 NoSQL，其次，它是文档型数据库，它拥有灵活
+schema、高写入性能、适合非结构化 / 半结构化数据、水平扩展友好</p>
+<p>一般在这样的情况下，我们考虑 MongoDB</p>
+<ul>
+<li><p><strong>存储非结构化 / 半结构化数据</strong></p>
+<p>所以说，当数据结构灵活多变（如用户行为日志、商品属性（不同商品字段差异大）、JSON
+格式的 API
+响应缓存等），传统关系型数据库的固定表结构会导致频繁的表结构变更，而
+MongoDB 的文档模型（BSON
+格式，支持嵌套结构）可直接存储动态字段，无需预先定义 schema。</p></li>
+<li><p><strong>存储日志等写入量大的场景</strong></p>
+<p>如日志系统（用户操作日志、系统运行日志）、物联网设备数据采集（传感器实时上报数据）等，需要高频写入且对事务性要求不高的场景。MongoDB
+的写入性能优于多数关系型数据库，且支持分片集群实现水平扩展，应对高并发写入。</p></li>
+<li><p><strong>快速迭代的情况</strong></p>
+<p>当出现需求变更改很频繁（如电商的活动规则、内容平台的内容属性），使用
+MongoDB
+可避免因表结构调整导致的开发成本增加，加速迭代，而且丰富的查询语法和超级多内容的索引适合需要对数据进行多维度分析的场景，例如用户的行为分析，推荐内容计算</p></li>
+<li><p><strong>缓存或临时数据存储</strong></p>
+<p>那我们上面都说了，MongoDB 是
+NoSQL，其次，它是文档型数据库，所以说，作为关系型数据库的补充，用它存储临时会话数据、API
+请求缓存等，利用其高读写性能减轻主数据库压力是很好的</p></li>
+</ul>
+<h3 id="在spring项目中使用mongodb该做些什么">在Spring项目中使用MongoDB该做些什么</h3>
+<p>Spring 提供了<code>Spring Data MongoDB</code>模块，简化了 MongoDB
+的操作，核心是通过<code>MongoTemplate</code>或<strong>Repository
+接口</strong>实现数据访问。</p>
+<p>Spring Data MongoDB的核心依赖是这个</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!-- Spring Data MongoDB 核心依赖 --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-data-mongodb<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>然后在配置文件中进行配置</p>
+<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">在application.yml中配置连接信息：spring:</span></span><br><span class="line">  <span class="attr">data:</span></span><br><span class="line">    <span class="attr">mongodb:</span></span><br><span class="line">      <span class="attr">uri:</span> <span class="string">mongodb://localhost:27017/testdb</span>  <span class="comment"># 单机连接（数据库名testdb）</span></span><br><span class="line">      <span class="comment"># 若为集群：mongodb://user:password@host1:port1,host2:port2/testdb?replicaSet=rs0</span></span><br><span class="line">      <span class="comment"># 账号密码配置（可选）：</span></span><br><span class="line">      <span class="comment"># username: admin</span></span><br><span class="line">      <span class="comment"># password: 123456</span></span><br></pre></td></tr></table></figure>
+<p>跟其他数据库类似，Spring Data MongoDB
+提供两种主要操作方式：<strong>Repository
+接口</strong>（推荐，简化代码）和<code>MongoTemplate</code>（更灵活，适合复杂操作）。</p>
+<p>所以他也能完美支持
+JPA，通过定义接口继承<code>MongoRepository</code>，自动生成 CRUD
+方法，无需手动实现。</p>
+<p>继承<code>MongoRepository&lt;实体类, 主键类型&gt;</code>，自动获得基础
+CRUD 方法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> org.springframework.data.mongodb.repository.MongoRepository;</span><br><span class="line"><span class="keyword">import</span> java.util.List;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">UserRepository</span> <span class="keyword">extends</span> <span class="title class_">MongoRepository</span>&lt;User, String&gt; &#123;</span><br><span class="line">    <span class="comment">// 自定义查询方法（遵循命名规范，自动生成查询）</span></span><br><span class="line">    List&lt;User&gt; <span class="title function_">findByAgeGreaterThan</span><span class="params">(Integer age)</span>;  <span class="comment">// 查年龄大于指定值的用户</span></span><br><span class="line">    List&lt;User&gt; <span class="title function_">findByNameLike</span><span class="params">(String name)</span>;  <span class="comment">// 模糊查询用户名</span></span><br><span class="line">    User <span class="title function_">findByAddressCity</span><span class="params">(String city)</span>;  <span class="comment">// 查询指定城市的用户（嵌套文档查询）</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在实体类的定义中，只不过是使用<code>@Document</code>指定集合名（类似表名），<code>@Id</code>指定主键</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> org.springframework.data.annotation.Id;</span><br><span class="line"><span class="keyword">import</span> org.springframework.data.mongodb.core.mapping.Document;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Document(collection = &quot;users&quot;)</span>  <span class="comment">// 对应MongoDB中的users集合</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">User</span> &#123;</span><br><span class="line">    <span class="meta">@Id</span></span><br><span class="line">    <span class="keyword">private</span> String id;  <span class="comment">// MongoDB自动生成的ObjectId，类型为String</span></span><br><span class="line">    <span class="keyword">private</span> String name;</span><br><span class="line">    <span class="keyword">private</span> Integer age;</span><br><span class="line">    <span class="keyword">private</span> List&lt;String&gt; hobbies;  <span class="comment">// 支持数组类型</span></span><br><span class="line">    <span class="keyword">private</span> Address address;  <span class="comment">// 嵌套文档（Address为自定义类）</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 省略getter、setter、构造方法</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 嵌套文档类</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Address</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> String city;</span><br><span class="line">    <span class="keyword">private</span> String street;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>而<code>MongoTemplate</code>提供更底层的
+API，支持复杂查询、聚合、索引操作等，适合 Repository
+接口无法满足的场景。</p>
+<p>Spring Boot 自动配置<code>MongoTemplate</code>，直接注入即可：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Autowired</span></span><br><span class="line"><span class="keyword">private</span> MongoTemplate mongoTemplate;</span><br></pre></td></tr></table></figure>
+<p>举几个常见操作大家就知道这东西跟别的其实很像了</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 1. 新增文档</span></span><br><span class="line"><span class="type">User</span> <span class="variable">user</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">User</span>(<span class="string">&quot;张三&quot;</span>, <span class="number">20</span>, Arrays.asList(<span class="string">&quot;篮球&quot;</span>, <span class="string">&quot;游戏&quot;</span>), <span class="keyword">new</span> <span class="title class_">Address</span>(<span class="string">&quot;北京&quot;</span>, <span class="string">&quot;朝阳路&quot;</span>));</span><br><span class="line">mongoTemplate.insert(user);  <span class="comment">// 插入（若id已存在会报错）</span></span><br><span class="line"><span class="comment">// 或 save()：存在则更新，不存在则插入</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 2. 查询（条件查询）</span></span><br><span class="line"><span class="type">Query</span> <span class="variable">query</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Query</span>();</span><br><span class="line">query.addCriteria(Criteria.where(<span class="string">&quot;age&quot;</span>).gt(<span class="number">18</span>).lt(<span class="number">30</span>))  <span class="comment">// 年龄18&lt;age&lt;30</span></span><br><span class="line">     .addCriteria(Criteria.where(<span class="string">&quot;hobbies&quot;</span>).in(<span class="string">&quot;篮球&quot;</span>));  <span class="comment">// 爱好包含篮球</span></span><br><span class="line">List&lt;User&gt; users = mongoTemplate.find(query, User.class, <span class="string">&quot;users&quot;</span>);  <span class="comment">// 第三个参数指定集合名</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 3. 聚合查询（例如：按城市分组统计用户数）</span></span><br><span class="line"><span class="type">Aggregation</span> <span class="variable">aggregation</span> <span class="operator">=</span> Aggregation.newAggregation(</span><br><span class="line">    Aggregation.group(<span class="string">&quot;address.city&quot;</span>).count().as(<span class="string">&quot;userCount&quot;</span>),  <span class="comment">// 按城市分组计数</span></span><br><span class="line">    Aggregation.sort(Sort.Direction.DESC, <span class="string">&quot;userCount&quot;</span>),  <span class="comment">// 按数量降序</span></span><br><span class="line">    Aggregation.limit(<span class="number">5</span>)  <span class="comment">// 取前5</span></span><br><span class="line">);</span><br><span class="line">AggregationResults&lt;CityCount&gt; results = mongoTemplate.aggregate(</span><br><span class="line">    aggregation, <span class="string">&quot;users&quot;</span>, CityCount.class  <span class="comment">// CityCount为结果映射类</span></span><br><span class="line">);</span><br><span class="line">List&lt;CityCount&gt; cityCounts = results.getMappedResults();</span><br><span class="line"></span><br><span class="line"><span class="comment">// 4. 创建索引（提高查询性能）</span></span><br><span class="line">mongoTemplate.indexOps(<span class="string">&quot;users&quot;</span>).ensureIndex(<span class="keyword">new</span> <span class="title class_">Index</span>().on(<span class="string">&quot;name&quot;</span>, Sort.Direction.ASC).unique());</span><br></pre></td></tr></table></figure>
+<p>前面也说过，MongoDB 4.0 + 支持事务，Spring
+中通过<code>@Transactional</code>注解开启（需配置事务管理器<code>MongoTransactionManager</code>）。</p>
+<p>也可以在通过<code>@Indexed</code>注解在实体类字段上定义索引，或使用<code>IndexOperations</code>手动创建。</p>
+<p>MongoDB 也可以直接支持 JPA 的分页，Repository
+接口也支持<code>Pageable</code>参数，</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Page&lt;User&gt; <span class="title function_">findByAge</span><span class="params">(Integer age, Pageable pageable)</span>;  <span class="comment">// 分页查询指定年龄的用户</span></span><br></pre></td></tr></table></figure>
+<h2 id="实际项目演示如何集成-mongodb-到我们的项目中">实际项目演示如何集成
+MongoDB 到我们的项目中</h2>
+<p>之前我们在学习 MinIO 的时候，有个类似图片存储的 galgame
+表情包的项目，我们继续扩展这个，添加评论的相关内容，使用 mongodb
+存储评论内容（业务较多情况下，你还要用mysql去存储评论的有关元数据）</p>
+<h3 id="准备工作">准备工作</h3>
+<p>在 pom.xml 中添加MongoDB依赖：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!-- MongoDB 依赖 --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-data-mongodb<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">&lt;!-- 日期时间处理（可选，用于更好的时间格式化） --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>joda-time<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>joda-time<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>2.12.5<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>在 src/main/resources/application.properties 中添加MongoDB配置</p>
+<figure class="highlight properties"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># MongoDB 配置</span></span><br><span class="line"><span class="attr">spring.data.mongodb.host</span>=<span class="string">localhost</span></span><br><span class="line"><span class="attr">spring.data.mongodb.port</span>=<span class="string">27017</span></span><br><span class="line"><span class="attr">spring.data.mongodb.database</span>=<span class="string">ergou_gallery_db</span></span><br><span class="line"><span class="comment"># 如果MongoDB设置了认证，需要配置用户名密码</span></span><br><span class="line"><span class="comment"># spring.data.mongodb.username=admin</span></span><br><span class="line"><span class="comment"># spring.data.mongodb.password=password</span></span><br><span class="line"><span class="comment"># spring.data.mongodb.authentication-database=admin</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment"># MongoDB连接池配置（可选）</span></span><br><span class="line"><span class="attr">spring.data.mongodb.max-connection-idle-time</span>=<span class="string">60000</span></span><br><span class="line"><span class="attr">spring.data.mongodb.max-connection-life-time</span>=<span class="string">120000</span></span><br></pre></td></tr></table></figure>
+<h3 id="数据库设计">数据库设计</h3>
+<p>我们设计这样一个数据库 <code>ergou_gallery_db</code></p>
+<figure>
+<img src="/posts/32865/image-20251029200134090.png" alt="image-20251029200134090">
+<figcaption aria-hidden="true">image-20251029200134090</figcaption>
+</figure>
+<p>添加一个评论的集合，comments，设计这样的文档结构</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;_id&quot;</span><span class="punctuation">:</span> <span class="string">&quot;ObjectId(自动生成)&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;imageId&quot;</span><span class="punctuation">:</span> <span class="string">&quot;图片ID（关联ImageInfo的id）&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;content&quot;</span><span class="punctuation">:</span> <span class="string">&quot;评论内容&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;userName&quot;</span><span class="punctuation">:</span> <span class="string">&quot;用户名&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;userAvatar&quot;</span><span class="punctuation">:</span> <span class="string">&quot;用户头像URL（可选）&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;createTime&quot;</span><span class="punctuation">:</span> <span class="string">&quot;创建时间&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;updateTime&quot;</span><span class="punctuation">:</span> <span class="string">&quot;更新时间&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;likes&quot;</span><span class="punctuation">:</span> <span class="number">0</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;likedByUsers&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span><span class="string">&quot;user1&quot;</span><span class="punctuation">,</span> <span class="string">&quot;user2&quot;</span><span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;parentId&quot;</span><span class="punctuation">:</span> <span class="literal"><span class="keyword">null</span></span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;replies&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">    <span class="punctuation">&#123;</span></span><br><span class="line">      <span class="attr">&quot;replyId&quot;</span><span class="punctuation">:</span> <span class="string">&quot;回复ID&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;content&quot;</span><span class="punctuation">:</span> <span class="string">&quot;回复内容&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;userName&quot;</span><span class="punctuation">:</span> <span class="string">&quot;回复者&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;createTime&quot;</span><span class="punctuation">:</span> <span class="string">&quot;回复时间&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;likes&quot;</span><span class="punctuation">:</span> <span class="number">0</span></span><br><span class="line">    <span class="punctuation">&#125;</span></span><br><span class="line">  <span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;status&quot;</span><span class="punctuation">:</span> <span class="string">&quot;ACTIVE&quot;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+<figure>
+<img src="/posts/32865/image-20251029200608991.png" alt="image-20251029200608991">
+<figcaption aria-hidden="true">image-20251029200608991</figcaption>
+</figure>
+<p>表设计没什么说道，最重要的是设计索引</p>
+<p>索引可以大幅提升查询性能。在评论系统中，我们经常需要：</p>
+<ul>
+<li><p>按图片ID查询评论</p></li>
+<li><p>按时间排序</p></li>
+<li><p>查询特定用户的评论</p></li>
+</ul>
+<p>我们这样设计几个索引</p>
+<p>复合索引（最重要）：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">db.<span class="property">comments</span>.<span class="title function_">createIndex</span>(&#123; <span class="string">&quot;imageId&quot;</span>: <span class="number">1</span>, <span class="string">&quot;createTime&quot;</span>: -<span class="number">1</span> &#125;)</span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>用途：按图片查询评论并按时间倒序排列</p></li>
+<li><p>imageId: 1：升序</p></li>
+<li><p>createTime: -1：降序</p></li>
+</ul>
+<p>单字段索引：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">db.<span class="property">comments</span>.<span class="title function_">createIndex</span>(&#123; <span class="string">&quot;userName&quot;</span>: <span class="number">1</span> &#125;)</span><br></pre></td></tr></table></figure>
+<ul>
+<li>用途：查询某用户的所有评论</li>
+</ul>
+<p>状态索引</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">db.<span class="property">comments</span>.<span class="title function_">createIndex</span>(&#123; <span class="string">&quot;status&quot;</span>: <span class="number">1</span> &#125;)</span><br></pre></td></tr></table></figure>
+<ul>
+<li>用途：过滤已删除/隐藏的评论</li>
+</ul>
+<p>还可以这样设计一个 TTL 索引</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">db.<span class="property">comments</span>.<span class="title function_">createIndex</span>(&#123; <span class="string">&quot;createTime&quot;</span>: <span class="number">1</span> &#125;, &#123; <span class="attr">expireAfterSeconds</span>: <span class="number">31536000</span> &#125;)</span><br></pre></td></tr></table></figure>
+<ul>
+<li>自动删除一年前的评论，在这里就是演示一下，没人会这样写业务的））</li>
+</ul>
+<figure>
+<img src="/posts/32865/image-20251029200627820.png" alt="image-20251029200627820">
+<figcaption aria-hidden="true">image-20251029200627820</figcaption>
+</figure>
+<h3 id="创建mongodb配置类">创建MongoDB配置类</h3>
+<p>这个类更多是讲解，因为上面我们创建了集合和索引，再运行这个会冲突</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> hbnu.project.ergoutreegalemjstore.config;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> com.mongodb.client.MongoClient;</span><br><span class="line"><span class="keyword">import</span> com.mongodb.client.MongoDatabase;</span><br><span class="line"><span class="keyword">import</span> jakarta.annotation.PostConstruct;</span><br><span class="line"><span class="keyword">import</span> lombok.RequiredArgsConstructor;</span><br><span class="line"><span class="keyword">import</span> lombok.extern.slf4j.Slf4j;</span><br><span class="line"><span class="keyword">import</span> org.springframework.context.annotation.Configuration;</span><br><span class="line"><span class="keyword">import</span> org.springframework.data.mongodb.core.MongoTemplate;</span><br><span class="line"><span class="keyword">import</span> org.springframework.data.mongodb.core.index.Index;</span><br><span class="line"><span class="keyword">import</span> org.springframework.data.mongodb.core.index.IndexOperations;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * MongoDB配置类</span></span><br><span class="line"><span class="comment"> * 用于初始化MongoDB连接和创建索引</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@Slf4j</span></span><br><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="meta">@RequiredArgsConstructor</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MongoConfig</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> MongoTemplate mongoTemplate;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> MongoClient mongoClient;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 应用启动时自动创建索引</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@PostConstruct</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">initIndexes</span><span class="params">()</span> &#123;</span><br><span class="line">        log.info(<span class="string">&quot;开始初始化MongoDB索引...&quot;</span>);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="comment">// 获取comments集合的索引操作对象</span></span><br><span class="line">            <span class="type">IndexOperations</span> <span class="variable">indexOps</span> <span class="operator">=</span> mongoTemplate.indexOps(<span class="string">&quot;comments&quot;</span>);</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 1. 创建复合索引：imageId + createTime</span></span><br><span class="line">            <span class="type">Index</span> <span class="variable">imageTimeIndex</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Index</span>()</span><br><span class="line">                    .on(<span class="string">&quot;imageId&quot;</span>, org.springframework.data.domain.Sort.Direction.ASC)</span><br><span class="line">                    .on(<span class="string">&quot;createTime&quot;</span>, org.springframework.data.domain.Sort.Direction.DESC)</span><br><span class="line">                    .named(<span class="string">&quot;idx_imageId_createTime&quot;</span>);</span><br><span class="line">            indexOps.createIndex(imageTimeIndex); <span class="comment">// 替换为createIndex</span></span><br><span class="line">            log.info(<span class="string">&quot;创建索引: idx_imageId_createTime&quot;</span>);</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 2. 创建userName索引</span></span><br><span class="line">            <span class="type">Index</span> <span class="variable">userIndex</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Index</span>()</span><br><span class="line">                    .on(<span class="string">&quot;userName&quot;</span>, org.springframework.data.domain.Sort.Direction.ASC)</span><br><span class="line">                    .named(<span class="string">&quot;idx_userName&quot;</span>);</span><br><span class="line">            indexOps.createIndex(userIndex); <span class="comment">// 替换为createIndex</span></span><br><span class="line">            log.info(<span class="string">&quot;创建索引: idx_userName&quot;</span>);</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 3. 创建status索引</span></span><br><span class="line">            <span class="type">Index</span> <span class="variable">statusIndex</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Index</span>()</span><br><span class="line">                    .on(<span class="string">&quot;status&quot;</span>, org.springframework.data.domain.Sort.Direction.ASC)</span><br><span class="line">                    .named(<span class="string">&quot;idx_status&quot;</span>);</span><br><span class="line">            indexOps.createIndex(statusIndex); <span class="comment">// 替换为createIndex</span></span><br><span class="line">            log.info(<span class="string">&quot;创建索引: idx_status&quot;</span>);</span><br><span class="line"></span><br><span class="line">            log.info(<span class="string">&quot;MongoDB索引初始化完成！&quot;</span>);</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 打印数据库信息</span></span><br><span class="line">            <span class="type">MongoDatabase</span> <span class="variable">database</span> <span class="operator">=</span> mongoClient.getDatabase(<span class="string">&quot;ergou_gallery_db&quot;</span>);</span><br><span class="line">            log.info(<span class="string">&quot;已连接到MongoDB数据库: &#123;&#125;&quot;</span>, database.getName());</span><br><span class="line"></span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">            log.error(<span class="string">&quot;MongoDB索引创建失败: &#123;&#125;&quot;</span>, e.getMessage(), e);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这个配置类很神经就是了，写主要还是想说一下其中的方法</p>
+<p>其中，涉及到了两个 MongoDB 操作的核心对象</p>
+<ol type="1">
+<li><strong><code>MongoTemplate</code></strong>：Spring Data MongoDB
+提供的核心操作类，封装了大量 MongoDB
+数据库操作方法（如增删改查、索引管理等），简化了 Java 代码操作 MongoDB
+的流程。</li>
+<li><strong><code>MongoClient</code></strong>：MongoDB
+官方驱动提供的客户端对象，用于建立与 MongoDB
+服务器的连接，可获取数据库、集合等信息（这里用于验证数据库连接）。</li>
+</ol>
+<p><code>@PostConstruct</code>大伙应该不陌生，<strong>类实例化后、依赖注入完成时自动执行</strong>，创建索引，其中</p>
+<ul>
+<li><p>获取索引操作对象</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">IndexOperations</span> <span class="variable">indexOps</span> <span class="operator">=</span> mongoTemplate.indexOps(<span class="string">&quot;comments&quot;</span>);</span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>mongoTemplate.indexOps("comments")</code>：获取名为
+<code>comments</code>
+的集合的<strong>索引操作对象</strong>（<code>IndexOperations</code>），通过它可以创建、删除索引。</li>
+<li>说明：MongoDB 中集合（Collection）类似关系型数据库的表，这里针对
+<code>comments</code> 集合创建索引。</li>
+</ul></li>
+<li><p>创建索引的具体逻辑</p>
+<p>MongoDB
+的索引作用和关系型数据库一样，都是为了加速查询。下面是上面提到的 3
+种索引的创建：</p>
+<ul>
+<li><p>复合索引：<code>imageId + createTime</code></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Index</span> <span class="variable">imageTimeIndex</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Index</span>()</span><br><span class="line">    .on(<span class="string">&quot;imageId&quot;</span>, Sort.Direction.ASC)  <span class="comment">// 按 imageId 升序</span></span><br><span class="line">    .on(<span class="string">&quot;createTime&quot;</span>, Sort.Direction.DESC)  <span class="comment">// 按 createTime 降序</span></span><br><span class="line">    .named(<span class="string">&quot;idx_imageId_createTime&quot;</span>);  <span class="comment">// 索引名称</span></span><br><span class="line">indexOps.createIndex(imageTimeIndex);  <span class="comment">// 创建索引</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li><strong>复合索引</strong>：同时基于多个字段创建的索引，适合查询条件包含多个字段的场景。</li>
+<li>使用 Index 创建，on 指在哪个字段上创建索引</li>
+<li><code>.named(...)</code>：给索引指定名称，方便后续管理（如删除、查看）。</li>
+</ul>
+<p>下面的单子段索引类似</p></li>
+<li><p>单字段索引</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Index</span> <span class="variable">userIndex</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Index</span>()</span><br><span class="line">    .on(<span class="string">&quot;userName&quot;</span>, Sort.Direction.ASC)</span><br><span class="line">    .named(<span class="string">&quot;idx_userName&quot;</span>);</span><br><span class="line">indexOps.createIndex(userIndex);</span><br></pre></td></tr></table></figure></li>
+<li><p>单字段索引：<code>status</code></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Index</span> <span class="variable">statusIndex</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Index</span>()</span><br><span class="line">    .on(<span class="string">&quot;status&quot;</span>, Sort.Direction.ASC)</span><br><span class="line">    .named(<span class="string">&quot;idx_status&quot;</span>);</span><br><span class="line">indexOps.createIndex(statusIndex);</span><br></pre></td></tr></table></figure></li>
+</ul></li>
+</ul>
+<p>然后验证数据库连接就是 get 方法，通过
+<code>mongoClient.getDatabase("数据库名")</code>
+获取数据库对象，验证是否成功连接到名为 <code>ergou_gallery_db</code>
+的数据库。</p>
+<p>​</p>
+<h3 id="创建实体类">创建实体类</h3>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> hbnu.project.ergoutreegalemjstore.entity;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> lombok.AllArgsConstructor;</span><br><span class="line"><span class="keyword">import</span> lombok.Data;</span><br><span class="line"><span class="keyword">import</span> lombok.NoArgsConstructor;</span><br><span class="line"><span class="keyword">import</span> org.springframework.data.annotation.Id;</span><br><span class="line"><span class="keyword">import</span> org.springframework.data.mongodb.core.mapping.Document;</span><br><span class="line"><span class="keyword">import</span> org.springframework.data.mongodb.core.mapping.Field;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.time.LocalDateTime;</span><br><span class="line"><span class="keyword">import</span> java.util.ArrayList;</span><br><span class="line"><span class="keyword">import</span> java.util.List;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 评论实体类</span></span><br><span class="line"><span class="comment"> * 存储在MongoDB中</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@Data</span></span><br><span class="line"><span class="meta">@NoArgsConstructor</span></span><br><span class="line"><span class="meta">@AllArgsConstructor</span></span><br><span class="line"><span class="meta">@Document(collection = &quot;comments&quot;)</span>  <span class="comment">// 指定MongoDB集合名称</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Comment</span> &#123;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 评论ID（MongoDB自动生成）</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Id</span></span><br><span class="line">    <span class="keyword">private</span> String id;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 关联的图片ID（来自Elasticsearch的ImageInfo.id）</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Field(&quot;imageId&quot;)</span></span><br><span class="line">    <span class="keyword">private</span> String imageId;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 评论内容</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Field(&quot;content&quot;)</span></span><br><span class="line">    <span class="keyword">private</span> String content;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 评论用户名</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Field(&quot;userName&quot;)</span></span><br><span class="line">    <span class="keyword">private</span> String userName;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 用户头像URL（可选）</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Field(&quot;userAvatar&quot;)</span></span><br><span class="line">    <span class="keyword">private</span> String userAvatar;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 创建时间</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Field(&quot;createTime&quot;)</span></span><br><span class="line">    <span class="keyword">private</span> LocalDateTime createTime;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 更新时间</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Field(&quot;updateTime&quot;)</span></span><br><span class="line">    <span class="keyword">private</span> LocalDateTime updateTime;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 点赞数</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Field(&quot;likes&quot;)</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">Integer</span> <span class="variable">likes</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 点赞用户列表</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Field(&quot;likedByUsers&quot;)</span></span><br><span class="line">    <span class="keyword">private</span> List&lt;String&gt; likedByUsers = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 父评论ID（用于回复功能，如果为null表示顶级评论）</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Field(&quot;parentId&quot;)</span></span><br><span class="line">    <span class="keyword">private</span> String parentId;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 回复列表（嵌套文档）</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Field(&quot;replies&quot;)</span></span><br><span class="line">    <span class="keyword">private</span> List&lt;Reply&gt; replies = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 评论状态（ACTIVE-正常, DELETED-已删除, HIDDEN-隐藏）</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Field(&quot;status&quot;)</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">CommentStatus</span> <span class="variable">status</span> <span class="operator">=</span> CommentStatus.ACTIVE;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 评论状态枚举</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">enum</span> <span class="title class_">CommentStatus</span> &#123;</span><br><span class="line">        ACTIVE,   <span class="comment">// 正常</span></span><br><span class="line">        DELETED,  <span class="comment">// 已删除</span></span><br><span class="line">        HIDDEN    <span class="comment">// 隐藏</span></span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 回复内嵌文档</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Data</span></span><br><span class="line">    <span class="meta">@NoArgsConstructor</span></span><br><span class="line">    <span class="meta">@AllArgsConstructor</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">Reply</span> &#123;</span><br><span class="line">        <span class="keyword">private</span> String replyId;</span><br><span class="line">        <span class="keyword">private</span> String content;</span><br><span class="line">        <span class="keyword">private</span> String userName;</span><br><span class="line">        <span class="keyword">private</span> String userAvatar;</span><br><span class="line">        <span class="keyword">private</span> LocalDateTime createTime;</span><br><span class="line">        <span class="keyword">private</span> <span class="type">Integer</span> <span class="variable">likes</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">private</span> List&lt;String&gt; likedByUsers = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>没啥好说的</p>
+<h3 id="repository类">repository类</h3>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> hbnu.project.ergoutreegalemjstore.repository;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> hbnu.project.ergoutreegalemjstore.entity.Comment;</span><br><span class="line"><span class="keyword">import</span> org.springframework.data.domain.Page;</span><br><span class="line"><span class="keyword">import</span> org.springframework.data.domain.Pageable;</span><br><span class="line"><span class="keyword">import</span> org.springframework.data.mongodb.repository.MongoRepository;</span><br><span class="line"><span class="keyword">import</span> org.springframework.data.mongodb.repository.Query;</span><br><span class="line"><span class="keyword">import</span> org.springframework.stereotype.Repository;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.time.LocalDateTime;</span><br><span class="line"><span class="keyword">import</span> java.util.List;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 评论Repository接口</span></span><br><span class="line"><span class="comment"> * 继承MongoRepository获得基本的CRUD操作</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@Repository</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">CommentRepository</span> <span class="keyword">extends</span> <span class="title class_">MongoRepository</span>&lt;Comment, String&gt; &#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 根据图片ID查询所有评论（按时间倒序）</span></span><br><span class="line"><span class="comment">     * 方法命名查询：Spring Data会自动实现</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    List&lt;Comment&gt; <span class="title function_">findByImageIdAndStatusOrderByCreateTimeDesc</span><span class="params">(String imageId, Comment.CommentStatus status)</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 根据图片ID分页查询评论</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    Page&lt;Comment&gt; <span class="title function_">findByImageIdAndStatus</span><span class="params">(String imageId, Comment.CommentStatus status, Pageable pageable)</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 根据用户名查询评论</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    List&lt;Comment&gt; <span class="title function_">findByUserNameAndStatus</span><span class="params">(String userName, Comment.CommentStatus status)</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 统计某图片的评论数</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="type">long</span> <span class="title function_">countByImageIdAndStatus</span><span class="params">(String imageId, Comment.CommentStatus status)</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 查询某时间段内的评论（使用<span class="doctag">@Query</span>注解自定义查询）</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Query(&quot;&#123; &#x27;createTime&#x27;: &#123; $gte: ?0, $lte: ?1 &#125;, &#x27;status&#x27;: ?2 &#125;&quot;)</span></span><br><span class="line">    List&lt;Comment&gt; <span class="title function_">findCommentsByTimeRange</span><span class="params">(LocalDateTime startTime, LocalDateTime endTime, Comment.CommentStatus status)</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 查询热门评论（点赞数大于指定值）</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Query(&quot;&#123; &#x27;imageId&#x27;: ?0, &#x27;likes&#x27;: &#123; $gte: ?1 &#125;, &#x27;status&#x27;: ?2 &#125;&quot;)</span></span><br><span class="line">    List&lt;Comment&gt; <span class="title function_">findHotComments</span><span class="params">(String imageId, Integer minLikes, Comment.CommentStatus status)</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 删除某图片的所有评论</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">deleteByImageId</span><span class="params">(String imageId)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这个可得好好说说，Mongodb 的 repository 类 和 mysql
+比较像，但是还是得说一下</p>
+<p>该接口继承了
+<code>MongoRepository&lt;Comment, String&gt;</code>，其中：</p>
+<ul>
+<li><code>Comment</code>：操作的实体类（对应 MongoDB 中的集合
+<code>comments</code>）。</li>
+<li><code>String</code>：实体类主键（<code>_id</code>）的类型。</li>
+</ul>
+<p>通过继承
+<code>MongoRepository</code>，无需手动实现，就可以直接使用大量内置方法（如
+<code>save()</code>、<code>findById()</code>、<code>delete()</code>
+等）。这些内容和命名规则和 mysql 的区别不大</p>
+<p>MongoDB 可以通过<strong>方法命名规则</strong>或
+<strong><code>@Query</code> 注解 </strong> 自定义查询，虽然两者都基于
+Spring Data，语法类似，但因数据库类型不同（文档型 vs
+关系型），存在本质区别：</p>
+<table>
+<colgroup>
+<col style="width: 14%">
+<col style="width: 47%">
+<col style="width: 38%">
+</colgroup>
+<thead>
+<tr>
+<th>维度</th>
+<th>MongoDB Repository</th>
+<th>MySQL Repository（JPA）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>数据模型</strong></td>
+<td>操作<strong>文档（Document）</strong>，对应 MongoDB
+集合（Collection）</td>
+<td>操作<strong>实体（Entity）</strong>，对应 MySQL 表（Table）</td>
+</tr>
+<tr>
+<td><strong>主键</strong></td>
+<td>默认使用 <code>_id</code> 字段（ObjectId 类型），自动生成</td>
+<td>通常使用 <code>@Id</code> 标注自定义主键（如自增 ID）</td>
+</tr>
+<tr>
+<td><strong>查询语法</strong></td>
+<td>基于 MongoDB 的查询语法（如
+<code>$gte</code>、<code>$lte</code>）</td>
+<td>基于 SQL 语法（如
+<code>WHERE</code>、<code>AND</code>、<code>LIKE</code>）</td>
+</tr>
+<tr>
+<td><strong>关联关系</strong></td>
+<td>不支持外键，通过嵌套文档（如 <code>replies</code>
+字段）或引用实现关联</td>
+<td>支持外键（<code>@ManyToOne</code> 等注解），通过 JOIN 关联表</td>
+</tr>
+<tr>
+<td><strong>方法命名规则</strong></td>
+<td>支持大部分相同规则，但部分关键词适配文档结构（如
+<code>And</code>、<code>Or</code>、<code>In</code>）</td>
+<td>基于表字段和 SQL 操作（如
+<code>Like</code>、<code>Between</code>）</td>
+</tr>
+<tr>
+<td><strong>自定义查询注解</strong></td>
+<td>使用 <code>@Query</code> 编写 MongoDB JSON 格式查询</td>
+<td>使用 <code>@Query</code> 编写 SQL 语句</td>
+</tr>
+</tbody>
+</table>
+<p>Spring Data MongoDB
+会根据方法名自动解析查询条件，无需手动编写查询语句。核心规则和 mysql
+的一样：</p>
+<ul>
+<li>方法名格式：<code>动作（find/delete/count）+ 条件（By字段 + 关键字）+ 排序/分页</code>。</li>
+<li>支持的关键字：<code>And</code>、<code>Or</code>、<code>In</code>、<code>NotIn</code>、<code>Like</code>、<code>GreaterThan</code>、<code>LessThan</code>、<code>OrderBy</code>
+等。</li>
+</ul>
+<p>当查询条件复杂（如范围查询、嵌套字段查询）时，用 <code>@Query</code>
+注解直接编写 MongoDB 的查询 JSON，更灵活。这个思路是和 mysql 一样的</p>
+<p>默认情况下，实体类名 <code>Comment</code> 会映射到 MongoDB 的集合
+<code>comments</code>（小写复数）。若需自定义集合名，在实体类上用
+<code>@Document(collection = "自定义名称")</code> 标注。</p>
+<p>而且这里的 repository 也是通过通过 <code>Pageable</code>
+参数实现分页和排序，例如：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 分页查询并按点赞数降序</span></span><br><span class="line">Page&lt;Comment&gt; <span class="title function_">findByStatus</span><span class="params">(Comment.CommentStatus status, Pageable pageable)</span>;</span><br><span class="line"><span class="comment">// 使用时：PageRequest.of(0, 10, Sort.by(&quot;likes&quot;).descending())</span></span><br></pre></td></tr></table></figure>
+<p>Repository方法命名规则说明：</p>
+<ul>
+<li><p>findBy…：查询方法</p></li>
+<li><p>countBy…：统计方法</p></li>
+<li><p>deleteBy…：删除方法</p></li>
+<li><p>And、Or：连接多个条件</p></li>
+<li><p>OrderBy…Desc/Asc：排序</p></li>
+</ul>
+<h3 id="创建-service-层">创建 Service 层</h3>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> hbnu.project.ergoutreegalemjstore.service.impl;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> hbnu.project.ergoutreegalemjstore.entity.Comment;</span><br><span class="line"><span class="keyword">import</span> hbnu.project.ergoutreegalemjstore.repository.CommentRepository;</span><br><span class="line"><span class="keyword">import</span> hbnu.project.ergoutreegalemjstore.service.CommentService;</span><br><span class="line"><span class="keyword">import</span> lombok.RequiredArgsConstructor;</span><br><span class="line"><span class="keyword">import</span> lombok.extern.slf4j.Slf4j;</span><br><span class="line"><span class="keyword">import</span> org.springframework.data.domain.Page;</span><br><span class="line"><span class="keyword">import</span> org.springframework.data.domain.PageRequest;</span><br><span class="line"><span class="keyword">import</span> org.springframework.data.domain.Sort;</span><br><span class="line"><span class="keyword">import</span> org.springframework.stereotype.Service;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.time.LocalDateTime;</span><br><span class="line"><span class="keyword">import</span> java.util.List;</span><br><span class="line"><span class="keyword">import</span> java.util.UUID;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 评论服务实现类</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@Slf4j</span></span><br><span class="line"><span class="meta">@Service</span></span><br><span class="line"><span class="meta">@RequiredArgsConstructor</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">CommentServiceImpl</span> <span class="keyword">implements</span> <span class="title class_">CommentService</span> &#123;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> CommentRepository commentRepository;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> Comment <span class="title function_">addComment</span><span class="params">(String imageId, String content, String userName, String userAvatar)</span> &#123;</span><br><span class="line">        log.info(<span class="string">&quot;添加评论 - 图片ID: &#123;&#125;, 用户: &#123;&#125;&quot;</span>, imageId, userName);</span><br><span class="line">        </span><br><span class="line">        <span class="type">Comment</span> <span class="variable">comment</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Comment</span>();</span><br><span class="line">        comment.setImageId(imageId);</span><br><span class="line">        comment.setContent(content);</span><br><span class="line">        comment.setUserName(userName);</span><br><span class="line">        comment.setUserAvatar(userAvatar);</span><br><span class="line">        comment.setCreateTime(LocalDateTime.now());</span><br><span class="line">        comment.setUpdateTime(LocalDateTime.now());</span><br><span class="line">        comment.setStatus(Comment.CommentStatus.ACTIVE);</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">return</span> commentRepository.save(comment);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> Comment <span class="title function_">addReply</span><span class="params">(String commentId, String content, String userName, String userAvatar)</span> &#123;</span><br><span class="line">        log.info(<span class="string">&quot;添加回复 - 评论ID: &#123;&#125;, 用户: &#123;&#125;&quot;</span>, commentId, userName);</span><br><span class="line">        </span><br><span class="line">        <span class="type">Comment</span> <span class="variable">comment</span> <span class="operator">=</span> commentRepository.findById(commentId)</span><br><span class="line">                .orElseThrow(() -&gt; <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(<span class="string">&quot;评论不存在&quot;</span>));</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 创建回复对象</span></span><br><span class="line">        Comment.<span class="type">Reply</span> <span class="variable">reply</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Comment</span>.Reply();</span><br><span class="line">        reply.setReplyId(UUID.randomUUID().toString());</span><br><span class="line">        reply.setContent(content);</span><br><span class="line">        reply.setUserName(userName);</span><br><span class="line">        reply.setUserAvatar(userAvatar);</span><br><span class="line">        reply.setCreateTime(LocalDateTime.now());</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 添加到回复列表</span></span><br><span class="line">        comment.getReplies().add(reply);</span><br><span class="line">        comment.setUpdateTime(LocalDateTime.now());</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">return</span> commentRepository.save(comment);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> List&lt;Comment&gt; <span class="title function_">getCommentsByImageId</span><span class="params">(String imageId)</span> &#123;</span><br><span class="line">        log.info(<span class="string">&quot;查询图片评论 - 图片ID: &#123;&#125;&quot;</span>, imageId);</span><br><span class="line">        <span class="keyword">return</span> commentRepository.findByImageIdAndStatusOrderByCreateTimeDesc(</span><br><span class="line">                imageId, Comment.CommentStatus.ACTIVE);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> Page&lt;Comment&gt; <span class="title function_">getCommentsByImageIdWithPage</span><span class="params">(String imageId, <span class="type">int</span> page, <span class="type">int</span> size)</span> &#123;</span><br><span class="line">        log.info(<span class="string">&quot;分页查询图片评论 - 图片ID: &#123;&#125;, 页码: &#123;&#125;, 大小: &#123;&#125;&quot;</span>, imageId, page, size);</span><br><span class="line">        </span><br><span class="line">        <span class="type">PageRequest</span> <span class="variable">pageRequest</span> <span class="operator">=</span> PageRequest.of(page, size, </span><br><span class="line">                Sort.by(Sort.Direction.DESC, <span class="string">&quot;createTime&quot;</span>));</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">return</span> commentRepository.findByImageIdAndStatus(</span><br><span class="line">                imageId, Comment.CommentStatus.ACTIVE, pageRequest);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> Comment <span class="title function_">likeComment</span><span class="params">(String commentId, String userName)</span> &#123;</span><br><span class="line">        log.info(<span class="string">&quot;点赞评论 - 评论ID: &#123;&#125;, 用户: &#123;&#125;&quot;</span>, commentId, userName);</span><br><span class="line">        </span><br><span class="line">        <span class="type">Comment</span> <span class="variable">comment</span> <span class="operator">=</span> commentRepository.findById(commentId)</span><br><span class="line">                .orElseThrow(() -&gt; <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(<span class="string">&quot;评论不存在&quot;</span>));</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 检查是否已点赞</span></span><br><span class="line">        <span class="keyword">if</span> (!comment.getLikedByUsers().contains(userName)) &#123;</span><br><span class="line">            comment.getLikedByUsers().add(userName);</span><br><span class="line">            comment.setLikes(comment.getLikes() + <span class="number">1</span>);</span><br><span class="line">            comment.setUpdateTime(LocalDateTime.now());</span><br><span class="line">            <span class="keyword">return</span> commentRepository.save(comment);</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">return</span> comment;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> Comment <span class="title function_">unlikeComment</span><span class="params">(String commentId, String userName)</span> &#123;</span><br><span class="line">        log.info(<span class="string">&quot;取消点赞 - 评论ID: &#123;&#125;, 用户: &#123;&#125;&quot;</span>, commentId, userName);</span><br><span class="line">        </span><br><span class="line">        <span class="type">Comment</span> <span class="variable">comment</span> <span class="operator">=</span> commentRepository.findById(commentId)</span><br><span class="line">                .orElseThrow(() -&gt; <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(<span class="string">&quot;评论不存在&quot;</span>));</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">if</span> (comment.getLikedByUsers().remove(userName)) &#123;</span><br><span class="line">            comment.setLikes(Math.max(<span class="number">0</span>, comment.getLikes() - <span class="number">1</span>));</span><br><span class="line">            comment.setUpdateTime(LocalDateTime.now());</span><br><span class="line">            <span class="keyword">return</span> commentRepository.save(comment);</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">return</span> comment;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">deleteComment</span><span class="params">(String commentId)</span> &#123;</span><br><span class="line">        log.info(<span class="string">&quot;删除评论 - 评论ID: &#123;&#125;&quot;</span>, commentId);</span><br><span class="line">        </span><br><span class="line">        <span class="type">Comment</span> <span class="variable">comment</span> <span class="operator">=</span> commentRepository.findById(commentId)</span><br><span class="line">                .orElseThrow(() -&gt; <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(<span class="string">&quot;评论不存在&quot;</span>));</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 软删除：只改变状态</span></span><br><span class="line">        comment.setStatus(Comment.CommentStatus.DELETED);</span><br><span class="line">        comment.setUpdateTime(LocalDateTime.now());</span><br><span class="line">        commentRepository.save(comment);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">long</span> <span class="title function_">getCommentCount</span><span class="params">(String imageId)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> commentRepository.countByImageIdAndStatus(imageId, Comment.CommentStatus.ACTIVE);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> List&lt;Comment&gt; <span class="title function_">getHotComments</span><span class="params">(String imageId, <span class="type">int</span> minLikes)</span> &#123;</span><br><span class="line">        log.info(<span class="string">&quot;查询热门评论 - 图片ID: &#123;&#125;, 最小点赞数: &#123;&#125;&quot;</span>, imageId, minLikes);</span><br><span class="line">        <span class="keyword">return</span> commentRepository.findHotComments(imageId, minLikes, Comment.CommentStatus.ACTIVE);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>接口略，只写了服务类，实际上，Mongodb 影响的只是持久层的内容，提供的
+Service 层和 Controller 层，体现的地方只是在适配 MongoDB
+特性的特殊设计</p>
+<p>其中的评论位置，我写了一个回复</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">public</span> Comment <span class="title function_">addReply</span><span class="params">(String commentId, String content, String userName, String userAvatar)</span> &#123;</span><br><span class="line">    <span class="comment">// 1. 查询主评论（获取完整的 Comment 文档）</span></span><br><span class="line">    <span class="type">Comment</span> <span class="variable">comment</span> <span class="operator">=</span> commentRepository.findById(commentId)</span><br><span class="line">            .orElseThrow(() -&gt; <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(<span class="string">&quot;评论不存在&quot;</span>));</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 2. 创建 Reply 嵌套文档并添加到主评论的 replies 列表</span></span><br><span class="line">    Comment.<span class="type">Reply</span> <span class="variable">reply</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Comment</span>.Reply();</span><br><span class="line">    reply.setReplyId(UUID.randomUUID().toString()); <span class="comment">// 手动生成嵌套文档的ID</span></span><br><span class="line">    comment.getReplies().add(reply); <span class="comment">// 直接操作内存中的嵌套列表</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 3. 保存更新后的主评论文档</span></span><br><span class="line">    <span class="keyword">return</span> commentRepository.save(comment);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>MongoDB 支持 <strong>嵌套文档</strong>（一个文档中包含另一个 /
+多个文档）， <code>Comment</code> 实体中包含
+<code>List&lt;Reply&gt;</code> 嵌套结构，Service 层的
+<code>addReply</code> 方法正是利用了这一特性：</p>
+<ul>
+<li>和 MySQL 对比：若用 MySQL，需单独建 <code>reply</code> 表并通过
+<code>comment_id</code> 关联，Service 层需分别操作 <code>comment</code>
+表和 <code>reply</code> 表；而 MongoDB 直接在主文档中嵌套
+<code>replies</code> 列表，只需更新主文档，操作更简洁。</li>
+<li>注意点：嵌套文档默认没有独立的索引，若需频繁查询
+“某用户的所有回复”，需在 <code>Comment</code> 实体的
+<code>replies.userName</code> 字段上单独创建索引</li>
+</ul>
+<p>点赞部分也是基于数组的去重更新，<code>Comment</code> 实体中的
+<code>likedByUsers</code>（存储点赞用户列表）是 MongoDB
+数组类型的典型应用，Service 层的
+<code>likeComment</code>/<code>unlikeComment</code>
+方法利用了数组的增删操作：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">public</span> Comment <span class="title function_">likeComment</span><span class="params">(String commentId, String userName)</span> &#123;</span><br><span class="line">    <span class="type">Comment</span> <span class="variable">comment</span> <span class="operator">=</span> commentRepository.findById(commentId).orElseThrow(...);</span><br><span class="line">    <span class="comment">// 检查用户是否已在数组中（去重），避免重复点赞</span></span><br><span class="line">    <span class="keyword">if</span> (!comment.getLikedByUsers().contains(userName)) &#123;</span><br><span class="line">        comment.getLikedByUsers().add(userName); <span class="comment">// 数组添加元素</span></span><br><span class="line">        comment.setLikes(comment.getLikes() + <span class="number">1</span>); <span class="comment">// 同步更新点赞数（冗余字段）</span></span><br><span class="line">        <span class="keyword">return</span> commentRepository.save(comment);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> comment;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>数组去重：MongoDB 本身支持 <code>$addToSet</code>
+操作符（添加元素时自动去重），若想进一步优化，可在 Repository 层用
+<code>@Query</code> 结合 <code>$addToSet</code> 实现原子操作，避免
+Service 层的 <code>contains</code> 判断（减少内存操作）：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Repository 层新增方法（原子点赞）</span></span><br><span class="line"><span class="meta">@Query(value = &quot;&#123; &#x27;_id&#x27;: ?0 &#125;&quot;, update = &quot;&#123; $addToSet: &#123; &#x27;likedByUsers&#x27;: ?1 &#125;, $inc: &#123; &#x27;likes&#x27;: 1 &#125; &#125;&quot;)</span></span><br><span class="line"><span class="keyword">void</span> <span class="title function_">likeCommentAtomically</span><span class="params">(String commentId, String userName)</span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>冗余字段：<code>likes</code> 是 <code>likedByUsers</code>
+数组的长度冗余字段，目的是避免每次统计点赞数都要计算数组长度（<code>likedByUsers.size()</code>），提升查询性能（MongoDB
+数组长度计算需遍历数组，冗余字段可直接读取）。</li>
+</ul>
+<p>Service 层的 <code>getCommentsByImageIdWithPage</code> 方法使用
+<code>PageRequest</code> 实现分页，底层依赖 MongoDB 的
+<strong>游标分页</strong>（而非 MySQL 的
+<code>LIMIT/OFFSET</code>）：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">public</span> Page&lt;Comment&gt; <span class="title function_">getCommentsByImageIdWithPage</span><span class="params">(String imageId, <span class="type">int</span> page, <span class="type">int</span> size)</span> &#123;</span><br><span class="line">    <span class="type">PageRequest</span> <span class="variable">pageRequest</span> <span class="operator">=</span> PageRequest.of(page, size, </span><br><span class="line">            Sort.by(Sort.Direction.DESC, <span class="string">&quot;createTime&quot;</span>));</span><br><span class="line">    <span class="keyword">return</span> commentRepository.findByImageIdAndStatus(imageId, Comment.CommentStatus.ACTIVE, pageRequest);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>和 MySQL 对比：MySQL 分页用
+<code>LIMIT size OFFSET (page*size)</code>，数据量大时会因跳过大量数据导致性能差；MongoDB
+的游标分页通过索引有序遍历，性能更稳定（前提是 <code>createTime</code>
+字段已创建索引，即之前 <code>MongoConfig</code> 中的
+<code>idx_imageId_createTime</code> 复合索引）。</li>
+<li>注意点：分页排序字段必须包含在索引中（如这里的
+<code>imageId + createTime</code>
+复合索引），否则会触发全集合扫描，导致分页性能下降。</li>
+</ul>
+<h3 id="创建接口">创建接口</h3>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br><span class="line">229</span><br><span class="line">230</span><br><span class="line">231</span><br><span class="line">232</span><br><span class="line">233</span><br><span class="line">234</span><br><span class="line">235</span><br><span class="line">236</span><br><span class="line">237</span><br><span class="line">238</span><br><span class="line">239</span><br><span class="line">240</span><br><span class="line">241</span><br><span class="line">242</span><br><span class="line">243</span><br><span class="line">244</span><br><span class="line">245</span><br><span class="line">246</span><br><span class="line">247</span><br><span class="line">248</span><br><span class="line">249</span><br><span class="line">250</span><br><span class="line">251</span><br><span class="line">252</span><br><span class="line">253</span><br><span class="line">254</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> hbnu.project.ergoutreegalemjstore.controller;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> hbnu.project.ergoutreegalemjstore.entity.Comment;</span><br><span class="line"><span class="keyword">import</span> hbnu.project.ergoutreegalemjstore.service.CommentService;</span><br><span class="line"><span class="keyword">import</span> lombok.Data;</span><br><span class="line"><span class="keyword">import</span> lombok.RequiredArgsConstructor;</span><br><span class="line"><span class="keyword">import</span> lombok.extern.slf4j.Slf4j;</span><br><span class="line"><span class="keyword">import</span> org.springframework.data.domain.Page;</span><br><span class="line"><span class="keyword">import</span> org.springframework.http.ResponseEntity;</span><br><span class="line"><span class="keyword">import</span> org.springframework.web.bind.annotation.*;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.util.HashMap;</span><br><span class="line"><span class="keyword">import</span> java.util.List;</span><br><span class="line"><span class="keyword">import</span> java.util.Map;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 评论控制器</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@Slf4j</span></span><br><span class="line"><span class="meta">@RestController</span></span><br><span class="line"><span class="meta">@RequestMapping(&quot;/api/comments&quot;)</span></span><br><span class="line"><span class="meta">@RequiredArgsConstructor</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">CommentController</span> &#123;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> CommentService commentService;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 添加评论</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@PostMapping</span></span><br><span class="line">    <span class="keyword">public</span> ResponseEntity&lt;Map&lt;String, Object&gt;&gt; <span class="title function_">addComment</span><span class="params">(<span class="meta">@RequestBody</span> CommentRequest request)</span> &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="type">Comment</span> <span class="variable">comment</span> <span class="operator">=</span> commentService.addComment(</span><br><span class="line">                    request.getImageId(),</span><br><span class="line">                    request.getContent(),</span><br><span class="line">                    request.getUserName(),</span><br><span class="line">                    request.getUserAvatar()</span><br><span class="line">            );</span><br><span class="line">            </span><br><span class="line">            Map&lt;String, Object&gt; response = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">            response.put(<span class="string">&quot;success&quot;</span>, <span class="literal">true</span>);</span><br><span class="line">            response.put(<span class="string">&quot;message&quot;</span>, <span class="string">&quot;评论添加成功&quot;</span>);</span><br><span class="line">            response.put(<span class="string">&quot;data&quot;</span>, comment);</span><br><span class="line">            <span class="keyword">return</span> ResponseEntity.ok(response);</span><br><span class="line">            </span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">            log.error(<span class="string">&quot;添加评论失败&quot;</span>, e);</span><br><span class="line">            Map&lt;String, Object&gt; response = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">            response.put(<span class="string">&quot;success&quot;</span>, <span class="literal">false</span>);</span><br><span class="line">            response.put(<span class="string">&quot;message&quot;</span>, <span class="string">&quot;评论添加失败: &quot;</span> + e.getMessage());</span><br><span class="line">            <span class="keyword">return</span> ResponseEntity.badRequest().body(response);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 添加回复</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@PostMapping(&quot;/&#123;commentId&#125;/reply&quot;)</span></span><br><span class="line">    <span class="keyword">public</span> ResponseEntity&lt;Map&lt;String, Object&gt;&gt; <span class="title function_">addReply</span><span class="params">(</span></span><br><span class="line"><span class="params">            <span class="meta">@PathVariable</span> String commentId,</span></span><br><span class="line"><span class="params">            <span class="meta">@RequestBody</span> ReplyRequest request)</span> &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="type">Comment</span> <span class="variable">comment</span> <span class="operator">=</span> commentService.addReply(</span><br><span class="line">                    commentId,</span><br><span class="line">                    request.getContent(),</span><br><span class="line">                    request.getUserName(),</span><br><span class="line">                    request.getUserAvatar()</span><br><span class="line">            );</span><br><span class="line">            </span><br><span class="line">            Map&lt;String, Object&gt; response = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">            response.put(<span class="string">&quot;success&quot;</span>, <span class="literal">true</span>);</span><br><span class="line">            response.put(<span class="string">&quot;message&quot;</span>, <span class="string">&quot;回复添加成功&quot;</span>);</span><br><span class="line">            response.put(<span class="string">&quot;data&quot;</span>, comment);</span><br><span class="line">            <span class="keyword">return</span> ResponseEntity.ok(response);</span><br><span class="line">            </span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">            log.error(<span class="string">&quot;添加回复失败&quot;</span>, e);</span><br><span class="line">            Map&lt;String, Object&gt; response = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">            response.put(<span class="string">&quot;success&quot;</span>, <span class="literal">false</span>);</span><br><span class="line">            response.put(<span class="string">&quot;message&quot;</span>, <span class="string">&quot;回复添加失败: &quot;</span> + e.getMessage());</span><br><span class="line">            <span class="keyword">return</span> ResponseEntity.badRequest().body(response);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 获取图片的所有评论</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@GetMapping(&quot;/image/&#123;imageId&#125;&quot;)</span></span><br><span class="line">    <span class="keyword">public</span> ResponseEntity&lt;Map&lt;String, Object&gt;&gt; <span class="title function_">getComments</span><span class="params">(<span class="meta">@PathVariable</span> String imageId)</span> &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            List&lt;Comment&gt; comments = commentService.getCommentsByImageId(imageId);</span><br><span class="line">            <span class="type">long</span> <span class="variable">count</span> <span class="operator">=</span> commentService.getCommentCount(imageId);</span><br><span class="line">            </span><br><span class="line">            Map&lt;String, Object&gt; response = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">            response.put(<span class="string">&quot;success&quot;</span>, <span class="literal">true</span>);</span><br><span class="line">            response.put(<span class="string">&quot;data&quot;</span>, comments);</span><br><span class="line">            response.put(<span class="string">&quot;total&quot;</span>, count);</span><br><span class="line">            <span class="keyword">return</span> ResponseEntity.ok(response);</span><br><span class="line">            </span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">            log.error(<span class="string">&quot;获取评论失败&quot;</span>, e);</span><br><span class="line">            Map&lt;String, Object&gt; response = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">            response.put(<span class="string">&quot;success&quot;</span>, <span class="literal">false</span>);</span><br><span class="line">            response.put(<span class="string">&quot;message&quot;</span>, <span class="string">&quot;获取评论失败: &quot;</span> + e.getMessage());</span><br><span class="line">            <span class="keyword">return</span> ResponseEntity.badRequest().body(response);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 分页获取评论</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@GetMapping(&quot;/image/&#123;imageId&#125;/page&quot;)</span></span><br><span class="line">    <span class="keyword">public</span> ResponseEntity&lt;Map&lt;String, Object&gt;&gt; <span class="title function_">getCommentsWithPage</span><span class="params">(</span></span><br><span class="line"><span class="params">            <span class="meta">@PathVariable</span> String imageId,</span></span><br><span class="line"><span class="params">            <span class="meta">@RequestParam(defaultValue = &quot;0&quot;)</span> <span class="type">int</span> page,</span></span><br><span class="line"><span class="params">            <span class="meta">@RequestParam(defaultValue = &quot;10&quot;)</span> <span class="type">int</span> size)</span> &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            Page&lt;Comment&gt; commentPage = commentService.getCommentsByImageIdWithPage(imageId, page, size);</span><br><span class="line">            </span><br><span class="line">            Map&lt;String, Object&gt; response = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">            response.put(<span class="string">&quot;success&quot;</span>, <span class="literal">true</span>);</span><br><span class="line">            response.put(<span class="string">&quot;data&quot;</span>, commentPage.getContent());</span><br><span class="line">            response.put(<span class="string">&quot;currentPage&quot;</span>, commentPage.getNumber());</span><br><span class="line">            response.put(<span class="string">&quot;totalPages&quot;</span>, commentPage.getTotalPages());</span><br><span class="line">            response.put(<span class="string">&quot;totalElements&quot;</span>, commentPage.getTotalElements());</span><br><span class="line">            <span class="keyword">return</span> ResponseEntity.ok(response);</span><br><span class="line">            </span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">            log.error(<span class="string">&quot;分页获取评论失败&quot;</span>, e);</span><br><span class="line">            Map&lt;String, Object&gt; response = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">            response.put(<span class="string">&quot;success&quot;</span>, <span class="literal">false</span>);</span><br><span class="line">            response.put(<span class="string">&quot;message&quot;</span>, <span class="string">&quot;获取评论失败: &quot;</span> + e.getMessage());</span><br><span class="line">            <span class="keyword">return</span> ResponseEntity.badRequest().body(response);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 点赞评论</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@PostMapping(&quot;/&#123;commentId&#125;/like&quot;)</span></span><br><span class="line">    <span class="keyword">public</span> ResponseEntity&lt;Map&lt;String, Object&gt;&gt; <span class="title function_">likeComment</span><span class="params">(</span></span><br><span class="line"><span class="params">            <span class="meta">@PathVariable</span> String commentId,</span></span><br><span class="line"><span class="params">            <span class="meta">@RequestBody</span> LikeRequest request)</span> &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="type">Comment</span> <span class="variable">comment</span> <span class="operator">=</span> commentService.likeComment(commentId, request.getUserName());</span><br><span class="line">            </span><br><span class="line">            Map&lt;String, Object&gt; response = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">            response.put(<span class="string">&quot;success&quot;</span>, <span class="literal">true</span>);</span><br><span class="line">            response.put(<span class="string">&quot;message&quot;</span>, <span class="string">&quot;点赞成功&quot;</span>);</span><br><span class="line">            response.put(<span class="string">&quot;data&quot;</span>, comment);</span><br><span class="line">            <span class="keyword">return</span> ResponseEntity.ok(response);</span><br><span class="line">            </span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">            log.error(<span class="string">&quot;点赞失败&quot;</span>, e);</span><br><span class="line">            Map&lt;String, Object&gt; response = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">            response.put(<span class="string">&quot;success&quot;</span>, <span class="literal">false</span>);</span><br><span class="line">            response.put(<span class="string">&quot;message&quot;</span>, <span class="string">&quot;点赞失败: &quot;</span> + e.getMessage());</span><br><span class="line">            <span class="keyword">return</span> ResponseEntity.badRequest().body(response);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 取消点赞</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@PostMapping(&quot;/&#123;commentId&#125;/unlike&quot;)</span></span><br><span class="line">    <span class="keyword">public</span> ResponseEntity&lt;Map&lt;String, Object&gt;&gt; <span class="title function_">unlikeComment</span><span class="params">(</span></span><br><span class="line"><span class="params">            <span class="meta">@PathVariable</span> String commentId,</span></span><br><span class="line"><span class="params">            <span class="meta">@RequestBody</span> LikeRequest request)</span> &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="type">Comment</span> <span class="variable">comment</span> <span class="operator">=</span> commentService.unlikeComment(commentId, request.getUserName());</span><br><span class="line">            </span><br><span class="line">            Map&lt;String, Object&gt; response = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">            response.put(<span class="string">&quot;success&quot;</span>, <span class="literal">true</span>);</span><br><span class="line">            response.put(<span class="string">&quot;message&quot;</span>, <span class="string">&quot;取消点赞成功&quot;</span>);</span><br><span class="line">            response.put(<span class="string">&quot;data&quot;</span>, comment);</span><br><span class="line">            <span class="keyword">return</span> ResponseEntity.ok(response);</span><br><span class="line">            </span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">            log.error(<span class="string">&quot;取消点赞失败&quot;</span>, e);</span><br><span class="line">            Map&lt;String, Object&gt; response = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">            response.put(<span class="string">&quot;success&quot;</span>, <span class="literal">false</span>);</span><br><span class="line">            response.put(<span class="string">&quot;message&quot;</span>, <span class="string">&quot;取消点赞失败: &quot;</span> + e.getMessage());</span><br><span class="line">            <span class="keyword">return</span> ResponseEntity.badRequest().body(response);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 删除评论</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@DeleteMapping(&quot;/&#123;commentId&#125;&quot;)</span></span><br><span class="line">    <span class="keyword">public</span> ResponseEntity&lt;Map&lt;String, Object&gt;&gt; <span class="title function_">deleteComment</span><span class="params">(<span class="meta">@PathVariable</span> String commentId)</span> &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            commentService.deleteComment(commentId);</span><br><span class="line">            </span><br><span class="line">            Map&lt;String, Object&gt; response = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">            response.put(<span class="string">&quot;success&quot;</span>, <span class="literal">true</span>);</span><br><span class="line">            response.put(<span class="string">&quot;message&quot;</span>, <span class="string">&quot;评论删除成功&quot;</span>);</span><br><span class="line">            <span class="keyword">return</span> ResponseEntity.ok(response);</span><br><span class="line">            </span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">            log.error(<span class="string">&quot;删除评论失败&quot;</span>, e);</span><br><span class="line">            Map&lt;String, Object&gt; response = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">            response.put(<span class="string">&quot;success&quot;</span>, <span class="literal">false</span>);</span><br><span class="line">            response.put(<span class="string">&quot;message&quot;</span>, <span class="string">&quot;删除评论失败: &quot;</span> + e.getMessage());</span><br><span class="line">            <span class="keyword">return</span> ResponseEntity.badRequest().body(response);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 获取热门评论</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@GetMapping(&quot;/image/&#123;imageId&#125;/hot&quot;)</span></span><br><span class="line">    <span class="keyword">public</span> ResponseEntity&lt;Map&lt;String, Object&gt;&gt; <span class="title function_">getHotComments</span><span class="params">(</span></span><br><span class="line"><span class="params">            <span class="meta">@PathVariable</span> String imageId,</span></span><br><span class="line"><span class="params">            <span class="meta">@RequestParam(defaultValue = &quot;5&quot;)</span> <span class="type">int</span> minLikes)</span> &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            List&lt;Comment&gt; hotComments = commentService.getHotComments(imageId, minLikes);</span><br><span class="line">            </span><br><span class="line">            Map&lt;String, Object&gt; response = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">            response.put(<span class="string">&quot;success&quot;</span>, <span class="literal">true</span>);</span><br><span class="line">            response.put(<span class="string">&quot;data&quot;</span>, hotComments);</span><br><span class="line">            <span class="keyword">return</span> ResponseEntity.ok(response);</span><br><span class="line">            </span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">            log.error(<span class="string">&quot;获取热门评论失败&quot;</span>, e);</span><br><span class="line">            Map&lt;String, Object&gt; response = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">            response.put(<span class="string">&quot;success&quot;</span>, <span class="literal">false</span>);</span><br><span class="line">            response.put(<span class="string">&quot;message&quot;</span>, <span class="string">&quot;获取热门评论失败: &quot;</span> + e.getMessage());</span><br><span class="line">            <span class="keyword">return</span> ResponseEntity.badRequest().body(response);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// ============ 请求DTO ============</span></span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Data</span></span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">CommentRequest</span> &#123;</span><br><span class="line">        <span class="keyword">private</span> String imageId;</span><br><span class="line">        <span class="keyword">private</span> String content;</span><br><span class="line">        <span class="keyword">private</span> String userName;</span><br><span class="line">        <span class="keyword">private</span> String userAvatar;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Data</span></span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">ReplyRequest</span> &#123;</span><br><span class="line">        <span class="keyword">private</span> String content;</span><br><span class="line">        <span class="keyword">private</span> String userName;</span><br><span class="line">        <span class="keyword">private</span> String userAvatar;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Data</span></span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">LikeRequest</span> &#123;</span><br><span class="line">        <span class="keyword">private</span> String userName;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Controller 层作为接口层，主要负责接收请求、调用 Service
+并返回响应，需特殊说明的也就是是 <strong>请求 / 响应 DTO 的设计</strong>
+和 <strong>MongoDB 文档 ID 的处理</strong></p>
+<p>MongoDB 文档默认的 <code>_id</code> 字段（类型为
+<code>ObjectId</code>），在代码中被映射为 <code>Comment</code> 实体的
+<code>String</code> 类型 ID（通过 <code>@Id</code> 注解）：</p>
+<ul>
+<li><p>Controller 层接收的 <code>commentId</code>、<code>imageId</code>
+等路径参数，本质是 MongoDB 文档的
+<code>_id</code>（字符串形式）；</p></li>
+<li><p>Service 层通过 <code>commentRepository.findById(commentId)</code>
+查询时，Spring Data MongoDB 会自动将字符串 ID 转换为
+<code>ObjectId</code>（若格式正确）。</p></li>
+<li><p><strong>特殊说明</strong>：</p>
+<ul>
+<li><p>避免 ID 格式错误：<code>ObjectId</code> 有固定格式（24
+位十六进制字符串），Controller 层可添加参数校验（如用
+<code>@Pattern</code> 注解），防止传入无效 ID 导致查询失败；</p></li>
+<li><p>示例：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@DeleteMapping(&quot;/&#123;commentId&#125;&quot;)</span></span><br><span class="line"><span class="keyword">public</span> ResponseEntity&lt;Map&lt;String, Object&gt;&gt; <span class="title function_">deleteComment</span><span class="params">(</span></span><br><span class="line"><span class="params">        <span class="meta">@PathVariable</span> <span class="meta">@Pattern(regexp = &quot;^[0-9a-fA-F]&#123;24&#125;$&quot;, message = &quot;评论ID格式错误&quot;)</span> String commentId)</span> &#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ul></li>
+</ul>
+<p>其实，这些设计也都大差不差了，也不算是新东西了</p>
+<h3 id="测试">测试</h3>
+<p>这次我修改了一下前端，我们测试一下</p>
+<figure>
+<img src="/posts/32865/image-20251029204743989.png" alt="image-20251029204743989">
+<figcaption aria-hidden="true">image-20251029204743989</figcaption>
+</figure>
+<p>业务这边是没有问题的</p>
+<figure>
+<img src="/posts/32865/image-20251029204752009.png" alt="image-20251029204752009">
+<figcaption aria-hidden="true">image-20251029204752009</figcaption>
+</figure>
+<p>多条的情况下也能按照索引正确排序</p>
+<figure>
+<img src="/posts/32865/image-20251029204900403.png" alt="image-20251029204900403">
+<figcaption aria-hidden="true">image-20251029204900403</figcaption>
+</figure>
+<p>查一下mongodb这边看看持久化的状态</p>
+<figure>
+<img src="/posts/32865/image-20251029205009383.png" alt="image-20251029205009383">
+<figcaption aria-hidden="true">image-20251029205009383</figcaption>
+</figure>
+<p>没有问题</p>
+<p>MongoDB 还是很简单好用的</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a target="_blank" rel="noopener" href="https://github.com/ergou10086">ErgouTree</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://ergou10086.github.io/posts/32865.html">https://ergou10086.github.io/posts/32865.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://ergou10086.github.io" target="_blank">ErgouTree's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a><a class="post-meta__tags" href="/tags/%E5%AD%A6%E4%B9%A0/">学习</a><a class="post-meta__tags" href="/tags/%E5%BC%80%E5%8F%91%E7%BB%84%E4%BB%B6/">开发组件</a><a class="post-meta__tags" href="/tags/%E4%B8%AD%E9%97%B4%E4%BB%B6/">中间件</a><a class="post-meta__tags" href="/tags/%E5%AE%9E%E7%94%A8%E7%9F%A5%E8%AF%86/">实用知识</a><a class="post-meta__tags" href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F/">分布式</a><a class="post-meta__tags" href="/tags/%E6%95%B0%E6%8D%AE%E5%BA%93%E6%8A%80%E6%9C%AF/">数据库技术</a><a class="post-meta__tags" href="/tags/MongoDB/">MongoDB</a><a class="post-meta__tags" href="/tags/NoSQL/">NoSQL</a><a class="post-meta__tags" href="/tags/%E7%B4%A2%E5%BC%95/">索引</a><a class="post-meta__tags" href="/tags/%E5%91%BD%E4%BB%A4/">命令</a></div><div class="post-share"><div class="addtoany"><div class="a2a_kit a2a_kit_size_32 a2a_default_style"><a class="a2a_button_facebook"></a><a class="a2a_button_twitter"></a><a class="a2a_button_wechat"></a><a class="a2a_button_sina_weibo"></a><a class="a2a_button_facebook_messenger"></a><a class="a2a_button_email"></a><a class="a2a_button_copy_link"></a><a class="a2a_dd" target="_blank" rel="noopener" href="https://www.addtoany.com/share"></a></div></div><script async="async" src="https://static.addtoany.com/menu/page.js"></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width" href="/posts/19619.html" title="MongoDB part3-MongoDB的索引详解"><img class="cover" src="/images/posts/cover_config.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">MongoDB part3-MongoDB的索引详解</div></div><div class="info-2"><div class="info-item-1">索引简介 什么是索引 索引是 MongoDB 中优化查询性能的核心手段，通过创建索引可以大幅幅减少查询时的文档扫描量（从全集合扫描变为索引扫描） 本质上，索引是一种数据结构（类似书籍的目录），存储集合中某个 / 某些字段的值及其对应文档的位置信息，用于快速定位满足查询条件的文档。 索引并非没有代价，索引会占用额外存储空间，且写入操作（插入 / 更新 / 删除）会触发索引更新，可能降低写入性能。因此需平衡查询效率和写入成本，避免过度索引。 默认情况下，索引的创建是为每个集合自动为 _id 字段创建唯一索引（_id_），_id 索引可防止客户端插入两个具有相同 _id 字段值的文档。无法删除此索引。  在分片群集中，如果您不使用 _id 字段作为分分片键，那么您的应用程序必须确保 _id 字段中的值具有唯一性。为此，您可以使用一个具有自动生成的 ObjectId 的字段。  MongoDB 索引使用 B-Tree 数据结构（MySQL 是 B+Tree） 索引类型概述 MongoDB...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/posts/19619.html" title="MongoDB part3-MongoDB的索引详解"><img class="cover" src="/images/posts/cover_config.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-10-25</div><div class="info-item-2">MongoDB part3-MongoDB的索引详解</div></div><div class="info-2"><div class="info-item-1">索引简介 什么是索引 索引是 MongoDB 中优化查询性能的核心手段，通过创建索引可以大幅幅减少查询时的文档扫描量（从全集合扫描变为索引扫描） 本质上，索引是一种数据结构（类似书籍的目录），存储集合中某个 / 某些字段的值及其对应文档的位置信息，用于快速定位满足查询条件的文档。 索引并非没有代价，索引会占用额外存储空间，且写入操作（插入 / 更新 / 删除）会触发索引更新，可能降低写入性能。因此需平衡查询效率和写入成本，避免过度索引。 默认情况下，索引的创建是为每个集合自动为 _id 字段创建唯一索引（_id_），_id 索引可防止客户端插入两个具有相同 _id 字段值的文档。无法删除此索引。  在分片群集中，如果您不使用 _id 字段作为分分片键，那么您的应用程序必须确保 _id 字段中的值具有唯一性。为此，您可以使用一个具有自动生成的 ObjectId 的字段。  MongoDB 索引使用 B-Tree 数据结构（MySQL 是 B+Tree） 索引类型概述 MongoDB...</div></div></div></a><a class="pagination-related" href="/posts/43887.html" title="MongoDB part2—MongoDB的基本操作和mongosh命令"><img class="cover" src="/images/posts/cover_mongodb1.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-10-25</div><div class="info-item-2">MongoDB part2—MongoDB的基本操作和mongosh命令</div></div><div class="info-2"><div class="info-item-1">MongoDB Shell MongoDB Shell（简称简称 mongo 或 mongosh）是 MongoDB 官方提供的交互式命令行工具，用于连接 MongoDB 数据库并执行各种操作（如查询、插入、更新数据，管理数据库 / 集合等）。它是开发者与 MongoDB 交互的最直接方式之一，其使用的命令是 MongoDB 操作的 “原生语法” 它的本质实际上是一个基于 JavaScript 的交互式环境，支持 JavaScript 语法和 MongoDB 扩展命令。你可以在其中输入命令，实时执行并获取结果，类似 MySQL 的 mysql 命令行工具。  从 MongoDB 5.0 开始，官方推荐使用新一代 Shell 工具 mongosh（功能更完善，支持语法高亮、自动补全、更好的错误提示等），旧的 mongo 工具已逐步废弃。  也就是说，你可以使用 js 操作 MongoDB 12345678910111213141516// 在 mongosh 中执行 JS 逻辑const userList = [  &#123; name:...</div></div></div></a><a class="pagination-related" href="/posts/43528.html" title="MongoDB part1—了解MongoDB及其存储结构和数据类型"><img class="cover" src="/images/posts/cover_mongodb1.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-10-21</div><div class="info-item-2">MongoDB part1—了解MongoDB及其存储结构和数据类型</div></div><div class="info-2"><div class="info-item-1">MongoDB介绍 什么是MongoDB，主要是做什么的 NoSQL的内容在这里就不展开说了，我相信看到这个的大家都知道什么是 NoSQL MongoDB 是一款开源的分布式文档型 NoSQL 数据库，由 MongoDB Inc. 开发维护，由C++语言编写，核心是存储 “文档” 而非传统关系型数据库的 “行 - 列” 数据，旨在解决海量数据存储、高并发读写、灵活 schema 等传统数据库难以高效应对的问题。 作为基于分布式文件存储的数据库，它天生为处理大规模数据设计，目前是 NoSQL 数据库中市场份额最高、生态最完善的产品之一。 MongoDB是一个介于关系数据库和非关系数据库之间的产品，是非关系数据库当中功能最丰富，最像关系数据库的。 它支持的数据结构非常松散，是类似 Json的...</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="gitalk-container"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/arp.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">ErgouTree</div><div class="author-info-description">I start a brand-new life with you.</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">220</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">127</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">79</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/ergou10086"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/ergou10086" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="/zjm88822201@126.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a><a class="social-icon" href="https://space.bilibili.com/142045656?spm_id_from=333.1007.0.0" target="_blank" title="bilibili"><i class="fas fa-brands fa-bilibili" style="color: #4a72be;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">作者长期陷入galgame和osu!maina4k中 祝他好运吧 对了 如果图片加载过慢 建议科学上网进行使用</div></div><div class="card-widget"><div class="item-headline"><i></i><span></span></div><div class="item-content"></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9C%A8spring%E9%A1%B9%E7%9B%AE%E4%B8%AD%E5%A6%82%E4%BD%95%E4%BD%BF%E7%94%A8mongodb"><span class="toc-number">1.</span> <span class="toc-text">在Spring项目中如何使用MongoDB</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9C%A8spring%E9%A1%B9%E7%9B%AE%E9%81%87%E5%88%B0%E4%BB%80%E4%B9%88%E9%9C%80%E6%B1%82%E9%9C%80%E8%A6%81%E7%94%A8%E5%88%B0mongodb"><span class="toc-number">1.1.</span> <span class="toc-text">在Spring项目遇到什么需求需要用到MongoDB</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9C%A8spring%E9%A1%B9%E7%9B%AE%E4%B8%AD%E4%BD%BF%E7%94%A8mongodb%E8%AF%A5%E5%81%9A%E4%BA%9B%E4%BB%80%E4%B9%88"><span class="toc-number">1.2.</span> <span class="toc-text">在Spring项目中使用MongoDB该做些什么</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E9%99%85%E9%A1%B9%E7%9B%AE%E6%BC%94%E7%A4%BA%E5%A6%82%E4%BD%95%E9%9B%86%E6%88%90-mongodb-%E5%88%B0%E6%88%91%E4%BB%AC%E7%9A%84%E9%A1%B9%E7%9B%AE%E4%B8%AD"><span class="toc-number">2.</span> <span class="toc-text">实际项目演示如何集成
+MongoDB 到我们的项目中</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%87%86%E5%A4%87%E5%B7%A5%E4%BD%9C"><span class="toc-number">2.1.</span> <span class="toc-text">准备工作</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E5%BA%93%E8%AE%BE%E8%AE%A1"><span class="toc-number">2.2.</span> <span class="toc-text">数据库设计</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%9B%E5%BB%BAmongodb%E9%85%8D%E7%BD%AE%E7%B1%BB"><span class="toc-number">2.3.</span> <span class="toc-text">创建MongoDB配置类</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%9B%E5%BB%BA%E5%AE%9E%E4%BD%93%E7%B1%BB"><span class="toc-number">2.4.</span> <span class="toc-text">创建实体类</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#repository%E7%B1%BB"><span class="toc-number">2.5.</span> <span class="toc-text">repository类</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%9B%E5%BB%BA-service-%E5%B1%82"><span class="toc-number">2.6.</span> <span class="toc-text">创建 Service 层</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%9B%E5%BB%BA%E6%8E%A5%E5%8F%A3"><span class="toc-number">2.7.</span> <span class="toc-text">创建接口</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B5%8B%E8%AF%95"><span class="toc-number">2.8.</span> <span class="toc-text">测试</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/32865.html" title="MongoDB part4—在Spring项目中使用MongoDB"><img src="/images/posts/cover_java15.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="MongoDB part4—在Spring项目中使用MongoDB"/></a><div class="content"><a class="title" href="/posts/32865.html" title="MongoDB part4—在Spring项目中使用MongoDB">MongoDB part4—在Spring项目中使用MongoDB</a><time datetime="2025-10-30T09:30:28.000Z" title="发表于 2025-10-30 17:30:28">2025-10-30</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/19619.html" title="MongoDB part3-MongoDB的索引详解"><img src="/images/posts/cover_config.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="MongoDB part3-MongoDB的索引详解"/></a><div class="content"><a class="title" href="/posts/19619.html" title="MongoDB part3-MongoDB的索引详解">MongoDB part3-MongoDB的索引详解</a><time datetime="2025-10-25T11:37:46.000Z" title="发表于 2025-10-25 19:37:46">2025-10-25</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/43887.html" title="MongoDB part2—MongoDB的基本操作和mongosh命令"><img src="/images/posts/cover_mongodb1.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="MongoDB part2—MongoDB的基本操作和mongosh命令"/></a><div class="content"><a class="title" href="/posts/43887.html" title="MongoDB part2—MongoDB的基本操作和mongosh命令">MongoDB part2—MongoDB的基本操作和mongosh命令</a><time datetime="2025-10-25T09:37:33.000Z" title="发表于 2025-10-25 17:37:33">2025-10-25</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/62377.html" title="使用n8n搭建基于Ollama本地模型的工作流—搭建天气邮件助手"><img src="/images/posts/cover_matlab.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="使用n8n搭建基于Ollama本地模型的工作流—搭建天气邮件助手"/></a><div class="content"><a class="title" href="/posts/62377.html" title="使用n8n搭建基于Ollama本地模型的工作流—搭建天气邮件助手">使用n8n搭建基于Ollama本地模型的工作流—搭建天气邮件助手</a><time datetime="2025-10-24T12:36:14.000Z" title="发表于 2025-10-24 20:36:14">2025-10-24</time></div></div></div></div></div></div></main><div class="fps-display"><span id="fps">FPS: 60</span></div><footer id="footer" style="background-image: url(/images/posts/cover_java15.jpg);"><div id="footer-wrap"><div class="copyright">&copy;2024 - 2025 By ErgouTree</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">忘れたくない思い、ありますか？ <br>,<span id="realtime_duration" style="font-family: monospace;"></span>,<br><a href="https://icp.gov.moe/?keyword=20257009" target="_blank">萌ICP备20257009号</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><a class="icon-V hidden" onclick="switchNightMode()" title="日间和夜间模式切换"><svg width="25" height="25" viewBox="0 0 1024 1024"><use id="modeicon" xlink:href="#icon-moon"></use></svg></a><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="chat-btn" type="button" title="聊天" style="display:none"><i class="fas fa-comment"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (true) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script><script>(() => {
+  const applyThemeDefaultsConfig = theme => {
+    if (theme === 'dark-mode') {
+      Chart.defaults.color = "rgba(255, 255, 255, 0.8)"
+      Chart.defaults.borderColor = "rgba(255, 255, 255, 0.2)"
+      Chart.defaults.scale.ticks.backdropColor = "transparent"
+    } else {
+      Chart.defaults.color = "rgba(0, 0, 0, 0.8)"
+      Chart.defaults.borderColor = "rgba(0, 0, 0, 0.1)"
+      Chart.defaults.scale.ticks.backdropColor = "transparent"
+    }
+  }
+
+  // Recursively traverse the config object and automatically apply theme-specific color schemes
+  const applyThemeConfig = (obj, theme) => {
+    if (typeof obj !== 'object' || obj === null) return
+
+    Object.keys(obj).forEach(key => {
+      const value = obj[key]
+      // If the property is an object and has theme-specific options, apply them
+      if (typeof value === 'object' && value !== null) {
+        if (value[theme]) {
+          obj[key] = value[theme] // Apply the value for the current theme
+        } else {
+          // Recursively process child objects
+          applyThemeConfig(value, theme)
+        }
+      }
+    })
+  }
+
+  const runChartJS = ele => {
+    window.loadChartJS = true
+
+    Array.from(ele).forEach((item, index) => {
+      const chartSrc = item.firstElementChild
+      const chartID = item.getAttribute('data-chartjs-id') || ('chartjs-' + index) // Use custom ID or default ID
+      const width = item.getAttribute('data-width')
+      const existingCanvas = document.getElementById(chartID)
+
+      // If a canvas already exists, remove it to avoid rendering duplicates
+      if (existingCanvas) {
+          existingCanvas.parentNode.remove()
+      }
+
+      const chartDefinition = chartSrc.textContent
+      const canvas = document.createElement('canvas')
+      canvas.id = chartID
+
+      const div = document.createElement('div')
+      div.className = 'chartjs-wrap'
+
+      if (width) {
+        div.style.width = width
+      }
+
+      div.appendChild(canvas)
+      chartSrc.insertAdjacentElement('afterend', div)
+
+      const ctx = document.getElementById(chartID).getContext('2d')
+
+      const config = JSON.parse(chartDefinition)
+
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark-mode' : 'light-mode'
+
+      // Set default styles (initial setup)
+      applyThemeDefaultsConfig(theme)
+
+      // Automatically traverse the config and apply dual-mode color schemes
+      applyThemeConfig(config, theme)
+
+      new Chart(ctx, config)
+    })
+  }
+
+  const loadChartJS = () => {
+    const chartJSEle = document.querySelectorAll('#article-container .chartjs-container')
+    if (chartJSEle.length === 0) return
+
+    window.loadChartJS ? runChartJS(chartJSEle) : btf.getScript('https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.min.js').then(() => runChartJS(chartJSEle))
+  }
+
+  // Listen for theme change events
+  btf.addGlobalFn('themeChange', loadChartJS, 'chartjs')
+  btf.addGlobalFn('encrypt', loadChartJS, 'chartjs')
+
+  window.pjax ? loadChartJS() : document.addEventListener('DOMContentLoaded', loadChartJS)
+})()</script><script>(function() {
+  const abcjsInit = function() {
+    const abcjsFn = function() {
+      setTimeout(function() {
+        const sheets = document.querySelectorAll(".abc-music-sheet")
+        for (let i = 0; i < sheets.length; i++) {
+          const ele = sheets[i]
+          if (ele.children.length > 0) continue
+
+          // Parse parameters from data-params attribute
+          let params = {}
+          const dp = ele.getAttribute("data-params")
+          if (dp) {
+            try {
+              params = JSON.parse(dp)
+            } catch (e) {
+              console.error("Failed to parse data-params:", e)
+            }
+          }
+
+          // Merge parsed parameters with the responsive option
+          // Ensures params content appears before responsive
+          const options = { ...params, responsive: "resize" }
+
+          // Render the music score using ABCJS.renderAbc
+          ABCJS.renderAbc(ele, ele.innerHTML, options)
+        }
+      }, 100)
+    }
+
+    if (typeof ABCJS === "object") {
+      abcjsFn()
+    } else {
+      btf.getScript("https://cdn.jsdelivr.net/npm/abcjs/dist/abcjs-basic-min.min.js").then(abcjsFn)
+    }
+  }
+
+  if (window.pjax) {
+    abcjsInit()
+  } else {
+    window.addEventListener("load", abcjsInit)
+  }
+
+  btf.addGlobalFn("encrypt", abcjsInit, "abcjs")
+})()</script><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = {"labels":["Gitalk","Comment"],"createIssueManually":false,"distractionFreeMode":false}
+
+  const commentCount = n => {
+    const isCommentCount = document.querySelector('#post-meta .gitalk-comment-count')
+    if (isCommentCount) {
+      isCommentCount.textContent= n
+    }
+  }
+
+  const initGitalk = (el, path) => {
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGitalk = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+
+    const gitalk = new Gitalk({
+      clientID: 'Ov23li3vDQANiUddL4XB',
+      clientSecret: '5c9a56d02995340fca117809cd414662aadce6ff',
+      repo: 'HexoComment',
+      owner: 'ergou10086',
+      admin: ['ergou10086'],
+      updateCountCallback: commentCount,
+      ...option,
+      id: isShuoshuo ? path : (option && option.id) || '62e55e155731870af6a6e86f5f9c54d8'
+    })
+
+    gitalk.render('gitalk-container')
+  }
+
+  const loadGitalk = async(el, path) => {
+    if (typeof Gitalk === 'function') initGitalk(el, path)
+    else {
+      await btf.getCSS('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.css')
+      await btf.getScript('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.js')
+      initGitalk(el, path)
+    }
+  }
+
+  if (isShuoshuo) {
+    'Gitalk' === 'Gitalk'
+      ? window.shuoshuoComment = { loadComment: loadGitalk }
+      : window.loadOtherComment = loadGitalk
+    return
+  }
+
+  if ('Gitalk' === 'Gitalk' || !false) {
+    if (false) btf.loadComment(document.getElementById('gitalk-container'), loadGitalk)
+    else loadGitalk()
+  } else {
+    window.loadOtherComment = loadGitalk
+  }
+})()</script></div><div class="aplayer no-destroy" data-id="13587761608" data-server="netease" data-type="playlist" data-fixed="true" data-autoplay="false" data-lrcType="-1"> </div><script src="https://cdn.jsdelivr.net/npm/abcjs@7.1.2/dist/abcjs-basic-min.js"></script><script src="/js/sun_moon.js" async></script><script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.7/dayjs.min.js"></script><script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.7/plugin/duration.min.js"></script><script src="/scripts/realtime.js"></script><script src="/scripts/random.js"></script><script defer="defer" id="ribbon" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-ribbon.min.js" size="150" alpha="0.6" zIndex="-1" mobile="null" data-click="true"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = false;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><script id="click-heart" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/click-heart.min.js" async="async" mobile="false"></script><script>(() => {
+  window.ChatraID = '4bzb546NSBoJcrNyu'
+  window.Chatra = window.Chatra || function() {
+    (window.Chatra.q = window.Chatra.q || []).push(arguments)
+  }
+
+  btf.getScript('https://call.chatra.io/chatra.js').then(() => {
+    const isChatBtn = true
+    const isChatHideShow = true
+
+    if (isChatBtn) {
+      const close = () => {
+        Chatra('minimizeWidget')
+        Chatra('hide')
+      }
+
+      const open = () => {
+        Chatra('openChat', true)
+        Chatra('show')
+      }
+
+      window.ChatraSetup = { startHidden: true }
+    
+      window.chatBtnFn = () => document.getElementById('chatra').classList.contains('chatra--expanded') ? close() : open()
+
+      document.getElementById('chat-btn').style.display = 'block'
+    } else if (isChatHideShow) {
+      window.chatBtn = {
+        hide: () => Chatra('hide'),
+        show: () => Chatra('show')
+      }
+    }
+  })
+})()</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/metingjs/dist/Meting.min.js"></script><script>(() => {
+  const destroyAplayer = () => {
+    if (window.aplayers) {
+      for (let i = 0; i < window.aplayers.length; i++) {
+        if (!window.aplayers[i].options.fixed) {
+          window.aplayers[i].destroy()
+        }
+      }
+    }
+  }
+
+  const runMetingJS = () => {
+    typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+  }
+
+  btf.addGlobalFn('pjaxSend', destroyAplayer, 'destroyAplayer')
+  btf.addGlobalFn('pjaxComplete', loadMeting, 'runMetingJS')
+})()</script><script src="https://cdn.jsdelivr.net/npm/pjax/pjax.min.js"></script><script>(() => {
+  const pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+  window.pjax = new Pjax({
+    elements: 'a:not([target="_blank"]):not([href="/music/"])',
+    selectors: pjaxSelectors,
+    cacheBust: false,
+    analytics: false,
+    scrollRestoration: false
+  })
+
+  const triggerPjaxFn = (val) => {
+    if (!val) return
+    Object.values(val).forEach(fn => fn())
+  }
+
+  document.addEventListener('pjax:send', () => {
+    // removeEventListener
+    btf.removeGlobalFnEvent('pjaxSendOnce')
+    btf.removeGlobalFnEvent('themeChange')
+
+    // reset readmode
+    const $bodyClassList = document.body.classList
+    if ($bodyClassList.contains('read-mode')) $bodyClassList.remove('read-mode')
+
+    triggerPjaxFn(window.globalFn.pjaxSend)
+  })
+
+  document.addEventListener('pjax:complete', () => {
+    btf.removeGlobalFnEvent('pjaxCompleteOnce')
+    document.querySelectorAll('script[data-pjax]').forEach(item => {
+      const newScript = document.createElement('script')
+      const content = item.text || item.textContent || item.innerHTML || ""
+      Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+      newScript.appendChild(document.createTextNode(content))
+      item.parentNode.replaceChild(newScript, item)
+    })
+
+    triggerPjaxFn(window.globalFn.pjaxComplete)
+  })
+
+  document.addEventListener('pjax:error', e => {
+    if (e.request.status === 404) {
+      const usePjax = true
+      true 
+        ? (usePjax ? pjax.loadUrl('/404.html') : window.location.href = '/404.html')
+        : window.location.href = e.request.responseURL
+    }
+  })
+})()</script><script src="/js/fps-display.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><!-- hexo injector body_end start --><script data-pjax>
+  function butterfly_swiper_injector_config(){
+    var parent_div_git = document.getElementById('recent-posts');
+    var item_html = '<div class="recent-post-item" style="height: auto;width: 100%"><div class="blog-slider swiper-container-fade swiper-container-horizontal" id="swiper_container"><div class="blog-slider__wrp swiper-wrapper" style="transition-duration: 0ms;"><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_database.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-14</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt="">结构化查询语言SQL</a><div class="blog-slider__text">SQL基本很常用的语句都在这里了，本质上是当初为了应付数据库考试整理的，后来发现还蛮有用的很方便查常用的语句</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java4.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-22</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt="">SpringBoot part0?INF-SpringBoot这个框架都需要学习什么</a><div class="blog-slider__text">主要围绕Spring Boot中重要知识来简洁或详细的说明，其中部分不够完全，持续更新</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java11.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-15</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt="">关于Lombok在高版本IDEA中注解处理不生效的问题解决</a><div class="blog-slider__text">基本上是彻底的解决了用 IDEA 新建 Spring Boot 项目时候会产生的 Lombok 注解处理失效的各种问题</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_实用.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-05</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt="">个人向galgame原声带或相关音乐整理及其资源</a><div class="blog-slider__text">整理了我喜欢的galgame ost或者衍生的音乐专辑，部分资源是自己扒盘扒下来的，部分来自鸟白岛放映厅</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_math.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-17</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt="">对书上证明样本方差是总体方差的无偏估计量的解析</a><div class="blog-slider__text">对书上证明样本方差是总体方差的无偏估计量的解析，高等教育出版社-华科大版本</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_alog.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-04-24</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt="">第十五届蓝桥杯Java国赛B组D题-园丁题解</a><div class="blog-slider__text">第十五届蓝桥杯Java国赛B组D题-园丁题解，该题解已经发布到洛谷社区中并且被全站推荐</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java4.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-04-29</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt="">操作系统之处理机的死锁部分概述</a><div class="blog-slider__text">对操作系统之处理机的死锁部分知识的总结，包括代码复现</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_lb.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-09</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt="">Little Busters!EX游戏攻略</a><div class="blog-slider__text">整理了一份详细清晰的Little Busters！EX的游戏攻略，因为我自己也在推，就顺手整理了一份方便查阅的md文档</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java9.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-16</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt="">Spring Boot中使用Hibernate框架</a><div class="blog-slider__text">对学习完Hibernate的应用部分，主要围绕Spring Boot中使用Hibernate框架，建议学习完 Hibernate 框架再看</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div></div><div class="blog-slider__pagination swiper-pagination-clickable swiper-pagination-bullets"></div></div></div>';
+    console.log('已挂载butterfly_swiper')
+    parent_div_git.insertAdjacentHTML("afterbegin",item_html)
+    }
+  var elist = 'undefined'.split(',');
+  var cpage = location.pathname;
+  var epage = '/';
+  var flag = 0;
+
+  for (var i=0;i<elist.length;i++){
+    if (cpage.includes(elist[i])){
+      flag++;
+    }
+  }
+
+  if ((epage ==='all')&&(flag == 0)){
+    butterfly_swiper_injector_config();
+  }
+  else if (epage === cpage){
+    butterfly_swiper_injector_config();
+  }
+  </script><script defer src="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper.min.js"></script><script defer data-pjax src="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper_init.js"></script><!-- hexo injector body_end end --></body></html>
