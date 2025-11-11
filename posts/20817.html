@@ -1,0 +1,1046 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Spring Cloud part26—认识和理解分布式下的事务 | ErgouTree's Blog</title><meta name="author" content="ErgouTree"><meta name="copyright" content="ErgouTree"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="理解分布式事务  分布式事务了解吗？你们是如何解决分布式事务问题的？  带着这个疑问 这玩意容易越学越忘本 回顾事务 事务大家应该还记得，是操作数据库中某个数据项的一个程序执行单元，事务应该具有4个属性：原子性、一致性、隔离性、持久性。这四个属性通常称为ACID特性。 事务的四个特征再回顾一下：  Atomic原子性：事务必须是一个原子的操作序列单元，事务中包含的各项操作在一次">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spring Cloud part26—认识和理解分布式下的事务">
+<meta property="og:url" content="https://ergou10086.github.io/posts/20817.html">
+<meta property="og:site_name" content="ErgouTree&#39;s Blog">
+<meta property="og:description" content="理解分布式事务  分布式事务了解吗？你们是如何解决分布式事务问题的？  带着这个疑问 这玩意容易越学越忘本 回顾事务 事务大家应该还记得，是操作数据库中某个数据项的一个程序执行单元，事务应该具有4个属性：原子性、一致性、隔离性、持久性。这四个属性通常称为ACID特性。 事务的四个特征再回顾一下：  Atomic原子性：事务必须是一个原子的操作序列单元，事务中包含的各项操作在一次">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://ergou10086.github.io/images/posts/cover_talk.jpg">
+<meta property="article:published_time" content="2025-11-03T01:21:48.000Z">
+<meta property="article:modified_time" content="2025-11-03T12:32:36.772Z">
+<meta property="article:author" content="ErgouTree">
+<meta property="article:tag" content="学习">
+<meta property="article:tag" content="配置相关">
+<meta property="article:tag" content="实用知识">
+<meta property="article:tag" content="分布式">
+<meta property="article:tag" content="微服务">
+<meta property="article:tag" content="Java技术">
+<meta property="article:tag" content="JavaWeb">
+<meta property="article:tag" content="框架知识">
+<meta property="article:tag" content="Spring系列">
+<meta property="article:tag" content="Java框架">
+<meta property="article:tag" content="Spring Cloud">
+<meta property="article:tag" content="分布式事务">
+<meta property="article:tag" content="事务">
+<meta property="article:tag" content="Seata">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ergou10086.github.io/images/posts/cover_talk.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Spring Cloud part26—认识和理解分布式下的事务",
+  "url": "https://ergou10086.github.io/posts/20817.html",
+  "image": "https://ergou10086.github.io/images/posts/cover_talk.jpg",
+  "datePublished": "2025-11-03T01:21:48.000Z",
+  "dateModified": "2025-11-03T12:32:36.772Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "ErgouTree",
+      "url": "https://github.com/ergou10086"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/pi.ico"><link rel="canonical" href="https://ergou10086.github.io/posts/20817.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//hm.baidu.com"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!true && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?https://hm.baidu.com/hm.js?a6ab1b78e2c6320b664f31e8b9bf0e36";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+btf.addGlobalFn('pjaxComplete', () => {
+  _hmt.push(['_trackPageview',window.location.pathname])
+}, 'baidu_analytics')
+</script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.json","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":true},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: {"chs_to_cht":"已切换为繁体中文","cht_to_chs":"已切换为简体中文","day_to_night":"已切换为深色模式","night_to_day":"已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#1f1f1f","position":"bottom-left"},
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Spring Cloud part26—认识和理解分布式下的事务',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css"><svg aria-hidden="true" style="position:absolute; overflow:hidden; width:0; height:0"><symbol id="icon-sun" viewBox="0 0 1024 1024"><path d="M960 512l-128 128v192h-192l-128 128-128-128H192v-192l-128-128 128-128V192h192l128-128 128 128h192v192z" fill="#FFD878" p-id="8420"></path><path d="M736 512a224 224 0 1 0-448 0 224 224 0 1 0 448 0z" fill="#FFE4A9" p-id="8421"></path><path d="M512 109.248L626.752 224H800v173.248L914.752 512 800 626.752V800h-173.248L512 914.752 397.248 800H224v-173.248L109.248 512 224 397.248V224h173.248L512 109.248M512 64l-128 128H192v192l-128 128 128 128v192h192l128 128 128-128h192v-192l128-128-128-128V192h-192l-128-128z" fill="#4D5152" p-id="8422"></path><path d="M512 320c105.888 0 192 86.112 192 192s-86.112 192-192 192-192-86.112-192-192 86.112-192 192-192m0-32a224 224 0 1 0 0 448 224 224 0 0 0 0-448z" fill="#4D5152" p-id="8423"></path></symbol><symbol id="icon-moon" viewBox="0 0 1024 1024"><path d="M611.370667 167.082667a445.013333 445.013333 0 0 1-38.4 161.834666 477.824 477.824 0 0 1-244.736 244.394667 445.141333 445.141333 0 0 1-161.109334 38.058667 85.077333 85.077333 0 0 0-65.066666 135.722666A462.08 462.08 0 1 0 747.093333 102.058667a85.077333 85.077333 0 0 0-135.722666 65.024z" fill="#FFB531" p-id="11345"></path><path d="M329.728 274.133333l35.157333-35.157333a21.333333 21.333333 0 1 0-30.165333-30.165333l-35.157333 35.157333-35.114667-35.157333a21.333333 21.333333 0 0 0-30.165333 30.165333l35.114666 35.157333-35.114666 35.157334a21.333333 21.333333 0 1 0 30.165333 30.165333l35.114667-35.157333 35.157333 35.157333a21.333333 21.333333 0 1 0 30.165333-30.165333z" fill="#030835" p-id="11346"></path></symbol></svg><link rel="stylesheet" href="/css/custom.css"><!-- hexo injector head_end start --><link rel="stylesheet" href="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiperstyle.css" media="print" onload="this.media='all'"><!-- hexo injector head_end end --><meta name="generator" content="Hexo 7.3.0"></head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js/pace.min.js"></script><div id="web_bg" style="background: linear-gradient(20deg, #0062be, #925696, #cc426e, #fb0347);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/arp.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">232</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">137</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">80</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-images"></i><span> Gallery</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/games/"><i class="fa-fw fas fa-game"></i><span> GalGame</span></a></li><li><a class="site-page child" href="/video/"><i class="fa-fw fas fa-video"></i><span> Video</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div><div class="menus_item"><a class="site-page" href="javascript:randomPost();"><span> Random</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/images/posts/cover_talk.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">ErgouTree's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">Spring Cloud part26—认识和理解分布式下的事务</span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-images"></i><span> Gallery</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/games/"><i class="fa-fw fas fa-game"></i><span> GalGame</span></a></li><li><a class="site-page child" href="/video/"><i class="fa-fw fas fa-video"></i><span> Video</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div><div class="menus_item"><a class="site-page" href="javascript:randomPost();"><span> Random</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div><div id="randomPost"><a class="site-page social-icon search" href="javascript:;" onclick="randomPost()" title="随机访问一篇文章"><i class="fas fa-circle-notch fa-fw"></i></a></div></nav><div id="post-info"><h1 class="post-title">Spring Cloud part26—认识和理解分布式下的事务<a class="post-edit-link" href="https://github.com/ergou10086/ergou10086.github.io/edit/main/source/_posts/_posts/SpringCloudpart26-认识和理解分布式下的事务.md" title="编辑" target="_blank"><i class="fas fa-pencil-alt"></i></a></h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2025-11-03T01:21:48.000Z" title="发表于 2025-11-03 09:21:48">2025-11-03</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2025-11-03T12:32:36.772Z" title="更新于 2025-11-03 20:32:36">2025-11-03</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Java%E5%AD%A6%E4%B9%A0/">Java学习</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Java%E5%AD%A6%E4%B9%A0/Spring%E7%B3%BB%E5%88%97/">Spring系列</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Java%E5%AD%A6%E4%B9%A0/Spring%E7%B3%BB%E5%88%97/Spring-Cloud/">Spring Cloud</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">8.5k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>25分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span><span class="post-meta-separator">|</span><span class="post-meta-commentcount"><i class="far fa-comments fa-fw post-meta-icon"></i><span class="post-meta-label">评论数:</span><a href="/posts/20817.html#post-comment"><span class="gitalk-comment-count"><i class="fa-solid fa-spinner fa-spin"></i></span></a></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="理解分布式事务">理解分布式事务</h2>
+<blockquote>
+<p>分布式事务了解吗？你们是如何解决分布式事务问题的？</p>
+</blockquote>
+<p>带着这个疑问</p>
+<p>这玩意容易越学越忘本</p>
+<h3 id="回顾事务">回顾事务</h3>
+<p>事务大家应该还记得，是操作数据库中某个数据项的一个程序执行单元，事务应该具有4个属性：原子性、一致性、隔离性、持久性。这四个属性通常称为ACID特性。</p>
+<p>事务的四个特征再回顾一下：</p>
+<ul>
+<li><p>Atomic原子性：事务必须是一个原子的操作序列单元，事务中包含的各项操作在一次执行过程中，要么全部执行成功，要么全部不执行，任何一项失败，整个事务回滚，只有全部都执行成功，整个事务才算成功。</p></li>
+<li><p>Consistency一致性：事务的执行不能破坏数据库数据的完整性和一致性，事务在执行之前和之后，数据库都必须处于一致性状态。</p></li>
+<li><p>Isolation隔离性：在并发环境中，并发的事务是相互隔离的，一个事务的执行不能被其他事务干扰。即不同的事务并发操纵相同的数据时，每个事务都有各自完整的数据空间，即一个事务内部的操作及使用的数据对其他并发事务是隔离的，并发执行的各个事务之间不能相互干扰</p>
+<ul>
+<li>读未提交
+<ul>
+<li>允许读取尚未提交的数据变更。</li>
+<li>这是最低的隔离级别，它可能导致脏读、不可重复读和幻读。</li>
+<li>在这个级别，一个事务可以读取到另一个尚未提交事务的修改，这可能导致数据的不一致性。</li>
+</ul></li>
+<li>读已提交
+<ul>
+<li>只允许读取并发事务已经提交的数据。</li>
+<li>这个级别可以防止脏读，但仍可能导致不可重复读和幻读。</li>
+<li>在这个级别，每个事务只能看到它开始时的数据状态以及它提交时其他事务所做的提交。</li>
+</ul></li>
+<li>可重复读
+<ul>
+<li><strong>这是MySQL的默认隔离级别</strong>。</li>
+<li>它确保在同一事务中多次读取同一数据时，看到的是相同的数据版本，即使其他事务在此期间修改了这些数据。</li>
+<li>尽管可以避免脏读和不可重复读，但在这个级别下仍可能出现幻读（即在一个事务中，两次相同的查询可能会返回不同的结果集，因为其他事务在此期间插入了新的记录）。</li>
+</ul></li>
+<li>串行化
+<ul>
+<li>这是最高的隔离级别。</li>
+<li>它通过强制事务串行执行来避免脏读、不可重复读和幻读。</li>
+<li>在这个级别，每个事务在执行时都会完全锁定它所访问的数据，从而确保数据的一致性。但这也可能导致性能下降，因为并发事务必须等待其他事务完成才能执行。</li>
+</ul></li>
+</ul></li>
+<li><p>Durability持久性：持久性也称永久性（permanence），指一个事务一旦提交，它对数据库中对应数据的状态变更就应该是永久性的。</p></li>
+</ul>
+<p>单机下事务的实现基础</p>
+<p>在单机数据库（如 MySQL 单节点）中，事务依赖以下机制保证 ACID：</p>
+<ul>
+<li><p><strong>日志机制</strong>：通过 redo log（保证持久性）和 undo
+log（保证原子性和回滚）记录数据变更。</p></li>
+<li><p><strong>锁机制</strong>：通过行锁、表锁等控制并发（如 InnoDB
+的行级锁）。</p></li>
+<li><p><strong>MVCC（多版本并发控制）</strong>：通过数据多版本实现高并发下的隔离性（如
+MySQL 可重复读级别依赖 MVCC）。</p></li>
+</ul>
+<h3 id="并发下依旧存在的三大问题脏读不可重复读和幻读">并发下依旧存在的三大问题：脏读、不可重复读和幻读</h3>
+<figure>
+<img src="/posts/20817/image-20251102232253964.png" alt="image-20251102232253964">
+<figcaption aria-hidden="true">image-20251102232253964</figcaption>
+</figure>
+<blockquote>
+<p><strong>脏读（Dirty Read）特点</strong>：
+一个事务读取到另一个尚未提交事务的修改。</p>
+<ul>
+<li>理解：读到其他事务没有提交的数据，注意，这数据还没有被其他事务提交，彻底的脏数据。</li>
+<li>隔离性：当前事务 和 其他事务没有做任何 隔离 。</li>
+</ul>
+<p><strong>不可重复读（Non-repeatable Read）</strong>：
+在同一个事务内，多次读取同一数据返回的结果有所不同。</p>
+<ul>
+<li>理解：在事务A中先后两次读取同一个数据，两次读取的结果不一样，这种现象称为不可重复读。记录里边的数据变了，
+但是，读到的是其他事务已经提交的数据。其他事务没有提交的数据，还是被隔离了</li>
+<li>隔离性： 隔离性稍微好点， 其他事务未提交的修改数据 被隔离了。 没有
+隔离 其他事务的修改操作、 插入或删除操作，数据值的有可能变化
+，数据记录的数量有可能变化。</li>
+</ul>
+<p><strong>幻读（Phantom Read）</strong>：
+一个事务在执行两次相同的查询时，因为另一个并发事务的插入或删除操作，导致两次查询返回的结果集不同。</p>
+<ul>
+<li>理解：幻读是结果集的层面发生了变化， 数据记录的数量变了， 没有 隔离
+其他事务的插入或删除操作
+。在事务A中按照某个条件先后两次查询数据库，两次查询结果的条数不同，这种现象称为幻读。</li>
+<li>隔离性： 隔离性更好点， 其他事务未提交的修改数据 被隔离了。 没有
+隔离 其他事务的 插入或删除操作，数据记录的数量有可能变化。</li>
+</ul>
+</blockquote>
+<p>隔离级别 并发事务 三大问题之间的关系如下</p>
+<figure>
+<img src="/posts/20817/image-20251102232719080.png" alt="image-20251102232719080">
+<figcaption aria-hidden="true">image-20251102232719080</figcaption>
+</figure>
+<h3 id="分布式下事务的新问题">分布式下事务的新问题</h3>
+<p>当本地事务要扩展到分布式时，它的复杂性进一步增加了。</p>
+<p>数据被分片存储在多个节点（或多个数据库），一个业务操作可能涉及多个节点的修改（如跨库转账、订单创建同时库存扣减）</p>
+<p>分布式系统会把一个应用系统拆分为可独立部署的多个服务，因此需要服务与服务之间远程协作才能完成事务操作，这种分布式系统环境下由不同的服务之间通过网络远程协作完成事务称之为分布式事务。</p>
+<p>本地事务依赖数据库本身提供的事务特性来实现，本地事务这样进行一个事务</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">begin transaction；</span><br><span class="line"><span class="comment">//1.本地数据库操作：张三减少金额</span></span><br><span class="line"><span class="comment">//2.本地数据库操作：李四增加金额</span></span><br><span class="line">commit transation;</span><br></pre></td></tr></table></figure>
+<p>但是在分布式环境下，会变成下边这样：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">begin transaction；</span><br><span class="line"><span class="comment">//1.本地数据库操作：张三减少金额</span></span><br><span class="line"><span class="comment">//2.远程调用：让李四增加金额</span></span><br><span class="line">commit transation;</span><br></pre></td></tr></table></figure>
+<p>假如出现了问题，当远程调用让李四增加金额成功了，由于网络问题远程调用并没有返回，此时本地事务提交失败就回滚了张三减少金额的操作，此时张三和李四的数据就不一致了。</p>
+<p>所以，分布式的情况下，会出现这样的问题：</p>
+<ul>
+<li>网络不可靠性：通信延迟与故障</li>
+<li>节点状态不一致：单机事务中，节点可通过本地日志掌握全局状态；但分布式系统中，各节点仅知本地状态，缺乏全局视角。</li>
+<li>隔离性难以保证：多节点并发操作时，隔离性控制变得复杂，并发冲突加剧
+<ul>
+<li>跨节点的锁机制难以协调，如节点 A 持有锁，节点 B 等待锁时超时。</li>
+<li>分布式环境下的 “幻读”
+更难处理，如两个事务同时跨节点查询并修改，导致结果不一致。</li>
+</ul></li>
+</ul>
+<p>因此在分布式架构的基础上，传统数据库事务就无法使用了，张三和李四的账户不在一个数据库中甚至不在一个应用系统里，实现转账事务需要通过远程调用，由于网络问题就会导致分布式事务问题。</p>
+<h3 id="典型的分布式事务场景">典型的分布式事务场景</h3>
+<p>所以，分布式事务最典型的场景就是微服务之间通过远程调用完成事务操作。也就是，跨JVM进程产生分布式事务。</p>
+<figure>
+<img src="/posts/20817/image-20251102233134042.png" alt="image-20251102233134042">
+<figcaption aria-hidden="true">image-20251102233134042</figcaption>
+</figure>
+<p>而单体系统访问多个数据库实例时候，也会产生分布式事务，假如用户信息和订单信息分别在两个MySQL实例存储，用户管理系统删除用户信息，需要分别删除用户信息及用户的订单信息，由于数据分布在不同的数据实例，需要通过不同的数据库链接去操作数据，此时产生分布式事务。也就是，跨数据库实例产生分布式事务。</p>
+<figure>
+<img src="/posts/20817/image-20251102233201478.png" alt="image-20251102233201478">
+<figcaption aria-hidden="true">image-20251102233201478</figcaption>
+</figure>
+<p>而多服务访问同一个数据库实例，也就是订单微服务和库存微服务即使访问同一个数据库也会产生分布式事务，原因就是跨JVM进程，两个微服务持有了不同的数据库链接进行数据库操作，此时产生分布式事务。</p>
+<figure>
+<img src="/posts/20817/image-20251102233232573.png" alt="image-20251102233232573">
+<figcaption aria-hidden="true">image-20251102233232573</figcaption>
+</figure>
+<p>如果一个库数据量比较大或者预期未来的数据量比较大，都会进行水平拆分，也就是分库分表。</p>
+<figure>
+<img src="/posts/20817/image-20251103083221887.png" alt="image-20251103083221887">
+<figcaption aria-hidden="true">image-20251103083221887</figcaption>
+</figure>
+<p>对于分库分表的情况，一般开发人员都会使用一些数据库中间件来降低sql操作的复杂性。单库情况下，可以保证事务的一致性。</p>
+<p>但是由于现在进行了分库分表，开发人员希望将1号记录插入分库1，2号记录插入分库2。所以数据库中间件要将其改写为2条sql，分别插入两个不同的分库，此时要保证两个库要不都成功，要不都失败，因此基本上所有的数据库中间件都面临着分布式事务的问题。</p>
+<h3 id="困难">困难</h3>
+<p>不仅上面说的如此，分布式还涉及到存储端的多样性，本地事务的情况下，所有数据都会落到同一个DB中，但是，在分布式的情况下，就会出现数据可能要落到多个DB，或者还会落到Redis，落到MQ等中。</p>
+<figure>
+<img src="/posts/20817/image-20251103082147232.png" alt="image-20251103082147232">
+<figcaption aria-hidden="true">image-20251103082147232</figcaption>
+</figure>
+<p>本地事务的情况下，通常所有事务相关的业务操作，会被我们封装到一个Service方法中。</p>
+<p>而在分布式的情况下，请求链路被延展，拉长，一个操作会被拆分成多个服务，它们呈现线状或网状，依靠网络通信构建成一个整体。在这种情况下，事务无疑变得更复杂。</p>
+<figure>
+<img src="/posts/20817/image-20251103082240241.png" alt="image-20251103082240241">
+<figcaption aria-hidden="true">image-20251103082240241</figcaption>
+</figure>
+<p>基于上述两个复杂性和上面说的各种情况，期望有一个统一的分布式事务方案，能够像本地事务一样，以几乎无侵入的方式，满足各种存储介质，各种复杂链路，是不现实的</p>
+<p>所以，一般情况下，在分布式下，事务会被拆分解决，并根据不同的情况，采用不同的解决方案。</p>
+<h3 id="什么是分布式事务">什么是分布式事务？</h3>
+<blockquote>
+<p>分布式事务是指<strong>事务操作涉及多个分布式节点（如不同数据库、不同服务的存储）</strong>，需要保证这些跨节点的操作要么全部成功，要么全部失败，最终实现数据一致性的特殊事务。</p>
+</blockquote>
+<p>对于分布式系统而言，需要保证分布式系统中的数据一致性，保证数据在子系统中始终保持一致，避免业务出现问题。分布式系统中对数要么一起成功，要么一起失败，必须是一个整体性的事务。</p>
+<p>分布式事务指事务的参与者、支持事务的服务器、资源服务器以及事务管理器分别位于不同的分布式系统的不同节点之上。</p>
+<p>也就是说，在分布式系统上一次大的操作由不同的小操作组成，这些小的操作分布在不同的服务节点上，且属于不同的应用，分布式事务需要保证这些小操作要么全部成功，要么全部失败。</p>
+<p>任何事务机制在实现时，都应该考虑事务的ACID特性，包括：本地事务、分布式事务。对于分布式事务而言，即使不能都很好的满足，也要考虑支持到什么程度。</p>
+<p>因为行业中没有
+“万能方案”，需根据业务场景（如支付需强一致、日志同步可接受最终一致）选择，核心思路是
+“用不同机制平衡一致性、可用性、性能”。</p>
+<h2 id="分布式事务基础理论">分布式事务基础理论</h2>
+<p>与本地事务不同的是，分布式系统之所以叫分布式，是因为提供服务的各个节点分布在不同机器上，相互之间通过网络交互。不能因为有一点网络问题就导致整个系统无法提供服务，网络因素成为了分布式事务的考量标准之一。因此，分布式事务需要更进一步的理论支持。</p>
+<h3 id="cap理论">CAP理论</h3>
+<p>CAP
+定理是分布式系统设计的基础理论之一，它揭示了分布式系统中三个核心特性的内在矛盾</p>
+<p>CAP 定理（CAP theorem）又被称作布鲁尔定理（Brewer’s
+theorem），是加州大学伯克利分校的计算机科学家埃里克·布鲁尔（Eric
+Brewer）在 2000 年的 ACM PODC 上提出的一个猜想。2002
+年，麻省理工学院的赛斯·吉尔伯特（Seth Gilbert）和南希·林奇（Nancy
+Lynch）发表了布鲁尔猜想的证明，使之成为分布式计算领域公认的一个定理。对于设计分布式系统的架构师来说，CAP
+是必须掌握的理论。</p>
+<p>他指出WEB服务无法同时满足一下3个属性：</p>
+<ul>
+<li>一致性(Consistency) ： 客户端知道一系列的操作都会同时发生(生效)</li>
+<li>可用性(Availability) ： 每个操作都必须以可预期的响应结束</li>
+<li>分区容错性(Partition tolerance) ：
+即使出现单个组件无法可用，操作依然可以完成</li>
+</ul>
+<p>具体地讲在分布式系统中，一个Web应用至多只能同时支持上面的两个属性。因此，设计人员必须在一致性与可用性之间做出选择。</p>
+<figure>
+<img src="/posts/20817/image-20251103083426314.png" alt="image-20251103083426314">
+<figcaption aria-hidden="true">image-20251103083426314</figcaption>
+</figure>
+<p>CAP的一致性、可用性、分区容错性 具体如下：</p>
+<ol type="1">
+<li><p><strong>一致性：</strong></p>
+<ul>
+<li>指
+“所有节点在同一时间看到的数据是相同的”。当数据发生更新后，所有节点必须立即同步到最新状态，保证无论访问哪个节点，获取的数据都是一致的（强一致性）。</li>
+<li>也就是说，更新操作成功并返回客户端完成后，所有节点在同一时间的数据完全一致，不能存在中间状态。分布式环境中，一致性是指多个副本之间能否保持一致的特性。在一致性的需求下，当一个系统在数据一致的状态下执行更新操作后，应该保证系统的数据仍然处理一致的状态。</li>
+<li>例如：分布式数据库中，某节点修改了数据，其他节点必须立即能读到这个修改，否则就违反了一致性。</li>
+<li><strong>数据一致性分为强一致性、弱一致性、最终一致性</strong>。
+<ul>
+<li>如果的确能像上面描述的那样时刻保证客户端看到的数据都是一致的，那么称之为强一致性。</li>
+<li>如果允许存在中间状态，只要求经过一段时间后，数据最终是一致的，则称之为最终一致性。</li>
+<li>此外，如果允许存在部分数据不一致，那么就称之为弱一致性。</li>
+</ul></li>
+</ul></li>
+<li><p><strong>可用性：</strong></p>
+<ul>
+<li><p>指
+“只要有一个节点正常工作，系统就能响应客户端的请求”。即系统在任何时候都能提供服务，不会因为部分节点故障而拒绝请求（允许响应延迟，但不能无响应）。</p></li>
+<li><p>也就是说，系统提供的服务必须一直处于可用的状态，对于用户的每一个操作请求总是能够在有限的时间内返回结果。</p></li>
+<li><p>这样是两个度量的维度：</p>
+<ul>
+<li>有限时间内：对于用户的一个操作请求，系统必须能够在指定的时间（响应时间）内返回对应的处理结果，<strong>如果超过了这个时间范围，那么系统就被认为是不可用的</strong>。即这个响应时间必须在一个合理的值内，不让用户感到失望。</li>
+<li>返回正常结果：要求系统在完成对用户请求的处理后，返回一个正常的响应结果。正常的响应结果通常能够明确地反映出对请求的处理结果，即成功或失败，而不是一个让用户感到困惑的返回结果。比如返回一个系统错误如OutOfMemory，则认为系统是不可用的。</li>
+</ul></li>
+</ul></li>
+<li><p><strong>分区容错性：</strong></p>
+<ul>
+<li><p>指
+“当分布式系统中的节点间出现网络分区（即节点间通信中断）时，系统仍能继续工作”。网络分区是分布式系统的常态（如网络故障、超时、丢包等），因此分区容错性是分布式系统必须具备的特性。</p></li>
+<li><p>也就是说，分布式系统在遇到任何网络分区故障时，仍然需要能够保证对外提供满足一致性和可用性的服务，除非是整个网络环境都发生了故障</p></li>
+<li><p>网络分区，是指分布式系统中，不同的节点分布在不同的子网络（机房/异地网络）中，由于一些特殊的原因导致这些子网络之间出现网络不连通的状态，但各个子网络的内部网络是正常的，从而导致整个系统的网络环境被切分成了若干孤立的区域。组成一个分布式系统的每个节点的加入与退出都可以看做是一个特殊的网络分区。</p></li>
+</ul></li>
+</ol>
+<h3 id="为什么三者不可兼得">为什么三者不可兼得？</h3>
+<p>虽然 CAP
+理论定义是三个要素中只能取两个，但放到分布式环境下来思考，我们会发现必须选择
+P（分区容忍）要素，因为网络本身无法做到 100%
+可靠，有可能出故障，所以分区是一个必然的现象，放弃分区容错性的话，则放弃了分布式，放弃了系统的可扩展性。</p>
+<p>如果我们选择了 CA 而放弃了 P，那么当发生分区现象时，为了保证
+C，系统需要禁止写入，当有写入请求时，系统返回
+error（例如，当前系统不允许写入），这又和 A 冲突了，因为 A 要求返回 no
+error 和 no timeout。因此，分布式系统理论上不可能选择 CA 架构，只能选择
+CP 或者 AP 架构。</p>
+<p>分布式系统的本质是
+“多节点通过网络通信协同工作”，而网络是不可靠的（必然存在分区
+P）。因此，CAP
+定理的核心矛盾可以简化为：<strong>当网络分区（P）发生时，系统只能在一致性（C）和可用性（A）中二选一</strong>，具体逻辑如下：</p>
+<ol type="1">
+<li><p><strong>假设系统必须保证分区容错性（P）</strong>（这是分布式系统的前提，否则就退化为单机系统）。</p></li>
+<li><p>当网络分区发生时（例如节点 A 和节点 B 无法通信）：</p>
+<ul>
+<li><p>若要保证一致性（C）：</p>
+<p>节点 A 收到更新请求后，必须等待节点 B
+同步数据成功才能返回结果。但此时 A 和 B 已断连，A
+会一直等待，导致无法响应请求（牺牲可用性 A）。</p></li>
+<li><p>若要保证可用性（A）：</p>
+<p>节点 A 收到更新请求后，立即执行本地操作并返回结果（不等待 B
+同步）。此时 A 和 B 的数据不一致（牺牲一致性 C）。</p></li>
+</ul></li>
+</ol>
+<p>因此，在分布式系统中，<strong>P 是必须接受的前提，C 和 A
+只能取舍</strong>，不存在 “同时满足 C、A、P” 的完美系统。</p>
+<p>而且在互联网领域的绝大多数的场景中，都需要<strong>牺牲强一致性来换取系统的高可用性</strong>，系统往往只需要保证最终一致性。大多数分布式事务方案（如
+TCC、Saga）本质是 “放弃强一致性，追求最终一致性”，即在 CAP 中选择
+AP，通过补偿机制让数据在分区恢复后逐渐一致，平衡可用性和一致性。</p>
+<p>但是，通过 CAP
+理论，我们知道无法同时满足一致性、可用性和分区容错性这三个特性，那要舍弃哪个呢？</p>
+<p>对于多数大型互联网应用的场景，主机众多、部署分散，而且现在的集群规模越来越大，所以节点故障、网络故障是常态，而且要保证服务可用性达到
+N 个 9，即保证 P 和
+A，舍弃C（退而求其次保证最终一致性）。虽然某些地方会影响客户体验，但没达到造成用户流程的严重程度。</p>
+<p>对于涉及到钱财这样不能有一丝让步的场景，C
+必须保证。网络发生故障宁可停止服务，这是保证 CA，舍弃
+P。貌似这几年国内银行业发生了不下 10
+起事故，但影响面不大，报道也不多，广大群众知道的少。还有一种是保证
+CP，舍弃 A。例如网络故障是只读不写。</p>
+<h3 id="cap-的取舍组合">CAP 的取舍组合</h3>
+<p>这个其实在 Nacos 之前讲解原理的时候，涉及到了这些内容</p>
+<h4 id="cp-系统">CP 系统</h4>
+<p><strong>当网络分区发生时，为了保证数据一致，系统可能拒绝部分请求（牺牲可用性）。</strong></p>
+<p>例如，为了保证一致性，当发生分区现象后，N1 节点上的数据已经更新到
+y，但由于 N1 和 N2 之间的复制通道中断，数据 y 无法同步到 N2，N2
+节点上的数据还是 x。这时客户端 C 访问 N2 时，N2 需要返回
+Error，提示客户端
+C“系统现在发生了错误”，这种处理方式违背了可用性（Availability）的要求，但是满足了C
+和 P</p>
+<figure>
+<img src="/posts/20817/image-20251103085138832.png" alt="image-20251103085138832">
+<figcaption aria-hidden="true">image-20251103085138832</figcaption>
+</figure>
+<p>这种系统一般在对一致性要求极高，可接受短期不可用的场景（如金融交易、分布式数据库的强一致性模式）。</p>
+<h4 id="ap-系统">AP 系统</h4>
+<p><strong>当网络分区发生时，系统优先保证所有节点都能响应请求，但允许数据暂时不一致（最终会通过补偿机制修复）。也就是，牺牲一致性，保证可用性和分区容错性</strong></p>
+<p>例如如下图所示，为了保证可用性，当发生分区现象后，N1
+节点上的数据已经更新到 y，但由于 N1 和 N2 之间的复制通道中断，数据 y
+无法同步到 N2，N2 节点上的数据还是 x。这时客户端 C 访问 N2 时，N2
+将当前自己拥有的数据 x 返回给客户端 C 了，而实际上当前最新的数据已经是 y
+了，这就不满足一致性（Consistency）的要求了，因此 CAP 三者只能满足
+AP。注意：这里 N2 节点返回
+x，虽然不是一个“正确”的结果，但是一个“合理”的结果，因为 x
+是旧的数据，并不是一个错乱的值，只是不是最新的数据而已。</p>
+<figure>
+<img src="/posts/20817/image-20251103085306474.png" alt="image-20251103085306474">
+<figcaption aria-hidden="true">image-20251103085306474</figcaption>
+</figure>
+<p>这种系统一般用在对可用性要求极高，可接受短期数据不一致的场景（如社交软件的消息同步、电商商品评论）。</p>
+<h3 id="base-理论">BASE 理论</h3>
+<blockquote>
+<p>CAP是分布式系统设计理论，BASE是CAP理论中AP方案的延伸，对于C我们采用的方式和策略就是保证最终一致性；</p>
+</blockquote>
+<p>eBay的架构师Dan
+Pritchett源于对大规模分布式系统的实践总结，在ACM上发表文章提出BASE理论，BASE理论是对CAP理论的延伸，核心思想是即使无法做到强一致性（StrongConsistency，CAP的一致性就是强一致性），但应用可以采用适合的方式达到最终一致性（Eventual
+Consitency）。</p>
+<p>BASE 是指基本可用（Basically Available）、软状态（ Soft
+State）、最终一致性（ Eventual
+Consistency），核心思想是即使无法做到强一致性（CAP
+的一致性就是强一致性），但应用可以采用适合的方式达到最终一致性。满足BASE理论的事务，我们称之为“柔性事务”。</p>
+<ol type="1">
+<li>基本可用 Basically Available：
+<ul>
+<li>基本可用是指分布式系统在出现不可预知的故障的时候，允许损失部分可用性，但不等于系统不可用。</li>
+<li>响应时间上的损失
+<ul>
+<li>当出现故障时，响应时间增加</li>
+</ul></li>
+<li>功能上的损失
+<ul>
+<li>当流量高峰期时，屏蔽一些功能的使用以保证系统稳定性（服务降级）</li>
+</ul></li>
+</ul></li>
+<li>软状态 Soft state
+<ul>
+<li>指允许系统中的数据存在中间状态，并认为该中间状态的存在不会影响系统的整体可用性。</li>
+<li>与硬状态相对，即是指允许系统中的数据存在中间状态，并认为该中间状态的存在不会影响系统的整体可用性，即允许系统在不同节点的数据副本之间进行数据同步的过程存在延时。</li>
+</ul></li>
+<li>最终一致性 Eventual Consistency
+<ul>
+<li>强调系统中所有的数据副本，在经过一段时间的同步后，最终能够达到一个一致的状态。其本质是需要系统保证最终数据能够达到一致，而不需要实时保证系统数据的强一致性。
+<ul>
+<li>最终一致性可分为如下几种：
+<ul>
+<li>因果一致性（Causal
+consistency）：即进程A在更新完数据后通知进程B，那么之后进程B对该项数据的范围都是进程A更新后的最新值。</li>
+<li>读己之所写（Read your
+writes）：进程A更新一项数据后，它自己总是能访问到自己更新过的最新值。</li>
+<li>会话一致性（Session
+consistency）：将数据一致性框定在会话当中，在一个会话当中实现读己之所写的一致性。即执行更新后，客户端在同一个会话中始终能读到该项数据的最新值</li>
+<li>单调读一致性（Monotonic read
+consistency）：如果一个进程从系统中读取出一个数据项的某个值后，那么系统对于该进程后续的任何数据访问都不应该返回更旧的值。</li>
+<li>单调写一致性（Monotoic write
+consistency）：一个系统需要保证来自同一个进程的写操作被顺序执行。</li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ol>
+<p>BASE理论是提出通过牺牲一致性来获得可用性，并允许数据在一段时间内是不一致的，但最终达到一致状态。</p>
+<p>BASE理论面向的是大型高可用可扩展的分布式系统，和传统的事物ACID特性是相反的。它完全不同于ACID的强一致性模型，而是通过牺牲强一致性来获得可用性，并允许数据在一段时间内是不一致的，但最终达到一致状态。</p>
+<p>但同时，在实际的分布式场景中，不同业务单元和组件对数据一致性的要求是不同的，因此在具体的分布式系统架构设计过程中，ACID特性和BASE理论往往又会结合在一起。</p>
+<p>BASE理论是对CAP中一致性和可用性权衡的结果，其来源于对大规模互联网系统分布式实践的总结，
+是基于CAP定理逐步演化而来的。BASE理论的核心思想是：<strong>即使无法做到强一致性，但每个应用都可以根据自身业务特点，采用适当的方式来使系统达到最终一致性</strong>。</p>
+<p>BASE理论其实就是对CAP理论的延伸和补充，主要是对AP的补充。牺牲数据的强一致性，来保证数据的可用性，虽然存在中间装填，但数据最终一致。</p>
+<h2 id="柔性事务和刚性事务">柔性事务和刚性事务</h2>
+<p>分布式场景下，多个服务同时对服务一个流程，比如电商下单场景，需要支付服务进行支付、库存服务扣减库存、订单服务进行订单生成、物流服务更新物流信息等。如果某一个服务执行失败，或者网络不通引起的请求丢失，那么整个系统可能出现数据不一致的原因。</p>
+<p>上述场景就是分布式一致性问题，追根到底，分布式一致性的根本原因在于数据的分布式操作，引起的本地事务无法保障数据的原子性引起。</p>
+<p>分布式一致性问题的解决思路有两种，一种是分布式事务，一种是尽量通过业务流程避免分布式事务。分布式事务是直接解决问题，而业务规避其实通过解决出问题的地方(解决提问题的人)。其实在真实业务场景中，如果业务规避不是很麻烦的前提，最优雅的解决方案就是业务规避。</p>
+<p>所以，分布式事务可以这样被分类：</p>
+<ul>
+<li>分布式事务实现方案从类型上去分刚性事务、柔型事务
+<ul>
+<li>刚性事务满足CAP的CP理论</li>
+<li>柔性事务满足BASE理论（基本可用，最终一致）</li>
+</ul></li>
+</ul>
+<p>首先用一张表直观对比二者的核心差异，再展开细节：</p>
+<table>
+<colgroup>
+<col style="width: 13%">
+<col style="width: 38%">
+<col style="width: 48%">
+</colgroup>
+<thead>
+<tr>
+<th>对比维度</th>
+<th>刚性事务（Rigid Transaction）</th>
+<th>柔性事务（Flexible Transaction）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>核心目标</strong></td>
+<td>追求 <strong>强一致性</strong>（符合 ACID 完整特性）</td>
+<td>追求 <strong>最终一致性</strong>（放松 ACID 中的强一致性要求）</td>
+</tr>
+<tr>
+<td><strong>CAP 取舍</strong></td>
+<td>典型的 <strong>CP 方案</strong>（牺牲可用性保一致性）</td>
+<td>典型的 <strong>AP 方案</strong>（牺牲强一致性保可用性）</td>
+</tr>
+<tr>
+<td><strong>执行机制</strong></td>
+<td>基于 “锁 + 阻塞” 确保操作原子性</td>
+<td>基于 “补偿 + 异步” 允许中间不一致，最终修正</td>
+</tr>
+<tr>
+<td><strong>适用场景</strong></td>
+<td>金融转账、支付等对一致性要求极高的场景</td>
+<td>订单创建、库存扣减、积分发放等对可用性要求高的场景</td>
+</tr>
+<tr>
+<td><strong>性能与阻塞</strong></td>
+<td>性能低，可能因锁或网络问题阻塞</td>
+<td>性能高，无阻塞（或低阻塞）</td>
+</tr>
+</tbody>
+</table>
+<h3 id="刚性事务">刚性事务</h3>
+<p>刚性事务通常无业务改造，强一致性，原生支持回滚/隔离性，低并发，适合短事务</p>
+<p>刚性事务是分布式事务中 “追求完美一致性” 的方案，核心是通过
+<strong>强约束机制</strong> 确保事务的 ACID
+特性完全满足，不允许任何中间不一致状态。</p>
+<ul>
+<li><strong>强一致性</strong>：事务执行后，所有分布式节点的数据必须立即一致，不存在
+“部分成功” 的情况。</li>
+<li><strong>原子性保障</strong>：依赖 “全局锁” 或
+“中心化协调”，确保所有操作要么全提交，要么全回滚。</li>
+<li><strong>可能阻塞</strong>：为了保证一致性，当网络分区或节点故障时，系统可能进入阻塞状态（拒绝新请求），直到问题解决。</li>
+</ul>
+<p>刚性事务的原则是满足CAP的CP理论</p>
+<blockquote>
+<p>要使分布式事务，达到像本地式事务一样，具备数据强一致性，从CAP来看，就是说，要达到CP状态。</p>
+</blockquote>
+<p>刚性事务：XA
+协议（2PC、JTA、JTS）、3PC，但由于同步阻塞，处理效率低，不适合大型网站分布式场景。</p>
+<p>但是对于必须保证强一致性、可接受性能损耗和短期阻塞的场景，如：</p>
+<ul>
+<li>金融转账（A 扣钱和 B 加钱必须同时成功）；</li>
+<li>银行对账（数据必须实时一致）。</li>
+</ul>
+<p>刚性事务的必要的</p>
+<h3 id="柔性事务">柔性事务</h3>
+<p>柔性事务指的是，不要求强一致性，而是要求最终一致性，允许有中间状态，也就是Base理论，换句话说，就是AP状态。</p>
+<blockquote>
+<p>与刚性事务相比，柔性事务的特点为：有业务改造，最终一致性，实现补偿接口，实现资源锁定接口，高并发，适合长事务。</p>
+</blockquote>
+<p>柔性事务是分布式事务中 “退而求其次”
+的方案，核心是<strong>放松强一致性要求</strong>，允许事务执行过程中出现短期数据不一致，但通过
+“补偿机制” 或
+“异步协调”，最终让所有节点数据一致，优先保证系统可用性。</p>
+<ul>
+<li><strong>最终一致性</strong>：不要求事务执行后立即一致，但必须在
+“有限时间内” 通过补偿、重试等机制修正，最终达到一致。</li>
+<li><strong>高可用性</strong>：网络分区或节点故障时，系统仍能响应请求（不会阻塞），符合
+CAP 中的 AP 取舍。</li>
+<li><strong>无锁 /
+低锁</strong>：不依赖全局锁，各节点独立执行本地事务，减少阻塞，性能更高。</li>
+<li><strong>业务侵入性</strong>：通常需要结合业务逻辑设计补偿操作（如
+“扣库存” 的补偿是 “加库存”），对业务代码有一定侵入。</li>
+</ul>
+<p>柔性事务分为：</p>
+<ul>
+<li>补偿型</li>
+<li>异步确保型</li>
+<li>最大努力通知型。</li>
+</ul>
+<p>柔型事务的解决方案：TCC/FMT、Saga（状态机模式、Aop模式）、本地事务消息、消息事务（半消息），这四种方案是柔性事务的主流实现，各有侧重，但核心都是
+“先执行、后补偿”。</p>
+<p>这种是大部分分布式事务的实现方案</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a target="_blank" rel="noopener" href="https://github.com/ergou10086">ErgouTree</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://ergou10086.github.io/posts/20817.html">https://ergou10086.github.io/posts/20817.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://ergou10086.github.io" target="_blank">ErgouTree's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E5%AD%A6%E4%B9%A0/">学习</a><a class="post-meta__tags" href="/tags/%E9%85%8D%E7%BD%AE%E7%9B%B8%E5%85%B3/">配置相关</a><a class="post-meta__tags" href="/tags/%E5%AE%9E%E7%94%A8%E7%9F%A5%E8%AF%86/">实用知识</a><a class="post-meta__tags" href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F/">分布式</a><a class="post-meta__tags" href="/tags/%E5%BE%AE%E6%9C%8D%E5%8A%A1/">微服务</a><a class="post-meta__tags" href="/tags/Java%E6%8A%80%E6%9C%AF/">Java技术</a><a class="post-meta__tags" href="/tags/JavaWeb/">JavaWeb</a><a class="post-meta__tags" href="/tags/%E6%A1%86%E6%9E%B6%E7%9F%A5%E8%AF%86/">框架知识</a><a class="post-meta__tags" href="/tags/Spring%E7%B3%BB%E5%88%97/">Spring系列</a><a class="post-meta__tags" href="/tags/Java%E6%A1%86%E6%9E%B6/">Java框架</a><a class="post-meta__tags" href="/tags/Spring-Cloud/">Spring Cloud</a><a class="post-meta__tags" href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1/">分布式事务</a><a class="post-meta__tags" href="/tags/%E4%BA%8B%E5%8A%A1/">事务</a><a class="post-meta__tags" href="/tags/Seata/">Seata</a></div><div class="post-share"><div class="addtoany"><div class="a2a_kit a2a_kit_size_32 a2a_default_style"><a class="a2a_button_facebook"></a><a class="a2a_button_twitter"></a><a class="a2a_button_wechat"></a><a class="a2a_button_sina_weibo"></a><a class="a2a_button_facebook_messenger"></a><a class="a2a_button_email"></a><a class="a2a_button_copy_link"></a><a class="a2a_dd" target="_blank" rel="noopener" href="https://www.addtoany.com/share"></a></div></div><script async="async" src="https://static.addtoany.com/menu/page.js"></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/posts/25657.html" title="SpringCloudpart25—在微服务项目中实际使用Kafka的额外内容"><img class="cover" src="/images/posts/cover_java17.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">SpringCloudpart25—在微服务项目中实际使用Kafka的额外内容</div></div><div class="info-2"><div class="info-item-1">之前项目中没有提到的一些额外的内容 为Kafka配置事务消息 Kafka事务允许生产者将多条消息作为一个原子操作发送，要么全部成功，要么全部失败。这确保了数据的一致性。 默认情况下，Spring-kafka自动生成的KafkaTemplate实例，是不具有事务消息发送能力的。需要使用如下配置激活事务特性。事务激活后，所有的消息发送只能在发生事务的方法内执行了，不然就会抛一个没有事务交易的异常 1spring.kafka.producer.transaction-id-prefix=kafka_tx. 事务有一个 Exactly-Once语义，即使重试，消息也只会被处理一次 添加事务的配置 在配置文件中添加事务的配置 123456789101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354555657585960616263646566676869spring:  application:    name: kafka-message   ...</div></div></div></a><a class="pagination-related" href="/posts/17552.html" title="Spring Cloud part27—分布式事务中刚性事务的解决方案"><img class="cover" src="/images/posts/cover_math.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Spring Cloud part27—分布式事务中刚性事务的解决方案</div></div><div class="info-2"><div class="info-item-1">刚性事务：XA模型、XA接口规范、XA实现 XA模型或者 X/Open DTP模型  X/OPEN是一个组织.X/Open国际联盟有限公司是一个欧洲基金会，它的建立是为了向UNIX环境提供标准。它主要的目标是促进对UNIX语言、接口、网络和应用的开放式系统协议的制定。它还促进在不同的UNIX环境之间的应用程序的互操作性，以及支持对电气电子工程师协会（IEEE）对UNIX的可移植操作系统接口（POSIX）规范。  X/Open DTP(Distributed Transaction Process) 是一个分布式事务模型。这个模型主要使用了两段提交(2PC - Two-Phase-Commit)来保证分布式事务的完整性。 在X/Open DTP(Distributed Transaction Process) 模型里面，有三个角色：  AP: Application，应用程序。也就是业务层。哪些操作属于一个事务，就是AP定义的。 TM:...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/posts/17552.html" title="Spring Cloud part27—分布式事务中刚性事务的解决方案"><img class="cover" src="/images/posts/cover_math.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-11-03</div><div class="info-item-2">Spring Cloud part27—分布式事务中刚性事务的解决方案</div></div><div class="info-2"><div class="info-item-1">刚性事务：XA模型、XA接口规范、XA实现 XA模型或者 X/Open DTP模型  X/OPEN是一个组织.X/Open国际联盟有限公司是一个欧洲基金会，它的建立是为了向UNIX环境提供标准。它主要的目标是促进对UNIX语言、接口、网络和应用的开放式系统协议的制定。它还促进在不同的UNIX环境之间的应用程序的互操作性，以及支持对电气电子工程师协会（IEEE）对UNIX的可移植操作系统接口（POSIX）规范。  X/Open DTP(Distributed Transaction Process) 是一个分布式事务模型。这个模型主要使用了两段提交(2PC - Two-Phase-Commit)来保证分布式事务的完整性。 在X/Open DTP(Distributed Transaction Process) 模型里面，有三个角色：  AP: Application，应用程序。也就是业务层。哪些操作属于一个事务，就是AP定义的。 TM:...</div></div></div></a><a class="pagination-related" href="/posts/36802.html" title="Spring Cloud part29—分布式事务中柔性事务的解决方案之补偿型事务"><img class="cover" src="/images/posts/cover_java11.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-11-04</div><div class="info-item-2">Spring Cloud part29—分布式事务中柔性事务的解决方案之补偿型事务</div></div><div class="info-2"><div class="info-item-1">TCC补偿型 什么是TCC补偿型事务 基于消息实现的事务并不能解决所有的业务场景，例如以下场景：某笔订单完成时，同时扣掉用户的现金。 TCC 是 Try-Confirm-Cancel 的缩写，属于补偿型柔性事务的一种。它通过 “预留资源（Try）→...</div></div></div></a><a class="pagination-related" href="/posts/63450.html" title="Spring Cloud part28—分布式事务中柔性事务的解决方案之通知型事务"><img class="cover" src="/images/posts/cover2x.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-11-04</div><div class="info-item-2">Spring Cloud part28—分布式事务中柔性事务的解决方案之通知型事务</div></div><div class="info-2"><div class="info-item-1">柔性事务 柔性事务的分类 在电商领域等高并发的互联网场景下，刚性事务在数据库性能和处理能力上都暴露出了瓶颈。 柔性事务有两个特性：基本可用和柔性状态。  基本可用是指分布式系统出现故障的时候允许损失一部分的可用性。 柔性状态是指允许系统存在中间状态，这个中间状态不会影响系统整体的可用性，比如数据库读写分离的主从同步延迟等。柔性事务的一致性指的是最终一致性。  柔性事务主要分为补偿型和通知型，其中，补偿型事务都是同步的，通知型事务都是异步的。 补偿型事务通过 “正向执行 + 逆向补偿” 的机制保证最终一致性，属于同步事务（执行过程中需要等待各环节完成），典型子类型有 TCC 和 Saga。  补偿型事务又分：TCC、Saga；  通知型事务通过异步消息传递保证最终一致性，属于异步事务（执行过程中无需同步等待，通过消息队列或重试机制完成），典型子类型有 MQ 事务消息和最大努力通知型。  通知型事务分：MQ事务消息、最大努力通知型。  补偿型事务 补偿型号事务的设计理念以 “正向执行 +...</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="gitalk-container"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/arp.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">ErgouTree</div><div class="author-info-description">I start a brand-new life with you.</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">232</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">137</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">80</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/ergou10086"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/ergou10086" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="/zjm88822201@126.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a><a class="social-icon" href="https://space.bilibili.com/142045656?spm_id_from=333.1007.0.0" target="_blank" title="bilibili"><i class="fas fa-brands fa-bilibili" style="color: #4a72be;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">作者长期陷入galgame和osu!maina4k中 祝他好运吧 对了 如果图片加载过慢 建议科学上网进行使用</div></div><div class="card-widget"><div class="item-headline"><i></i><span></span></div><div class="item-content"></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%90%86%E8%A7%A3%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1"><span class="toc-number">1.</span> <span class="toc-text">理解分布式事务</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9B%9E%E9%A1%BE%E4%BA%8B%E5%8A%A1"><span class="toc-number">1.1.</span> <span class="toc-text">回顾事务</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B9%B6%E5%8F%91%E4%B8%8B%E4%BE%9D%E6%97%A7%E5%AD%98%E5%9C%A8%E7%9A%84%E4%B8%89%E5%A4%A7%E9%97%AE%E9%A2%98%E8%84%8F%E8%AF%BB%E4%B8%8D%E5%8F%AF%E9%87%8D%E5%A4%8D%E8%AF%BB%E5%92%8C%E5%B9%BB%E8%AF%BB"><span class="toc-number">1.2.</span> <span class="toc-text">并发下依旧存在的三大问题：脏读、不可重复读和幻读</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F%E4%B8%8B%E4%BA%8B%E5%8A%A1%E7%9A%84%E6%96%B0%E9%97%AE%E9%A2%98"><span class="toc-number">1.3.</span> <span class="toc-text">分布式下事务的新问题</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B8%E5%9E%8B%E7%9A%84%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1%E5%9C%BA%E6%99%AF"><span class="toc-number">1.4.</span> <span class="toc-text">典型的分布式事务场景</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9B%B0%E9%9A%BE"><span class="toc-number">1.5.</span> <span class="toc-text">困难</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1"><span class="toc-number">1.6.</span> <span class="toc-text">什么是分布式事务？</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1%E5%9F%BA%E7%A1%80%E7%90%86%E8%AE%BA"><span class="toc-number">2.</span> <span class="toc-text">分布式事务基础理论</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#cap%E7%90%86%E8%AE%BA"><span class="toc-number">2.1.</span> <span class="toc-text">CAP理论</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%89%E8%80%85%E4%B8%8D%E5%8F%AF%E5%85%BC%E5%BE%97"><span class="toc-number">2.2.</span> <span class="toc-text">为什么三者不可兼得？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#cap-%E7%9A%84%E5%8F%96%E8%88%8D%E7%BB%84%E5%90%88"><span class="toc-number">2.3.</span> <span class="toc-text">CAP 的取舍组合</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#cp-%E7%B3%BB%E7%BB%9F"><span class="toc-number">2.3.1.</span> <span class="toc-text">CP 系统</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#ap-%E7%B3%BB%E7%BB%9F"><span class="toc-number">2.3.2.</span> <span class="toc-text">AP 系统</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#base-%E7%90%86%E8%AE%BA"><span class="toc-number">2.4.</span> <span class="toc-text">BASE 理论</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9F%94%E6%80%A7%E4%BA%8B%E5%8A%A1%E5%92%8C%E5%88%9A%E6%80%A7%E4%BA%8B%E5%8A%A1"><span class="toc-number">3.</span> <span class="toc-text">柔性事务和刚性事务</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%9A%E6%80%A7%E4%BA%8B%E5%8A%A1"><span class="toc-number">3.1.</span> <span class="toc-text">刚性事务</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9F%94%E6%80%A7%E4%BA%8B%E5%8A%A1"><span class="toc-number">3.2.</span> <span class="toc-text">柔性事务</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/28540.html" title="Spring Cloud part30—Seata的各种分布式事务类型的实现"><img src="/images/posts/cover_java8.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Spring Cloud part30—Seata的各种分布式事务类型的实现"/></a><div class="content"><a class="title" href="/posts/28540.html" title="Spring Cloud part30—Seata的各种分布式事务类型的实现">Spring Cloud part30—Seata的各种分布式事务类型的实现</a><time datetime="2025-11-07T13:02:17.000Z" title="发表于 2025-11-07 21:02:17">2025-11-07</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/36802.html" title="Spring Cloud part29—分布式事务中柔性事务的解决方案之补偿型事务"><img src="/images/posts/cover_java11.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Spring Cloud part29—分布式事务中柔性事务的解决方案之补偿型事务"/></a><div class="content"><a class="title" href="/posts/36802.html" title="Spring Cloud part29—分布式事务中柔性事务的解决方案之补偿型事务">Spring Cloud part29—分布式事务中柔性事务的解决方案之补偿型事务</a><time datetime="2025-11-04T09:01:19.000Z" title="发表于 2025-11-04 17:01:19">2025-11-04</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/63450.html" title="Spring Cloud part28—分布式事务中柔性事务的解决方案之通知型事务"><img src="/images/posts/cover2x.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Spring Cloud part28—分布式事务中柔性事务的解决方案之通知型事务"/></a><div class="content"><a class="title" href="/posts/63450.html" title="Spring Cloud part28—分布式事务中柔性事务的解决方案之通知型事务">Spring Cloud part28—分布式事务中柔性事务的解决方案之通知型事务</a><time datetime="2025-11-04T06:23:31.000Z" title="发表于 2025-11-04 14:23:31">2025-11-04</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/17552.html" title="Spring Cloud part27—分布式事务中刚性事务的解决方案"><img src="/images/posts/cover_math.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Spring Cloud part27—分布式事务中刚性事务的解决方案"/></a><div class="content"><a class="title" href="/posts/17552.html" title="Spring Cloud part27—分布式事务中刚性事务的解决方案">Spring Cloud part27—分布式事务中刚性事务的解决方案</a><time datetime="2025-11-03T12:31:38.000Z" title="发表于 2025-11-03 20:31:38">2025-11-03</time></div></div></div></div></div></div></main><div class="fps-display"><span id="fps">FPS: 60</span></div><footer id="footer" style="background-image: url(/images/posts/cover_talk.jpg);"><div id="footer-wrap"><div class="copyright">&copy;2024 - 2025 By ErgouTree</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">忘れたくない思い、ありますか？ <br>,<span id="realtime_duration" style="font-family: monospace;"></span>,<br><a href="https://icp.gov.moe/?keyword=20257009" target="_blank">萌ICP备20257009号</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><a class="icon-V hidden" onclick="switchNightMode()" title="日间和夜间模式切换"><svg width="25" height="25" viewBox="0 0 1024 1024"><use id="modeicon" xlink:href="#icon-moon"></use></svg></a><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="chat-btn" type="button" title="聊天" style="display:none"><i class="fas fa-comment"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (true) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script><script>(() => {
+  const applyThemeDefaultsConfig = theme => {
+    if (theme === 'dark-mode') {
+      Chart.defaults.color = "rgba(255, 255, 255, 0.8)"
+      Chart.defaults.borderColor = "rgba(255, 255, 255, 0.2)"
+      Chart.defaults.scale.ticks.backdropColor = "transparent"
+    } else {
+      Chart.defaults.color = "rgba(0, 0, 0, 0.8)"
+      Chart.defaults.borderColor = "rgba(0, 0, 0, 0.1)"
+      Chart.defaults.scale.ticks.backdropColor = "transparent"
+    }
+  }
+
+  // Recursively traverse the config object and automatically apply theme-specific color schemes
+  const applyThemeConfig = (obj, theme) => {
+    if (typeof obj !== 'object' || obj === null) return
+
+    Object.keys(obj).forEach(key => {
+      const value = obj[key]
+      // If the property is an object and has theme-specific options, apply them
+      if (typeof value === 'object' && value !== null) {
+        if (value[theme]) {
+          obj[key] = value[theme] // Apply the value for the current theme
+        } else {
+          // Recursively process child objects
+          applyThemeConfig(value, theme)
+        }
+      }
+    })
+  }
+
+  const runChartJS = ele => {
+    window.loadChartJS = true
+
+    Array.from(ele).forEach((item, index) => {
+      const chartSrc = item.firstElementChild
+      const chartID = item.getAttribute('data-chartjs-id') || ('chartjs-' + index) // Use custom ID or default ID
+      const width = item.getAttribute('data-width')
+      const existingCanvas = document.getElementById(chartID)
+
+      // If a canvas already exists, remove it to avoid rendering duplicates
+      if (existingCanvas) {
+          existingCanvas.parentNode.remove()
+      }
+
+      const chartDefinition = chartSrc.textContent
+      const canvas = document.createElement('canvas')
+      canvas.id = chartID
+
+      const div = document.createElement('div')
+      div.className = 'chartjs-wrap'
+
+      if (width) {
+        div.style.width = width
+      }
+
+      div.appendChild(canvas)
+      chartSrc.insertAdjacentElement('afterend', div)
+
+      const ctx = document.getElementById(chartID).getContext('2d')
+
+      const config = JSON.parse(chartDefinition)
+
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark-mode' : 'light-mode'
+
+      // Set default styles (initial setup)
+      applyThemeDefaultsConfig(theme)
+
+      // Automatically traverse the config and apply dual-mode color schemes
+      applyThemeConfig(config, theme)
+
+      new Chart(ctx, config)
+    })
+  }
+
+  const loadChartJS = () => {
+    const chartJSEle = document.querySelectorAll('#article-container .chartjs-container')
+    if (chartJSEle.length === 0) return
+
+    window.loadChartJS ? runChartJS(chartJSEle) : btf.getScript('https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.min.js').then(() => runChartJS(chartJSEle))
+  }
+
+  // Listen for theme change events
+  btf.addGlobalFn('themeChange', loadChartJS, 'chartjs')
+  btf.addGlobalFn('encrypt', loadChartJS, 'chartjs')
+
+  window.pjax ? loadChartJS() : document.addEventListener('DOMContentLoaded', loadChartJS)
+})()</script><script>(function() {
+  const abcjsInit = function() {
+    const abcjsFn = function() {
+      setTimeout(function() {
+        const sheets = document.querySelectorAll(".abc-music-sheet")
+        for (let i = 0; i < sheets.length; i++) {
+          const ele = sheets[i]
+          if (ele.children.length > 0) continue
+
+          // Parse parameters from data-params attribute
+          let params = {}
+          const dp = ele.getAttribute("data-params")
+          if (dp) {
+            try {
+              params = JSON.parse(dp)
+            } catch (e) {
+              console.error("Failed to parse data-params:", e)
+            }
+          }
+
+          // Merge parsed parameters with the responsive option
+          // Ensures params content appears before responsive
+          const options = { ...params, responsive: "resize" }
+
+          // Render the music score using ABCJS.renderAbc
+          ABCJS.renderAbc(ele, ele.innerHTML, options)
+        }
+      }, 100)
+    }
+
+    if (typeof ABCJS === "object") {
+      abcjsFn()
+    } else {
+      btf.getScript("https://cdn.jsdelivr.net/npm/abcjs/dist/abcjs-basic-min.min.js").then(abcjsFn)
+    }
+  }
+
+  if (window.pjax) {
+    abcjsInit()
+  } else {
+    window.addEventListener("load", abcjsInit)
+  }
+
+  btf.addGlobalFn("encrypt", abcjsInit, "abcjs")
+})()</script><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = {"labels":["Gitalk","Comment"],"createIssueManually":false,"distractionFreeMode":false}
+
+  const commentCount = n => {
+    const isCommentCount = document.querySelector('#post-meta .gitalk-comment-count')
+    if (isCommentCount) {
+      isCommentCount.textContent= n
+    }
+  }
+
+  const initGitalk = (el, path) => {
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGitalk = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+
+    const gitalk = new Gitalk({
+      clientID: 'Ov23li3vDQANiUddL4XB',
+      clientSecret: '5c9a56d02995340fca117809cd414662aadce6ff',
+      repo: 'HexoComment',
+      owner: 'ergou10086',
+      admin: ['ergou10086'],
+      updateCountCallback: commentCount,
+      ...option,
+      id: isShuoshuo ? path : (option && option.id) || '259e930b393f8614f83e678c1c5805c2'
+    })
+
+    gitalk.render('gitalk-container')
+  }
+
+  const loadGitalk = async(el, path) => {
+    if (typeof Gitalk === 'function') initGitalk(el, path)
+    else {
+      await btf.getCSS('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.css')
+      await btf.getScript('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.js')
+      initGitalk(el, path)
+    }
+  }
+
+  if (isShuoshuo) {
+    'Gitalk' === 'Gitalk'
+      ? window.shuoshuoComment = { loadComment: loadGitalk }
+      : window.loadOtherComment = loadGitalk
+    return
+  }
+
+  if ('Gitalk' === 'Gitalk' || !false) {
+    if (false) btf.loadComment(document.getElementById('gitalk-container'), loadGitalk)
+    else loadGitalk()
+  } else {
+    window.loadOtherComment = loadGitalk
+  }
+})()</script></div><div class="aplayer no-destroy" data-id="13587761608" data-server="netease" data-type="playlist" data-fixed="true" data-autoplay="false" data-lrcType="-1"> </div><script src="https://cdn.jsdelivr.net/npm/abcjs@7.1.2/dist/abcjs-basic-min.js"></script><script src="/js/sun_moon.js" async></script><script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.7/dayjs.min.js"></script><script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.7/plugin/duration.min.js"></script><script src="/scripts/realtime.js"></script><script src="/scripts/random.js"></script><script defer="defer" id="ribbon" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-ribbon.min.js" size="150" alpha="0.6" zIndex="-1" mobile="null" data-click="true"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = false;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><script id="click-heart" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/click-heart.min.js" async="async" mobile="false"></script><script>(() => {
+  window.ChatraID = '4bzb546NSBoJcrNyu'
+  window.Chatra = window.Chatra || function() {
+    (window.Chatra.q = window.Chatra.q || []).push(arguments)
+  }
+
+  btf.getScript('https://call.chatra.io/chatra.js').then(() => {
+    const isChatBtn = true
+    const isChatHideShow = true
+
+    if (isChatBtn) {
+      const close = () => {
+        Chatra('minimizeWidget')
+        Chatra('hide')
+      }
+
+      const open = () => {
+        Chatra('openChat', true)
+        Chatra('show')
+      }
+
+      window.ChatraSetup = { startHidden: true }
+    
+      window.chatBtnFn = () => document.getElementById('chatra').classList.contains('chatra--expanded') ? close() : open()
+
+      document.getElementById('chat-btn').style.display = 'block'
+    } else if (isChatHideShow) {
+      window.chatBtn = {
+        hide: () => Chatra('hide'),
+        show: () => Chatra('show')
+      }
+    }
+  })
+})()</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/metingjs/dist/Meting.min.js"></script><script>(() => {
+  const destroyAplayer = () => {
+    if (window.aplayers) {
+      for (let i = 0; i < window.aplayers.length; i++) {
+        if (!window.aplayers[i].options.fixed) {
+          window.aplayers[i].destroy()
+        }
+      }
+    }
+  }
+
+  const runMetingJS = () => {
+    typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+  }
+
+  btf.addGlobalFn('pjaxSend', destroyAplayer, 'destroyAplayer')
+  btf.addGlobalFn('pjaxComplete', loadMeting, 'runMetingJS')
+})()</script><script src="https://cdn.jsdelivr.net/npm/pjax/pjax.min.js"></script><script>(() => {
+  const pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+  window.pjax = new Pjax({
+    elements: 'a:not([target="_blank"]):not([href="/music/"])',
+    selectors: pjaxSelectors,
+    cacheBust: false,
+    analytics: false,
+    scrollRestoration: false
+  })
+
+  const triggerPjaxFn = (val) => {
+    if (!val) return
+    Object.values(val).forEach(fn => fn())
+  }
+
+  document.addEventListener('pjax:send', () => {
+    // removeEventListener
+    btf.removeGlobalFnEvent('pjaxSendOnce')
+    btf.removeGlobalFnEvent('themeChange')
+
+    // reset readmode
+    const $bodyClassList = document.body.classList
+    if ($bodyClassList.contains('read-mode')) $bodyClassList.remove('read-mode')
+
+    triggerPjaxFn(window.globalFn.pjaxSend)
+  })
+
+  document.addEventListener('pjax:complete', () => {
+    btf.removeGlobalFnEvent('pjaxCompleteOnce')
+    document.querySelectorAll('script[data-pjax]').forEach(item => {
+      const newScript = document.createElement('script')
+      const content = item.text || item.textContent || item.innerHTML || ""
+      Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+      newScript.appendChild(document.createTextNode(content))
+      item.parentNode.replaceChild(newScript, item)
+    })
+
+    triggerPjaxFn(window.globalFn.pjaxComplete)
+  })
+
+  document.addEventListener('pjax:error', e => {
+    if (e.request.status === 404) {
+      const usePjax = true
+      true 
+        ? (usePjax ? pjax.loadUrl('/404.html') : window.location.href = '/404.html')
+        : window.location.href = e.request.responseURL
+    }
+  })
+})()</script><script src="/js/fps-display.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><!-- hexo injector body_end start --><script data-pjax>
+  function butterfly_swiper_injector_config(){
+    var parent_div_git = document.getElementById('recent-posts');
+    var item_html = '<div class="recent-post-item" style="height: auto;width: 100%"><div class="blog-slider swiper-container-fade swiper-container-horizontal" id="swiper_container"><div class="blog-slider__wrp swiper-wrapper" style="transition-duration: 0ms;"><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_database.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-14</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt="">结构化查询语言SQL</a><div class="blog-slider__text">SQL基本很常用的语句都在这里了，本质上是当初为了应付数据库考试整理的，后来发现还蛮有用的很方便查常用的语句</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java4.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-22</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt="">SpringBoot part0?INF-SpringBoot这个框架都需要学习什么</a><div class="blog-slider__text">主要围绕Spring Boot中重要知识来简洁或详细的说明，其中部分不够完全，持续更新</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java11.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-15</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt="">关于Lombok在高版本IDEA中注解处理不生效的问题解决</a><div class="blog-slider__text">基本上是彻底的解决了用 IDEA 新建 Spring Boot 项目时候会产生的 Lombok 注解处理失效的各种问题</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_实用.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-05</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt="">个人向galgame原声带或相关音乐整理及其资源</a><div class="blog-slider__text">整理了我喜欢的galgame ost或者衍生的音乐专辑，部分资源是自己扒盘扒下来的，部分来自鸟白岛放映厅</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_math.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-17</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt="">对书上证明样本方差是总体方差的无偏估计量的解析</a><div class="blog-slider__text">对书上证明样本方差是总体方差的无偏估计量的解析，高等教育出版社-华科大版本</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_alog.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-04-24</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt="">第十五届蓝桥杯Java国赛B组D题-园丁题解</a><div class="blog-slider__text">第十五届蓝桥杯Java国赛B组D题-园丁题解，该题解已经发布到洛谷社区中并且被全站推荐</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java4.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-04-29</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt="">操作系统之处理机的死锁部分概述</a><div class="blog-slider__text">对操作系统之处理机的死锁部分知识的总结，包括代码复现</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_lb.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-09</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt="">Little Busters!EX游戏攻略</a><div class="blog-slider__text">整理了一份详细清晰的Little Busters！EX的游戏攻略，因为我自己也在推，就顺手整理了一份方便查阅的md文档</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java9.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-16</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt="">Spring Boot中使用Hibernate框架</a><div class="blog-slider__text">对学习完Hibernate的应用部分，主要围绕Spring Boot中使用Hibernate框架，建议学习完 Hibernate 框架再看</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div></div><div class="blog-slider__pagination swiper-pagination-clickable swiper-pagination-bullets"></div></div></div>';
+    console.log('已挂载butterfly_swiper')
+    parent_div_git.insertAdjacentHTML("afterbegin",item_html)
+    }
+  var elist = 'undefined'.split(',');
+  var cpage = location.pathname;
+  var epage = '/';
+  var flag = 0;
+
+  for (var i=0;i<elist.length;i++){
+    if (cpage.includes(elist[i])){
+      flag++;
+    }
+  }
+
+  if ((epage ==='all')&&(flag == 0)){
+    butterfly_swiper_injector_config();
+  }
+  else if (epage === cpage){
+    butterfly_swiper_injector_config();
+  }
+  </script><script defer src="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper.min.js"></script><script defer data-pjax src="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper_init.js"></script><!-- hexo injector body_end end --></body></html>
