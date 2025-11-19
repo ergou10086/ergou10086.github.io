@@ -1,0 +1,1265 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>在IDEA中如何进行各种调试及相关调试的技巧 | ErgouTree's Blog</title><meta name="author" content="ErgouTree"><meta name="copyright" content="ErgouTree"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="前言 本文如题目，基于 IDEA，基于 Java，本来想用 Dart 来着，寻思了一下还是用更多人擅长的来讲吧 调试是个很牛逼的东西，因为你不能保证你能看懂代码抛出的每一个异常是什么意思，代码的每次编译错误都是什么问题，服务抛出的各种问题你都能找到位置 所以说，调试在越复杂的项目里面越实用。 貌似，jetbrain 家的IDE 都可以沿用类似的这一套调试流程和方法 进行调试之前，我们需">
+<meta property="og:type" content="article">
+<meta property="og:title" content="在IDEA中如何进行各种调试及相关调试的技巧">
+<meta property="og:url" content="https://ergou10086.github.io/posts/10269.html">
+<meta property="og:site_name" content="ErgouTree&#39;s Blog">
+<meta property="og:description" content="前言 本文如题目，基于 IDEA，基于 Java，本来想用 Dart 来着，寻思了一下还是用更多人擅长的来讲吧 调试是个很牛逼的东西，因为你不能保证你能看懂代码抛出的每一个异常是什么意思，代码的每次编译错误都是什么问题，服务抛出的各种问题你都能找到位置 所以说，调试在越复杂的项目里面越实用。 貌似，jetbrain 家的IDE 都可以沿用类似的这一套调试流程和方法 进行调试之前，我们需">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://ergou10086.github.io/images/posts/cover_teach2.jpg">
+<meta property="article:published_time" content="2025-11-17T05:07:52.000Z">
+<meta property="article:modified_time" content="2025-11-17T05:21:46.517Z">
+<meta property="article:author" content="ErgouTree">
+<meta property="article:tag" content="使用知识">
+<meta property="article:tag" content="实用知识">
+<meta property="article:tag" content="调试">
+<meta property="article:tag" content="开发工具技巧">
+<meta property="article:tag" content="Java 开发">
+<meta property="article:tag" content="后端开发">
+<meta property="article:tag" content="多线程">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ergou10086.github.io/images/posts/cover_teach2.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "在IDEA中如何进行各种调试及相关调试的技巧",
+  "url": "https://ergou10086.github.io/posts/10269.html",
+  "image": "https://ergou10086.github.io/images/posts/cover_teach2.jpg",
+  "datePublished": "2025-11-17T05:07:52.000Z",
+  "dateModified": "2025-11-17T05:21:46.517Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "ErgouTree",
+      "url": "https://github.com/ergou10086"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/pi.ico"><link rel="canonical" href="https://ergou10086.github.io/posts/10269.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//hm.baidu.com"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!true && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?https://hm.baidu.com/hm.js?a6ab1b78e2c6320b664f31e8b9bf0e36";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+btf.addGlobalFn('pjaxComplete', () => {
+  _hmt.push(['_trackPageview',window.location.pathname])
+}, 'baidu_analytics')
+</script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.json","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":true},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: {"chs_to_cht":"已切换为繁体中文","cht_to_chs":"已切换为简体中文","day_to_night":"已切换为深色模式","night_to_day":"已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#1f1f1f","position":"bottom-left"},
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '在IDEA中如何进行各种调试及相关调试的技巧',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css"><svg aria-hidden="true" style="position:absolute; overflow:hidden; width:0; height:0"><symbol id="icon-sun" viewBox="0 0 1024 1024"><path d="M960 512l-128 128v192h-192l-128 128-128-128H192v-192l-128-128 128-128V192h192l128-128 128 128h192v192z" fill="#FFD878" p-id="8420"></path><path d="M736 512a224 224 0 1 0-448 0 224 224 0 1 0 448 0z" fill="#FFE4A9" p-id="8421"></path><path d="M512 109.248L626.752 224H800v173.248L914.752 512 800 626.752V800h-173.248L512 914.752 397.248 800H224v-173.248L109.248 512 224 397.248V224h173.248L512 109.248M512 64l-128 128H192v192l-128 128 128 128v192h192l128 128 128-128h192v-192l128-128-128-128V192h-192l-128-128z" fill="#4D5152" p-id="8422"></path><path d="M512 320c105.888 0 192 86.112 192 192s-86.112 192-192 192-192-86.112-192-192 86.112-192 192-192m0-32a224 224 0 1 0 0 448 224 224 0 0 0 0-448z" fill="#4D5152" p-id="8423"></path></symbol><symbol id="icon-moon" viewBox="0 0 1024 1024"><path d="M611.370667 167.082667a445.013333 445.013333 0 0 1-38.4 161.834666 477.824 477.824 0 0 1-244.736 244.394667 445.141333 445.141333 0 0 1-161.109334 38.058667 85.077333 85.077333 0 0 0-65.066666 135.722666A462.08 462.08 0 1 0 747.093333 102.058667a85.077333 85.077333 0 0 0-135.722666 65.024z" fill="#FFB531" p-id="11345"></path><path d="M329.728 274.133333l35.157333-35.157333a21.333333 21.333333 0 1 0-30.165333-30.165333l-35.157333 35.157333-35.114667-35.157333a21.333333 21.333333 0 0 0-30.165333 30.165333l35.114666 35.157333-35.114666 35.157334a21.333333 21.333333 0 1 0 30.165333 30.165333l35.114667-35.157333 35.157333 35.157333a21.333333 21.333333 0 1 0 30.165333-30.165333z" fill="#030835" p-id="11346"></path></symbol></svg><link rel="stylesheet" href="/css/custom.css"><!-- hexo injector head_end start --><link rel="stylesheet" href="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiperstyle.css" media="print" onload="this.media='all'"><!-- hexo injector head_end end --><meta name="generator" content="Hexo 7.3.0"></head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js/pace.min.js"></script><div id="web_bg" style="background: linear-gradient(20deg, #0062be, #925696, #cc426e, #fb0347);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/arp.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">247</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">149</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">84</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-images"></i><span> Gallery</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/games/"><i class="fa-fw fas fa-game"></i><span> GalGame</span></a></li><li><a class="site-page child" href="/video/"><i class="fa-fw fas fa-video"></i><span> Video</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/lagrange/"><i class="fa-fw fas fa-calculator"></i><span> Lagrange</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div><div class="menus_item"><a class="site-page" href="javascript:randomPost();"><span> Random</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/images/posts/cover_teach2.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">ErgouTree's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">在IDEA中如何进行各种调试及相关调试的技巧</span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-images"></i><span> Gallery</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/games/"><i class="fa-fw fas fa-game"></i><span> GalGame</span></a></li><li><a class="site-page child" href="/video/"><i class="fa-fw fas fa-video"></i><span> Video</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/lagrange/"><i class="fa-fw fas fa-calculator"></i><span> Lagrange</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div><div class="menus_item"><a class="site-page" href="javascript:randomPost();"><span> Random</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div><div id="randomPost"><a class="site-page social-icon search" href="javascript:;" onclick="randomPost()" title="随机访问一篇文章"><i class="fas fa-circle-notch fa-fw"></i></a></div></nav><div id="post-info"><h1 class="post-title">在IDEA中如何进行各种调试及相关调试的技巧<a class="post-edit-link" href="https://github.com/ergou10086/ergou10086.github.io/edit/main/source/_posts/_posts/在IDEA中如何进行各种调试及相关调试的技巧.md" title="编辑" target="_blank"><i class="fas fa-pencil-alt"></i></a></h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2025-11-17T05:07:52.000Z" title="发表于 2025-11-17 13:07:52">2025-11-17</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2025-11-17T05:21:46.517Z" title="更新于 2025-11-17 13:21:46">2025-11-17</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%BC%80%E5%8F%91%E7%9F%A5%E8%AF%86/">开发知识</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%BC%80%E5%8F%91%E7%9F%A5%E8%AF%86/%E8%B0%83%E8%AF%95/">调试</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">8.9k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>27分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span><span class="post-meta-separator">|</span><span class="post-meta-commentcount"><i class="far fa-comments fa-fw post-meta-icon"></i><span class="post-meta-label">评论数:</span><a href="/posts/10269.html#post-comment"><span class="gitalk-comment-count"><i class="fa-solid fa-spinner fa-spin"></i></span></a></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="前言">前言</h2>
+<p>本文如题目，基于 IDEA，基于 Java，本来想用 Dart
+来着，寻思了一下还是用更多人擅长的来讲吧</p>
+<p>调试是个很牛逼的东西，因为你不能保证你能看懂代码抛出的每一个异常是什么意思，代码的每次编译错误都是什么问题，服务抛出的各种问题你都能找到位置</p>
+<p>所以说，调试在越复杂的项目里面越实用。</p>
+<p>貌似，jetbrain 家的IDE 都可以沿用类似的这一套调试流程和方法</p>
+<h2 id="进行调试之前我们需要了解什么">进行调试之前，我们需要了解什么</h2>
+<p>还是先说一下 IDEA
+中如何进行调试，我确实没特意看过这个内容，全是我自己摸索出来的，也顺便总结一下</p>
+<p>首先，调试的情况分为如下类别</p>
+<ul>
+<li>本地调试：最常见的调试方式，针对当前开发环境中运行的 Java
+程序（如本地启动的 Spring Boot 应用、普通 Javamain
+方法等）。代码和程序均在本地机器运行，调试器直接连接本地进程。</li>
+<li>远程调试：针对运行在远程服务器（或其他机器）上的 Java
+程序进行调试，本地 IDEA
+通过网络连接远程进程。代码在本地，程序在远程运行，通过调试端口建立通信。</li>
+<li>测试调试：针对 JUnit、TestNG
+等单元测试用例的调试，仅运行指定的测试方法，断点可设在测试代码或被测试代码中。</li>
+<li>条件断点调试：对断点设置触发条件，仅当满足条件时才暂停程序，避免无意义的中断。就是右键断点图标，勾选<code>Condition</code>，输入
+Java 表达式</li>
+<li>异常断点调试：当程序抛出指定异常时自动暂停，无需在代码中手动设置断点。一般是排查未捕获的异常，定位异常发生的具体位置。在<code>Breakpoints</code>窗口（<code>Ctrl+Shift+F8</code>）点击<code>+</code>，选择<code>Java Exception Breakpoints</code>，指定异常类型（如<code>java.lang.NullPointerException</code>）。</li>
+<li>分布式调试：针对分布式系统（如微服务架构）的调试，涉及多个服务实例之间的调用跟踪。一般是用工具</li>
+</ul>
+<p>其实可以去看官方文档，肯定比我全</p>
+<p>http://www.jetbrains.com/help/idea/debugging-code.html</p>
+<h2 id="了解idea调试中各个页面的作用">了解IDEA调试中各个页面的作用</h2>
+<h3 id="基础通用部分">基础通用部分</h3>
+<p>先看一下页面，随着idea版本的更新Debug模式的图标设计虽有微调整，但是差不多</p>
+<figure>
+<img src="/posts/10269/image-20250720235249504.png" alt="image-20250720235249504">
+<figcaption aria-hidden="true">image-20250720235249504</figcaption>
+</figure>
+<p>绿色三角大家都知道是运行，绿色虫子大家都知道是调试，最左边那个
+<strong>“Toggle Smart Step Into”（智能步入切换）</strong>
+功能按钮，差不多它的作用就是调试时使用
+“智能步入”，遇到方法调用，会智能判断，优先进入用户代码而非库代码，让调试更高效，避免频繁进入不想看的框架、库等代码里，精准控制调试步骤
+。</p>
+<figure>
+<img src="/posts/10269/image-20250720235440922.png" alt="image-20250720235440922">
+<figcaption aria-hidden="true">image-20250720235440922</figcaption>
+</figure>
+<p>建议每个人把 在断点上使应用程序获得焦点 选项打开</p>
+<p>如果你希望 调试 工具窗口在命中断点之前保持隐藏，请在相应的
+运行/调试配置 中取消选中 启动时打开运行/调试工具窗口 复选框。</p>
+<p>如果你的IDEA底部没有显示工具栏或状态栏，可以在View里打开，显示出工具栏会方便我们使用。访问请求到达第一个断点后，会自动激活Debug窗口。如果没有自动激活，可以去设置里设置。</p>
+<p>以我的一个微服务项目为例子，微服务的调试界面就比较复杂了，介绍一下各个窗口的作用</p>
+<figure>
+<img src="/posts/10269/image-20250720235759166.png" alt="image-20250720235759166">
+<figcaption aria-hidden="true">image-20250720235759166</figcaption>
+</figure>
+<p>位于调试窗口的上方，包含了一系列用于控制调试流程的按钮，把鼠标光标放到上面就能查看，从左到右通常有：</p>
+<figure>
+<img src="/posts/10269/image-20250721000239433.png" alt="image-20250721000239433">
+<figcaption aria-hidden="true">image-20250721000239433</figcaption>
+</figure>
+<ul>
+<li><p>重新以 Debug 形式启动</p></li>
+<li><p>停止运行</p></li>
+<li><p>继续：快捷键
+F9，程序会继续执行，直到遇到下一个断点或程序结束。在暂停状态下恢复程序的执行。</p></li>
+<li><p>暂停：快捷键忘了，程序会被暂停，用于查看情况</p></li>
+<li><p>步过：快捷键
+F8，会执行当前行代码，如果当前行是方法调用，会直接执行完整个方法，不会进入方法内部。常用于快速跳过已知逻辑正确的方法。</p>
+<ul>
+<li>在调试程序时，步过是一种调试技术，它允许你逐行执行代码，而不会进入当前行中的函数或方法。当你在调试过程中遇到一个函数或方法调用时，使用步过命令可以直接跳过该函数或方法的执行，继续执行下一行代码。</li>
+</ul></li>
+<li><p>步入：快捷键
+F7，如果当前执行点在方法调用处，会进入被调用的方法内部，逐行执行方法内的代码。适用于深入查看方法内部的执行逻辑。</p>
+<ul>
+<li>步入是另一种调试技术，它允许你进入当前行中的函数或方法，并逐行执行其中的代码。当你在调试过程中遇到一个函数或方法调用时，使用步入命令可以进入该函数或方法内部，逐行执行其中的代码。</li>
+</ul></li>
+<li><p>步出：快捷键
+Shift+F8，会从当前方法返回到调用它的方法，继续执行调用方法中的后续代码。当你在方法内部调试完，想回到调用处继续执行时使用。</p>
+<ul>
+<li>步出是一种调试技术，它允许你从当前正在执行的函数或方法中退出，并返回到调用该函数或方法的地方。当你在调试过程中进入了一个函数或方法内部，但你已经完成了对该函数或方法的调试，可以使用步出命令来退出该函数或方法，并返回到调用它的地方。</li>
+</ul></li>
+<li><p>查看断点：快捷键
+Ctrl+Shift+F8，会打开断点管理窗口，你可以在其中查看、启用、禁用和删除所有断点，还能设置断点的条件等。</p>
+<figure>
+<img src="/posts/10269/image-20250721000439313.png" alt="image-20250721000439313">
+<figcaption aria-hidden="true">image-20250721000439313</figcaption>
+</figure></li>
+<li><p>忽略端点：没啥好说的，就是不要这个断点了</p></li>
+<li><p>更多：如下内容，自己了解一下，不多说</p>
+<figure>
+<img src="/posts/10269/image-20250721000704672.png" alt="image-20250721000704672">
+<figcaption aria-hidden="true">image-20250721000704672</figcaption>
+</figure>
+<ul>
+<li>说一下其中智能步入是什么意思，就是如果一行中有多个方法调用，IntelliJ
+IDEA 会询问您要进入哪个方法。 可以配置 智能步入
+使其在每次同一行有多个方法调用时自动使用</li>
+<li>强制步过和强制单步执行用到的很少，但是还是说一下
+<ul>
+<li>强制步过在 Windows 和 Linux
+系统中一般是<code>Ctrl + Shift + F8</code>；当执行到方法调用语句时，使用
+“强制步过”，调试器会将被调用的方法当作一个整体执行完毕，然后停留在方法调用语句的下一行，不会进入到被调用方法的内部。即便被调用方法中存在断点，调试器也不会在那些断点处暂停。</li>
+<li>当你对某个方法的内部逻辑已经很清楚，不需要深入查看其具体执行过程，只关心方法调用后的结果和程序后续执行情况时，就可以使用
+“强制步过”。</li>
+<li>强制单步执行在 Windows 和 Linux
+系统中是<code>Alt + Shift + F7</code>；“强制单步执行”
+会深入到任何方法内部，包括 Java 标准库方法、第三方框架的方法以及 Lambda
+表达式等。不管被调用的方法是用户自定义的还是系统提供的，调试器都会进入该方法内部，逐行执行代码，并且会在遇到的每个断点处暂停。</li>
+<li>当你想要深入了解某个方法的具体执行逻辑，查看其内部变量的变化情况，排查方法内部可能存在的问题时，就需要使用
+“强制单步执行”。一般看源码的时候用到的多</li>
+</ul></li>
+</ul></li>
+</ul>
+<p>来到线程和变量面板</p>
+<figure>
+<img src="/posts/10269/image-20250731094505067.png" alt="image-20250731094505067">
+<figcaption aria-hidden="true">image-20250731094505067</figcaption>
+</figure>
+<p>可以看到这里会展示一些你的调试的信息，包括变量，值，也就是说，如果你需要进行查看各个变量的执行情况和各个方法的执行情况，都会在这里进行显示</p>
+<p>查看变量可以将Variables区中的变量拖到Watches中查看</p>
+<p>可用的调试会话被分隔在 调试 工具窗口顶部的选项卡中。也就是这些</p>
+<figure>
+<img src="/posts/10269/image-20250731094635947.png" alt="image-20250731094635947">
+<figcaption aria-hidden="true">image-20250731094635947</figcaption>
+</figure>
+<p>如果为特定的运行/调试配置 启用了服务工具窗口
+，那么当您调试这些配置时，调试工具窗口的整个视图将显示在服务工具窗口中。</p>
+<p>这边其实还藏着一个选项卡页面，每个会话都会显示以下选项卡</p>
+<figure>
+<img src="/posts/10269/image-20250731094923616.png" alt="image-20250731094923616">
+<figcaption aria-hidden="true">image-20250731094923616</figcaption>
+</figure>
+<p><strong>帧（Frames）</strong></p>
+<ul>
+<li><strong>作用</strong>：显示当前线程的调用堆栈（方法调用链）。</li>
+<li><strong>通俗理解</strong>：比如你的代码执行到方法 C，而方法 C
+是被方法 B 调用的，方法 B 又是被方法 A 调用的，“帧” 就会按顺序列出 A→B→C
+这样的调用关系。你可以点击切换不同的
+“帧”，查看对应方法执行时的变量状态，相当于 “回退”
+到上层方法查看当时的情况。</li>
+</ul>
+<p><strong>变量（Variables）</strong></p>
+<ul>
+<li><strong>作用</strong>：展示当前暂停位置（断点处）可见的所有变量及其值。</li>
+<li><strong>特点</strong>：不仅能看，还能直接修改变量的值（比如把<code>count=0</code>改成<code>count=10</code>），让程序继续执行时使用新值，方便快速测试不同场景，不用重新运行程序。</li>
+</ul>
+<p><strong>监视（Watches）</strong></p>
+<ul>
+<li><strong>作用</strong>：自定义跟踪某些表达式或变量的变化。</li>
+<li><strong>用法</strong>：比如你关心<code>user.name</code>这个值在整个调试过程中的变化，就可以把它添加到
+“监视” 中，无论程序执行到哪里，都会持续显示这个值，不用每次在 “变量”
+面板里找。默认和 “变量” 在同一个标签页，数量多的时候可以单独显示。</li>
+</ul>
+<p><strong>控制台（Console）</strong></p>
+<ul>
+<li><strong>作用</strong>：显示程序运行时的输出内容。</li>
+<li>不同场景
+<ul>
+<li>本地调试时：和正常运行程序的控制台一样，会显示<code>System.out</code>或<code>print</code>输出的内容，同时额外显示调试相关的日志（比如
+“命中断点” 的提示）。</li>
+<li>附加到已运行的进程调试时：只会显示调试器自己的日志，不会显示原程序的输出（因为原程序输出可能在它自己的控制台里）。</li>
+</ul></li>
+</ul>
+<p><strong>线程（Threads）</strong></p>
+<ul>
+<li><strong>作用</strong>：列出程序中所有正在运行的线程，包括它们的状态（运行中、阻塞、等待等）。</li>
+<li><strong>用途</strong>：可以切换到不同线程查看其调用堆栈（配合 “帧”
+使用），适合调试多线程问题（比如死锁、线程安全问题）。还能导出线程快照（线程转储），用于分析线程状态。</li>
+</ul>
+<p><strong>内存（Memory）</strong></p>
+<ul>
+<li><strong>作用</strong>：展示 JVM
+堆内存中对象的信息，比如某个类有多少个实例、占用多少内存等。</li>
+<li><strong>用途</strong>：帮助分析内存使用情况，比如查找内存泄漏（某些对象明明不用了却没被回收，数量一直在增加）。</li>
+</ul>
+<p><strong>开销（Overhead）</strong></p>
+<ul>
+<li><strong>作用</strong>：监控调试过程中各种功能消耗的系统资源（比如
+CPU、内存）。</li>
+<li><strong>用途</strong>：如果调试时发现程序运行变慢，可能是某些调试功能（比如监视了太多表达式、内存分析等）导致的，通过
+“开销” 面板可以找到资源消耗高的功能，关闭或优化它们来提高调试效率。</li>
+</ul>
+<p>运行页面可以找到调试的大部分内容和快捷键</p>
+<figure>
+<img src="/posts/10269/image-20250731141715935.png" alt="image-20250731141715935">
+<figcaption aria-hidden="true">image-20250731141715935</figcaption>
+</figure>
+<h3 id="spring相关调试部分">Spring相关调试部分</h3>
+<p>继续看 Bean 这个页面，通常是和 <strong>Spring 框架</strong>
+集成相关的调试视图，主要用于在调试过程中查看、分析 Spring 容器中 Bean
+的相关信息</p>
+<figure>
+<img src="/posts/10269/image-20250731095343353.png" alt="image-20250731095343353">
+<figcaption aria-hidden="true">image-20250731095343353</figcaption>
+</figure>
+<ul>
+<li><strong>关联 Spring 框架</strong>：如果你开发的是 Spring（含 Spring
+Boot 等）应用，Spring 容器会管理大量 Bean（如
+Controller、Service、Repository 等组件）。调试时，借助这个视图能直观了解
+Bean 的加载、配置和依赖关系 。</li>
+<li><strong>调试场景</strong>：比如排查 Bean
+注入失败、配置未生效、依赖关系异常等问题时，可通过这里查看 Bean
+实际的属性值、依赖关联，辅助定位问题。</li>
+</ul>
+<p>其中图模式慎点，小心电脑内存瞬间爆炸</p>
+<figure>
+<img src="/posts/10269/image-20250731095932638.png" alt="image-20250731095932638">
+<figcaption aria-hidden="true">image-20250731095932638</figcaption>
+</figure>
+<p>继续看运行情况这个页面</p>
+<figure>
+<img src="/posts/10269/image-20250731141242483.png" alt="image-20250731141242483">
+<figcaption aria-hidden="true">image-20250731141242483</figcaption>
+</figure>
+<p>这个需要 IDEA 的 Profiler 功能（如 Async Profiler
+），需要<strong>调试会话（Debug
+Session）和性能分析会话同时开启</strong>。如果只是普通
+Debug（只走断点调试，没启用 Profiler ），“运行状况”
+就会不可用。需要启动调试时，选带 “Profiler” 的启动配置（如
+<code>Debug with Profiler</code> ），而不是普通的
+<code>Debug</code>。</p>
+<p>这个部分的核心是
+<strong>监控程序调试过程中的性能数据、执行耗时、方法调用热点</strong>
+，帮你排查性能问题、定位代码里的慢操作。老版本好像叫“性能分析</p>
+<figure>
+<img src="/posts/10269/image-20251117115438963.png" alt="image-20251117115438963">
+<figcaption aria-hidden="true">image-20251117115438963</figcaption>
+</figure>
+<p>它一般会进行<strong>方法执行耗时统计</strong>，展示程序执行的
+“热点方法”（被频繁调用或耗时久的方法 ），查看方法执行时的内存分配、CPU
+占用，判断是 “计算密集型” 还是 “内存泄漏型”
+问题。跟性能相关基本都在这看</p>
+<p>现在他好像比 JVisualVM 好用，以前我们都用这个进行性能分析</p>
+<p>继续看映射这个页面</p>
+<p>这个页面主要就是展示
+<strong>接口路径与处理方法的映射关系</strong>，左边路径列就是对应显示接口的访问路径，包含
+HTTP 方法，右边方法列就是展示路径对应的 Java 方法，格式一般是
+<code>[控制器类]#[方法名]</code> 。</p>
+<figure>
+<img src="/posts/10269/image-20250731100119748.png" alt="image-20250731100119748">
+<figcaption aria-hidden="true">image-20250731100119748</figcaption>
+</figure>
+<ul>
+<li><p><strong>路由可视化</strong>：清晰列出 Web
+应用中，外部可访问的接口路径（如 <code>/api/v1/iterations</code>
+），以及背后对应的 Java 处理方法（如
+<code>IterationController#queryIteration</code>
+）。不管是自己开发的业务接口，还是 Actuator 这类监控端点（像
+<code>/actuator/threaddump</code> ），都能直观看到 “路径 ↔︎ 方法”
+的对应关系。</p></li>
+<li><p><strong>调试辅助</strong>：调试时，若你想排查某个接口的逻辑，通过这里能快速定位到接口对应的
+Controller 方法，直接找到代码入口；也能反过来，从代码里的 Controller
+方法，对应到实际对外暴露的路径，验证路由配置是否正确。</p></li>
+</ul>
+<p>继续看环境这个界面</p>
+<p>这个页面是程序
+<strong>“运行时环境参数的总览窗口”</strong>，把分散在配置文件、系统变量、环境变量里的参数，集中展示出来。无论你调试的是
+Spring Boot、普通 Java
+程序，还是其他框架项目，都能在这里快速查看、验证运行时生效的配置</p>
+<figure>
+<img src="/posts/10269/image-20250731100009617.png" alt="image-20250731100009617">
+<figcaption aria-hidden="true">image-20250731100009617</figcaption>
+</figure>
+<p>一般在实际开发的过程中，都是在这看看配置是否生效，或者 profiles
+的情况</p>
+<p>非 Spring 项目在这里一般都是JVM
+系统属性和环境变量，本质是<strong>统一管理程序运行时的
+“环境上下文”</strong>，让你不用到处找配置、敲命令查参数，调试时更聚焦代码逻辑</p>
+<h2 id="idea调试技巧">IDEA调试技巧</h2>
+<h3 id="如何查看变量">如何查看变量</h3>
+<p>查看变量是我们再进行调试过程中，确认项目是否正确运行的前提，通过传递参数的情况来判断项目是否有问题，有什么问题，之后会怎么样</p>
+<p>在 IDEA 中，参数所在行后面会显示当前变量的值</p>
+<p>例如，我调试我项目的登录过程</p>
+<figure>
+<img src="/posts/10269/image-20251117115943983.png" alt="image-20251117115943983">
+<figcaption aria-hidden="true">image-20251117115943983</figcaption>
+</figure>
+<p>发现在<code>environment</code>后面给出了其参数的值</p>
+<figure>
+<img src="/posts/10269/image-20251117120144727.png" alt="image-20251117120144727">
+<figcaption aria-hidden="true">image-20251117120144727</figcaption>
+</figure>
+<p>或者在下面，线程和变量的控制台，也可以看到其变量及其值</p>
+<figure>
+<img src="/posts/10269/image-20251117120216377.png" alt="image-20251117120216377">
+<figcaption aria-hidden="true">image-20251117120216377</figcaption>
+</figure>
+<p>光标悬停到参数上，显示当前变量信息。然后可以打开，这种很方便</p>
+<figure>
+<img src="/posts/10269/image-20251117120238605.png" alt="image-20251117120238605">
+<figcaption aria-hidden="true">image-20251117120238605</figcaption>
+</figure>
+<p>在遍历 <code>EnvironmentPostProcessor</code> 并执行其
+<code>postProcessEnvironment</code>
+方法。其中出现了循环，说明<code>ApplicationEnvironmentPreparedEvent</code>
+被重复发布，进而重复执行这段遍历逻辑。</p>
+<p>发现是我项目中通过 <code>spring.factories</code>
+或自动配置重复注册了同一个 <code>EnvironmentPostProcessor</code>
+实现类，导致遍历列表中存在多个相同实例，反复执行。</p>
+<figure>
+<img src="/posts/10269/image-20251117120456103.png" alt="image-20251117120456103">
+<figcaption aria-hidden="true">image-20251117120456103</figcaption>
+</figure>
+<p>这个部分就是一个比较好的详细查看变量的例子</p>
+<p>在调试中，检查变量的目的不仅是检查变量值是否符合预期，而且当程序抛出异常（如
+<code>NullPointerException</code>、<code>IndexOutOfBoundsException</code>）时，通过查看变量可快速定位原因。</p>
+<p>而且观察变量在代码执行过程中的变化轨迹也很有用，是确保逻辑正确的标准。例如：跟踪用户输入数据从接收、校验到存储的全流程，可以确认每一步处理是否正确</p>
+<p>打算法竞赛时候，也可以根据这个分析复杂对象状态，通过展开变量查看内部细节，判断是否存在数据遗漏、重复或错误赋值</p>
+<h3 id="如何计算表达式">如何计算表达式</h3>
+<p>在前面提到的计算表达式按钮，Evaluate Expression (Alt + F8)
+。可以使用这个操作在调试过程中计算某个表达式的值，而不用再去打印信息。</p>
+<figure>
+<img src="/posts/10269/image-20251117121624901.png" alt="image-20251117121624901">
+<figcaption aria-hidden="true">image-20251117121624901</figcaption>
+</figure>
+<p>继续我们的调试，我们发现程序在 <code>SpringApplication.run()</code>
+方法的<strong>创建应用上下文（ApplicationContext）”</strong> 这步</p>
+<figure>
+<img src="/posts/10269/image-20251117120800702.png" alt="image-20251117120800702">
+<figcaption aria-hidden="true">image-20251117120800702</figcaption>
+</figure>
+<p>众所周知，这一步是 Spring Boot
+启动流程的关键步骤，<code>ApplicationContext</code> 是 Spring
+容器的核心</p>
+<p>那么这一步中并没有进入上下文初始化，此时 <code>context</code>
+我们求值一下，发现为
+null，所以这步是<strong>完全正常的</strong>，因为这行代码的作用就是<strong>创建
+<code>ApplicationContext</code> 实例并赋值给
+<code>context</code></strong>。</p>
+<p>那么结合变量查看部分，我们发现想要的查看变量直接就能被计算出来</p>
+<figure>
+<img src="/posts/10269/image-20251117121641836.png" alt="image-20251117121641836">
+<figcaption aria-hidden="true">image-20251117121641836</figcaption>
+</figure>
+<p>而且这个表达式不仅可以是一般变量或参数，也可以是方法，当你的一行代码中调用了几个方法时，就可以通过这种方式查看查看某个方法的返回值。</p>
+<p>我们的例子就是计算了 <code>this.createApplicationContext();</code>
+这个方法在此时的环境上下文初始状态</p>
+<p>表达式求值在这部分</p>
+<figure>
+<img src="/posts/10269/image-20251117121732328.png" alt="image-20251117121732328">
+<figcaption aria-hidden="true">image-20251117121732328</figcaption>
+</figure>
+<h3 id="如何回退断点">如何回退断点</h3>
+<p>尤其是 spring boot
+这种比较繁杂的项目的时候，经常因为“下一步”按太快，而导致跳过了想要深入分析的那段代码</p>
+<p>在IDEA中就提供了一个帮助你回退代码的机会，但这个方法并不是万能的。</p>
+<figure>
+<img src="/posts/10269/image-20251117121944503.png" alt="image-20251117121944503">
+<figcaption aria-hidden="true">image-20251117121944503</figcaption>
+</figure>
+<p>这个小的回转箭头就是 IDEA 的 Reset Frame 回退操作</p>
+<p>在调试时，IDEA 的 “调用栈”（Call
+Stack）面板会显示当前线程的执行路径（从方法调用的起点到当前断点的所有方法层级）。<code>Reset Frame</code>
+功能允许你<strong>将执行位置回退到调用栈中某个上层方法的断点处</strong>，仿佛
+“时光倒流” 到该方法执行的某个状态，从而重新调试这段代码。</p>
+<p>为什么说回退不是万能的</p>
+<p>先来看<code>Reset Frame</code> 能回退的场景</p>
+<ul>
+<li><p><strong>纯 Java 方法调用（无状态修改）</strong></p>
+<p>当方法仅进行<strong>局部变量运算</strong>、<strong>无副作用的参数传递</strong>或<strong>只读操作</strong>时，回退效果最理想。例如：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="type">int</span> <span class="title function_">add</span><span class="params">(<span class="type">int</span> a, <span class="type">int</span> b)</span> &#123;</span><br><span class="line">    <span class="type">int</span> <span class="variable">c</span> <span class="operator">=</span> a + b; <span class="comment">// 断点1</span></span><br><span class="line">    <span class="keyword">return</span> c;     <span class="comment">// 断点2</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>若在 “断点 2” 执行后回退到 “断点
+1”，局部变量<code>c</code>会恢复到计算前的状态，可重新执行加法逻辑。</p></li>
+<li><p><strong>未修改外部状态的方法</strong></p>
+<p>若方法仅读取对象属性（不修改）、不操作全局变量 / 静态变量、不涉及 IO
+/ 网络等外部资源，回退时能准确恢复到之前的状态。</p></li>
+</ul>
+<p>再来看<code>Reset Frame</code> 不能回退的场景（局限性）</p>
+<ul>
+<li><p><strong>修改了对象状态或全局变量</strong></p>
+<p>若方法中修改了<strong>对象的属性</strong>、<strong>静态变量</strong>、<strong>集合内容</strong>等，回退仅能重置当前方法的局部变量和执行位置，但已修改的外部状态不会恢复。例如：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">UserService</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">User</span> <span class="variable">user</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">User</span>();</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">updateName</span><span class="params">(String name)</span> &#123;</span><br><span class="line">        user.setName(name); <span class="comment">// 断点：修改对象状态</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>若调用<code>updateName("test")</code>后回退，<code>user.name</code>仍会保持
+“test”（已被修改），回退后重新执行会再次叠加修改，导致状态混乱。</p></li>
+<li><p><strong>涉及 IO、网络、数据库等外部操作</strong></p>
+<p>若方法执行了<strong>文件写入</strong>、<strong>数据库更新</strong>、<strong>发送网络请求</strong>等操作，这些
+“副作用” 是不可逆的。例如：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">saveToDb</span><span class="params">()</span> &#123;</span><br><span class="line">    jdbcTemplate.update(<span class="string">&quot;INSERT INTO logs VALUES (?)&quot;</span>, <span class="string">&quot;test&quot;</span>); <span class="comment">// 断点</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p><strong>多线程环境</strong></p>
+<p>若当前线程修改了共享变量，其他线程可能已读取该变量并执行了后续逻辑。回退当前线程后，其他线程的状态无法同步回退，会导致线程间状态不一致，调试结果失真。</p></li>
+<li><p><strong>native 方法或 JNI 调用</strong></p>
+<p>对于调用底层 C/C++
+实现的<code>native</code>方法（如<code>System.currentTimeMillis()</code>），回退无法重置其执行结果（如时间戳已被获取），因为这类方法的执行不受
+Java 调试器控制。</p></li>
+<li><p><strong>异常抛出后</strong></p>
+<p>若方法中抛出了异常且已被捕获或传播，回退到异常抛出前的栈帧时，异常状态可能无法完全清除，导致重新执行时逻辑异常。</p></li>
+</ul>
+<p>那么为什么回退不是万能的，根本原因是：<strong>Java 是 “按值传递”
+的语言，且调试器只能控制代码执行流程和局部变量状态，无法逆转
+“副作用”</strong>。</p>
+<p>回退本质是
+“重置当前线程的调用栈和局部变量”，但对方法执行过程中产生的<strong>外部状态修改</strong>（对象属性、静态变量、IO
+操作等）无能为力。</p>
+<p>对于 Spring Boot 这类复杂框架，其内部大量涉及 Bean
+状态修改、容器初始化、资源加载等操作，回退后很可能因状态不一致导致后续调试混乱（例如重复初始化
+Bean 引发冲突）。</p>
+<p>它的位置在这里</p>
+<figure>
+<img src="/posts/10269/image-20251117122142598.png" alt="image-20251117122142598">
+<figcaption aria-hidden="true">image-20251117122142598</figcaption>
+</figure>
+<p><strong>复杂场景谨慎使用</strong>，例如在我的例子中，在 Spring Boot
+的核心流程（如<code>ApplicationContext</code>初始化、Bean
+生命周期）中，若已涉及容器状态修改，回退可能导致调试状态异常，这时候一般重启调试更稳妥。</p>
+<p>在关键代码行设置条件断点（如满足特定参数时暂停），避免因 “下一步”
+太快跳过目标代码，从源头减少对回退功能的依赖。</p>
+<h3 id="如何进行debug中断">如何进行debug中断</h3>
+<p>怎么中断正在debug的请求，也就是放弃此次http请求</p>
+<p>有时候我们用IDEA进行debug，跑进来了，debug到某个断点或某一行，如果此时我们不想继续走下去（中断此次http请求，或者说中断此次debug），要怎么做？</p>
+<p>为什么需要中断此次debug？</p>
+<p>因为大部分请求不是 GET 的都可能涉及到状态的修改</p>
+<p>这可能会导致因为调试导致数据库不干净了就，这是很不理想的调试，可能造成麻烦</p>
+<p>此时需要一种方式：<strong>在不执行后续代码的前提下，直接终止当前请求，且尽可能避免已执行的状态修改（或减少影响）</strong>。</p>
+<p>利用 drop frame
+回到最顶层（一般是controller方法），右键点击栈帧选择Froce Reutrn
+（也就是强制返回）即可（方法如果有返回值需要输入Return Value，填入return
+null (或者直接填入null即可，return可省略））</p>
+<p><code>Force Return</code>
+允许你在调试到任意栈帧时，<strong>直接终止当前方法的执行并强行返回指定的结果</strong>，跳过后续所有代码（包括状态修改逻辑），从而中断整个请求流程。</p>
+<ol type="1">
+<li><p><strong>定位请求入口栈帧</strong></p>
+<p>当 debug 停在某个断点时，打开 IDEA 调试面板的 <strong>“Call
+Stack”（调用栈）</strong> 窗口，找到当前 HTTP
+请求的<strong>顶层入口方法</strong>（通常是 Controller
+层的接口方法，如<code>UserController.addUser(...)</code>）。</p>
+<ul>
+<li>若当前断点在深层方法（如 Service、DAO 层），可通过
+<strong><code>Drop Frame</code></strong>
+回退到上层栈帧（右键点击上层方法栈帧 →
+<code>Drop Frame</code>），逐步回退到 Controller
+层（避免在深层方法强制返回导致中间层逻辑未处理）。</li>
+</ul>
+<figure>
+<img src="/posts/10269/image-20251117123105981.png" alt="image-20251117123105981">
+<figcaption aria-hidden="true">image-20251117123105981</figcaption>
+</figure></li>
+<li><p><strong>执行<code>Force Return</code></strong></p>
+<p>在调用栈中右键点击顶层 Controller 方法栈帧，选择
+<strong><code>Force Return</code></strong>（强制返回）：</p>
+<ul>
+<li>若方法有返回值（如<code>ResponseEntity&lt;String&gt;</code>），会弹出输入框，需指定返回值（例如输入<code>null</code>，或构造一个空响应对象如<code>new ResponseEntity&lt;&gt;(HttpStatus.OK)</code>）。</li>
+<li>若方法是<code>void</code>类型，直接点击<code>OK</code>即可，无需输入返回值。</li>
+</ul>
+<figure>
+<img src="/posts/10269/image-20251117123052519.png" alt="image-20251117123052519">
+<figcaption aria-hidden="true">image-20251117123052519</figcaption>
+</figure></li>
+</ol>
+<p>执行后，当前方法会立即终止，后续代码（如 Service
+层的<code>save</code>、DAO 层的<code>insert</code>）不会执行，HTTP
+请求会以你指定的返回值响应客户端，且不会触发后续状态修改。</p>
+<p><code>Force Return</code>
+本质是<strong>强制当前方法提前退出</strong>，调试器会直接从当前栈帧返回，忽略方法内未执行的代码。</p>
+<p>如果出现了方法里调用别的方法的情况，如果想要输入一次Force
+Return就彻底退出，就可以一直回退到不能再回退，脱离方法内部的方法回到顶层再Force
+Return</p>
+<figure>
+<img src="/posts/10269/image-20251117123355094.png" alt="image-20251117123355094">
+<figcaption aria-hidden="true">image-20251117123355094</figcaption>
+</figure>
+<p>它的位置在这里</p>
+<figure>
+<img src="/posts/10269/image-20251117122641743.png" alt="image-20251117122641743">
+<figcaption aria-hidden="true">image-20251117122641743</figcaption>
+</figure>
+<p>我这里离进入Controller还有114514步（spring
+boot环境准备，Nacos，Mysql，Redis，Redission……），所以我就找了网上的演示</p>
+<p>注意：已执行的代码（如前序步骤的数据库更新）无法回滚，因此需在状态修改逻辑执行前使用该功能（例如在进入<code>service.save()</code>方法前中断）。</p>
+<p>例：若调试到<code>controller</code>层时，还未调用<code>service.updateUser()</code>，此时<code>Force Return</code>可完全避免用户信息被修改；若已调用<code>service.updateUser()</code>并执行了
+SQL，即使中断，数据库修改也已生效（需手动回滚或依赖事务）。</p>
+<p>还注意，在测试类或 Controller
+方法上添加<code>@Transactional</code>注解，并配置<code>rollbackFor = Exception.class</code>，调试时即使执行了<code>save</code>操作，方法结束后事务会自动回滚（需确保数据库支持事务，如
+InnoDB）。</p>
+<p>注意这个和停止调试不一样啊，停止调试终止整个应用进程，Force Return
+是终止当前方法，返回指定的结果</p>
+<h3 id="细说智能步入">细说智能步入</h3>
+<p>想想，一行代码里有好几个方法，怎么只选择某一个方法进入。</p>
+<p>我们知道步入，使用Step Into (Alt + F7) 进入到方法内部</p>
+<p>但是这两个操作会根据方法调用顺序依次进入，如果方法的流程较长，这很麻烦，而且不必要</p>
+<p>那么智能步入就很方便了，智能步入，这个功能在Run里可以看到，Smart Step
+Into (Shift + F7)</p>
+<p>它的位置在这里</p>
+<figure>
+<img src="/posts/10269/image-20251117123642986.png" alt="image-20251117123642986">
+<figcaption aria-hidden="true">image-20251117123642986</figcaption>
+</figure>
+<p>例如我们继续调试 Spring 的初始化相关内容</p>
+<figure>
+<img src="/posts/10269/image-20251117123713602.png" alt="image-20251117123713602">
+<figcaption aria-hidden="true">image-20251117123713602</figcaption>
+</figure>
+<p>你看这里有这么多方法</p>
+<p>我们已经来到了
+<code>Assert.state(!environment.containsProperty("spring.main.environment-prefix"), "Environment prefix cannot be set via properties.");</code>这步断言了，这步断言有两个方法</p>
+<p>光标对着方法，直接 Shift +
+F7，会自动定位到当前断点行，并列出需要进入的方法</p>
+<figure>
+<img src="/posts/10269/image-20251117124051663.png" alt="image-20251117124051663">
+<figcaption aria-hidden="true">image-20251117124051663</figcaption>
+</figure>
+<p>进入就行</p>
+<figure>
+<img src="/posts/10269/image-20251117124124931.png" alt="image-20251117124124931">
+<figcaption aria-hidden="true">image-20251117124124931</figcaption>
+</figure>
+<h3 id="为断点设置条件进行调试">为断点设置条件进行调试</h3>
+<p>这种情况一般会在多递归中常用</p>
+<p>算法吃必备了属于是</p>
+<p>在断点的地方右键可以打开断点条件设置窗口，这里也支持多线程的设置</p>
+<figure>
+<img src="/posts/10269/image-20251117124729688.png" alt="image-20251117124729688">
+<figcaption aria-hidden="true">image-20251117124729688</figcaption>
+</figure>
+<p>在 “挂起（Suspend）” 选项中，可选择
+<strong>“所有（All）”</strong>（所有线程触发断点时都暂停）或<strong>“线程（Thread）”</strong>（仅当前线程触发时暂停），适用于多线程场景下的精准调试。</p>
+<p>在 Condition 中设置我们想要的条件就行，注意其中坑出来了</p>
+<p>IDEA 的条件断点支持<strong>Java
+语法的布尔表达式</strong>，可直接使用当前作用域的变量、方法调用、对象属性等构造条件</p>
+<ul>
+<li>简单变量判断：<code>userId == 123</code>、<code>name.equals("admin")</code></li>
+<li>集合 /
+数组判断：<code>list.size() &gt; 5</code>、<code>array[0] == null</code></li>
+<li>方法调用：<code>userService.isAdmin(userId)</code>（需确保方法可访问且无副作用）</li>
+</ul>
+<p>什么意思？</p>
+<p>假如这样一个场景，在递归算法中（如斐波那契、二叉树遍历），可通过条件断点仅在特定递归深度或参数下暂停，避免无效断点干扰，我们希望当递归到第
+5 层时才会暂停，方便观察该层级的计算状态。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="type">int</span> <span class="title function_">fib</span><span class="params">(<span class="type">int</span> n)</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (n &lt;= <span class="number">1</span>) <span class="keyword">return</span> n;</span><br><span class="line">    <span class="keyword">return</span> fib(n-<span class="number">1</span>) + fib(n-<span class="number">2</span>); <span class="comment">// 在此行设置条件断点：n == 5</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>那么该输入什么呢？</p>
+<p><code>n = 5</code>？</p>
+<p>不对，idea认为条件 n=5 与预测结果Boolean不对，会报错</p>
+<p>所以是 设置条件<code>n == 5</code>，才正确</p>
+<p>在 debug 的断点条件设置中，你设置的条件最后输出的结果应该是一个
+boolean 类型的值，如果你的条件非 boolean
+类型最后只是将你的语句执行了，而无法进入预期的条件。</p>
+<p>为什么说条件断点是 oi
+吃用的多，因为条件断点的表达式会在每次代码执行到该行时计算，若表达式包含<strong>数据库查询、网络请求、大循环</strong>等耗时操作，会严重拖慢调试速度。</p>
+<p>注意，条件表达式中只能使用<strong>当前方法作用域内的变量</strong>，若引用了外层方法或其他类的变量，会提示
+“无法解析符号”。</p>
+<h3 id="多线程调试">多线程调试</h3>
+<p>多线程调试，需要先掌握以下两个核心要点。</p>
+<p>查看运行栈帧 &amp;&amp; 切换线程</p>
+<p>在 Threads &amp; Variables 这个窗口，进行线程之间切换。</p>
+<figure>
+<img src="/posts/10269/image-20251117125324341.png" alt="image-20251117125324341">
+<figcaption aria-hidden="true">image-20251117125324341</figcaption>
+</figure>
+<p>断点暂停方式，的选择 Thread</p>
+<figure>
+<img src="/posts/10269/image-20251117125356486.png" alt="image-20251117125356486">
+<figcaption aria-hidden="true">image-20251117125356486</figcaption>
+</figure>
+<p>这个是最为重要的。</p>
+<p>建议多线程调试，选择 Make
+Default，也就是默认，点击图中设为默认，后续所有断点都是
+Thread，如果不选择
+Thread，则无法进行线程断点追踪！所有线程将直接运行结束。</p>
+<p>什么意思？</p>
+<p>在 IDEA 的断点设置中，“Suspend”（暂停）选项有两个核心模式：</p>
+<ul>
+<li><strong>All（所有线程）</strong>：当断点触发时，<strong>整个应用的所有线程都会被暂停</strong>（包括主线程、其他工作线程），直到手动继续执行（如按
+“下一步”）。</li>
+<li><strong>Thread（当前线程）</strong>：当断点触发时，<strong>只有进入该断点的线程会被暂停</strong>，其他线程会继续正常运行（不受影响）。</li>
+</ul>
+<p>在多线程场景中（如并发任务、线程池处理），如果断点默认是 “All”
+模式，会导致：</p>
+<ol type="1">
+<li><p><strong>线程执行顺序被强行打断</strong></p>
+<p>假设线程 A 触发断点，此时 “All” 模式会暂停所有线程（包括线程
+B、C）。但实际业务中，线程 B、C
+可能需要继续执行才能触发后续断点（如线程间的协作、数据传递），强行暂停会导致调试场景与真实运行场景不一致，甚至错过关键断点。</p></li>
+<li><p><strong>无法追踪单个线程的完整流程</strong></p>
+<p>多线程调试的核心需求是<strong>跟踪某一个线程的执行路径</strong>（如线程
+A 从启动到结束的所有方法调用）。若用 “All”
+模式，每次断点都会冻结所有线程，切换线程调试时需要手动唤醒其他线程，操作繁琐且容易混乱。</p></li>
+<li><p><strong>可能导致线程 “假死” 或逻辑异常</strong></p>
+<p>某些线程依赖超时机制（如<code>wait(1000)</code>）或其他线程的信号（如<code>notify()</code>），若被
+“All”
+模式长期暂停，可能触发超时、死锁等非预期行为，干扰调试判断。</p></li>
+</ol>
+<p>当你在某个断点的设置中选择 “Thread” 模式，并点击 “Make Default”
+后，<strong>后续所有新添加的断点都会默认使用 “Thread”
+模式</strong>，无需每次手动修改。</p>
+<p>这在多线程项目中非常实用</p>
+<p>例如主线程此时主线程正在执行 <code>FutureTask</code> 的
+<code>get(long timeout, TimeUnit unit)</code> 方法，并且触发了
+<code>TimeoutException</code> 异常。</p>
+<ul>
+<li><strong>核心逻辑</strong>：<code>FutureTask</code> 是 Java
+并发包中用于异步任务结果获取的类，主线程调用
+<code>get(1, SECONDS)</code> 表示 “等待异步任务结果，最多等待 1
+秒”。</li>
+<li><strong>当前状态</strong>：由于异步任务在 1
+秒内未完成，触发了超时异常（<code>TimeoutException</code>），主线程此时停在异常抛出的断点处，用于调试超时场景下的逻辑。</li>
+</ul>
+<figure>
+<img src="/posts/10269/image-20251117125742574.png" alt="image-20251117125742574">
+<figcaption aria-hidden="true">image-20251117125742574</figcaption>
+</figure>
+<p>有这样一个子线程，该线程正在执行 <code>Reference</code> 类的
+<code>waitForReferencePendingList</code> 方法。</p>
+<figure>
+<img src="/posts/10269/image-20251117125842902.png" alt="image-20251117125842902">
+<figcaption aria-hidden="true">image-20251117125842902</figcaption>
+</figure>
+<p>这是 Java 引用处理机制的底层逻辑，用于等待 JVM 的
+“待处理引用列表”（Pending Reference List）非空，通常与垃圾回收、弱引用 /
+软引用的处理相关。</p>
+<p>该线程可能在后台处理对象引用的生命周期（如弱引用的回收、引用队列的入队等），属于
+JVM 内部的并发辅助线程。</p>
+<p>还发现有这样的一个子线程2</p>
+<figure>
+<img src="/posts/10269/image-20251117125930496.png" alt="image-20251117125930496">
+<figcaption aria-hidden="true">image-20251117125930496</figcaption>
+</figure>
+<p>该线程正在执行 <code>Thread</code> 类的 <code>sleep0</code>
+方法（这是一个 native 方法，由底层操作系统实现线程休眠）。</p>
+<ul>
+<li><strong>核心逻辑</strong>：<code>sleep0</code> 是
+<code>Thread.sleep()</code>
+的底层实现，负责让线程暂停指定时间（纳秒级）。</li>
+<li><strong>当前状态</strong>：该线程处于休眠状态，可能是异步任务中包含了线程休眠逻辑，导致主线程等待超时。</li>
+</ul>
+<p>继续下去，切换回到主线程进行下一步</p>
+<figure>
+<img src="/posts/10269/image-20251117130114119.png" alt="image-20251117130114119">
+<figcaption aria-hidden="true">image-20251117130114119</figcaption>
+</figure>
+<p>这步是在<strong>Spring Cloud 网络工具类（<code>InetUtils</code>）的
+<code>convertAddress</code>
+方法中，处理网络地址到主机信息的转换逻辑</strong>，属于<strong>Spring
+应用启动时获取本地主机信息（ hostname 和 IP
+地址）的关键步骤</strong>。</p>
+<ul>
+<li>异步提交了一个任务（通过
+<code>ExecutorService</code>），用于获取网络地址（<code>InetAddress</code>）对应的主机名（<code>getHostName</code>）。</li>
+<li>现在主线程在尝试通过 <code>Future.get(...)</code>
+方法<strong>等待异步任务的结果</strong>，若任务超时或抛出异常，会捕获并将主机名默认设为
+<code>localhost</code>，最终封装成 <code>HostInfo</code> 对象返回。</li>
+</ul>
+<p>来看休眠线程</p>
+<figure>
+<img src="/posts/10269/image-20251117130026810.png" alt="image-20251117130026810">
+<figcaption aria-hidden="true">image-20251117130026810</figcaption>
+</figure>
+<p>可以看到休眠线程结束，引导了另一个线程启动</p>
+<figure>
+<img src="/posts/10269/image-20251117130051972.png" alt="image-20251117130051972">
+<figcaption aria-hidden="true">image-20251117130051972</figcaption>
+</figure>
+<p>来看 Reference Handler 线程，它等待 JVM
+虚拟机的重置，可以看到上面的处理已经完成了</p>
+<figure>
+<img src="/posts/10269/image-20251117130221413.png" alt="image-20251117130221413">
+<figcaption aria-hidden="true">image-20251117130221413</figcaption>
+</figure>
+<p>IDEA 在 Debug 时默认阻塞级别是
+all，会阻塞其它线程，只有在当前调试线程走完时才会走其它线程； Thread
+模式在 Remote 调试时不阻塞他人请求</p>
+<p>若需精准调试某线程，可对目标线程的代码设置 <strong>“Thread 级挂起”
+的条件断点 </strong>。例如：</p>
+<ul>
+<li>对 <code>Thread.sleep0</code> 方法设置条件断点
+<code>Thread.currentThread().getName().contains("sleep")</code>，仅当该线程执行时暂停；</li>
+<li>对 <code>FutureTask.get</code> 方法设置条件断点
+<code>timeout == 1</code>，聚焦超时逻辑。</li>
+</ul>
+<h3 id="日志断点">日志断点</h3>
+<p>IDEA 还支持 <strong>“日志断点”</strong>（右键断点 → 选择
+“日志（Log）”），可在不暂停程序的情况下输出变量值，结合条件表达式使用，堪称
+“无侵入式调试”。</p>
+<p>例如，设置日志内容为<code>"当前用户：&#123;user.id&#125;, 年龄：&#123;user.age&#125;"</code>，并添加条件<code>user.getAge() &lt; 18</code>，即可在控制台实时输出符合条件的用户信息，无需暂停程序。</p>
+<figure>
+<img src="/posts/10269/image-20251117131828347.png" alt="image-20251117131828347">
+<figcaption aria-hidden="true">image-20251117131828347</figcaption>
+</figure>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a target="_blank" rel="noopener" href="https://github.com/ergou10086">ErgouTree</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://ergou10086.github.io/posts/10269.html">https://ergou10086.github.io/posts/10269.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://ergou10086.github.io" target="_blank">ErgouTree's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E4%BD%BF%E7%94%A8%E7%9F%A5%E8%AF%86/">使用知识</a><a class="post-meta__tags" href="/tags/%E5%AE%9E%E7%94%A8%E7%9F%A5%E8%AF%86/">实用知识</a><a class="post-meta__tags" href="/tags/%E8%B0%83%E8%AF%95/">调试</a><a class="post-meta__tags" href="/tags/%E5%BC%80%E5%8F%91%E5%B7%A5%E5%85%B7%E6%8A%80%E5%B7%A7/">开发工具技巧</a><a class="post-meta__tags" href="/tags/Java-%E5%BC%80%E5%8F%91/">Java 开发</a><a class="post-meta__tags" href="/tags/%E5%90%8E%E7%AB%AF%E5%BC%80%E5%8F%91/">后端开发</a><a class="post-meta__tags" href="/tags/%E5%A4%9A%E7%BA%BF%E7%A8%8B/">多线程</a></div><div class="post-share"><div class="addtoany"><div class="a2a_kit a2a_kit_size_32 a2a_default_style"><a class="a2a_button_facebook"></a><a class="a2a_button_twitter"></a><a class="a2a_button_wechat"></a><a class="a2a_button_sina_weibo"></a><a class="a2a_button_facebook_messenger"></a><a class="a2a_button_email"></a><a class="a2a_button_copy_link"></a><a class="a2a_dd" target="_blank" rel="noopener" href="https://www.addtoany.com/share"></a></div></div><script async="async" src="https://static.addtoany.com/menu/page.js"></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/posts/48576.html" title="动态规划—线性dp之最长公共子串"><img class="cover" src="/images/posts/cover_alogrithm2.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">动态规划—线性dp之最长公共子串</div></div><div class="info-2"><div class="info-item-1">问题 继续 LCS 的问题考虑（本来是一篇文章，我感觉拆开好点） 问题又出现变化了，现在如果，我们要求求最长公共子串，也就是在 LCS 的基础上，要求连续 最长公共字串（LCStr）就是两个序列中连续且相同的最长子序列（区别于 LCS 的 “不要求连续”）  序列 A："ABCBDAB" 序列 B："BDCAB"     对比维度 最长公共子序列（LCS） 最长公共字串（LCStr）     核心要求 元素相对顺序一致，不要求连续 元素连续且相对顺序一致   示例结果 "BCAB"（长度 4） "AB" 或 "BD"（长度 2）   问题本质 找 “有序不连续” 的最长交集 找 “有序且连续” 的最长交集    那么问题就被定义为，给定两个字符串 S（长度 n）和 T（长度 m），找到它们之间长度最长的公共连续子串，输出其长度（若不存在则输出 0）。   image-20251116195531260  问题分析 根据 LCS 的基础，我们考虑动态规划 首先考虑状态定义 设 S 长度为...</div></div></div></a><a class="pagination-related" href="/posts/35948.html" title="动态规划—线性dp之编辑距离"><img class="cover" src="/images/posts/cover_alogrithm2.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">动态规划—线性dp之编辑距离</div></div><div class="info-2"><div class="info-item-1">问题 Levenshtein Distance，一般称为编辑距离（Edit Distance，Levenshtein Distance只是编辑距离的其中一种）或者莱文斯坦距离，算法概念是俄罗斯科学家弗拉基米尔·莱文斯坦（Levenshtein · Vladimir I）在1965年提出。此算法的概念很简单：Levenshtein Distance指两个字串之间，由一个转换成另一个所需的最少编辑操作次数，允许的编辑操作包括：  将其中一个字符替换成另一个字符（Substitutions）。、 插入一个字符（Insertions）。 删除一个字符（Deletions）。    image-20251117195049889  问题分析 看上去就像是动态规划 那么考虑子问题，从 a[1...i] 到 b[1.....j]的编辑距离 那么我们就可以考虑这样一个状态变量  设 dp[i][j] 表示将字符串 a 的前 i 个字符（a[0..i-1]）转换为字符串 b 的前...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/posts/60588.html" title="Elasticsearch part4—ES的文档基础操作和_search查询"><img class="cover" src="/images/posts/cover_teach4.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-10-19</div><div class="info-item-2">Elasticsearch part4—ES的文档基础操作和_search查询</div></div><div class="info-2"><div class="info-item-1">文档基本操作 Elasticsearch（ES）中的 “文档（Document）” 是存储数据的基本单元（类似数据库中的 “行”），所有业务数据最终都以文档形式存储在索引中。  文档结构：JSON 格式，包含多个字段（如id、name），字段值需符合索引映射（Mapping）定义的类型。 文档 ID：唯一标识文档，可手动指定或由 ES 自动生成。 元数据：文档自带的系统字段，如_index（所属索引）、_id（文档 ID）、_version（版本号，每次修改递增）。  文档创建 新增文档有两种方式：指定 ID（PUT）或自动生成 ID（POST） 指定 ID 新增（PUT） 适用于已知唯一 ID 的场景（如用业务 ID 作为文档 ID）。 123456PUT /索引名/_doc/文档ID&#123;  &quot;字段1&quot;: &quot;值1&quot;,  &quot;字段2&quot;: &quot;值2&quot;,  ...&#125; 示例（向users_test索引新增...</div></div></div></a><a class="pagination-related" href="/posts/9678.html" title="Elasticsearch_part3—ES分词器和索引基础操作"><img class="cover" src="/images/posts/cover_es1.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-10-19</div><div class="info-item-2">Elasticsearch_part3—ES分词器和索引基础操作</div></div><div class="info-2"><div class="info-item-1">分词器 什么是分词器 分词器是 Elasticsearch 中用于处理文本数据的核心组件。它的任务是将一串原始的、连续的文本（比如一个句子或一段话），切分成一个个独立的、有意义的词条，并可能对这些词条进行规范化处理。 分词器是将用户输入的一段文本，按照一定逻辑，分析成多个词语的一种工具。 想象一下你在处理英文句子 "I'm loving the beautiful scenery!"。  未经处理：对计算机来说，这只是一长串字符。 经过分词器处理后：它会被切分成 ["i'm", "loving", "the", "beautiful", "scenery"]，并且可能进一步规范化为 ["i", "love", "beautiful", "scenery"]（去停用词、词干提取等）。 这样，计算机才能基于这些独立的词条来构建倒排索引，并进行高效的搜索。  其中，ES 内置了许多分词器：  Standard Analyzer - 默认分词器，按词切分，小写处理 Simple Analyzer...</div></div></div></a><a class="pagination-related" href="/posts/23760.html" title="Elasticsearch part6—ES分片，服务器和集群"><img class="cover" src="/images/posts/cover_es2.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-10-21</div><div class="info-item-2">Elasticsearch part6—ES分片，服务器和集群</div></div><div class="info-2"><div class="info-item-1">Elasticsearch 集群 ES的集群是啥样的 Elasticsearch（ES）集群是分布式搜索引擎的核心形态，通过多节点协同工作实现高可用、高扩展和负载均衡。 和其他分布式的其实差不多，ES的集群无非就是，由一个或多个节点（Node）组成的集合，共同管理整个数据集，并提供分布式查询能力。 集群通过唯一的 集群名称（默认 elasticsearch）标识，节点通过加入相同名称的集群实现协同。 节点是单个运行的 ES 实例，是集群的基本组成单元。每个节点有唯一名称（默认随机生成），可通过配置指定角色。         角色 功能说明 适用场景     主节点（Master） 管理集群元数据（索引创建 / 删除、分片分配），不处理数据和查询（默认）。 集群控制节点，建议单独部署   数据节点（Data） 存储数据（分片），处理 CRUD、搜索、聚合等操作。 承载数据和计算，需高 CPU /...</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="gitalk-container"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/arp.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">ErgouTree</div><div class="author-info-description">I start a brand-new life with you.</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">247</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">149</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">84</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/ergou10086"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/ergou10086" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="/zjm88822201@126.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a><a class="social-icon" href="https://space.bilibili.com/142045656?spm_id_from=333.1007.0.0" target="_blank" title="bilibili"><i class="fas fa-brands fa-bilibili" style="color: #4a72be;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">作者长期陷入galgame和osu!maina4k中 祝他好运吧 对了 如果图片加载过慢 建议科学上网进行使用</div></div><div class="card-widget card-weather"><div class="item-headline"><i class="fas fa-cloud-sun"></i><span>aside.card_weather</span></div><div class="weather-content"><div class="weather-loading"><i class="fas fa-spinner fa-spin"></i><span>加载中...</span></div><div class="weather-main" style="display: none;"><div class="weather-location"><i class="fas fa-map-marker-alt"></i><span id="weather-location">获取中...</span></div><div class="weather-info"><div class="weather-temp"><span id="weather-temp">--</span><span class="unit">°C</span></div><div class="weather-desc"><span id="weather-weather">--</span></div><div class="weather-details"><div class="weather-item"><i class="fas fa-wind"></i><span id="weather-windpower">--</span></div><div class="weather-item"><i class="fas fa-tint"></i><span id="weather-humidity">--</span></div><div class="weather-item"><i class="fas fa-eye"></i><span id="weather-winddir">--</span></div></div></div><div class="weather-update-time"><i class="fas fa-clock"></i><span id="weather-update-time">更新中...</span></div></div></div></div><div class="card-widget"><div class="item-headline"><i></i><span></span></div><div class="item-content"></div></div><div class="sticky_layout"></div><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BF%9B%E8%A1%8C%E8%B0%83%E8%AF%95%E4%B9%8B%E5%89%8D%E6%88%91%E4%BB%AC%E9%9C%80%E8%A6%81%E4%BA%86%E8%A7%A3%E4%BB%80%E4%B9%88"><span class="toc-number">2.</span> <span class="toc-text">进行调试之前，我们需要了解什么</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%86%E8%A7%A3idea%E8%B0%83%E8%AF%95%E4%B8%AD%E5%90%84%E4%B8%AA%E9%A1%B5%E9%9D%A2%E7%9A%84%E4%BD%9C%E7%94%A8"><span class="toc-number">3.</span> <span class="toc-text">了解IDEA调试中各个页面的作用</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9F%BA%E7%A1%80%E9%80%9A%E7%94%A8%E9%83%A8%E5%88%86"><span class="toc-number">3.1.</span> <span class="toc-text">基础通用部分</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#spring%E7%9B%B8%E5%85%B3%E8%B0%83%E8%AF%95%E9%83%A8%E5%88%86"><span class="toc-number">3.2.</span> <span class="toc-text">Spring相关调试部分</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#idea%E8%B0%83%E8%AF%95%E6%8A%80%E5%B7%A7"><span class="toc-number">4.</span> <span class="toc-text">IDEA调试技巧</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A6%82%E4%BD%95%E6%9F%A5%E7%9C%8B%E5%8F%98%E9%87%8F"><span class="toc-number">4.1.</span> <span class="toc-text">如何查看变量</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A6%82%E4%BD%95%E8%AE%A1%E7%AE%97%E8%A1%A8%E8%BE%BE%E5%BC%8F"><span class="toc-number">4.2.</span> <span class="toc-text">如何计算表达式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A6%82%E4%BD%95%E5%9B%9E%E9%80%80%E6%96%AD%E7%82%B9"><span class="toc-number">4.3.</span> <span class="toc-text">如何回退断点</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A6%82%E4%BD%95%E8%BF%9B%E8%A1%8Cdebug%E4%B8%AD%E6%96%AD"><span class="toc-number">4.4.</span> <span class="toc-text">如何进行debug中断</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BB%86%E8%AF%B4%E6%99%BA%E8%83%BD%E6%AD%A5%E5%85%A5"><span class="toc-number">4.5.</span> <span class="toc-text">细说智能步入</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BA%E6%96%AD%E7%82%B9%E8%AE%BE%E7%BD%AE%E6%9D%A1%E4%BB%B6%E8%BF%9B%E8%A1%8C%E8%B0%83%E8%AF%95"><span class="toc-number">4.6.</span> <span class="toc-text">为断点设置条件进行调试</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%9A%E7%BA%BF%E7%A8%8B%E8%B0%83%E8%AF%95"><span class="toc-number">4.7.</span> <span class="toc-text">多线程调试</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%97%A5%E5%BF%97%E6%96%AD%E7%82%B9"><span class="toc-number">4.8.</span> <span class="toc-text">日志断点</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/4111.html" title="单调队列之滑动窗口最值"><img src="/images/posts/cover_algorithm1.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="单调队列之滑动窗口最值"/></a><div class="content"><a class="title" href="/posts/4111.html" title="单调队列之滑动窗口最值">单调队列之滑动窗口最值</a><time datetime="2025-11-18T12:46:13.000Z" title="发表于 2025-11-18 20:46:13">2025-11-18</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/35948.html" title="动态规划—线性dp之编辑距离"><img src="/images/posts/cover_alogrithm2.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="动态规划—线性dp之编辑距离"/></a><div class="content"><a class="title" href="/posts/35948.html" title="动态规划—线性dp之编辑距离">动态规划—线性dp之编辑距离</a><time datetime="2025-11-18T01:33:41.000Z" title="发表于 2025-11-18 09:33:41">2025-11-18</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/10269.html" title="在IDEA中如何进行各种调试及相关调试的技巧"><img src="/images/posts/cover_teach2.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="在IDEA中如何进行各种调试及相关调试的技巧"/></a><div class="content"><a class="title" href="/posts/10269.html" title="在IDEA中如何进行各种调试及相关调试的技巧">在IDEA中如何进行各种调试及相关调试的技巧</a><time datetime="2025-11-17T05:07:52.000Z" title="发表于 2025-11-17 13:07:52">2025-11-17</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/48576.html" title="动态规划—线性dp之最长公共子串"><img src="/images/posts/cover_alogrithm2.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="动态规划—线性dp之最长公共子串"/></a><div class="content"><a class="title" href="/posts/48576.html" title="动态规划—线性dp之最长公共子串">动态规划—线性dp之最长公共子串</a><time datetime="2025-11-16T12:59:05.000Z" title="发表于 2025-11-16 20:59:05">2025-11-16</time></div></div></div></div></div></main><div class="fps-display"><span id="fps">FPS: 60</span></div><footer id="footer" style="background-image: url(/images/posts/cover_teach2.jpg);"><div id="footer-wrap"><div class="copyright">&copy;2024 - 2025 By ErgouTree</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">忘れたくない思い、ありますか？ <br>,<span id="realtime_duration" style="font-family: monospace;"></span>,<br><a href="https://icp.gov.moe/?keyword=20257009" target="_blank">萌ICP备20257009号</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><a class="icon-V hidden" onclick="switchNightMode()" title="日间和夜间模式切换"><svg width="25" height="25" viewBox="0 0 1024 1024"><use id="modeicon" xlink:href="#icon-moon"></use></svg></a><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="chat-btn" type="button" title="聊天" style="display:none"><i class="fas fa-comment"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (true) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script><script>(() => {
+  const applyThemeDefaultsConfig = theme => {
+    if (theme === 'dark-mode') {
+      Chart.defaults.color = "rgba(255, 255, 255, 0.8)"
+      Chart.defaults.borderColor = "rgba(255, 255, 255, 0.2)"
+      Chart.defaults.scale.ticks.backdropColor = "transparent"
+    } else {
+      Chart.defaults.color = "rgba(0, 0, 0, 0.8)"
+      Chart.defaults.borderColor = "rgba(0, 0, 0, 0.1)"
+      Chart.defaults.scale.ticks.backdropColor = "transparent"
+    }
+  }
+
+  // Recursively traverse the config object and automatically apply theme-specific color schemes
+  const applyThemeConfig = (obj, theme) => {
+    if (typeof obj !== 'object' || obj === null) return
+
+    Object.keys(obj).forEach(key => {
+      const value = obj[key]
+      // If the property is an object and has theme-specific options, apply them
+      if (typeof value === 'object' && value !== null) {
+        if (value[theme]) {
+          obj[key] = value[theme] // Apply the value for the current theme
+        } else {
+          // Recursively process child objects
+          applyThemeConfig(value, theme)
+        }
+      }
+    })
+  }
+
+  const runChartJS = ele => {
+    window.loadChartJS = true
+
+    Array.from(ele).forEach((item, index) => {
+      const chartSrc = item.firstElementChild
+      const chartID = item.getAttribute('data-chartjs-id') || ('chartjs-' + index) // Use custom ID or default ID
+      const width = item.getAttribute('data-width')
+      const existingCanvas = document.getElementById(chartID)
+
+      // If a canvas already exists, remove it to avoid rendering duplicates
+      if (existingCanvas) {
+          existingCanvas.parentNode.remove()
+      }
+
+      const chartDefinition = chartSrc.textContent
+      const canvas = document.createElement('canvas')
+      canvas.id = chartID
+
+      const div = document.createElement('div')
+      div.className = 'chartjs-wrap'
+
+      if (width) {
+        div.style.width = width
+      }
+
+      div.appendChild(canvas)
+      chartSrc.insertAdjacentElement('afterend', div)
+
+      const ctx = document.getElementById(chartID).getContext('2d')
+
+      const config = JSON.parse(chartDefinition)
+
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark-mode' : 'light-mode'
+
+      // Set default styles (initial setup)
+      applyThemeDefaultsConfig(theme)
+
+      // Automatically traverse the config and apply dual-mode color schemes
+      applyThemeConfig(config, theme)
+
+      new Chart(ctx, config)
+    })
+  }
+
+  const loadChartJS = () => {
+    const chartJSEle = document.querySelectorAll('#article-container .chartjs-container')
+    if (chartJSEle.length === 0) return
+
+    window.loadChartJS ? runChartJS(chartJSEle) : btf.getScript('https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.min.js').then(() => runChartJS(chartJSEle))
+  }
+
+  // Listen for theme change events
+  btf.addGlobalFn('themeChange', loadChartJS, 'chartjs')
+  btf.addGlobalFn('encrypt', loadChartJS, 'chartjs')
+
+  window.pjax ? loadChartJS() : document.addEventListener('DOMContentLoaded', loadChartJS)
+})()</script><script>(function() {
+  const abcjsInit = function() {
+    const abcjsFn = function() {
+      setTimeout(function() {
+        const sheets = document.querySelectorAll(".abc-music-sheet")
+        for (let i = 0; i < sheets.length; i++) {
+          const ele = sheets[i]
+          if (ele.children.length > 0) continue
+
+          // Parse parameters from data-params attribute
+          let params = {}
+          const dp = ele.getAttribute("data-params")
+          if (dp) {
+            try {
+              params = JSON.parse(dp)
+            } catch (e) {
+              console.error("Failed to parse data-params:", e)
+            }
+          }
+
+          // Merge parsed parameters with the responsive option
+          // Ensures params content appears before responsive
+          const options = { ...params, responsive: "resize" }
+
+          // Render the music score using ABCJS.renderAbc
+          ABCJS.renderAbc(ele, ele.innerHTML, options)
+        }
+      }, 100)
+    }
+
+    if (typeof ABCJS === "object") {
+      abcjsFn()
+    } else {
+      btf.getScript("https://cdn.jsdelivr.net/npm/abcjs/dist/abcjs-basic-min.min.js").then(abcjsFn)
+    }
+  }
+
+  if (window.pjax) {
+    abcjsInit()
+  } else {
+    window.addEventListener("load", abcjsInit)
+  }
+
+  btf.addGlobalFn("encrypt", abcjsInit, "abcjs")
+})()</script><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = {"labels":["Gitalk","Comment"],"createIssueManually":false,"distractionFreeMode":false}
+
+  const commentCount = n => {
+    const isCommentCount = document.querySelector('#post-meta .gitalk-comment-count')
+    if (isCommentCount) {
+      isCommentCount.textContent= n
+    }
+  }
+
+  const initGitalk = (el, path) => {
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGitalk = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+
+    const gitalk = new Gitalk({
+      clientID: 'Ov23li3vDQANiUddL4XB',
+      clientSecret: '5c9a56d02995340fca117809cd414662aadce6ff',
+      repo: 'HexoComment',
+      owner: 'ergou10086',
+      admin: ['ergou10086'],
+      updateCountCallback: commentCount,
+      ...option,
+      id: isShuoshuo ? path : (option && option.id) || 'cd5b83c4ea5049867fddb6f5016a888d'
+    })
+
+    gitalk.render('gitalk-container')
+  }
+
+  const loadGitalk = async(el, path) => {
+    if (typeof Gitalk === 'function') initGitalk(el, path)
+    else {
+      await btf.getCSS('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.css')
+      await btf.getScript('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.js')
+      initGitalk(el, path)
+    }
+  }
+
+  if (isShuoshuo) {
+    'Gitalk' === 'Gitalk'
+      ? window.shuoshuoComment = { loadComment: loadGitalk }
+      : window.loadOtherComment = loadGitalk
+    return
+  }
+
+  if ('Gitalk' === 'Gitalk' || !false) {
+    if (false) btf.loadComment(document.getElementById('gitalk-container'), loadGitalk)
+    else loadGitalk()
+  } else {
+    window.loadOtherComment = loadGitalk
+  }
+})()</script></div><div class="aplayer no-destroy" data-id="13587761608" data-server="netease" data-type="playlist" data-fixed="true" data-autoplay="false" data-lrcType="-1"> </div><script src="https://cdn.jsdelivr.net/npm/abcjs@7.1.2/dist/abcjs-basic-min.js"></script><script src="/js/sun_moon.js" async></script><script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.7/dayjs.min.js"></script><script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.7/plugin/duration.min.js"></script><script src="/scripts/realtime.js"></script><script src="/scripts/random.js"></script><script src="/scripts/weather.js"></script><script defer="defer" id="ribbon" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-ribbon.min.js" size="150" alpha="0.6" zIndex="-1" mobile="null" data-click="true"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = false;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><script id="click-heart" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/click-heart.min.js" async="async" mobile="false"></script><script>(() => {
+  window.ChatraID = '4bzb546NSBoJcrNyu'
+  window.Chatra = window.Chatra || function() {
+    (window.Chatra.q = window.Chatra.q || []).push(arguments)
+  }
+
+  btf.getScript('https://call.chatra.io/chatra.js').then(() => {
+    const isChatBtn = true
+    const isChatHideShow = true
+
+    if (isChatBtn) {
+      const close = () => {
+        Chatra('minimizeWidget')
+        Chatra('hide')
+      }
+
+      const open = () => {
+        Chatra('openChat', true)
+        Chatra('show')
+      }
+
+      window.ChatraSetup = { startHidden: true }
+    
+      window.chatBtnFn = () => document.getElementById('chatra').classList.contains('chatra--expanded') ? close() : open()
+
+      document.getElementById('chat-btn').style.display = 'block'
+    } else if (isChatHideShow) {
+      window.chatBtn = {
+        hide: () => Chatra('hide'),
+        show: () => Chatra('show')
+      }
+    }
+  })
+})()</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/metingjs/dist/Meting.min.js"></script><script>(() => {
+  const destroyAplayer = () => {
+    if (window.aplayers) {
+      for (let i = 0; i < window.aplayers.length; i++) {
+        if (!window.aplayers[i].options.fixed) {
+          window.aplayers[i].destroy()
+        }
+      }
+    }
+  }
+
+  const runMetingJS = () => {
+    typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+  }
+
+  btf.addGlobalFn('pjaxSend', destroyAplayer, 'destroyAplayer')
+  btf.addGlobalFn('pjaxComplete', loadMeting, 'runMetingJS')
+})()</script><script src="https://cdn.jsdelivr.net/npm/pjax/pjax.min.js"></script><script>(() => {
+  const pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+  window.pjax = new Pjax({
+    elements: 'a:not([target="_blank"]):not([href="/music/"])',
+    selectors: pjaxSelectors,
+    cacheBust: false,
+    analytics: false,
+    scrollRestoration: false
+  })
+
+  const triggerPjaxFn = (val) => {
+    if (!val) return
+    Object.values(val).forEach(fn => fn())
+  }
+
+  document.addEventListener('pjax:send', () => {
+    // removeEventListener
+    btf.removeGlobalFnEvent('pjaxSendOnce')
+    btf.removeGlobalFnEvent('themeChange')
+
+    // reset readmode
+    const $bodyClassList = document.body.classList
+    if ($bodyClassList.contains('read-mode')) $bodyClassList.remove('read-mode')
+
+    triggerPjaxFn(window.globalFn.pjaxSend)
+  })
+
+  document.addEventListener('pjax:complete', () => {
+    btf.removeGlobalFnEvent('pjaxCompleteOnce')
+    document.querySelectorAll('script[data-pjax]').forEach(item => {
+      const newScript = document.createElement('script')
+      const content = item.text || item.textContent || item.innerHTML || ""
+      Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+      newScript.appendChild(document.createTextNode(content))
+      item.parentNode.replaceChild(newScript, item)
+    })
+
+    triggerPjaxFn(window.globalFn.pjaxComplete)
+  })
+
+  document.addEventListener('pjax:error', e => {
+    if (e.request.status === 404) {
+      const usePjax = true
+      true 
+        ? (usePjax ? pjax.loadUrl('/404.html') : window.location.href = '/404.html')
+        : window.location.href = e.request.responseURL
+    }
+  })
+})()</script><script src="/js/fps-display.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><!-- hexo injector body_end start --><script data-pjax>
+  function butterfly_swiper_injector_config(){
+    var parent_div_git = document.getElementById('recent-posts');
+    var item_html = '<div class="recent-post-item" style="height: auto;width: 100%"><div class="blog-slider swiper-container-fade swiper-container-horizontal" id="swiper_container"><div class="blog-slider__wrp swiper-wrapper" style="transition-duration: 0ms;"><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_database.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-14</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt="">结构化查询语言SQL</a><div class="blog-slider__text">SQL基本很常用的语句都在这里了，本质上是当初为了应付数据库考试整理的，后来发现还蛮有用的很方便查常用的语句</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java4.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-22</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt="">SpringBoot part0?INF-SpringBoot这个框架都需要学习什么</a><div class="blog-slider__text">主要围绕Spring Boot中重要知识来简洁或详细的说明，其中部分不够完全，持续更新</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java11.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-15</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt="">关于Lombok在高版本IDEA中注解处理不生效的问题解决</a><div class="blog-slider__text">基本上是彻底的解决了用 IDEA 新建 Spring Boot 项目时候会产生的 Lombok 注解处理失效的各种问题</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_实用.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-05</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt="">个人向galgame原声带或相关音乐整理及其资源</a><div class="blog-slider__text">整理了我喜欢的galgame ost或者衍生的音乐专辑，部分资源是自己扒盘扒下来的，部分来自鸟白岛放映厅</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_math.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-17</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt="">对书上证明样本方差是总体方差的无偏估计量的解析</a><div class="blog-slider__text">对书上证明样本方差是总体方差的无偏估计量的解析，高等教育出版社-华科大版本</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_alog.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-04-24</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt="">第十五届蓝桥杯Java国赛B组D题-园丁题解</a><div class="blog-slider__text">第十五届蓝桥杯Java国赛B组D题-园丁题解，该题解已经发布到洛谷社区中并且被全站推荐</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java4.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-04-29</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt="">操作系统之处理机的死锁部分概述</a><div class="blog-slider__text">对操作系统之处理机的死锁部分知识的总结，包括代码复现</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_lb.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-09</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt="">Little Busters!EX游戏攻略</a><div class="blog-slider__text">整理了一份详细清晰的Little Busters！EX的游戏攻略，因为我自己也在推，就顺手整理了一份方便查阅的md文档</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java9.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-16</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt="">Spring Boot中使用Hibernate框架</a><div class="blog-slider__text">对学习完Hibernate的应用部分，主要围绕Spring Boot中使用Hibernate框架，建议学习完 Hibernate 框架再看</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div></div><div class="blog-slider__pagination swiper-pagination-clickable swiper-pagination-bullets"></div></div></div>';
+    console.log('已挂载butterfly_swiper')
+    parent_div_git.insertAdjacentHTML("afterbegin",item_html)
+    }
+  var elist = 'undefined'.split(',');
+  var cpage = location.pathname;
+  var epage = '/';
+  var flag = 0;
+
+  for (var i=0;i<elist.length;i++){
+    if (cpage.includes(elist[i])){
+      flag++;
+    }
+  }
+
+  if ((epage ==='all')&&(flag == 0)){
+    butterfly_swiper_injector_config();
+  }
+  else if (epage === cpage){
+    butterfly_swiper_injector_config();
+  }
+  </script><script defer src="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper.min.js"></script><script defer data-pjax src="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper_init.js"></script><!-- hexo injector body_end end --></body></html>
