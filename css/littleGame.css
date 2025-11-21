@@ -1,0 +1,333 @@
+/* 2048 游戏样式 - 与Butterfly主题风格一致 */
+
+#littleGame {
+  max-width: 600px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: var(--card-bg, #fff);
+  border-radius: var(--card-border-radius, 12px);
+  box-shadow: var(--card-box-shadow, 0 2px 12px rgba(0, 0, 0, 0.04));
+}
+
+[data-theme='dark'] #littleGame {
+  background: var(--card-bg, #1f1f1f);
+}
+
+.game-container {
+  width: 100%;
+}
+
+.game-header {
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.game-title {
+  font-size: 3rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.game-info {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+.score-container,
+.best-container {
+  background: var(--card-bg, #fff);
+  padding: 0.5rem 1.5rem;
+  border-radius: 8px;
+  border: 1px solid var(--hr-border, #e3e8f7);
+  min-width: 100px;
+}
+
+.score-label,
+.best-label {
+  font-size: 0.875rem;
+  color: var(--font-color, #4c4948);
+  opacity: 0.7;
+  text-transform: uppercase;
+  margin-bottom: 0.25rem;
+}
+
+#score,
+#best {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: var(--theme-color, #49b1f5);
+}
+
+.game-controls {
+  margin-top: 1rem;
+}
+
+.new-game-btn {
+  padding: 0.75rem 2rem;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #fff;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.new-game-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+}
+
+.new-game-btn:active {
+  transform: translateY(0);
+}
+
+.game-description {
+  margin-top: 1rem;
+  font-size: 0.875rem;
+  color: var(--font-color, #4c4948);
+  opacity: 0.7;
+}
+
+.game-board-container {
+  position: relative;
+  width: 100%;
+  padding-bottom: 100%;
+  margin-top: 2rem;
+}
+
+.grid-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--hr-border);
+  border-radius: 8px;
+  padding: 1%;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(4, 1fr);
+  gap: 1%;
+}
+
+.grid-row {
+  display: contents;
+}
+
+.grid-cell {
+  background: rgba(238, 228, 218, 0.35);
+  border-radius: 6px;
+}
+
+[data-theme='dark'] .grid-cell {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.tile-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  padding: 1%;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(4, 1fr);
+  gap: 1%;
+  pointer-events: none;
+}
+
+.tile {
+  position: relative;
+  border-radius: 6px;
+  font-size: clamp(1rem, 4vw, 2rem);
+  font-weight: bold;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: all 0.15s ease-in-out;
+  animation: appear 0.2s;
+}
+
+@keyframes appear {
+  from {
+    transform: scale(0);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.tile-2 {
+  background: #eee4da;
+  color: #776e65;
+}
+
+.tile-4 {
+  background: #ede0c8;
+  color: #776e65;
+}
+
+.tile-8 {
+  background: #f2b179;
+  color: #f9f6f2;
+}
+
+.tile-16 {
+  background: #f59563;
+  color: #f9f6f2;
+}
+
+.tile-32 {
+  background: #f67c5f;
+  color: #f9f6f2;
+}
+
+.tile-64 {
+  background: #f65e3b;
+  color: #f9f6f2;
+}
+
+.tile-128 {
+  background: #edcf72;
+  color: #f9f6f2;
+  font-size: clamp(0.875rem, 3.5vw, 1.75rem);
+}
+
+.tile-256 {
+  background: #edcc61;
+  color: #f9f6f2;
+  font-size: clamp(0.875rem, 3.5vw, 1.75rem);
+}
+
+.tile-512 {
+  background: #edc850;
+  color: #f9f6f2;
+  font-size: clamp(0.875rem, 3.5vw, 1.75rem);
+}
+
+.tile-1024 {
+  background: #edc53f;
+  color: #f9f6f2;
+  font-size: clamp(0.75rem, 3vw, 1.5rem);
+}
+
+.tile-2048 {
+  background: #edc22e;
+  color: #f9f6f2;
+  font-size: clamp(0.75rem, 3vw, 1.5rem);
+  box-shadow: 0 0 30px 10px rgba(237, 194, 46, 0.5);
+}
+
+.game-message {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(238, 228, 218, 0.95);
+  border-radius: 8px;
+  padding: 2rem;
+  text-align: center;
+  z-index: 100;
+  display: none;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.game-message.show {
+  display: block;
+  animation: fadeIn 0.3s;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+.game-message p {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #776e65;
+  margin-bottom: 1rem;
+}
+
+.restart-btn {
+  padding: 0.75rem 2rem;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #fff;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.restart-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+}
+
+/* 暗色模式适配 */
+[data-theme='dark'] .score-container,
+[data-theme='dark'] .best-container {
+  background: var(--card-bg, #1f1f1f);
+  border-color: var(--hr-border, rgba(255, 255, 255, 0.1));
+}
+
+[data-theme='dark'] .game-message {
+  background: rgba(50, 50, 50, 0.95);
+}
+
+[data-theme='dark'] .game-message p {
+  color: #f9f6f2;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  #littleGame {
+    padding: 1rem;
+    margin: 1rem;
+  }
+
+  .game-title {
+    font-size: 2rem;
+  }
+
+  .game-info {
+    gap: 1rem;
+  }
+
+  .score-container,
+  .best-container {
+    padding: 0.5rem 1rem;
+    min-width: 80px;
+  }
+
+  #score,
+  #best {
+    font-size: 1.25rem;
+  }
+
+  .new-game-btn {
+    padding: 0.625rem 1.5rem;
+    font-size: 0.875rem;
+  }
+}
+
