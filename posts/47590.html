@@ -1,0 +1,1005 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Vue3 part2—Vue基础知识与组合式API | ErgouTree's Blog</title><meta name="author" content="ErgouTree"><meta name="copyright" content="ErgouTree"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="学Vue前的基础语法 插值表达式 插值表达式（Template Literal Interpolation）是 ES6 (ECMAScript 2015) 引入的特性，它允许你在字符串中直接嵌入变量、表达式或函数调用结果。 插值表达式有很多插值方法 传统的方法就是字符串拼接，使用 + 运算符将变量或表达式与字符串连接起来。 123const name &#x3D; &quot;Alice&amp;q">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Vue3 part2—Vue基础知识与组合式API">
+<meta property="og:url" content="https://ergou10086.github.io/posts/47590.html">
+<meta property="og:site_name" content="ErgouTree&#39;s Blog">
+<meta property="og:description" content="学Vue前的基础语法 插值表达式 插值表达式（Template Literal Interpolation）是 ES6 (ECMAScript 2015) 引入的特性，它允许你在字符串中直接嵌入变量、表达式或函数调用结果。 插值表达式有很多插值方法 传统的方法就是字符串拼接，使用 + 运算符将变量或表达式与字符串连接起来。 123const name &#x3D; &quot;Alice&amp;q">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://ergou10086.github.io/images/posts/cover_security3.jpg">
+<meta property="article:published_time" content="2025-11-22T05:12:12.000Z">
+<meta property="article:modified_time" content="2025-11-29T12:13:57.961Z">
+<meta property="article:author" content="ErgouTree">
+<meta property="article:tag" content="网站技术">
+<meta property="article:tag" content="前端技术">
+<meta property="article:tag" content="JavaScript">
+<meta property="article:tag" content="前端">
+<meta property="article:tag" content="Vue">
+<meta property="article:tag" content="前端框架">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ergou10086.github.io/images/posts/cover_security3.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Vue3 part2—Vue基础知识与组合式API",
+  "url": "https://ergou10086.github.io/posts/47590.html",
+  "image": "https://ergou10086.github.io/images/posts/cover_security3.jpg",
+  "datePublished": "2025-11-22T05:12:12.000Z",
+  "dateModified": "2025-11-29T12:13:57.961Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "ErgouTree",
+      "url": "https://github.com/ergou10086"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/pi.ico"><link rel="canonical" href="https://ergou10086.github.io/posts/47590.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//hm.baidu.com"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!true && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?https://hm.baidu.com/hm.js?a6ab1b78e2c6320b664f31e8b9bf0e36";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+btf.addGlobalFn('pjaxComplete', () => {
+  _hmt.push(['_trackPageview',window.location.pathname])
+}, 'baidu_analytics')
+</script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.json","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":true},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: {"chs_to_cht":"已切换为繁体中文","cht_to_chs":"已切换为简体中文","day_to_night":"已切换为深色模式","night_to_day":"已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#1f1f1f","position":"bottom-left"},
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Vue3 part2—Vue基础知识与组合式API',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css"><link rel="stylesheet" href="/css/littleGame.css"><svg aria-hidden="true" style="position:absolute; overflow:hidden; width:0; height:0"><symbol id="icon-sun" viewBox="0 0 1024 1024"><path d="M960 512l-128 128v192h-192l-128 128-128-128H192v-192l-128-128 128-128V192h192l128-128 128 128h192v192z" fill="#FFD878" p-id="8420"></path><path d="M736 512a224 224 0 1 0-448 0 224 224 0 1 0 448 0z" fill="#FFE4A9" p-id="8421"></path><path d="M512 109.248L626.752 224H800v173.248L914.752 512 800 626.752V800h-173.248L512 914.752 397.248 800H224v-173.248L109.248 512 224 397.248V224h173.248L512 109.248M512 64l-128 128H192v192l-128 128 128 128v192h192l128 128 128-128h192v-192l128-128-128-128V192h-192l-128-128z" fill="#4D5152" p-id="8422"></path><path d="M512 320c105.888 0 192 86.112 192 192s-86.112 192-192 192-192-86.112-192-192 86.112-192 192-192m0-32a224 224 0 1 0 0 448 224 224 0 0 0 0-448z" fill="#4D5152" p-id="8423"></path></symbol><symbol id="icon-moon" viewBox="0 0 1024 1024"><path d="M611.370667 167.082667a445.013333 445.013333 0 0 1-38.4 161.834666 477.824 477.824 0 0 1-244.736 244.394667 445.141333 445.141333 0 0 1-161.109334 38.058667 85.077333 85.077333 0 0 0-65.066666 135.722666A462.08 462.08 0 1 0 747.093333 102.058667a85.077333 85.077333 0 0 0-135.722666 65.024z" fill="#FFB531" p-id="11345"></path><path d="M329.728 274.133333l35.157333-35.157333a21.333333 21.333333 0 1 0-30.165333-30.165333l-35.157333 35.157333-35.114667-35.157333a21.333333 21.333333 0 0 0-30.165333 30.165333l35.114666 35.157333-35.114666 35.157334a21.333333 21.333333 0 1 0 30.165333 30.165333l35.114667-35.157333 35.157333 35.157333a21.333333 21.333333 0 1 0 30.165333-30.165333z" fill="#030835" p-id="11346"></path></symbol></svg><link rel="stylesheet" href="/css/custom.css"><!-- hexo injector head_end start --><link rel="stylesheet" href="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiperstyle.css" media="print" onload="this.media='all'"><!-- hexo injector head_end end --><meta name="generator" content="Hexo 7.3.0"></head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js/pace.min.js"></script><div id="web_bg" style="background: linear-gradient(20deg, #0062be, #925696, #cc426e, #fb0347);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/arp.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">256</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">155</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">87</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-images"></i><span> Gallery</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/games/"><i class="fa-fw fas fa-trophy"></i><span> GalGame</span></a></li><li><a class="site-page child" href="/video/"><i class="fa-fw fas fa-video"></i><span> Video</span></a></li><li><a class="site-page child" href="/viewpoint/"><i class="fa-fw fas fa-calculator"></i><span> ViewPoint</span></a></li><li><a class="site-page child" href="/littleGame/"><i class="fa-fw fas fa-thumbs-up"></i><span> littleGame</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div><div class="menus_item"><a class="site-page" href="javascript:randomPost();"><span> Random</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/images/posts/cover_security3.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">ErgouTree's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">Vue3 part2—Vue基础知识与组合式API</span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-images"></i><span> Gallery</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/games/"><i class="fa-fw fas fa-trophy"></i><span> GalGame</span></a></li><li><a class="site-page child" href="/video/"><i class="fa-fw fas fa-video"></i><span> Video</span></a></li><li><a class="site-page child" href="/viewpoint/"><i class="fa-fw fas fa-calculator"></i><span> ViewPoint</span></a></li><li><a class="site-page child" href="/littleGame/"><i class="fa-fw fas fa-thumbs-up"></i><span> littleGame</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div><div class="menus_item"><a class="site-page" href="javascript:randomPost();"><span> Random</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div><div id="randomPost"><a class="site-page social-icon search" href="javascript:;" onclick="randomPost()" title="随机访问一篇文章"><i class="fas fa-circle-notch fa-fw"></i></a></div></nav><div id="post-info"><h1 class="post-title">Vue3 part2—Vue基础知识与组合式API<a class="post-edit-link" href="https://github.com/ergou10086/ergou10086.github.io/edit/main/source/_posts/_posts/Vue3-part2—Vue基础知识与组合式API.md" title="编辑" target="_blank"><i class="fas fa-pencil-alt"></i></a></h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2025-11-22T05:12:12.000Z" title="发表于 2025-11-22 13:12:12">2025-11-22</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2025-11-29T12:13:57.961Z" title="更新于 2025-11-29 20:13:57">2025-11-29</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%89%8D%E7%AB%AF%E6%A1%86%E6%9E%B6/">前端框架</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%89%8D%E7%AB%AF%E6%A1%86%E6%9E%B6/Vue/">Vue</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">5.8k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>21分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span><span class="post-meta-separator">|</span><span class="post-meta-commentcount"><i class="far fa-comments fa-fw post-meta-icon"></i><span class="post-meta-label">评论数:</span><a href="/posts/47590.html#post-comment"><span class="gitalk-comment-count"><i class="fa-solid fa-spinner fa-spin"></i></span></a></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="学vue前的基础语法">学Vue前的基础语法</h2>
+<h3 id="插值表达式">插值表达式</h3>
+<p><strong>插值表达式</strong>（Template Literal Interpolation）是 ES6
+(ECMAScript 2015)
+引入的特性，它允许你在字符串中直接嵌入变量、表达式或函数调用结果。</p>
+<p>插值表达式有很多插值方法</p>
+<p>传统的方法就是字符串拼接，使用 +
+运算符将变量或表达式与字符串连接起来。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> name = <span class="string">&quot;Alice&quot;</span>;</span><br><span class="line"><span class="keyword">const</span> greeting = <span class="string">&quot;Hello, &quot;</span> + name + <span class="string">&quot;!&quot;</span>;</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(greeting); <span class="comment">// 输出: Hello, Alice!</span></span><br></pre></td></tr></table></figure>
+<p>它兼容性极佳，适用于所有 JavaScript 环境，而且性能相对较好</p>
+<p>模板字符串是 JavaScript ES6
+引入的一种新特性，使用反引号（`）包裹字符串，并在
+<code>$&#123;&#125;</code>中放置要插入的内容。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 基本变量插值</span></span><br><span class="line"><span class="keyword">const</span> name = <span class="string">&quot;张三&quot;</span>;</span><br><span class="line"><span class="keyword">const</span> age = <span class="number">25</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 传统拼接方式</span></span><br><span class="line"><span class="keyword">const</span> greeting1 = <span class="string">&quot;你好，我是&quot;</span> + name + <span class="string">&quot;，今年&quot;</span> + age + <span class="string">&quot;岁。&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 插值表达式方式</span></span><br><span class="line"><span class="keyword">const</span> greeting2 = <span class="string">`你好，我是<span class="subst">$&#123;name&#125;</span>，今年<span class="subst">$&#123;age&#125;</span>岁。`</span>;</span><br><span class="line"></span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(greeting2); <span class="comment">// 输出: 你好，我是张三，今年25岁。</span></span><br></pre></td></tr></table></figure>
+<p>它支持多行字符串（无需转义字符）。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 传统方式</span></span><br><span class="line"><span class="keyword">const</span> poem1 = <span class="string">&quot;床前明月光，\n疑是地上霜。\n举头望明月，\n低头思故乡。&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 插值表达式方式（保留换行格式）</span></span><br><span class="line"><span class="keyword">const</span> poem2 = <span class="string">`床前明月光，</span></span><br><span class="line"><span class="string">               疑是地上霜。`</span>;</span><br></pre></td></tr></table></figure>
+<p>而且支持复杂的表达式和函数调用。这种用法是 Vue 的核心</p>
+<p>那么来看看如何进行表达式计算</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> a = <span class="number">10</span>;</span><br><span class="line"><span class="keyword">const</span> b = <span class="number">20</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> result = <span class="string">`<span class="subst">$&#123;a&#125;</span> + <span class="subst">$&#123;b&#125;</span> = <span class="subst">$&#123;a + b&#125;</span>`</span>;</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(result); <span class="comment">// 输出: 10 + 20 = 30</span></span><br></pre></td></tr></table></figure>
+<p>那么表达式计算都支持，函数调用肯定也是支持的</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">double</span>(<span class="params">num</span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> num * <span class="number">2</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> num = <span class="number">5</span>;</span><br><span class="line"><span class="keyword">const</span> message = <span class="string">`<span class="subst">$&#123;num&#125;</span> 的两倍是 <span class="subst">$&#123;double(num)&#125;</span>`</span>;</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(message); <span class="comment">// 输出: 5 的两倍是 10</span></span><br></pre></td></tr></table></figure>
+<p>同样可以在插值表达式中访问对象属性</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> user = &#123;</span><br><span class="line">  <span class="attr">name</span>: <span class="string">&quot;李四&quot;</span>,</span><br><span class="line">  <span class="attr">address</span>: &#123;</span><br><span class="line">    <span class="attr">city</span>: <span class="string">&quot;北京&quot;</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> info = <span class="string">`<span class="subst">$&#123;user.name&#125;</span> 住在 <span class="subst">$&#123;user.address.city&#125;</span>`</span>;</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(info); <span class="comment">// 输出: 李四 住在 北京</span></span><br></pre></td></tr></table></figure>
+<p>注意，在模板字符串中，反斜杠依然用于转义字符，而且插值表达式通常容易引起
+XSS，直接插入用户输入的内容可能导致 XSS 攻击，需要进行转义处理。</p>
+<p>在 Vue
+中，使用双大括号<code>&#123;&#123; &#125;&#125;</code>来表示文本插值：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;div&gt;&#123;&#123; message &#125;&#125;&lt;/div&gt;</span><br></pre></td></tr></table></figure>
+<h3 id="箭头函数">箭头函数</h3>
+<p>不再赘述，这个属于是学 Vue 前必会的了</p>
+<h2 id="vue3-项目说明">Vue3 项目说明</h2>
+<h3 id="vue3项目结构">Vue3项目结构</h3>
+<p>Vue 3 项目由多个文件和文件夹组成，每个部分都有其特定的作用。</p>
+<ul>
+<li>Vue 3 项目由多个文件和文件夹组成，核心文件包括
+<code>index.html</code>、<code>main.js</code> 和
+<code>App.vue</code>。</li>
+<li>Vue 组件是应用的基本构建块，使用单文件组件（<code>.vue</code>
+文件）定义。</li>
+<li>Vue Router 用于管理路由，Vuex 用于状态管理。</li>
+</ul>
+<p>一个 Vue 3 项目通常包含以下文件和文件夹：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">my-vue-app/</span><br><span class="line">├── node_modules/</span><br><span class="line">├── public/</span><br><span class="line">│   ├── favicon.<span class="property">ico</span></span><br><span class="line">├── src/</span><br><span class="line">│   ├── assets/</span><br><span class="line">│   │   └── logo.<span class="property">png</span></span><br><span class="line">│   ├── components/</span><br><span class="line">│   │   └── <span class="title class_">HelloWorld</span>.<span class="property">vue</span></span><br><span class="line">│   ├── views/</span><br><span class="line">│   │   └── <span class="title class_">Home</span>.<span class="property">vue</span></span><br><span class="line">│   ├── <span class="title class_">App</span>.<span class="property">vue</span></span><br><span class="line">│   ├── main.<span class="property">js</span></span><br><span class="line">│   └── router/</span><br><span class="line">│       └── index.<span class="property">js</span></span><br><span class="line">├── .<span class="property">gitignore</span></span><br><span class="line">├── babel.<span class="property">config</span>.<span class="property">js</span></span><br><span class="line">├── package.<span class="property">json</span></span><br><span class="line">├── <span class="variable constant_">README</span>.<span class="property">md</span></span><br><span class="line">├── index.<span class="property">html</span></span><br><span class="line">├── vue.<span class="property">config</span>.<span class="property">js</span></span><br><span class="line">└── yarn.<span class="property">lock</span> or package-lock.<span class="property">json</span></span><br></pre></td></tr></table></figure>
+<p>其中，<strong><code>public/index.html</code></strong> 是 Vue 应用的
+HTML 模板文件。Vue 会将应用挂载到
+<code>&lt;div id="app"&gt;&lt;/div&gt;</code> 中。</p>
+<p>这是什么意思？</p>
+<p>简单来说，这是 Vue
+应用的<strong>运行基础</strong>和<strong>挂载机制</strong>。</p>
+<p><strong><code>public/index.html</code></strong>，是整个应用的<strong>HTML
+入口模板</strong>，是浏览器首先加载的文件，它定义了页面的基本结构，包括
+<code>&lt;head&gt;</code> 中的元数据、样式引用等，其中的
+<code>&lt;div id="app"&gt;&lt;/div&gt;</code> 是 Vue
+应用的<strong>挂载点</strong>，Vue 会将整个应用渲染到这个元素内部</p>
+<p>其中<code>&lt;div id="app"&gt;&lt;/div&gt;</code> 的具体作用</p>
+<ol type="1">
+<li><strong>占位容器</strong>：它只是一个空的 DOM 元素，作为 Vue 应用的
+“容器”</li>
+<li><strong>挂载目标</strong>：Vue 通过 <code>mount('#app')</code>
+找到这个元素，并将整个应用渲染到里面</li>
+<li><strong>渲染结果</strong>：最终浏览器中，这个
+<code>&lt;div&gt;</code> 会被替换为 <code>App.vue</code> 中的内容</li>
+</ol>
+<p>例如，</p>
+<ul>
+<li>在 <code>index.html</code>
+中：<code>&lt;div id="app"&gt;&lt;/div&gt;</code></li>
+<li>在 <code>App.vue</code>
+中：<code>&lt;template&gt;&lt;h1&gt;Hello Vue!&lt;/h1&gt;&lt;/template&gt;</code></li>
+<li>最终浏览器显示：<code>&lt;div id="app"&gt;&lt;h1&gt;Hello Vue!&lt;/h1&gt;&lt;/div&gt;</code></li>
+</ul>
+<p><strong><code>src/main.js</code></strong>，是 JavaScript
+的入口文件，负责创建和挂载 Vue 实例，并将根组件（通常是 App.vue）挂载到
+<code>index.html</code> 中的<code>div#app</code>中。</p>
+<p><strong><code>src/App.vue</code></strong>是<strong>根组件</strong>，是整个应用的组件树的顶层组件，它包含了应用的整体布局和子组件的组织方式和路由视图</p>
+<p><strong><code>src/components/</code></strong> 文件夹包含可复用的 Vue
+组件。如按钮、表单、卡片等</p>
+<p><strong><code>src/views/</code></strong>
+文件夹包含页面级组件，通常与路由配置一起使用。</p>
+<p><strong><code>src/router.js</code></strong> 是 Vue Router
+的配置文件，用于定义路由。</p>
+<p><strong><code>src/store.js</code></strong> 是 Vuex
+状态管理的配置文件（如果使用 Vuex）。</p>
+<p><strong><code>package.json</code></strong>
+是项目的配置文件，包含项目的元数据、依赖和脚本。</p>
+<p>详细说明如下</p>
+<table>
+<colgroup>
+<col style="width: 36%">
+<col style="width: 63%">
+</colgroup>
+<thead>
+<tr>
+<th>目录/文件</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong><code>node_modules/</code></strong></td>
+<td>存放项目的所有依赖包，由 npm 或 yarn 自动生成和管理。</td>
+</tr>
+<tr>
+<td><strong><code>public/</code></strong></td>
+<td>静态文件目录，里面的文件不会被 Webpack
+处理，最终会原样复制到打包目录下。</td>
+</tr>
+<tr>
+<td><code>public/favicon.ico</code></td>
+<td>网站的图标。</td>
+</tr>
+<tr>
+<td><code>public/index.html</code></td>
+<td>应用的主 HTML 文件，Vue CLI
+会在构建时自动注入生成的静态资源链接。</td>
+</tr>
+<tr>
+<td><strong><code>src/</code></strong></td>
+<td>源代码目录，存放应用的主要代码。</td>
+</tr>
+<tr>
+<td><code>src/assets/</code></td>
+<td>存放静态资源，如图像、字体等。这些文件会由 Webpack
+处理，可以通过相对路径引用。</td>
+</tr>
+<tr>
+<td><code>src/assets/logo.png</code></td>
+<td>示例图像文件。</td>
+</tr>
+<tr>
+<td><code>src/components/</code></td>
+<td>存放 Vue 组件，每个组件都是一个独立的 <code>.vue</code> 文件。</td>
+</tr>
+<tr>
+<td><code>src/components/HelloWorld.vue</code></td>
+<td>默认生成的示例组件。</td>
+</tr>
+<tr>
+<td><code>src/views/</code></td>
+<td>存放视图组件，通常对应路由，每个视图都是一个独立的 <code>.vue</code>
+文件。</td>
+</tr>
+<tr>
+<td><code>src/views/Home.vue</code></td>
+<td>默认生成的主页组件。</td>
+</tr>
+<tr>
+<td><code>src/router/</code></td>
+<td>存放路由配置文件。</td>
+</tr>
+<tr>
+<td><code>src/router/index.js</code></td>
+<td>路由的配置文件，定义了应用的路由规则。</td>
+</tr>
+<tr>
+<td><code>src/App.vue</code></td>
+<td>根组件，整个应用的入口组件。</td>
+</tr>
+<tr>
+<td><code>src/main.js</code></td>
+<td>应用的入口文件，负责创建 Vue 实例并挂载到 DOM 上。</td>
+</tr>
+<tr>
+<td><strong>根目录配置文件</strong></td>
+<td></td>
+</tr>
+<tr>
+<td><code>.gitignore</code></td>
+<td>Git 忽略文件列表，指定哪些文件和目录不被包含在版本控制中。</td>
+</tr>
+<tr>
+<td><code>babel.config.js</code></td>
+<td>Babel 配置文件，指定 Babel 的编译规则。</td>
+</tr>
+<tr>
+<td><code>package.json</code></td>
+<td>项目的依赖、脚本和其他元数据。</td>
+</tr>
+<tr>
+<td><code>README.md</code></td>
+<td>项目的说明文件，通常用于描述项目、如何安装和使用等信息。</td>
+</tr>
+<tr>
+<td><code>vue.config.js</code></td>
+<td>Vue CLI 的配置文件，用于修改默认配置。</td>
+</tr>
+<tr>
+<td><code>yarn.lock</code> 或 <code>package-lock.json</code></td>
+<td>锁定安装的依赖版本，确保项目依赖的一致性。</td>
+</tr>
+</tbody>
+</table>
+<h3 id="vue3组件结构">Vue3组件结构</h3>
+<p>Vue 组件本质上是一个<strong>可复用的 Vue
+实例</strong>，它拥有预定义好的选项。</p>
+<h4 id="单文件组件">单文件组件</h4>
+<p>一个完整的 Vue 单文件组件（<code>.vue</code>
+文件）通常包含三个部分：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">&lt;template&gt;</span><br><span class="line">  &lt;!-- 1. 模板部分：HTML结构 --&gt;</span><br><span class="line">&lt;/template&gt;</span><br><span class="line"></span><br><span class="line">&lt;script&gt;</span><br><span class="line">  // 2. 脚本部分：JavaScript逻辑</span><br><span class="line">  export default &#123;</span><br><span class="line">    // 组件选项</span><br><span class="line">  &#125;</span><br><span class="line">&lt;/script&gt;</span><br><span class="line"></span><br><span class="line">&lt;style&gt;</span><br><span class="line">  /* 3. 样式部分：CSS样式 */</span><br><span class="line">&lt;/style&gt;</span><br></pre></td></tr></table></figure>
+<ol type="1">
+<li><p>模板部分 (<code>&lt;template&gt;</code>)</p>
+<p>模板部分定义了组件的 HTML 结构，是组件的视图层。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&lt;template&gt;</span><br><span class="line">  &lt;div class=&quot;hello&quot;&gt;</span><br><span class="line">    &lt;h1&gt;&#123;&#123; msg &#125;&#125;&lt;/h1&gt;</span><br><span class="line">    &lt;button @click=&quot;count++&quot;&gt;点击了 &#123;&#123; count &#125;&#125; 次&lt;/button&gt;</span><br><span class="line">    &lt;ChildComponent :message=&quot;msg&quot; /&gt;</span><br><span class="line">  &lt;/div&gt;</span><br><span class="line">&lt;/template&gt;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>必须有且只有一个根元素（Vue 3 中可以有多个根元素）</li>
+<li>使用 Vue 的模板语法（插值表达式、指令、事件绑定等）</li>
+<li>可以包含其他子组件</li>
+<li>支持条件渲染、列表渲染等</li>
+</ul></li>
+<li><p>脚本部分 (<code>&lt;script&gt;</code>)</p>
+<p>脚本部分包含组件的逻辑，是组件的大脑。Vue 2 和 Vue 3
+有不同的写法，这就涉及到下面说的组合式和选项式API</p></li>
+<li><p>样式部分 (<code>&lt;style&gt;</code>)</p>
+<p>样式部分定义组件的 CSS 样式。</p></li>
+</ol>
+<p>而在 Vue 项目中，组件通常分为：</p>
+<ol type="1">
+<li><strong>页面组件</strong>（Page/View）
+<ul>
+<li>位于 <code>src/views/</code> 目录</li>
+<li>对应路由页面</li>
+<li>粒度较大，包含多个功能模块</li>
+</ul></li>
+<li><strong>业务组件</strong>（Business Component）
+<ul>
+<li>位于 <code>src/components/</code> 目录</li>
+<li>实现特定业务功能</li>
+<li>可在多个页面复用</li>
+</ul></li>
+<li><strong>基础组件</strong>（Base Component）
+<ul>
+<li>位于 <code>src/components/base/</code> 目录</li>
+<li>通用 UI 组件（按钮、输入框、卡片等）</li>
+<li>与业务无关，高度复用</li>
+</ul></li>
+</ol>
+<h2 id="vue基础语法">Vue基础语法</h2>
+<p>实际上，一开始我们都不是使用使用 vue-cli
+命令行工具来创建项目的，直接在页面引入 vue.global.js 文件更容易学习</p>
+<h3 id="创建-vue-应用实例">创建 Vue 应用实例</h3>
+<p>每个 Vue 应用都是通过
+<code>createApp</code>函数创建一个新的应用实例</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 引入 createApp 用于创建应用</span></span><br><span class="line"><span class="keyword">import</span> &#123; createApp &#125; <span class="keyword">from</span> <span class="string">&#x27;vue&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 1. 创建应用实例</span></span><br><span class="line"><span class="keyword">const</span> app = <span class="title function_">createApp</span>(&#123;</span><br><span class="line">  <span class="comment">// 根组件选项</span></span><br><span class="line">  <span class="title function_">data</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> &#123;</span><br><span class="line">      <span class="attr">message</span>: <span class="string">&#x27;Hello Vue!&#x27;</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="attr">template</span>: <span class="string">`&lt;div&gt;&#123;&#123; message &#125;&#125;&lt;/div&gt;`</span></span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<p>那么什么是应用实例</p>
+<p>Vue 的应用实例通常用 <code>app</code> 变量表示，它是整个 Vue
+应用的<strong>根容器</strong>和<strong>核心控制中心</strong>。</p>
+<p>它就像是你 Vue 应用的
+“大脑”，负责管理全局配置、组件注册、生命周期以及将应用挂载到 DOM
+上。也可以理解为这个实例就是一个“容器”，它管理着这个应用里所有的数据、组件和配置。</p>
+<p>（（相当于 Spring Boot 里的 SpringApplication.run(App.class)
+启动后返回的那个 <strong>ApplicationContext</strong>。））</p>
+<p>应用实例的配置和注册的资源在整个应用中生效，是实现全局功能的关键入口。</p>
+<figure>
+<img src="/posts/47590/image-20251122160210506.png" alt="image-20251122160210506">
+<figcaption aria-hidden="true">image-20251122160210506</figcaption>
+</figure>
+<h3 id="根组件-root-component">根组件 (Root Component)</h3>
+<p>在上面创建一个 <strong>Vue 应用实例</strong>的代码中，我们拆开写</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 引入 createApp 用于创建应用</span></span><br><span class="line"><span class="keyword">import</span> &#123; createApp &#125; <span class="keyword">from</span> <span class="string">&#x27;vue&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 1. 定义一个根组件（Root Component），这就是你的主类</span></span><br><span class="line"><span class="keyword">const</span> <span class="title class_">App</span> = &#123;</span><br><span class="line">  <span class="title function_">data</span>(<span class="params"></span>) &#123;</span><br><span class="line">     <span class="keyword">return</span> &#123;</span><br><span class="line">      <span class="attr">message</span>: <span class="string">&#x27;Hello Vue!&#x27;</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 2. 创建应用实例</span></span><br><span class="line"><span class="keyword">const</span> app = <span class="title function_">createApp</span>(<span class="title class_">App</span>) <span class="comment">// 此时 app 仅仅被创建，还没挂载到页面上</span></span><br></pre></td></tr></table></figure>
+<p>在上面的代码中，传递给 createApp
+的那个对象（App），就是<strong>根组件</strong>。</p>
+<p>在之后你写的其他 .vue 文件，一个 .vue
+就是一个组件，这些所有的组件都会被安装在 App.vue 上</p>
+<p>然后你就可以</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">createApp(App).mount(&#x27;#app&#x27;)</span><br></pre></td></tr></table></figure>
+<p>摆到 ip 为 app 的容器里</p>
+<figure>
+<img src="/posts/47590/image-20251122160726842.png" alt="image-20251122160726842">
+<figcaption aria-hidden="true">image-20251122160726842</figcaption>
+</figure>
+<p>Vue
+是组件化开发的，组件就像一棵树。<strong>根组件</strong>就是这棵树的<strong>根节点
+(Root
+Node)</strong>。所有的页面、按钮、侧边栏，都是这个根组件的“子组件”或“孙子组件”。一般叶子组件在
+components 中</p>
+<figure>
+<img src="/posts/47590/image-20251122160846099.png" alt="image-20251122160846099">
+<figcaption aria-hidden="true">image-20251122160846099</figcaption>
+</figure>
+<p>这就好比 Java 的入口类。虽然项目里有成百上千个
+Class，但程序运行的入口只有一个。在实际开发（单文件组件）中，这个通常是一个
+App.vue 文件。</p>
+<p>那么仔细来看一下 App.vue 这个根组件，也来看看如何编写 .vue 文件</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">&lt;script setup lang=&quot;ts&quot;&gt;</span><br><span class="line">// 脚本,ts是vue推荐使用ts</span><br><span class="line">import HelloWorld from &#x27;./components/HelloWorld.vue&#x27;</span><br><span class="line">&lt;/script&gt;</span><br><span class="line"></span><br><span class="line">&lt;template&gt;</span><br><span class="line">  &lt;!-- html --&gt;</span><br><span class="line">  &lt;div&gt;</span><br><span class="line">    &lt;a href=&quot;https://vite.dev&quot; target=&quot;_blank&quot;&gt;</span><br><span class="line">      &lt;img src=&quot;/vite.svg&quot; class=&quot;logo&quot; alt=&quot;Vite logo&quot; /&gt;</span><br><span class="line">    &lt;/a&gt;</span><br><span class="line">    &lt;a href=&quot;https://vuejs.org/&quot; target=&quot;_blank&quot;&gt;</span><br><span class="line">      &lt;img src=&quot;./assets/vue.svg&quot; class=&quot;logo vue&quot; alt=&quot;Vue logo&quot; /&gt;</span><br><span class="line">    &lt;/a&gt;</span><br><span class="line">  &lt;/div&gt;</span><br><span class="line">  &lt;HelloWorld msg=&quot;Vite + Vue&quot; /&gt;</span><br><span class="line">&lt;/template&gt;</span><br><span class="line"></span><br><span class="line">&lt;style scoped&gt;</span><br><span class="line">/* 样式 */</span><br><span class="line">.logo &#123;</span><br><span class="line">  height: 6em;</span><br><span class="line">  padding: 1.5em;</span><br><span class="line">  will-change: filter;</span><br><span class="line">  transition: filter 300ms;</span><br><span class="line">&#125;</span><br><span class="line">.logo:hover &#123;</span><br><span class="line">  filter: drop-shadow(0 0 2em #646cffaa);</span><br><span class="line">&#125;</span><br><span class="line">.logo.vue:hover &#123;</span><br><span class="line">  filter: drop-shadow(0 0 2em #42b883aa);</span><br><span class="line">&#125;</span><br><span class="line">&lt;/style&gt;</span><br></pre></td></tr></table></figure>
+<h3 id="挂载应用">挂载应用</h3>
+<p>光创建了 app 实例没用，它现在还只是内存里的一堆 JS
+对象。你需要把它<strong>渲染</strong>（Render）出来，放到浏览器能看到的网页里。</p>
+<p>应用实例必须在调用了<code>.mount()</code>方法后才会渲染出来，<code>.mount()</code>方法接收一个”容器”参数，可以是一个实际的
+DOM 元素或是一个 CSS 选择器字符串</p>
+<p>这个方法告诉 Vue：“请把上面创建好的应用，在这个 HTML
+元素里渲染出来。”</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 2. 挂载到 DOM 元素</span></span><br><span class="line">app.<span class="title function_">mount</span>(<span class="string">&#x27;#app&#x27;</span>)</span><br></pre></td></tr></table></figure>
+<p>createApp
+的参数是根组件（HelloVueApp），在挂载应用时，该组件是渲染的起点。</p>
+<p>把生成的 DOM 树“插入”到 HTML 的某个
+<code>&lt;div&gt;</code>节点里。</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!-- 这是一个普通的 HTML 容器，用来放 Vue 应用 --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">&quot;app&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 把之前创建的 app 实例，挂载到 id=&quot;app&quot; 的 div 里</span></span><br><span class="line">app.<span class="title function_">mount</span>(<span class="string">&#x27;#app&#x27;</span>)</span><br></pre></td></tr></table></figure>
+<p><code>.mount</code> 必须在应用配置完成后最后调用。</p>
+<h3 id="根组件模板">根组件模板</h3>
+<p>Vue 3 的根组件模板通常定义在 <code>App.vue</code> 文件的
+<code>&lt;template&gt;</code>
+标签中，它是整个应用的<strong>顶层视图结构</strong>，作为所有其他组件的父容器。根组件模板最终会被渲染到
+<code>public/index.html</code> 中的
+<code>&lt;div id="app"&gt;&lt;/div&gt;</code> 元素内。</p>
+<p>也就是，Vue 3 根组件模板是应用的顶层视图容器，通常位于
+<code>App.vue</code> 中，作为所有其他组件的父级</p>
+<p>根组件模板的基本结构</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line">&lt;!-- src/<span class="title class_">App</span>.<span class="property">vue</span> --&gt;</span><br><span class="line"><span class="language-xml"><span class="tag">&lt;<span class="name">template</span>&gt;</span></span></span><br><span class="line"><span class="language-xml">  <span class="comment">&lt;!-- 根元素：Vue 3 支持多根元素，但通常使用单个根元素 --&gt;</span></span></span><br><span class="line"><span class="language-xml">  <span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">&quot;app&quot;</span>&gt;</span></span></span><br><span class="line"><span class="language-xml">    <span class="comment">&lt;!-- 全局通用组件 --&gt;</span></span></span><br><span class="line"><span class="language-xml">    <span class="tag">&lt;<span class="name">Navbar</span> /&gt;</span></span></span><br><span class="line"><span class="language-xml">    </span></span><br><span class="line"><span class="language-xml">    <span class="comment">&lt;!-- 路由视图容器 --&gt;</span></span></span><br><span class="line"><span class="language-xml">    <span class="tag">&lt;<span class="name">router-view</span> /&gt;</span></span></span><br><span class="line"><span class="language-xml">    </span></span><br><span class="line"><span class="language-xml">    <span class="comment">&lt;!-- 全局通用组件 --&gt;</span></span></span><br><span class="line"><span class="language-xml">    <span class="tag">&lt;<span class="name">Footer</span> /&gt;</span></span></span><br><span class="line"><span class="language-xml">    </span></span><br><span class="line"><span class="language-xml">    <span class="comment">&lt;!-- 全局弹窗/提示等 --&gt;</span></span></span><br><span class="line"><span class="language-xml">    <span class="tag">&lt;<span class="name">GlobalToast</span> /&gt;</span></span></span><br><span class="line"><span class="language-xml">    <span class="tag">&lt;<span class="name">GlobalModal</span> /&gt;</span></span></span><br><span class="line"><span class="language-xml">  <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span></span><br><span class="line"><span class="language-xml"><span class="tag">&lt;/<span class="name">template</span>&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="language-xml"><span class="tag">&lt;<span class="name">script</span> <span class="attr">setup</span>&gt;</span><span class="language-javascript"></span></span></span><br><span class="line"><span class="language-javascript"><span class="language-xml"><span class="comment">// 导入子组件</span></span></span></span><br><span class="line"><span class="language-javascript"><span class="language-xml"><span class="keyword">import</span> <span class="title class_">Navbar</span> <span class="keyword">from</span> <span class="string">&#x27;./components/Navbar.vue&#x27;</span></span></span></span><br><span class="line"><span class="language-javascript"><span class="language-xml"><span class="keyword">import</span> <span class="title class_">Footer</span> <span class="keyword">from</span> <span class="string">&#x27;./components/Footer.vue&#x27;</span></span></span></span><br><span class="line"><span class="language-javascript"><span class="language-xml"><span class="keyword">import</span> <span class="title class_">GlobalToast</span> <span class="keyword">from</span> <span class="string">&#x27;./components/GlobalToast.vue&#x27;</span></span></span></span><br><span class="line"><span class="language-javascript"><span class="language-xml"><span class="keyword">import</span> <span class="title class_">GlobalModal</span> <span class="keyword">from</span> <span class="string">&#x27;./components/GlobalModal.vue&#x27;</span></span></span></span><br><span class="line"><span class="language-javascript"><span class="language-xml"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="language-xml"><span class="tag">&lt;<span class="name">style</span>&gt;</span><span class="language-css"></span></span></span><br><span class="line"><span class="language-css"><span class="language-xml"><span class="comment">/* 全局样式或根组件样式 */</span></span></span></span><br><span class="line"><span class="language-css"><span class="language-xml"><span class="selector-id">#app</span> &#123;</span></span></span><br><span class="line"><span class="language-css"><span class="language-xml">  <span class="attribute">font-family</span>: Avenir, Helvetica, Arial, sans-serif;</span></span></span><br><span class="line"><span class="language-css"><span class="language-xml">  -webkit-<span class="attribute">font-smoothing</span>: antialiased;</span></span></span><br><span class="line"><span class="language-css"><span class="language-xml">  -moz-osx-<span class="attribute">font-smoothing</span>: grayscale;</span></span></span><br><span class="line"><span class="language-css"><span class="language-xml">  <span class="attribute">text-align</span>: center;</span></span></span><br><span class="line"><span class="language-css"><span class="language-xml">  <span class="attribute">color</span>: <span class="number">#2c3e50</span>;</span></span></span><br><span class="line"><span class="language-css"><span class="language-xml">  <span class="attribute">margin-top</span>: <span class="number">60px</span>;</span></span></span><br><span class="line"><span class="language-css"><span class="language-xml">&#125;</span></span></span><br><span class="line"><span class="language-css"><span class="language-xml"></span><span class="tag">&lt;/<span class="name">style</span>&gt;</span></span></span><br></pre></td></tr></table></figure>
+<p>通常我们用 .vue
+文件写代码（构建工具模式）。但在我们上面说的模式下（直接在 HTML 里引入
+vue.js），Vue 允许你<strong>直接把 HTML
+容器里的内容当作模板</strong>。</p>
+<p>什么意思，如果在挂载时，根组件没有定义 template 选项，Vue
+就会自动提取容器 HTML 里的内容作为模板。</p>
+<p>这就像以前在 JSP 里直接写 <code>&lt;% if(...) %&gt;</code>。</p>
+<p>在现代工程化开发（Vite + Vue）中，我们很少这样用，因为我们都写在
+App.vue 里。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">&lt;div id=<span class="string">&quot;app&quot;</span>&gt;</span><br><span class="line">  &lt;!-- 这部分 <span class="variable constant_">HTML</span> 会被 <span class="title class_">Vue</span> 解析，而不是被浏览器当作静态文本 --&gt;</span><br><span class="line">  <span class="language-xml"><span class="tag">&lt;<span class="name">button</span> @<span class="attr">click</span>=<span class="string">&quot;count++&quot;</span>&gt;</span></span></span><br><span class="line"><span class="language-xml">    当前点击次数：&#123;&#123; count &#125;&#125;</span></span><br><span class="line"><span class="language-xml">  <span class="tag">&lt;/<span class="name">button</span>&gt;</span></span></span><br><span class="line">&lt;/div&gt;</span><br><span class="line"></span><br><span class="line"><span class="language-xml"><span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">&quot;https://unpkg.com/vue@3/dist/vue.global.js&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span></span><br><span class="line"><span class="language-xml"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="language-javascript"></span></span></span><br><span class="line"><span class="language-javascript"><span class="language-xml">  <span class="keyword">const</span> &#123; createApp &#125; = <span class="title class_">Vue</span></span></span></span><br><span class="line"><span class="language-javascript"><span class="language-xml">  </span></span></span><br><span class="line"><span class="language-javascript"><span class="language-xml">  <span class="comment">// 这里没有定义 template，Vue 会去 #app 里找</span></span></span></span><br><span class="line"><span class="language-javascript"><span class="language-xml">  <span class="title function_">createApp</span>(&#123;</span></span></span><br><span class="line"><span class="language-javascript"><span class="language-xml">    <span class="title function_">data</span>(<span class="params"></span>) &#123;</span></span></span><br><span class="line"><span class="language-javascript"><span class="language-xml">      <span class="keyword">return</span> &#123; <span class="attr">count</span>: <span class="number">0</span> &#125;</span></span></span><br><span class="line"><span class="language-javascript"><span class="language-xml">    &#125;</span></span></span><br><span class="line"><span class="language-javascript"><span class="language-xml">  &#125;).<span class="title function_">mount</span>(<span class="string">&#x27;#app&#x27;</span>)</span></span></span><br><span class="line"><span class="language-javascript"><span class="language-xml"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span></span><br></pre></td></tr></table></figure>
+<p><strong>Vue 3
+特性</strong>支持多根节点模板（Fragment），无需外层包裹元素，使模板结构更灵活。下面说这个东西</p>
+<h3 id="应用配置">应用配置</h3>
+<p>app 实例提供了一个 .config
+对象，允许你配置一些<strong>全局</strong>的东西</p>
+<p>说实话很像<strong>application.properties 或 <span class="citation" data-cites="Configuration">@Configuration</span></strong>，因为 Vue 3 的
+<code>.config</code> 对象是应用级别的配置中心</p>
+<p>这个对象的配置一旦配置，应用内的所有组件都能享受到，比如全局异常处理、全局变量</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> app = <span class="title function_">createApp</span>(<span class="title class_">App</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 1. 全局异常处理器</span></span><br><span class="line">app.<span class="property">config</span>.<span class="property">errorHandler</span> = <span class="function">(<span class="params">err</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">error</span>(<span class="string">&quot;系统炸了，快去修！错误信息：&quot;</span>, err)</span><br><span class="line">  <span class="comment">// 这里可以发请求给后端记录日志</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 2. 注册全局组件（比如每个页面都有的 Loading 组件）</span></span><br><span class="line"><span class="comment">// 以后在任何地方直接写 &lt;MyLoading /&gt; 就能用，不用 import</span></span><br><span class="line">app.<span class="title function_">component</span>(<span class="string">&#x27;MyLoading&#x27;</span>, <span class="title class_">MyLoadingComponent</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 最后再挂载</span></span><br><span class="line">app.<span class="title function_">mount</span>(<span class="string">&#x27;#app&#x27;</span>)</span><br></pre></td></tr></table></figure>
+<p>Vue 应用实例的 <code>.config</code>
+对象包含了一系列配置选项，用于控制应用的全局行为。这些配置会影响整个应用中的所有组件。</p>
+<p>说几个常用的配置选项</p>
+<ol type="1">
+<li><p><strong>全局错误处理器 (errorHandler)</strong></p>
+<p>捕获应用中所有组件生命周期钩子和事件处理器中的未捕获错误：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">app.<span class="property">config</span>.<span class="property">errorHandler</span> = <span class="function">(<span class="params">err, instance, info</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">error</span>(<span class="string">&#x27;全局错误捕获:&#x27;</span>, err)</span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">error</span>(<span class="string">&#x27;错误组件实例:&#x27;</span>, instance)</span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">error</span>(<span class="string">&#x27;错误位置信息:&#x27;</span>, info) <span class="comment">// 如 &quot;setup function&quot; 或 &quot;render&quot;</span></span><br><span class="line">  </span><br><span class="line">  <span class="comment">// 可以在这里实现错误上报、用户友好提示等</span></span><br><span class="line">  <span class="title function_">alert</span>(<span class="string">`发生错误: <span class="subst">$&#123;err.message&#125;</span>`</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p><strong>全局属性 (globalProperties)</strong></p>
+<p>添加可在所有组件实例中访问的全局属性：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 添加全局属性</span></span><br><span class="line">app.<span class="property">config</span>.<span class="property">globalProperties</span>.<span class="property">$filters</span> = &#123;</span><br><span class="line">  <span class="title function_">formatDate</span>(<span class="params">date</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Intl</span>.<span class="title class_">DateTimeFormat</span>(<span class="string">&#x27;zh-CN&#x27;</span>).<span class="title function_">format</span>(<span class="keyword">new</span> <span class="title class_">Date</span>(date))</span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="title function_">toUpperCase</span>(<span class="params">str</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> str.<span class="title function_">toUpperCase</span>()</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 添加全局 API 客户端</span></span><br><span class="line">app.<span class="property">config</span>.<span class="property">globalProperties</span>.<span class="property">$api</span> = &#123;</span><br><span class="line">  <span class="title function_">fetchUsers</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="title function_">fetch</span>(<span class="string">&#x27;/api/users&#x27;</span>).<span class="title function_">then</span>(<span class="function"><span class="params">res</span> =&gt;</span> res.<span class="title function_">json</span>())</span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="title function_">fetchPosts</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="title function_">fetch</span>(<span class="string">&#x27;/api/posts&#x27;</span>).<span class="title function_">then</span>(<span class="function"><span class="params">res</span> =&gt;</span> res.<span class="title function_">json</span>())</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 在组件中使用</span></span><br><span class="line"><span class="comment">// this.$filters.formatDate(new Date())</span></span><br><span class="line"><span class="comment">// this.$api.fetchUsers()</span></span><br></pre></td></tr></table></figure></li>
+<li><p><strong>性能相关配置</strong></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 关闭生产环境提示</span></span><br><span class="line">app.<span class="property">config</span>.<span class="property">productionTip</span> = <span class="literal">false</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 启用/禁用性能追踪（开发环境）</span></span><br><span class="line">app.<span class="property">config</span>.<span class="property">performance</span> = process.<span class="property">env</span>.<span class="property">NODE_ENV</span> === <span class="string">&#x27;development&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 自定义编译器选项</span></span><br><span class="line">app.<span class="property">config</span>.<span class="property">compilerOptions</span> = &#123;</span><br><span class="line">  <span class="attr">delimiters</span>: [<span class="string">&#x27;$&#123;&#x27;</span>, <span class="string">&#x27;&#125;&#x27;</span>], <span class="comment">// 更改模板插值分隔符</span></span><br><span class="line">  <span class="attr">preserveWhitespace</span>: <span class="literal">false</span> <span class="comment">// 移除模板中的空格</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p><strong>isCustomElement</strong></p>
+<p>告诉 Vue 编译器哪些元素是自定义元素（非 Vue 组件）：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 忽略以 &#x27;ion-&#x27; 开头的元素（如 Ionic 组件）</span></span><br><span class="line">app.<span class="property">config</span>.<span class="property">isCustomElement</span> = <span class="function"><span class="params">tag</span> =&gt;</span> tag.<span class="title function_">startsWith</span>(<span class="string">&#x27;ion-&#x27;</span>)</span><br></pre></td></tr></table></figure></li>
+</ol>
+<h3 id="多个应用实例">多个应用实例</h3>
+<p>Vue3支持多个应用实例，所以在一个 HTML
+页面中，你可以同时启动<strong>多个</strong>独立的 Vue
+应用，而且它们之间互不干扰，各自维护自己的数据和配置。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">&lt;!-- <span class="variable constant_">HTML</span> --&gt;</span><br><span class="line"><span class="language-xml"><span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">&quot;header-app&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span></span><br><span class="line"><span class="language-xml"><span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">&quot;sidebar-app&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span></span><br><span class="line"></span><br><span class="line">&lt;!-- <span class="variable constant_">JS</span> --&gt;</span><br><span class="line"><span class="language-xml"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="language-javascript"></span></span></span><br><span class="line"><span class="language-javascript"><span class="language-xml">  <span class="comment">// 应用 1：管理头部</span></span></span></span><br><span class="line"><span class="language-javascript"><span class="language-xml">  <span class="keyword">const</span> headerApp = <span class="title function_">createApp</span>(&#123;</span></span></span><br><span class="line"><span class="language-javascript"><span class="language-xml">    <span class="title function_">data</span>(<span class="params"></span>) &#123; <span class="keyword">return</span> &#123; <span class="attr">title</span>: <span class="string">&#x27;我是头部&#x27;</span> &#125; &#125;</span></span></span><br><span class="line"><span class="language-javascript"><span class="language-xml">  &#125;)</span></span></span><br><span class="line"><span class="language-javascript"><span class="language-xml">  headerApp.<span class="title function_">mount</span>(<span class="string">&#x27;#header-app&#x27;</span>)</span></span></span><br><span class="line"><span class="language-javascript"><span class="language-xml"></span></span></span><br><span class="line"><span class="language-javascript"><span class="language-xml">  <span class="comment">// 应用 2：管理侧边栏（和上面完全隔离）</span></span></span></span><br><span class="line"><span class="language-javascript"><span class="language-xml">  <span class="keyword">const</span> sidebarApp = <span class="title function_">createApp</span>(&#123;</span></span></span><br><span class="line"><span class="language-javascript"><span class="language-xml">    <span class="title function_">data</span>(<span class="params"></span>) &#123; <span class="keyword">return</span> &#123; <span class="attr">menu</span>: [<span class="string">&#x27;首页&#x27;</span>, <span class="string">&#x27;设置&#x27;</span>] &#125; &#125;</span></span></span><br><span class="line"><span class="language-javascript"><span class="language-xml">  &#125;)</span></span></span><br><span class="line"><span class="language-javascript"><span class="language-xml">  sidebarApp.<span class="title function_">mount</span>(<span class="string">&#x27;#sidebar-app&#x27;</span>)</span></span></span><br><span class="line"><span class="language-javascript"><span class="language-xml"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span></span><br></pre></td></tr></table></figure>
+<h2 id="选项式api和组合式api">选项式API和组合式API</h2>
+<h3 id="选项式api">选项式API</h3>
+<p>在 Vue2 之前，我们主要使用的是选项式API（Options API）。</p>
+<p>这是 Vue 2 的经典写法。Vue
+规定了一个对象的结构（Options），你需要把代码按“类型”填入指定的格子里。</p>
+<p>这种 API 的设计方式是基于对象的，我们将一个 Vue
+实例的各个部分拆分成不同的选项，如<code>data</code>、<code>methods</code>、<code>computed</code>、<code>watch</code>等，并在创建
+Vue 实例时将它们作为选项传入。</p>
+<p>Vue 规定：</p>
+<ul>
+<li>所有数据必须放在 data() 里。</li>
+<li>所有方法必须放在 methods 里。</li>
+<li>所有计算属性必须放在 computed 里。</li>
+<li>你需要通过 this.xxx 来访问它们。</li>
+</ul>
+<p>(<code>data</code>选项是一个函数，Vue
+在创建新组件实例的过程中调用此函数，会返回一个对象，以 $data
+的形式存储在组件实例中)</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">&lt;script&gt;</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> &#123;</span><br><span class="line">  <span class="comment">// 1. 数据区</span></span><br><span class="line">  <span class="title function_">data</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> &#123;</span><br><span class="line">      <span class="attr">count</span>: <span class="number">0</span>,</span><br><span class="line">      <span class="attr">keyword</span>: <span class="string">&#x27;&#x27;</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="comment">// 2. 方法区</span></span><br><span class="line">  <span class="attr">methods</span>: &#123;</span><br><span class="line">    <span class="title function_">increment</span>(<span class="params"></span>) &#123;</span><br><span class="line">      <span class="variable language_">this</span>.<span class="property">count</span>++; <span class="comment">// 必须用 this</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="title function_">search</span>(<span class="params"></span>) &#123;</span><br><span class="line">      <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="variable language_">this</span>.<span class="property">keyword</span>);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="comment">// 3. 生命周期区</span></span><br><span class="line">  <span class="title function_">mounted</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="title function_">increment</span>();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">&lt;/script&gt;</span><br></pre></td></tr></table></figure>
+<p>选项式API的优点在于其结构清晰、易于理解和上手。每个选项都有其明确的职责，开发者只需关注自己需要实现的功能，而无需过多关心
+Vue
+内部的运行机制。这种开发方式对于小型到中型的应用来说是非常高效的。</p>
+<p>然而，随着应用规模的扩大和复杂度的增加，选项式API也暴露出了一些问题。</p>
+<p>当组件的逻辑变得复杂时，代码会变得难以维护和理解。由于数据和逻辑被分散在多个选项中，很难一眼看出它们之间的关系。此外，对于复用逻辑代码也存在一定的困难，因为逻辑代码往往与特定的
+<code>data</code> 和 <code>methods</code> 紧密耦合。</p>
+<ul>
+<li>假设你要写一个“搜索功能”。你需要：
+<ol type="1">
+<li>在 data 里写 keyword。</li>
+<li>在 methods 里写 search()。</li>
+<li>在 watch 里监听 keyword 变化。</li>
+</ol></li>
+<li>这三行代码在文件里相隔很远。如果文件有 500
+行，你为了改一个功能，可能需要买一个罗技的鼠标（无极滚轮）。</li>
+</ul>
+<h3 id="组合式-api">组合式 API</h3>
+<p>这是 Vue 3
+的核心。它不再强制你把代码分类，而是允许你把<strong>同一个功能</strong>的代码写在一起。</p>
+<p>为了解决选项式API在复杂应用中的局限性，Vue3引入了组合式API。组合式API是一种基于函数的API，它允许开发者将组件的逻辑代码拆分成多个独立的函数，每个函数负责处理特定的功能或逻辑。</p>
+<p>组合式API的核心思想是“组合”，即将复杂的组件逻辑拆分成小的、可复用的函数单元。这些函数单元可以独立测试、独立复用，并且可以灵活地组合在一起以构建复杂的组件逻辑。</p>
+<ul>
+<li>不再有一个大对象，而是一个 setup 上下文（或
+<code>&lt;script setup&gt;</code>）。后面细说</li>
+<li>你需要什么，就 <code>import</code>
+什么函数（例如你要创建响应式状态就引入<code>ref, onMounted</code>）。</li>
+<li>代码按照<strong>业务逻辑</strong>组织，而不是按照<strong>技术选项</strong>组织。</li>
+<li><strong>不再使用 this</strong>。</li>
+</ul>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">&lt;script setup&gt;</span><br><span class="line"><span class="keyword">import</span> &#123; ref, onMounted &#125; <span class="keyword">from</span> <span class="string">&#x27;vue&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// --- 功能模块 1：计数器 ---</span></span><br><span class="line"><span class="keyword">const</span> count = <span class="title function_">ref</span>(<span class="number">0</span>); <span class="comment">// 数据</span></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">increment</span>(<span class="params"></span>) &#123; <span class="comment">// 方法</span></span><br><span class="line">  count.<span class="property">value</span>++;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// --- 功能模块 2：搜索 ---</span></span><br><span class="line"><span class="keyword">const</span> keyword = <span class="title function_">ref</span>(<span class="string">&#x27;&#x27;</span>);</span><br><span class="line"><span class="keyword">function</span> <span class="title function_">search</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">log</span>(keyword.<span class="property">value</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// --- 生命周期 ---</span></span><br><span class="line"><span class="title function_">onMounted</span>(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">  <span class="title function_">increment</span>();</span><br><span class="line">&#125;);</span><br><span class="line">&lt;/script&gt;</span><br></pre></td></tr></table></figure>
+<p>使用组合式API的好处是显而易见的。首先，它提高了代码的可读性和可维护性。通过将逻辑代码拆分成独立的函数，我们可以更容易地理解和跟踪代码的执行流程。其次，它提高了代码的复用性。我们可以将通用的逻辑代码封装成可复用的函数，并在多个组件中共享这些函数。最后，它使得代码的组织更加灵活。我们可以根据需要自由地组合和拆分逻辑代码，以适应不同的应用场景。</p>
+<p><strong>组合式 API 就是把 Vue
+从“填空题”变成了“写作文”，这更符合大伙编写复杂业务逻辑的直觉。</strong></p>
+<h3 id="两者对比理解">两者对比理解</h3>
+<p>你可能会问：<em>Vue 3 是不是为了组合式 API 搞了一套新引擎？</em></p>
+<p>实际上，Vue 3 的底层核心全是 <strong>组合式 API</strong>
+的机制（响应式系统 reactive/ref）。</p>
+<p>选项式 API 只是一个包装层（Wrapper）</p>
+<p>Vue 为了兼容 Vue 2 的习惯，在底层做了一个转换，例如</p>
+<ul>
+<li>当你写 data() 时，Vue 内部帮你调用了 reactive()。</li>
+<li>当你写 methods 时，Vue 内部帮你把它绑定到了实例上。</li>
+</ul>
+<p><strong>不要混用</strong>：虽然 Vue 允许你在一个文件里同时写 Options
+和 Composition，但千万别这么做，那是维护的噩梦。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a target="_blank" rel="noopener" href="https://github.com/ergou10086">ErgouTree</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://ergou10086.github.io/posts/47590.html">https://ergou10086.github.io/posts/47590.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://ergou10086.github.io" target="_blank">ErgouTree's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E7%BD%91%E7%AB%99%E6%8A%80%E6%9C%AF/">网站技术</a><a class="post-meta__tags" href="/tags/%E5%89%8D%E7%AB%AF%E6%8A%80%E6%9C%AF/">前端技术</a><a class="post-meta__tags" href="/tags/JavaScript/">JavaScript</a><a class="post-meta__tags" href="/tags/%E5%89%8D%E7%AB%AF/">前端</a><a class="post-meta__tags" href="/tags/Vue/">Vue</a><a class="post-meta__tags" href="/tags/%E5%89%8D%E7%AB%AF%E6%A1%86%E6%9E%B6/">前端框架</a></div><div class="post-share"><div class="addtoany"><div class="a2a_kit a2a_kit_size_32 a2a_default_style"><a class="a2a_button_facebook"></a><a class="a2a_button_twitter"></a><a class="a2a_button_wechat"></a><a class="a2a_button_sina_weibo"></a><a class="a2a_button_facebook_messenger"></a><a class="a2a_button_email"></a><a class="a2a_button_copy_link"></a><a class="a2a_dd" target="_blank" rel="noopener" href="https://www.addtoany.com/share"></a></div></div><script async="async" src="https://static.addtoany.com/menu/page.js"></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/posts/44121.html" title="隙间画谈—清河门火车站"><img class="cover" src="/images/posts/cover_galgame.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">隙间画谈—清河门火车站</div></div><div class="info-2"><div class="info-item-1">...</div></div></div></a><a class="pagination-related" href="/posts/39440.html" title="Vue3_part3—Vue指令和声明式渲染"><div class="cover" style="background: /images/posts/"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Vue3_part3—Vue指令和声明式渲染</div></div><div class="info-2"><div class="info-item-1">Vue3 指令 什么是指令 Vue 指令（Directives）是 Vue.js 的一项核心功能，它们可以在 HTML 模板中以 v- 开头的特殊属性形式使用，用于将响应式数据绑定到 DOM 元素上或在 DOM 元素上进行一些操作。 Vue 指令是带有前缀 v- 的特殊 HTML 属性，它赋予 HTML 标签额外的功能。 指令本质上是对 DOM 操作的封装，让你可以通过声明式的方式控制 DOM。 指令的基本语法 1&lt;element v-directive:argument.modifier=&quot;expression&quot;&gt;&lt;/element&gt;  指令名称：v-directive（如 v-if、v-for） 参数：argument（可选，如 v-bind:href 中的 href）参数在指令后以冒号指明。 修饰符：modifier（可选，如 v-on:click.stop 中的 stop）修饰符是以半角句号 ....</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/posts/107.html" title="Vue3 part1—了解前端框架Vue及其构建工具Vite"><img class="cover" src="/images/posts/cover_vue1.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-11-20</div><div class="info-item-2">Vue3 part1—了解前端框架Vue及其构建工具Vite</div></div><div class="info-2"><div class="info-item-1">了解前端框架 实际上，我在学习了很长一段时间的后端之后才接触到前端框架，所以说，这是一个比较尴尬的事情 后端的框架我们都比较熟悉，主要内容其实无非就是用于处理处理业务逻辑和数据持久化 后端框架是面向服务设计的，它更关注数据的正确性和安全性，倾向于实际业务的逻辑和数据 而且后端框架一般都会有很多的关于多线程并发处理的内容，因为这会提升性能 而 Vue 这种前端框架，它是处理用户交互和数据展示的，主要是用户与业务的交互 Vue 是面向组件设计的，这是前端框架设计模式的一种，而且它着重关注用户体验和界面流畅性 一般情况下，Vue 是单线程，异步处理的，因为 JavaScript 语言本身就是单线程的。这主要源于浏览器的设计 你想想，操作...</div></div></div></a><a class="pagination-related" href="/posts/58324.html" title="Vue3 part4—Vue组件相关内容"><img class="cover" src="/images/posts/cover_teach5.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-11-27</div><div class="info-item-2">Vue3 part4—Vue组件相关内容</div></div><div class="info-2"><div class="info-item-1">理解所谓的 组件 这个组件，我们可能会第一时间的想到是前端中的那些，小的那种交互式的组件，是那种 Web Components 但是，Vue 中它不止这样，我们可以把 Vue 中的组件理解为 Java 中的类  在Java中，你不会把所有代码都写在main方法里。你会创建User类、Order类、Product类。每个类都有自己的属性（字段）、行为（方法）和生命周期。 而在前端，写一个巨大的HTML文件是扫码的，要人命的。所以 Vue 建议你把页面拆分成一个个组件（比如NavBar、UserProfile、Footer）。 一个Vue组件（通常是一个.vue文件）把HTML结构（模板）、JavaScript逻辑（数据与行为）、CSS样式（外观）封装在一起。就像Java类把字段和方法封装在一起一样。  所以，Vue 中，组件允许我们将 UI 划分为独立的、可重用的部分，并且可以对每个部分进行单独的思考。组件化开发是 Vue 的核心思想，它允许你将大型应用拆分成小的、独立的、可复用的部分，就像搭积木一样构建应用。 Vue 组件是可复用的...</div></div></div></a><a class="pagination-related" href="/posts/39440.html" title="Vue3_part3—Vue指令和声明式渲染"><div class="cover" style="background: /images/posts/"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-11-23</div><div class="info-item-2">Vue3_part3—Vue指令和声明式渲染</div></div><div class="info-2"><div class="info-item-1">Vue3 指令 什么是指令 Vue 指令（Directives）是 Vue.js 的一项核心功能，它们可以在 HTML 模板中以 v- 开头的特殊属性形式使用，用于将响应式数据绑定到 DOM 元素上或在 DOM 元素上进行一些操作。 Vue 指令是带有前缀 v- 的特殊 HTML 属性，它赋予 HTML 标签额外的功能。 指令本质上是对 DOM 操作的封装，让你可以通过声明式的方式控制 DOM。 指令的基本语法 1&lt;element v-directive:argument.modifier=&quot;expression&quot;&gt;&lt;/element&gt;  指令名称：v-directive（如 v-if、v-for） 参数：argument（可选，如 v-bind:href 中的 href）参数在指令后以冒号指明。 修饰符：modifier（可选，如 v-on:click.stop 中的 stop）修饰符是以半角句号 ....</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="gitalk-container"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/arp.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">ErgouTree</div><div class="author-info-description">I start a brand-new life with you.</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">256</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">155</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">87</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/ergou10086"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/ergou10086" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="/zjm88822201@126.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a><a class="social-icon" href="https://space.bilibili.com/142045656?spm_id_from=333.1007.0.0" target="_blank" title="bilibili"><i class="fas fa-brands fa-bilibili" style="color: #4a72be;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">作者长期陷入galgame和osu!maina4k中 祝他好运吧 对了 如果图片加载过慢 建议科学上网进行使用</div></div><div class="card-widget card-weather"><div class="item-headline"><i class="fas fa-cloud-sun"></i><span>aside.card_weather</span></div><div class="weather-content"><div class="weather-loading"><i class="fas fa-spinner fa-spin"></i><span>加载中...</span></div><div class="weather-main" style="display: none;"><div class="weather-location"><i class="fas fa-map-marker-alt"></i><span id="weather-location">获取中...</span></div><div class="weather-info"><div class="weather-temp"><span id="weather-temp">--</span><span class="unit">°C</span></div><div class="weather-desc"><span id="weather-weather">--</span></div><div class="weather-details"><div class="weather-item"><i class="fas fa-wind"></i><span id="weather-windpower">--</span></div><div class="weather-item"><i class="fas fa-tint"></i><span id="weather-humidity">--</span></div><div class="weather-item"><i class="fas fa-eye"></i><span id="weather-winddir">--</span></div></div></div><div class="weather-update-time"><i class="fas fa-clock"></i><span id="weather-update-time">更新中...</span></div></div></div></div><div class="card-widget"><div class="item-headline"><i></i><span></span></div><div class="item-content"></div></div><div class="sticky_layout"></div><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AD%A6vue%E5%89%8D%E7%9A%84%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95"><span class="toc-number">1.</span> <span class="toc-text">学Vue前的基础语法</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8F%92%E5%80%BC%E8%A1%A8%E8%BE%BE%E5%BC%8F"><span class="toc-number">1.1.</span> <span class="toc-text">插值表达式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AE%AD%E5%A4%B4%E5%87%BD%E6%95%B0"><span class="toc-number">1.2.</span> <span class="toc-text">箭头函数</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#vue3-%E9%A1%B9%E7%9B%AE%E8%AF%B4%E6%98%8E"><span class="toc-number">2.</span> <span class="toc-text">Vue3 项目说明</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#vue3%E9%A1%B9%E7%9B%AE%E7%BB%93%E6%9E%84"><span class="toc-number">2.1.</span> <span class="toc-text">Vue3项目结构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#vue3%E7%BB%84%E4%BB%B6%E7%BB%93%E6%9E%84"><span class="toc-number">2.2.</span> <span class="toc-text">Vue3组件结构</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%8D%95%E6%96%87%E4%BB%B6%E7%BB%84%E4%BB%B6"><span class="toc-number">2.2.1.</span> <span class="toc-text">单文件组件</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#vue%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95"><span class="toc-number">3.</span> <span class="toc-text">Vue基础语法</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%9B%E5%BB%BA-vue-%E5%BA%94%E7%94%A8%E5%AE%9E%E4%BE%8B"><span class="toc-number">3.1.</span> <span class="toc-text">创建 Vue 应用实例</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%B9%E7%BB%84%E4%BB%B6-root-component"><span class="toc-number">3.2.</span> <span class="toc-text">根组件 (Root Component)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8C%82%E8%BD%BD%E5%BA%94%E7%94%A8"><span class="toc-number">3.3.</span> <span class="toc-text">挂载应用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%B9%E7%BB%84%E4%BB%B6%E6%A8%A1%E6%9D%BF"><span class="toc-number">3.4.</span> <span class="toc-text">根组件模板</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BA%94%E7%94%A8%E9%85%8D%E7%BD%AE"><span class="toc-number">3.5.</span> <span class="toc-text">应用配置</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%9A%E4%B8%AA%E5%BA%94%E7%94%A8%E5%AE%9E%E4%BE%8B"><span class="toc-number">3.6.</span> <span class="toc-text">多个应用实例</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%80%89%E9%A1%B9%E5%BC%8Fapi%E5%92%8C%E7%BB%84%E5%90%88%E5%BC%8Fapi"><span class="toc-number">4.</span> <span class="toc-text">选项式API和组合式API</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%80%89%E9%A1%B9%E5%BC%8Fapi"><span class="toc-number">4.1.</span> <span class="toc-text">选项式API</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BB%84%E5%90%88%E5%BC%8F-api"><span class="toc-number">4.2.</span> <span class="toc-text">组合式 API</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%A4%E8%80%85%E5%AF%B9%E6%AF%94%E7%90%86%E8%A7%A3"><span class="toc-number">4.3.</span> <span class="toc-text">两者对比理解</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/17069.html" title="Vue3_part7—Vite构建工具与开发服务器"><img src="/images/posts/cover_java23.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Vue3_part7—Vite构建工具与开发服务器"/></a><div class="content"><a class="title" href="/posts/17069.html" title="Vue3_part7—Vite构建工具与开发服务器">Vue3_part7—Vite构建工具与开发服务器</a><time datetime="2025-11-29T10:02:55.000Z" title="发表于 2025-11-29 18:02:55">2025-11-29</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/28862.html" title="Vue3 part6—使用组件及其各种实际问题"><img src="/images/posts/cover_nothing.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Vue3 part6—使用组件及其各种实际问题"/></a><div class="content"><a class="title" href="/posts/28862.html" title="Vue3 part6—使用组件及其各种实际问题">Vue3 part6—使用组件及其各种实际问题</a><time datetime="2025-11-29T10:00:29.000Z" title="发表于 2025-11-29 18:00:29">2025-11-29</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/29682.html" title="Vue3 part5—组件注册和script setup"><img src="/images/posts/cover_theory.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Vue3 part5—组件注册和script setup"/></a><div class="content"><a class="title" href="/posts/29682.html" title="Vue3 part5—组件注册和script setup">Vue3 part5—组件注册和script setup</a><time datetime="2025-11-29T09:58:42.000Z" title="发表于 2025-11-29 17:58:42">2025-11-29</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/58324.html" title="Vue3 part4—Vue组件相关内容"><img src="/images/posts/cover_teach5.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Vue3 part4—Vue组件相关内容"/></a><div class="content"><a class="title" href="/posts/58324.html" title="Vue3 part4—Vue组件相关内容">Vue3 part4—Vue组件相关内容</a><time datetime="2025-11-27T15:18:36.000Z" title="发表于 2025-11-27 23:18:36">2025-11-27</time></div></div></div></div></div></main><div class="fps-display"><span id="fps">FPS: 60</span></div><footer id="footer" style="background-image: url(/images/posts/cover_security3.jpg);"><div id="footer-wrap"><div class="copyright">&copy;2024 - 2025 By ErgouTree</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">忘れたくない思い、ありますか？ <br>,<span id="realtime_duration" style="font-family: monospace;"></span>,<br><a href="https://icp.gov.moe/?keyword=20257009" target="_blank">萌ICP备20257009号</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><a class="icon-V hidden" onclick="switchNightMode()" title="日间和夜间模式切换"><svg width="25" height="25" viewBox="0 0 1024 1024"><use id="modeicon" xlink:href="#icon-moon"></use></svg></a><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="chat-btn" type="button" title="聊天" style="display:none"><i class="fas fa-comment"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (true) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script><script>(() => {
+  const applyThemeDefaultsConfig = theme => {
+    if (theme === 'dark-mode') {
+      Chart.defaults.color = "rgba(255, 255, 255, 0.8)"
+      Chart.defaults.borderColor = "rgba(255, 255, 255, 0.2)"
+      Chart.defaults.scale.ticks.backdropColor = "transparent"
+    } else {
+      Chart.defaults.color = "rgba(0, 0, 0, 0.8)"
+      Chart.defaults.borderColor = "rgba(0, 0, 0, 0.1)"
+      Chart.defaults.scale.ticks.backdropColor = "transparent"
+    }
+  }
+
+  // Recursively traverse the config object and automatically apply theme-specific color schemes
+  const applyThemeConfig = (obj, theme) => {
+    if (typeof obj !== 'object' || obj === null) return
+
+    Object.keys(obj).forEach(key => {
+      const value = obj[key]
+      // If the property is an object and has theme-specific options, apply them
+      if (typeof value === 'object' && value !== null) {
+        if (value[theme]) {
+          obj[key] = value[theme] // Apply the value for the current theme
+        } else {
+          // Recursively process child objects
+          applyThemeConfig(value, theme)
+        }
+      }
+    })
+  }
+
+  const runChartJS = ele => {
+    window.loadChartJS = true
+
+    Array.from(ele).forEach((item, index) => {
+      const chartSrc = item.firstElementChild
+      const chartID = item.getAttribute('data-chartjs-id') || ('chartjs-' + index) // Use custom ID or default ID
+      const width = item.getAttribute('data-width')
+      const existingCanvas = document.getElementById(chartID)
+
+      // If a canvas already exists, remove it to avoid rendering duplicates
+      if (existingCanvas) {
+          existingCanvas.parentNode.remove()
+      }
+
+      const chartDefinition = chartSrc.textContent
+      const canvas = document.createElement('canvas')
+      canvas.id = chartID
+
+      const div = document.createElement('div')
+      div.className = 'chartjs-wrap'
+
+      if (width) {
+        div.style.width = width
+      }
+
+      div.appendChild(canvas)
+      chartSrc.insertAdjacentElement('afterend', div)
+
+      const ctx = document.getElementById(chartID).getContext('2d')
+
+      const config = JSON.parse(chartDefinition)
+
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark-mode' : 'light-mode'
+
+      // Set default styles (initial setup)
+      applyThemeDefaultsConfig(theme)
+
+      // Automatically traverse the config and apply dual-mode color schemes
+      applyThemeConfig(config, theme)
+
+      new Chart(ctx, config)
+    })
+  }
+
+  const loadChartJS = () => {
+    const chartJSEle = document.querySelectorAll('#article-container .chartjs-container')
+    if (chartJSEle.length === 0) return
+
+    window.loadChartJS ? runChartJS(chartJSEle) : btf.getScript('https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.min.js').then(() => runChartJS(chartJSEle))
+  }
+
+  // Listen for theme change events
+  btf.addGlobalFn('themeChange', loadChartJS, 'chartjs')
+  btf.addGlobalFn('encrypt', loadChartJS, 'chartjs')
+
+  window.pjax ? loadChartJS() : document.addEventListener('DOMContentLoaded', loadChartJS)
+})()</script><script>(function() {
+  const abcjsInit = function() {
+    const abcjsFn = function() {
+      setTimeout(function() {
+        const sheets = document.querySelectorAll(".abc-music-sheet")
+        for (let i = 0; i < sheets.length; i++) {
+          const ele = sheets[i]
+          if (ele.children.length > 0) continue
+
+          // Parse parameters from data-params attribute
+          let params = {}
+          const dp = ele.getAttribute("data-params")
+          if (dp) {
+            try {
+              params = JSON.parse(dp)
+            } catch (e) {
+              console.error("Failed to parse data-params:", e)
+            }
+          }
+
+          // Merge parsed parameters with the responsive option
+          // Ensures params content appears before responsive
+          const options = { ...params, responsive: "resize" }
+
+          // Render the music score using ABCJS.renderAbc
+          ABCJS.renderAbc(ele, ele.innerHTML, options)
+        }
+      }, 100)
+    }
+
+    if (typeof ABCJS === "object") {
+      abcjsFn()
+    } else {
+      btf.getScript("https://cdn.jsdelivr.net/npm/abcjs/dist/abcjs-basic-min.min.js").then(abcjsFn)
+    }
+  }
+
+  if (window.pjax) {
+    abcjsInit()
+  } else {
+    window.addEventListener("load", abcjsInit)
+  }
+
+  btf.addGlobalFn("encrypt", abcjsInit, "abcjs")
+})()</script><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = {"labels":["Gitalk","Comment"],"createIssueManually":false,"distractionFreeMode":false}
+
+  const commentCount = n => {
+    const isCommentCount = document.querySelector('#post-meta .gitalk-comment-count')
+    if (isCommentCount) {
+      isCommentCount.textContent= n
+    }
+  }
+
+  const initGitalk = (el, path) => {
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGitalk = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+
+    const gitalk = new Gitalk({
+      clientID: 'Ov23li3vDQANiUddL4XB',
+      clientSecret: '5c9a56d02995340fca117809cd414662aadce6ff',
+      repo: 'HexoComment',
+      owner: 'ergou10086',
+      admin: ['ergou10086'],
+      updateCountCallback: commentCount,
+      ...option,
+      id: isShuoshuo ? path : (option && option.id) || 'cda780478b5c8533d7a9c6b5c9bbb7b4'
+    })
+
+    gitalk.render('gitalk-container')
+  }
+
+  const loadGitalk = async(el, path) => {
+    if (typeof Gitalk === 'function') initGitalk(el, path)
+    else {
+      await btf.getCSS('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.css')
+      await btf.getScript('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.js')
+      initGitalk(el, path)
+    }
+  }
+
+  if (isShuoshuo) {
+    'Gitalk' === 'Gitalk'
+      ? window.shuoshuoComment = { loadComment: loadGitalk }
+      : window.loadOtherComment = loadGitalk
+    return
+  }
+
+  if ('Gitalk' === 'Gitalk' || !false) {
+    if (false) btf.loadComment(document.getElementById('gitalk-container'), loadGitalk)
+    else loadGitalk()
+  } else {
+    window.loadOtherComment = loadGitalk
+  }
+})()</script></div><div class="aplayer no-destroy" data-id="13587761608" data-server="netease" data-type="playlist" data-fixed="true" data-autoplay="false" data-lrcType="-1"> </div><script src="https://cdn.jsdelivr.net/npm/abcjs@7.1.2/dist/abcjs-basic-min.js"></script><script src="/js/sun_moon.js" async></script><script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.7/dayjs.min.js"></script><script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.7/plugin/duration.min.js"></script><script src="/scripts/realtime.js"></script><script src="/scripts/random.js"></script><script src="/scripts/weather.js"></script><script>if(window.location.pathname.includes('/viewpoint/')){function loadViewpointScripts(){var loadScript=function(src,callback){var s=document.createElement('script');s.src=src;s.async=false;s.defer=false;s.onload=function(){console.log('脚本加载成功:',src);setTimeout(function(){if(callback)callback();},100);};s.onerror=function(){console.error('脚本加载失败:',src);setTimeout(function(){if(callback)callback();},100);};document.body.appendChild(s);};loadScript('/scripts/viewpoint/math.js',function(){console.log('math.js 加载完成, math:',typeof math);loadScript('/scripts/viewpoint/katex.min.js',function(){console.log('katex.min.js 加载完成, katex:',typeof katex);loadScript('/scripts/viewpoint/sweetalert2@11.js',function(){console.log('sweetalert2@11.js 加载完成, Swal:',typeof Swal,'Sweetalert2:',typeof Sweetalert2);if(typeof Swal==='undefined'&&typeof Sweetalert2!=='undefined'){window.Swal=window.Sweetalert2;console.log('已设置 Swal 别名');}loadScript('/scripts/viewpoint/main.js',function(){console.log('Viewpoint 页面所有脚本加载完成');});});});});}if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',loadViewpointScripts);}else{loadViewpointScripts();}}</script><script>if(window.location.pathname.includes('/littleGame/')){var s=document.createElement('script');s.src='/scripts/littleGame/2048.js';s.async=false;s.defer=false;if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',function(){document.body.appendChild(s);});}else{document.body.appendChild(s);}}</script><script defer="defer" id="ribbon" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-ribbon.min.js" size="150" alpha="0.6" zIndex="-1" mobile="null" data-click="true"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = false;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><script id="click-heart" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/click-heart.min.js" async="async" mobile="false"></script><script>(() => {
+  window.ChatraID = '4bzb546NSBoJcrNyu'
+  window.Chatra = window.Chatra || function() {
+    (window.Chatra.q = window.Chatra.q || []).push(arguments)
+  }
+
+  btf.getScript('https://call.chatra.io/chatra.js').then(() => {
+    const isChatBtn = true
+    const isChatHideShow = true
+
+    if (isChatBtn) {
+      const close = () => {
+        Chatra('minimizeWidget')
+        Chatra('hide')
+      }
+
+      const open = () => {
+        Chatra('openChat', true)
+        Chatra('show')
+      }
+
+      window.ChatraSetup = { startHidden: true }
+    
+      window.chatBtnFn = () => document.getElementById('chatra').classList.contains('chatra--expanded') ? close() : open()
+
+      document.getElementById('chat-btn').style.display = 'block'
+    } else if (isChatHideShow) {
+      window.chatBtn = {
+        hide: () => Chatra('hide'),
+        show: () => Chatra('show')
+      }
+    }
+  })
+})()</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/metingjs/dist/Meting.min.js"></script><script>(() => {
+  const destroyAplayer = () => {
+    if (window.aplayers) {
+      for (let i = 0; i < window.aplayers.length; i++) {
+        if (!window.aplayers[i].options.fixed) {
+          window.aplayers[i].destroy()
+        }
+      }
+    }
+  }
+
+  const runMetingJS = () => {
+    typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+  }
+
+  btf.addGlobalFn('pjaxSend', destroyAplayer, 'destroyAplayer')
+  btf.addGlobalFn('pjaxComplete', loadMeting, 'runMetingJS')
+})()</script><script src="https://cdn.jsdelivr.net/npm/pjax/pjax.min.js"></script><script>(() => {
+  const pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+  window.pjax = new Pjax({
+    elements: 'a:not([target="_blank"]):not([href="/music/"]):not([href="/viewpoint/"])',
+    selectors: pjaxSelectors,
+    cacheBust: false,
+    analytics: false,
+    scrollRestoration: false
+  })
+
+  const triggerPjaxFn = (val) => {
+    if (!val) return
+    Object.values(val).forEach(fn => fn())
+  }
+
+  document.addEventListener('pjax:send', () => {
+    // removeEventListener
+    btf.removeGlobalFnEvent('pjaxSendOnce')
+    btf.removeGlobalFnEvent('themeChange')
+
+    // reset readmode
+    const $bodyClassList = document.body.classList
+    if ($bodyClassList.contains('read-mode')) $bodyClassList.remove('read-mode')
+
+    triggerPjaxFn(window.globalFn.pjaxSend)
+  })
+
+  document.addEventListener('pjax:complete', () => {
+    btf.removeGlobalFnEvent('pjaxCompleteOnce')
+    document.querySelectorAll('script[data-pjax]').forEach(item => {
+      const newScript = document.createElement('script')
+      const content = item.text || item.textContent || item.innerHTML || ""
+      Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+      newScript.appendChild(document.createTextNode(content))
+      item.parentNode.replaceChild(newScript, item)
+    })
+
+    triggerPjaxFn(window.globalFn.pjaxComplete)
+  })
+
+  document.addEventListener('pjax:error', e => {
+    if (e.request.status === 404) {
+      const usePjax = true
+      true 
+        ? (usePjax ? pjax.loadUrl('/404.html') : window.location.href = '/404.html')
+        : window.location.href = e.request.responseURL
+    }
+  })
+})()</script><script src="/js/fps-display.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><!-- hexo injector body_end start --><script data-pjax>
+  function butterfly_swiper_injector_config(){
+    var parent_div_git = document.getElementById('recent-posts');
+    var item_html = '<div class="recent-post-item" style="height: auto;width: 100%"><div class="blog-slider swiper-container-fade swiper-container-horizontal" id="swiper_container"><div class="blog-slider__wrp swiper-wrapper" style="transition-duration: 0ms;"><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_database.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-14</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt="">结构化查询语言SQL</a><div class="blog-slider__text">SQL基本很常用的语句都在这里了，本质上是当初为了应付数据库考试整理的，后来发现还蛮有用的很方便查常用的语句</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java4.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-22</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt="">SpringBoot part0?INF-SpringBoot这个框架都需要学习什么</a><div class="blog-slider__text">主要围绕Spring Boot中重要知识来简洁或详细的说明，其中部分不够完全，持续更新</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java11.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-15</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt="">关于Lombok在高版本IDEA中注解处理不生效的问题解决</a><div class="blog-slider__text">基本上是彻底的解决了用 IDEA 新建 Spring Boot 项目时候会产生的 Lombok 注解处理失效的各种问题</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_实用.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-05</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt="">个人向galgame原声带或相关音乐整理及其资源</a><div class="blog-slider__text">整理了我喜欢的galgame ost或者衍生的音乐专辑，部分资源是自己扒盘扒下来的，部分来自鸟白岛放映厅</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_math.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-17</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt="">对书上证明样本方差是总体方差的无偏估计量的解析</a><div class="blog-slider__text">对书上证明样本方差是总体方差的无偏估计量的解析，高等教育出版社-华科大版本</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_alog.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-04-24</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt="">第十五届蓝桥杯Java国赛B组D题-园丁题解</a><div class="blog-slider__text">第十五届蓝桥杯Java国赛B组D题-园丁题解，该题解已经发布到洛谷社区中并且被全站推荐</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java4.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-04-29</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt="">操作系统之处理机的死锁部分概述</a><div class="blog-slider__text">对操作系统之处理机的死锁部分知识的总结，包括代码复现</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_lb.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-09</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt="">Little Busters!EX游戏攻略</a><div class="blog-slider__text">整理了一份详细清晰的Little Busters！EX的游戏攻略，因为我自己也在推，就顺手整理了一份方便查阅的md文档</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java9.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-16</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt="">Spring Boot中使用Hibernate框架</a><div class="blog-slider__text">对学习完Hibernate的应用部分，主要围绕Spring Boot中使用Hibernate框架，建议学习完 Hibernate 框架再看</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div></div><div class="blog-slider__pagination swiper-pagination-clickable swiper-pagination-bullets"></div></div></div>';
+    console.log('已挂载butterfly_swiper')
+    parent_div_git.insertAdjacentHTML("afterbegin",item_html)
+    }
+  var elist = 'undefined'.split(',');
+  var cpage = location.pathname;
+  var epage = '/';
+  var flag = 0;
+
+  for (var i=0;i<elist.length;i++){
+    if (cpage.includes(elist[i])){
+      flag++;
+    }
+  }
+
+  if ((epage ==='all')&&(flag == 0)){
+    butterfly_swiper_injector_config();
+  }
+  else if (epage === cpage){
+    butterfly_swiper_injector_config();
+  }
+  </script><script defer src="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper.min.js"></script><script defer data-pjax src="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper_init.js"></script><!-- hexo injector body_end end --></body></html>
