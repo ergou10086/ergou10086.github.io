@@ -1,7 +1,7 @@
 /* 2048 游戏样式 - 与Butterfly主题风格一致 */
 
 #littleGame {
-  max-width: 600px;
+  max-width: 900px;
   margin: 2rem auto;
   padding: 2rem;
   background: var(--card-bg, #fff);
@@ -15,6 +15,44 @@
 
 .game-container {
   width: 100%;
+}
+
+.lg-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.lg-tab-btn {
+  padding: 8px 18px;
+  border-radius: 999px;
+  border: 1px solid var(--hr-border, #e3e8f7);
+  background: var(--card-bg, #fff);
+  color: var(--font-color, #4c4948);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.95rem;
+}
+
+.lg-tab-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--card-box-shadow, 0 2px 8px rgba(0, 0, 0, 0.08));
+}
+
+.lg-tab-btn.is-active {
+  background: var(--btn-bg, #49b1f5);
+  color: var(--btn-color, #fff);
+  border-color: transparent;
+}
+
+.lg-game-panel {
+  display: none;
+}
+
+.lg-game-panel.is-active {
+  display: block;
 }
 
 .game-header {
@@ -102,6 +140,237 @@
   width: 100%;
   padding-bottom: 100%;
   margin-top: 2rem;
+}
+
+/* 扫雷样式 */
+.ms-container {
+  text-align: center;
+}
+
+.ms-header {
+  margin-bottom: 16px;
+}
+
+.ms-title {
+  font-size: 2.2rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: var(--text-highlight-color, #4c4948);
+}
+
+.ms-desc {
+  color: var(--font-color, #4c4948);
+  opacity: 0.75;
+  font-size: 0.95rem;
+}
+
+.ms-controls {
+  display: grid;
+  gap: 12px;
+  justify-items: center;
+  margin: 14px 0 18px;
+}
+
+.ms-field {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.ms-field label {
+  font-size: 0.95rem;
+  color: var(--font-color, #4c4948);
+}
+
+.ms-field input {
+  width: 90px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--hr-border, #e3e8f7);
+  background: var(--card-bg, #fff);
+  color: var(--font-color, #4c4948);
+}
+
+.ms-hint {
+  font-size: 0.8rem;
+  color: var(--card-meta, #999);
+}
+
+.ms-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.ms-btn {
+  padding: 8px 18px;
+  border-radius: 8px;
+  border: none;
+  background: var(--btn-bg, #49b1f5);
+  color: var(--btn-color, #fff);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.ms-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--card-box-shadow, 0 2px 8px rgba(0, 0, 0, 0.08));
+}
+
+.ms-btn.ms-btn-ghost {
+  background: transparent;
+  color: var(--font-color, #4c4948);
+  border: 1px solid var(--hr-border, #e3e8f7);
+}
+
+.ms-status {
+  font-size: 0.9rem;
+  color: var(--font-color, #4c4948);
+  opacity: 0.8;
+}
+
+.minesweeper-board {
+  --ms-cols: 10;
+  --ms-cell-size: 32px;
+  display: grid;
+  grid-template-columns: repeat(var(--ms-cols), var(--ms-cell-size));
+  justify-content: center;
+  gap: 6px;
+  margin: 10px auto 0;
+  padding: 16px;
+  background: var(--card-bg, #fff);
+  border-radius: 12px;
+  border: 1px solid var(--hr-border, #e3e8f7);
+  width: max-content;
+  max-width: 100%;
+}
+
+.ms-cell {
+  width: var(--ms-cell-size);
+  height: var(--ms-cell-size);
+  border-radius: 6px;
+  border: 1px solid var(--hr-border, #e3e8f7);
+  background: rgba(73, 177, 245, 0.08);
+  color: var(--font-color, #4c4948);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+
+.ms-cell.revealed {
+  background: var(--card-bg, #fff);
+  cursor: default;
+}
+
+.ms-cell.flagged {
+  background: rgba(255, 193, 7, 0.18);
+  color: #d97706;
+}
+
+.ms-cell.mine {
+  background: rgba(239, 68, 68, 0.18);
+  color: #ef4444;
+}
+
+/* 五子棋样式 */
+.gm-container {
+  text-align: center;
+}
+
+.gm-header {
+  margin-bottom: 12px;
+}
+
+.gm-title {
+  font-size: 2.2rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: var(--text-highlight-color, #4c4948);
+}
+
+.gm-desc {
+  color: var(--font-color, #4c4948);
+  opacity: 0.75;
+  font-size: 0.95rem;
+}
+
+.gm-controls {
+  display: grid;
+  gap: 10px;
+  justify-items: center;
+  margin: 10px 0 16px;
+}
+
+.gm-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.gm-btn {
+  padding: 8px 18px;
+  border-radius: 8px;
+  border: none;
+  background: var(--btn-bg, #49b1f5);
+  color: var(--btn-color, #fff);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.gm-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--card-box-shadow, 0 2px 8px rgba(0, 0, 0, 0.08));
+}
+
+.gm-status {
+  font-size: 0.9rem;
+  color: var(--font-color, #4c4948);
+  opacity: 0.8;
+}
+
+.gomoku-board {
+  --gm-cols: 15;
+  --gm-cell-size: 34px;
+  display: grid;
+  grid-template-columns: repeat(var(--gm-cols), var(--gm-cell-size));
+  justify-content: center;
+  gap: 4px;
+  margin: 0 auto;
+  padding: 14px;
+  background: rgba(73, 177, 245, 0.08);
+  border-radius: 12px;
+  border: 1px solid var(--hr-border, #e3e8f7);
+  width: max-content;
+  max-width: 100%;
+}
+
+.gm-cell {
+  width: var(--gm-cell-size);
+  height: var(--gm-cell-size);
+  border-radius: 6px;
+  border: 1px solid rgba(73, 177, 245, 0.2);
+  background: var(--card-bg, #fff);
+  cursor: pointer;
+  position: relative;
+}
+
+.gm-piece {
+  position: absolute;
+  inset: 4px;
+  border-radius: 50%;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.gm-piece.black {
+  background: radial-gradient(circle at 30% 30%, #555, #111);
+}
+
+.gm-piece.white {
+  background: radial-gradient(circle at 30% 30%, #fff, #cfcfcf);
+  border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .grid-container {
@@ -328,6 +597,19 @@
   .new-game-btn {
     padding: 0.625rem 1.5rem;
     font-size: 0.875rem;
+  }
+
+  .ms-title,
+  .gm-title {
+    font-size: 1.8rem;
+  }
+
+  .minesweeper-board {
+    --ms-cell-size: 26px;
+  }
+
+  .gomoku-board {
+    --gm-cell-size: 26px;
   }
 }
 
