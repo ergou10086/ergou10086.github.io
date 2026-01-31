@@ -1,0 +1,1812 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>面向对象编程的设计模式之行为型模式 | ErgouTree's Blog</title><meta name="author" content="ErgouTree"><meta name="copyright" content="ErgouTree"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="行为型设计模式 行为型模式关注对象之间的职责分配和通信方式。  责任链模式（Chain of Responsibility）：将请求沿处理链传递，直到有对象处理它为止。 命令模式（Command）：将请求封装为对象，从而参数化客户、排队请求或记录日志。 解释器模式（Interpreter）：定义语言的文法并解释该语言中的句子（适用于简单语法规则）。 迭代器模式（Iterator）：提">
+<meta property="og:type" content="article">
+<meta property="og:title" content="面向对象编程的设计模式之行为型模式">
+<meta property="og:url" content="https://ergou10086.github.io/posts/59606.html">
+<meta property="og:site_name" content="ErgouTree&#39;s Blog">
+<meta property="og:description" content="行为型设计模式 行为型模式关注对象之间的职责分配和通信方式。  责任链模式（Chain of Responsibility）：将请求沿处理链传递，直到有对象处理它为止。 命令模式（Command）：将请求封装为对象，从而参数化客户、排队请求或记录日志。 解释器模式（Interpreter）：定义语言的文法并解释该语言中的句子（适用于简单语法规则）。 迭代器模式（Iterator）：提">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://ergou10086.github.io/images/posts/cover_math4.jpg">
+<meta property="article:published_time" content="2026-01-31T04:18:30.000Z">
+<meta property="article:modified_time" content="2026-01-31T04:19:20.245Z">
+<meta property="article:author" content="ErgouTree">
+<meta property="article:tag" content="学习">
+<meta property="article:tag" content="实用知识">
+<meta property="article:tag" content="Java学习">
+<meta property="article:tag" content="后端">
+<meta property="article:tag" content="设计模式">
+<meta property="article:tag" content="项目设计">
+<meta property="article:tag" content="开发原则">
+<meta property="article:tag" content="面向对象">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ergou10086.github.io/images/posts/cover_math4.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "面向对象编程的设计模式之行为型模式",
+  "url": "https://ergou10086.github.io/posts/59606.html",
+  "image": "https://ergou10086.github.io/images/posts/cover_math4.jpg",
+  "datePublished": "2026-01-31T04:18:30.000Z",
+  "dateModified": "2026-01-31T04:19:20.245Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "ErgouTree",
+      "url": "https://github.com/ergou10086"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/pi.ico"><link rel="canonical" href="https://ergou10086.github.io/posts/59606.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//hm.baidu.com"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!true && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?https://hm.baidu.com/hm.js?a6ab1b78e2c6320b664f31e8b9bf0e36";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+btf.addGlobalFn('pjaxComplete', () => {
+  _hmt.push(['_trackPageview',window.location.pathname])
+}, 'baidu_analytics')
+</script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.json","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":true},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: {"chs_to_cht":"已切换为繁体中文","cht_to_chs":"已切换为简体中文","day_to_night":"已切换为深色模式","night_to_day":"已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#1f1f1f","position":"bottom-left"},
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '面向对象编程的设计模式之行为型模式',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css"><link rel="stylesheet" href="/css/littleGame.css"><svg aria-hidden="true" style="position:absolute; overflow:hidden; width:0; height:0"><symbol id="icon-sun" viewBox="0 0 1024 1024"><path d="M960 512l-128 128v192h-192l-128 128-128-128H192v-192l-128-128 128-128V192h192l128-128 128 128h192v192z" fill="#FFD878" p-id="8420"></path><path d="M736 512a224 224 0 1 0-448 0 224 224 0 1 0 448 0z" fill="#FFE4A9" p-id="8421"></path><path d="M512 109.248L626.752 224H800v173.248L914.752 512 800 626.752V800h-173.248L512 914.752 397.248 800H224v-173.248L109.248 512 224 397.248V224h173.248L512 109.248M512 64l-128 128H192v192l-128 128 128 128v192h192l128 128 128-128h192v-192l128-128-128-128V192h-192l-128-128z" fill="#4D5152" p-id="8422"></path><path d="M512 320c105.888 0 192 86.112 192 192s-86.112 192-192 192-192-86.112-192-192 86.112-192 192-192m0-32a224 224 0 1 0 0 448 224 224 0 0 0 0-448z" fill="#4D5152" p-id="8423"></path></symbol><symbol id="icon-moon" viewBox="0 0 1024 1024"><path d="M611.370667 167.082667a445.013333 445.013333 0 0 1-38.4 161.834666 477.824 477.824 0 0 1-244.736 244.394667 445.141333 445.141333 0 0 1-161.109334 38.058667 85.077333 85.077333 0 0 0-65.066666 135.722666A462.08 462.08 0 1 0 747.093333 102.058667a85.077333 85.077333 0 0 0-135.722666 65.024z" fill="#FFB531" p-id="11345"></path><path d="M329.728 274.133333l35.157333-35.157333a21.333333 21.333333 0 1 0-30.165333-30.165333l-35.157333 35.157333-35.114667-35.157333a21.333333 21.333333 0 0 0-30.165333 30.165333l35.114666 35.157333-35.114666 35.157334a21.333333 21.333333 0 1 0 30.165333 30.165333l35.114667-35.157333 35.157333 35.157333a21.333333 21.333333 0 1 0 30.165333-30.165333z" fill="#030835" p-id="11346"></path></symbol></svg><link rel="stylesheet" href="/css/custom.css"><!-- hexo injector head_end start --><link rel="stylesheet" href="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiperstyle.css" media="print" onload="this.media='all'"><!-- hexo injector head_end end --><meta name="generator" content="Hexo 7.3.0"></head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js/pace.min.js"></script><div id="web_bg" style="background: linear-gradient(20deg, #0062be, #925696, #cc426e, #fb0347);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/arp.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">289</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">174</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">97</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-images"></i><span> Gallery</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/games/"><i class="fa-fw fas fa-trophy"></i><span> GalGame</span></a></li><li><a class="site-page child" href="/video/"><i class="fa-fw fas fa-video"></i><span> Video</span></a></li><li><a class="site-page child" href="/viewpoint/"><i class="fa-fw fas fa-calculator"></i><span> ViewPoint</span></a></li><li><a class="site-page child" href="/littleGame/"><i class="fa-fw fas fa-thumbs-up"></i><span> littleGame</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div><div class="menus_item"><a class="site-page" href="javascript:randomPost();"><span> Random</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/images/posts/cover_math4.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">ErgouTree's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">面向对象编程的设计模式之行为型模式</span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-images"></i><span> Gallery</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/games/"><i class="fa-fw fas fa-trophy"></i><span> GalGame</span></a></li><li><a class="site-page child" href="/video/"><i class="fa-fw fas fa-video"></i><span> Video</span></a></li><li><a class="site-page child" href="/viewpoint/"><i class="fa-fw fas fa-calculator"></i><span> ViewPoint</span></a></li><li><a class="site-page child" href="/littleGame/"><i class="fa-fw fas fa-thumbs-up"></i><span> littleGame</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div><div class="menus_item"><a class="site-page" href="javascript:randomPost();"><span> Random</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div><div id="randomPost"><a class="site-page social-icon search" href="javascript:;" onclick="randomPost()" title="随机访问一篇文章"><i class="fas fa-circle-notch fa-fw"></i></a></div></nav><div id="post-info"><h1 class="post-title">面向对象编程的设计模式之行为型模式<a class="post-edit-link" href="https://github.com/ergou10086/ergou10086.github.io/edit/main/source/_posts/_posts/面向对象编程的设计模式之行为型模式.md" title="编辑" target="_blank"><i class="fas fa-pencil-alt"></i></a></h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-01-31T04:18:30.000Z" title="发表于 2026-01-31 12:18:30">2026-01-31</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-01-31T04:19:20.245Z" title="更新于 2026-01-31 12:19:20">2026-01-31</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%BC%80%E5%8F%91%E7%9F%A5%E8%AF%86/">开发知识</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%BC%80%E5%8F%91%E7%9F%A5%E8%AF%86/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/">设计模式</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">10.1k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>33分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span><span class="post-meta-separator">|</span><span class="post-meta-commentcount"><i class="far fa-comments fa-fw post-meta-icon"></i><span class="post-meta-label">评论数:</span><a href="/posts/59606.html#post-comment"><span class="gitalk-comment-count"><i class="fa-solid fa-spinner fa-spin"></i></span></a></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="行为型设计模式">行为型设计模式</h2>
+<p>行为型模式关注对象之间的职责分配和通信方式。</p>
+<ol type="1">
+<li><strong>责任链模式（Chain of
+Responsibility）</strong>：将请求沿处理链传递，直到有对象处理它为止。</li>
+<li><strong>命令模式（Command）</strong>：将请求封装为对象，从而参数化客户、排队请求或记录日志。</li>
+<li><strong>解释器模式（Interpreter）</strong>：定义语言的文法并解释该语言中的句子（适用于简单语法规则）。</li>
+<li><strong>迭代器模式（Iterator）</strong>：提供一种顺序访问聚合对象元素的方法，而不暴露其内部表示。</li>
+<li><strong>中介者模式（Mediator）</strong>：用一个中介对象封装一系列对象交互，降低耦合度。</li>
+<li><strong>备忘录模式（Memento）</strong>：在不破坏封装性的前提下，捕获并外部化对象的内部状态以便恢复。</li>
+<li><strong>观察者模式（Observer）</strong>：定义对象间一对多依赖关系，当一个对象状态改变时，所有依赖者自动更新。</li>
+<li><strong>状态模式（State）</strong>：允许对象在其内部状态改变时改变其行为，看起来像改变了类。</li>
+<li><strong>策略模式（Strategy）</strong>：定义一系列算法，把它们封装起来，并且使它们可以互相替换。</li>
+<li><strong>模板方法模式（Template
+Method）</strong>：在一个方法中定义算法骨架，而将具体步骤延迟到子类中实现。</li>
+<li><strong>访问者模式（Visitor）</strong>：表示一个作用于某对象结构中各元素的操作，可在不改变元素类的前提下定义新操作。</li>
+</ol>
+<h2 id="责任链模式">责任链模式</h2>
+<blockquote>
+<p>责任链模式（Chain of Responsibility
+Pattern）为请求创建了一个接收者对象的链。这种模式给予请求的类型，对请求的发送者和接收者进行解耦。</p>
+<p>责任链模式通过将多个处理器（处理对象）以链式结构连接起来，使得请求沿着这条链传递，直到有一个处理器处理该请求为止。</p>
+<p>责任链模式允许多个对象都有机会处理请求，从而避免请求的发送者和接收者之间的耦合关系。将这些对象连成一条链，并沿着这条链传递请求。</p>
+</blockquote>
+<p>什么意思，处理者有很多，他们组成一个链，客户端将请求沿着处理者链传递，直到请求被处理为止。</p>
+<p>想一想，类处理机制中的类加载器是不是也是这种责任链机制，而且在JavaScript中，事件从最具体的元素开始，逐级向上传播，是不是也是这种机制</p>
+<p>实现方式也比较清晰</p>
+<ul>
+<li><strong>定义处理者接口</strong>：所有处理者必须实现同一个接口。</li>
+<li><strong>创建具体处理者</strong>：实现接口的具体类，包含请求处理逻辑和指向链中下一个处理者的引用。</li>
+</ul>
+<p>那么，责任链模式有两种经典的实现模式</p>
+<ol type="1">
+<li><strong>链式引用</strong>：每个 Handler 持有 <code>next</code>
+引用</li>
+<li><strong>集中管理</strong>：由一个“链管理者”统一调度</li>
+</ol>
+<figure>
+<img src="/posts/59606/image-20260131095220591.png" alt="image-20260131095220591">
+<figcaption aria-hidden="true">image-20260131095220591</figcaption>
+</figure>
+<p>主要涉及到如下角色</p>
+<table>
+<colgroup>
+<col style="width: 32%">
+<col style="width: 67%">
+</colgroup>
+<thead>
+<tr>
+<th>角色</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Handler（处理器接口）</td>
+<td>定义处理请求的接口，通常包含 <code>handleRequest()</code>
+和指向下一个处理器的引用（但在你的例子中略有不同）</td>
+</tr>
+<tr>
+<td>ConcreteHandler（具体处理器）</td>
+<td>实现 Handler，判断是否能处理请求；若不能，转发给链中下一个</td>
+</tr>
+<tr>
+<td>Client（客户端）</td>
+<td>发起请求，但不知道哪个对象会处理</td>
+</tr>
+</tbody>
+</table>
+<figure>
+<img src="/posts/59606/image-20260131095213676.png" alt="image-20260131095213676">
+<figcaption aria-hidden="true">image-20260131095213676</figcaption>
+</figure>
+<p>还是以一个例子来说明，例子以集中管理模式来说明，它更灵活，而且支持按优先级排序！</p>
+<ul>
+<li><p>请求定义</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** Request. */</span></span><br><span class="line"><span class="meta">@Getter</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Request</span> &#123;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 请求类型</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> RequestType requestType;</span><br><span class="line"></span><br><span class="line"> <span class="comment">// 对请求的描述</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> String requestDescription;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 是否被处理</span></span><br><span class="line">  <span class="keyword">private</span> <span class="type">boolean</span> handled;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 全参构造</span></span><br><span class="line">  <span class="keyword">public</span> <span class="title function_">Request</span><span class="params">(<span class="keyword">final</span> RequestType requestType, <span class="keyword">final</span> String requestDescription)</span> &#123;</span><br><span class="line">    <span class="built_in">this</span>.requestType = Objects.requireNonNull(requestType);</span><br><span class="line">    <span class="built_in">this</span>.requestDescription = Objects.requireNonNull(requestDescription);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/** Mark the request as handled. */</span></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">markHandled</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="built_in">this</span>.handled = <span class="literal">true</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="meta">@Override</span></span><br><span class="line">  <span class="keyword">public</span> String <span class="title function_">toString</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> getRequestDescription();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>handled</code> 标志防止重复处理</li>
+</ul></li>
+<li><p>请求类型枚举，也就是系统支持的请求种类，随便看看就行</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">enum</span> <span class="title class_">RequestType</span> &#123;</span><br><span class="line">    DEFEND_CASTLE,      <span class="comment">// 防守城堡</span></span><br><span class="line">    TORTURE_PRISONER,   <span class="comment">// 折磨囚犯</span></span><br><span class="line">    COLLECT_TAX         <span class="comment">// 收税</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>处理器接口：<code>RequestHandler.java</code>
+,这是责任链中每个节点必须实现的契约</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">RequestHandler</span> &#123;</span><br><span class="line">    <span class="type">boolean</span> <span class="title function_">canHandleRequest</span><span class="params">(Request req)</span>;  <span class="comment">// 判断能否处理</span></span><br><span class="line">    <span class="type">int</span> <span class="title function_">getPriority</span><span class="params">()</span>;                      <span class="comment">// 优先级（数字越小越优先？看实现）</span></span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">handle</span><span class="params">(Request req)</span>;               <span class="comment">// 执行处理</span></span><br><span class="line">    String <span class="title function_">name</span><span class="params">()</span>;                          <span class="comment">// 名称（用于日志）</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>具体处理器，例子中按照
+<code>OrcSoldier``OrcCommander``OrcOfficer</code>排列的</p>
+<figure>
+<img src="/posts/59606/image-20260131094848927.png" alt="image-20260131094848927">
+<figcaption aria-hidden="true">image-20260131094848927</figcaption>
+</figure>
+<p>可以看到他们都有自己的优先级，这是责任链中的请求执行顺序</p></li>
+<li><p>链的构建与调度：<code>OrcKing.java</code>，<strong>不是传统链式引用，而是集中式调度</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">OrcKing</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> List&lt;RequestHandler&gt; handlers;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">OrcKing</span><span class="params">()</span> &#123;</span><br><span class="line">        buildChain();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">buildChain</span><span class="params">()</span> &#123;</span><br><span class="line">        handlers = Arrays.asList(</span><br><span class="line">            <span class="keyword">new</span> <span class="title class_">OrcCommander</span>(),</span><br><span class="line">            <span class="keyword">new</span> <span class="title class_">OrcOfficer</span>(),</span><br><span class="line">            <span class="keyword">new</span> <span class="title class_">OrcSoldier</span>()</span><br><span class="line">        );</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">makeRequest</span><span class="params">(Request req)</span> &#123;</span><br><span class="line">        handlers.stream()</span><br><span class="line">                .sorted(Comparator.comparing(RequestHandler::getPriority)) <span class="comment">// 按优先级排序</span></span><br><span class="line">                .filter(handler -&gt; handler.canHandleRequest(req))         <span class="comment">// 找出能处理的</span></span><br><span class="line">                .findFirst()                                              <span class="comment">// 取第一个（最高优先级）</span></span><br><span class="line">                .ifPresent(handler -&gt; handler.handle(req));                <span class="comment">// 处理它</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><strong>链不是通过 <code>next</code> 指针连接</strong>，而是存在
+<code>List</code> 中，<strong>每次请求都重新排序 +
+过滤</strong>，选出最合适的处理者，允许同类型请求由不同角色处理，<code>findFirst()</code>
+确保只处理一次</li>
+</ul></li>
+<li><p>客户端</p>
+<figure>
+<img src="/posts/59606/image-20260131095200531.png" alt="image-20260131095200531">
+<figcaption aria-hidden="true">image-20260131095200531</figcaption>
+</figure>
+<ul>
+<li>可以看到，实现了发送者（King）与接收者（Soldier/Commander/Officer）的解耦</li>
+</ul></li>
+</ul>
+<h2 id="命令模式">命令模式</h2>
+<blockquote>
+<p>命令模式将一个请求封装为一个对象，从而使你可以用不同的请求对客户进行参数化，对请求排队或记录请求日志，以及支持可撤销的操作。</p>
+</blockquote>
+<p>我感觉这么说很别扭，实际上，命令模式中我们将<strong>请求封装为一个对象</strong>，从而使你可以用不同的请求对客户进行参数化；例如对请求排队或记录请求日志，以及支持可撤销的操作。</p>
+<p>几乎所有使用命令在控制台操作的程序都使用了这种设计模式</p>
+<ul>
+<li><strong>把“动作请求”变成“对象”</strong></li>
+<li><strong>解耦请求的发起者（Invoker）和执行者（Receiver）</strong></li>
+</ul>
+<p>这样对支持 undo/redo、宏命令、事务等高级功能很方便</p>
+<p>实现方式如下</p>
+<ul>
+<li><strong>定义命令接口</strong>：所有命令必须实现的接口。</li>
+<li><strong>创建具体命令</strong>：实现命令接口的具体类，包含执行请求的方法。</li>
+<li><strong>调用者</strong>：持有命令对象并触发命令的执行。</li>
+<li><strong>接收者</strong>：实际执行命令的对象。</li>
+</ul>
+<figure>
+<img src="/posts/59606/image-20260131095417879.png" alt="image-20260131095417879">
+<figcaption aria-hidden="true">image-20260131095417879</figcaption>
+</figure>
+<p>命令模式的经典角色</p>
+<table>
+<colgroup>
+<col style="width: 22%">
+<col style="width: 28%">
+<col style="width: 49%">
+</colgroup>
+<thead>
+<tr>
+<th>角色</th>
+<th>说明</th>
+<th>在你例子中的对应</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Command（命令接口）</td>
+<td>声明执行操作的接口</td>
+<td><code>Runnable</code>（Java 内置函数式接口）</td>
+</tr>
+<tr>
+<td>ConcreteCommand（具体命令）</td>
+<td>绑定 Receiver 和 Action</td>
+<td><code>goblin::changeSize</code>,
+<code>goblin::changeVisibility</code>（方法引用）</td>
+</tr>
+<tr>
+<td>Invoker（调用者）</td>
+<td>负责调用命令对象</td>
+<td><code>Wizard</code></td>
+</tr>
+<tr>
+<td>Receiver（接收者）</td>
+<td>真正执行业务逻辑的对象</td>
+<td><code>Goblin</code>（继承自 <code>Target</code>）</td>
+</tr>
+<tr>
+<td>Client（客户端）</td>
+<td>创建命令并配置 Invoker 和 Receiver</td>
+<td><code>App.main()</code></td>
+</tr>
+</tbody>
+</table>
+<figure>
+<img src="/posts/59606/image-20260131095413953.png" alt="image-20260131095413953">
+<figcaption aria-hidden="true">image-20260131095413953</figcaption>
+</figure>
+<p>还是以具体例子来描述</p>
+<ul>
+<li><p>接收者</p>
+<p>抽象接收者，封装了<strong>可被操作的状态</strong>，并且提供了<strong>具体操作方法</strong></p>
+<figure>
+<img src="/posts/59606/image-20260131095725075.png" alt="image-20260131095725075">
+<figcaption aria-hidden="true">image-20260131095725075</figcaption>
+</figure>
+<p>具体接收者</p>
+<figure>
+<img src="/posts/59606/image-20260131095732699.png" alt="image-20260131095732699">
+<figcaption aria-hidden="true">image-20260131095732699</figcaption>
+</figure></li>
+<li><p>调用者</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Wizard</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Deque&lt;Runnable&gt; undoStack = <span class="keyword">new</span> <span class="title class_">LinkedList</span>&lt;&gt;();</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Deque&lt;Runnable&gt; redoStack = <span class="keyword">new</span> <span class="title class_">LinkedList</span>&lt;&gt;();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 执行命令 + 入栈</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">castSpell</span><span class="params">(Runnable runnable)</span> &#123;</span><br><span class="line">        runnable.run();           <span class="comment">// 执行命令</span></span><br><span class="line">        undoStack.offerLast(runnable); <span class="comment">// 记录用于撤销</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 利用栈结构实现撤销/重做</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">undoLastSpell</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (!undoStack.isEmpty()) &#123;</span><br><span class="line">            <span class="type">var</span> <span class="variable">spell</span> <span class="operator">=</span> undoStack.pollLast();</span><br><span class="line">            redoStack.offerLast(spell);</span><br><span class="line">            spell.run(); <span class="comment">// 注意：这里直接 re-run，依赖命令的“可逆性”</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">redoLastSpell</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (!redoStack.isEmpty()) &#123;</span><br><span class="line">            <span class="type">var</span> <span class="variable">spell</span> <span class="operator">=</span> redoStack.pollLast();</span><br><span class="line">            undoStack.offerLast(spell);</span><br><span class="line">            spell.run();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>Runnable</code>
+本身包含了所有执行所需信息，所以调用命令的时候可以直接使用方法引用，直接调用命令具体实现的方法</p></li>
+<li><p>命令接口和具体命令通过 Java 方法引用来简化掉了</p>
+<p><code>goblin::changeSize</code> 是一个 <code>Runnable</code>
+对象，它<strong>捕获了 <code>goblin</code> 实例和
+<code>changeSize</code> 方法</strong></p>
+<p>这也就实现了把命令当成对象来处理，而且支持各种执行者的高级操作</p>
+<figure>
+<img src="/posts/59606/image-20260131100023502.png" alt="image-20260131100023502">
+<figcaption aria-hidden="true">image-20260131100023502</figcaption>
+</figure>
+<p>客户端在交互的时候也完全不知道 Goblin 的内部细节，它一直在和
+Invoker（Wizard）交互</p>
+<figure>
+<img src="/posts/59606/image-20260131100510345.png" alt="image-20260131100510345">
+<figcaption aria-hidden="true">image-20260131100510345</figcaption>
+</figure></li>
+</ul>
+<h2 id="解释器模式">解释器模式</h2>
+<blockquote>
+<p>解释器模式（Interpreter
+Pattern）提供了评估语言的语法或表达式的方式，它属于行为型模式。</p>
+<p>解释器模式给定一个语言，定义它的文法的一种表示，并定义一个解释器，这个解释器使用该表示来解释语言中的句子。</p>
+</blockquote>
+<p>什么意思，我定义一种语言的文法表示，并创建一个解释器，该解释器能够解释该语言中的句子</p>
+<p>所以说，解释器模式用于构建一个能够解释特定语言或文法的句子的解释器。</p>
+<p>就当某一特定类型的问题或者需求频繁出现，并且可以通过设计一种简单的语言来表达这些问题的实例和解决过程时，使用这一设计模式非常有用。</p>
+<p>想一下，这种模式在 SQL
+解析、符号处理引擎等，是不是用到了他们，而且解释器模式广泛的用于编译器设计，将源代码解释为目标代码。</p>
+<p>实现方式也比较清晰</p>
+<ul>
+<li><strong>定义文法</strong>：明确语言的终结符和非终结符。一般来说，将语言的每个符号（token）表示为一个类</li>
+<li><strong>构建语法树</strong>：根据语言的句子构建对应的语法树结构来表示整个表达式</li>
+<li><strong>创建环境类</strong>：包含解释过程中所需的全局信息，通常是一个HashMap。通过递归解释
+语法树 节点得到最终结果</li>
+</ul>
+<figure>
+<img src="/posts/59606/image-20260131100934991.png" alt="image-20260131100934991">
+<figcaption aria-hidden="true">image-20260131100934991</figcaption>
+</figure>
+<p>只不过，通常需要注意如下内容</p>
+<ul>
+<li><strong>终结符与非终结符</strong>：定义语言的文法结构。</li>
+<li><strong>环境类</strong>：存储解释过程中需要的外部环境信息。</li>
+</ul>
+<p>注意，解释器模式在 Java
+中不是首选，如果遇到适用场景，可以考虑使用如expression4J之类的库来代替。</p>
+<p>那么，还是以一个例子来讲解，可以看出，这是一个后缀表达式的计算器</p>
+<table>
+<colgroup>
+<col style="width: 27%">
+<col style="width: 31%">
+<col style="width: 40%">
+</colgroup>
+<thead>
+<tr>
+<th>角色</th>
+<th>说明</th>
+<th>在你例子中的对应</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>AbstractExpression（抽象表达式）</td>
+<td>声明解释操作的接口</td>
+<td><code>Expression</code></td>
+</tr>
+<tr>
+<td>TerminalExpression（终结符表达式）</td>
+<td>实现文法中终结符的解释（如数字）</td>
+<td><code>NumberExpression</code></td>
+</tr>
+<tr>
+<td>NonterminalExpression（非终结符表达式）</td>
+<td>实现文法中非终结符的解释（如 <code>+</code>, <code>-</code>,
+<code>*</code>）</td>
+<td><code>PlusExpression</code>, <code>MinusExpression</code>,
+<code>MultiplyExpression</code></td>
+</tr>
+<tr>
+<td>Context（上下文）</td>
+<td>包含解释器之外的全局信息（本例未显式使用）</td>
+<td>——（隐含在栈中）</td>
+</tr>
+<tr>
+<td>Client（客户端）</td>
+<td>构建抽象语法树并调用解释器</td>
+<td><code>App.main()</code></td>
+</tr>
+</tbody>
+</table>
+<figure>
+<img src="/posts/59606/image-20260131100909733.png" alt="image-20260131100909733">
+<figcaption aria-hidden="true">image-20260131100909733</figcaption>
+</figure>
+<ul>
+<li><p>抽象表达式，它是所有表达式的基类，提供了一个解释操作的入口方法</p>
+<figure>
+<img src="/posts/59606/image-20260131101133014.png" alt="image-20260131101133014">
+<figcaption aria-hidden="true">image-20260131101133014</figcaption>
+</figure></li>
+<li><p>休止符表达式类</p>
+<p>在后缀表达式中，数字部分就是休止符，他们不能被再分解了，需要结合之前的符号直接返回结果，而单个数字的解析就是返回自身值</p>
+<figure>
+<img src="/posts/59606/image-20260131101225026.png" alt="image-20260131101225026">
+<figcaption aria-hidden="true">image-20260131101225026</figcaption>
+</figure></li>
+<li><p>非休止符表达式类</p>
+<p>以加法为例，它会在解释时递归调用子表达式的
+<code>interpret()</code></p>
+<p>而这又形成了组合模式的设计模式</p>
+<figure>
+<img src="/posts/59606/image-20260131101415972.png" alt="image-20260131101415972">
+<figcaption aria-hidden="true">image-20260131101415972</figcaption>
+</figure></li>
+<li><p>客户端</p>
+<p>它负责：解析输入字符串，构建表达式对象树AST，调用根节点的
+<code>interpret()</code></p>
+<figure>
+<img src="/posts/59606/image-20260131101523109.png" alt="image-20260131101523109">
+<figcaption aria-hidden="true">image-20260131101523109</figcaption>
+</figure>
+<p>那么，趁着这个再复习一下后缀表达式的求值</p>
+<ul>
+<li><p>遇到<strong>数字</strong> → 创建
+<code>NumberExpression</code>，压入栈</p></li>
+<li><p>遇到操作符 → 弹出两个表达式（先弹出的是右操作数！）</p>
+<ul>
+<li><p>构造 <code>OperatorExpression(left, right)</code></p></li>
+<li><p>调用其 <code>interpret()</code> 得到结果</p></li>
+<li><p>将结果包装为 <code>NumberExpression</code> 压回栈</p></li>
+</ul></li>
+</ul></li>
+</ul>
+<h2 id="迭代器模式">迭代器模式</h2>
+<p>迭代器模式（Iterator Pattern）
+提供一种方法顺序访问一个聚合对象中的各个元素，而又不暴露该对象的内部表示。</p>
+<ul>
+<li><strong>解耦集合（Collection）与遍历算法（Traversal）</strong></li>
+<li><strong>统一遍历接口</strong>：无论底层是数组、链表、树还是图，客户端都用
+<code>hasNext()</code> / <code>next()</code> 遍历</li>
+<li><strong>支持多种遍历方式</strong>：同一集合可有多个不同迭代器（如正序、倒序、按类型过滤）</li>
+</ul>
+<p>提供一种统一的方法来遍历不同的聚合对象。而且因此被迭代对象内部的细节，理解还是很好理解的，但是实现方式有点麻烦</p>
+<ul>
+<li><strong>定义迭代器接口</strong>：包含<code>hasNext()</code>和<code>next()</code>等方法，用于遍历元素。规定了遍历元素的方法。</li>
+<li><strong>创建具体迭代器</strong>：实现迭代器接口，定义如何遍历特定的聚合对象。实现了迭代器接口，包含遍历逻辑。</li>
+<li><strong>聚合类</strong>：定义一个接口用于返回一个迭代器对象。</li>
+</ul>
+<p>Java集合框架中的迭代器用于遍历集合元素。它就使用了这种设计模式，屏蔽了各个集合的细节</p>
+<figure>
+<img src="/posts/59606/image-20260131101813853.png" alt="image-20260131101813853">
+<figcaption aria-hidden="true">image-20260131101813853</figcaption>
+</figure>
+<p>那么，迭代器模式通常有如下角色，还是以例子来讲解</p>
+<table>
+<colgroup>
+<col style="width: 26%">
+<col style="width: 33%">
+<col style="width: 39%">
+</colgroup>
+<thead>
+<tr>
+<th>角色</th>
+<th>说明</th>
+<th>在你例子中的对应</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Iterator（迭代器接口）</td>
+<td>定义访问和遍历元素的接口</td>
+<td><code>com.iluwatar.iterator.Iterator&lt;T&gt;</code></td>
+</tr>
+<tr>
+<td>ConcreteIterator（具体迭代器）</td>
+<td>实现 Iterator 接口，跟踪当前位置</td>
+<td><code>BstIterator&lt;T&gt;</code>,
+<code>TreasureChestItemIterator</code></td>
+</tr>
+<tr>
+<td>Aggregate（聚合接口）</td>
+<td>定义创建迭代器的接口（本例未显式定义）</td>
+<td>——（由 <code>TreasureChest</code> 直接提供）</td>
+</tr>
+<tr>
+<td>ConcreteAggregate（具体聚合）</td>
+<td>实现 Aggregate，返回 ConcreteIterator</td>
+<td><code>TreasureChest</code>（BST 的 root 节点隐含聚合）</td>
+</tr>
+<tr>
+<td>Client（客户端）</td>
+<td>通过 Iterator 遍历聚合对象</td>
+<td><code>App.main()</code></td>
+</tr>
+</tbody>
+</table>
+<figure>
+<img src="/posts/59606/image-20260131101809159.png" alt="image-20260131101809159">
+<figcaption aria-hidden="true">image-20260131101809159</figcaption>
+</figure>
+<p>首先，二叉搜索树的中序迭代器中，按照左 → 根 →
+右遍历，其中的对于一个二叉搜索树的节点的聚合对象为，其中表示方法也是整个树由
+root 节点隐式表示</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">TreeNode</span>&lt;T <span class="keyword">extends</span> <span class="title class_">Comparable</span>&lt;T&gt;&gt; &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> T val;</span><br><span class="line">    <span class="keyword">private</span> TreeNode&lt;T&gt; left, right;</span><br><span class="line">    <span class="comment">// ... insert 方法等</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>对于它的迭代器接口就是这样，只关注这两个方法</p>
+<figure>
+<img src="/posts/59606/image-20260131102431099.png" alt="image-20260131102431099">
+<figcaption aria-hidden="true">image-20260131102431099</figcaption>
+</figure>
+<p>对于二叉搜索树的中序遍历的具体迭代器，它的实现为</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">BstIterator</span>&lt;T <span class="keyword">extends</span> <span class="title class_">Comparable</span>&lt;T&gt;&gt; <span class="keyword">implements</span> <span class="title class_">Iterator</span>&lt;TreeNode&lt;T&gt;&gt; &#123;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> ArrayDeque&lt;TreeNode&lt;T&gt;&gt; pathStack;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">public</span> <span class="title function_">BstIterator</span><span class="params">(TreeNode&lt;T&gt; root)</span> &#123;</span><br><span class="line">    pathStack = <span class="keyword">new</span> <span class="title class_">ArrayDeque</span>&lt;&gt;();</span><br><span class="line">    pushPathToNextSmallest(root);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line"> </span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">pushPathToNextSmallest</span><span class="params">(TreeNode&lt;T&gt; node)</span> &#123;</span><br><span class="line">    <span class="keyword">while</span> (node != <span class="literal">null</span>) &#123;</span><br><span class="line">      pathStack.push(node);</span><br><span class="line">      node = node.getLeft();</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 是否有下一个</span></span><br><span class="line">  <span class="meta">@Override</span></span><br><span class="line">  <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">hasNext</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> !pathStack.isEmpty();</span><br><span class="line">  &#125;</span><br><span class="line">  </span><br><span class="line">  <span class="comment">// 取下一个</span></span><br><span class="line">  <span class="meta">@Override</span></span><br><span class="line">  <span class="keyword">public</span> TreeNode&lt;T&gt; <span class="title function_">next</span><span class="params">()</span> <span class="keyword">throws</span> NoSuchElementException &#123;</span><br><span class="line">    <span class="keyword">if</span> (pathStack.isEmpty()) &#123;</span><br><span class="line">      <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">NoSuchElementException</span>();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 从 root 开始，沿左孩子一路压栈 → 栈顶是最小元素</span></span><br><span class="line">    <span class="type">var</span> <span class="variable">next</span> <span class="operator">=</span> pathStack.pop();</span><br><span class="line">    <span class="comment">// 如果它有右子树，则对右子树执行“压入最左路径”</span></span><br><span class="line">    <span class="comment">// 因为右子树的所有元素都 &gt; 当前节点，但 &lt; 父节点</span></span><br><span class="line">    pushPathToNextSmallest(next.getRight());</span><br><span class="line">    <span class="keyword">return</span> next;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>那么，这个例子还有一个特殊类型的过滤迭代器，差不多就是这样</p>
+<ul>
+<li><code>TreasureChest</code> 存储多种物品（药水、戒指、武器）</li>
+<li>客户端希望只遍历特定类型的物品</li>
+</ul>
+<p>对于它，具体对象如下，封装了物品集合，而且<strong>提供工厂方法创建迭代器</strong></p>
+<figure>
+<img src="/posts/59606/image-20260131102611284.png" alt="image-20260131102611284">
+<figcaption aria-hidden="true">image-20260131102611284</figcaption>
+</figure>
+<p>元素对象不看了，直接来看具体的迭代器实现</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">TreasureChestItemIterator</span> <span class="keyword">implements</span> <span class="title class_">Iterator</span>&lt;Item&gt; &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> TreasureChest chest;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> <span class="variable">idx</span> <span class="operator">=</span> -<span class="number">1</span>;          <span class="comment">// 当前索引（未初始化）</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> ItemType type;   <span class="comment">// 要过滤的类型</span></span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">hasNext</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> findNextIdx() != -<span class="number">1</span>; <span class="comment">// 找到下一个匹配项的索引</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> Item <span class="title function_">next</span><span class="params">()</span> &#123;</span><br><span class="line">        idx = findNextIdx();       <span class="comment">// 移动到下一个匹配项</span></span><br><span class="line">        <span class="keyword">return</span> chest.getItems().get(idx);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> <span class="title function_">findNextIdx</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="type">var</span> <span class="variable">items</span> <span class="operator">=</span> chest.getItems();</span><br><span class="line">        <span class="type">var</span> <span class="variable">tempIdx</span> <span class="operator">=</span> idx;</span><br><span class="line">        <span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line">            tempIdx++;</span><br><span class="line">            <span class="keyword">if</span> (tempIdx &gt;= items.size()) <span class="keyword">return</span> -<span class="number">1</span>; <span class="comment">// 到头了</span></span><br><span class="line">            <span class="comment">// 匹配类型（ANY 表示全部）</span></span><br><span class="line">            <span class="keyword">if</span> (type.equals(ItemType.ANY) || items.get(tempIdx).getType().equals(type)) &#123;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> tempIdx;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这样，在客户端调用的时候，对于这两种完全不同的集合类型，他们都可以使用
+hasNext 和 next 方法来处理对集合的迭代，很舒服的向下封装了</p>
+<figure>
+<img src="/posts/59606/image-20260131102802392.png" alt="image-20260131102802392">
+<figcaption aria-hidden="true">image-20260131102802392</figcaption>
+</figure>
+<p>集合只管存储，迭代器只管遍历，新增遍历方式根本不用修改集合</p>
+<p>Java 的 <code>for (Item item : chest)</code>
+语法糖背后就是迭代器模式，要支持 for-each，类必须实现
+<code>Iterable</code>
+接口，所以说，这个是自定义类型是实现迭代的关键，背后是迭代器模式的设计</p>
+<h2 id="中介者模式">中介者模式</h2>
+<blockquote>
+<p>中介者模式（Mediator
+Pattern）是用来降低多个对象和类之间的通信复杂性，属于行为型模式。</p>
+<p>中介者模式定义了一个中介对象来封装一系列对象之间的交互。中介者使各对象之间不需要显式地相互引用，从而使其耦合松散，且可以独立地改变它们之间的交互。</p>
+</blockquote>
+<p>就是通过引入一个中介对象来封装和协调多个对象之间的交互，从而降低对象间的耦合度。</p>
+<p>一般当需求设计到解决对象间复杂的一对多关联问题，避免对象之间的高度耦合，简化系统结构，会经常使用这个设计模式。</p>
+<p>而且一般情况下，此时系统中多个类相互耦合，形成网状结构时。通过中介者模式，就会转换成星状图通信</p>
+<p>实现方式比较清楚</p>
+<ul>
+<li><strong>定义中介者接口</strong>：规定中介者必须实现的接口。</li>
+<li><strong>创建具体中介者</strong>：实现中介者接口，包含协调各同事对象交互的逻辑。</li>
+<li><strong>定义同事类</strong>：各个对象不需要显式地相互引用，而是通过中介者来进行交互。</li>
+</ul>
+<p>例如，中国加入WTO后，各国通过WTO进行贸易，简化了双边关系。</p>
+<p>想象一个微信群：群成员（Colleague）不直接私聊，而是都在群里发言（通过群主/群规
+= Mediator 协调）。</p>
+<figure>
+<img src="/posts/59606/image-20260131103014361.png" alt="image-20260131103014361">
+<figcaption aria-hidden="true">image-20260131103014361</figcaption>
+</figure>
+<p>中介者模式包含以下几个主要角色，还是以一个具体例子来说</p>
+<table>
+<colgroup>
+<col style="width: 28%">
+<col style="width: 36%">
+<col style="width: 34%">
+</colgroup>
+<thead>
+<tr>
+<th>角色</th>
+<th>说明</th>
+<th>在你例子中的对应</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Mediator（中介者接口）</td>
+<td>定义同事对象到中介者的接口</td>
+<td><code>Party</code></td>
+</tr>
+<tr>
+<td>ConcreteMediator（具体中介者）</td>
+<td>实现 Mediator 接口，协调 Colleague 交互</td>
+<td><code>PartyImpl</code></td>
+</tr>
+<tr>
+<td>Colleague（同事类基类）</td>
+<td>每个 Colleague 知道自己的 Mediator</td>
+<td><code>PartyMemberBase</code></td>
+</tr>
+<tr>
+<td>ConcreteColleague（具体同事类）</td>
+<td>与其他 Colleague 通信时通过 Mediator</td>
+<td><code>Hobbit</code>, <code>Wizard</code>, <code>Rogue</code>,
+<code>Hunter</code></td>
+</tr>
+<tr>
+<td>Client（客户端）</td>
+<td>创建 Mediator 和 Colleague，并建立关联</td>
+<td><code>App.main()</code></td>
+</tr>
+</tbody>
+</table>
+<figure>
+<img src="/posts/59606/image-20260131103006414.png" alt="image-20260131103006414">
+<figcaption aria-hidden="true">image-20260131103006414</figcaption>
+</figure>
+<ul>
+<li><p>中介者接口</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">Party</span> &#123;</span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">addMember</span><span class="params">(PartyMember member)</span>;      <span class="comment">// 添加成员</span></span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">act</span><span class="params">(PartyMember actor, Action action)</span>; <span class="comment">// 处理某个成员的动作</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>定义了</p></li>
+<li><p>具体中介者</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">PartyImpl</span> <span class="keyword">implements</span> <span class="title class_">Party</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> List&lt;PartyMember&gt; members = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">act</span><span class="params">(PartyMember actor, Action action)</span> &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">var</span> member : members) &#123;</span><br><span class="line">            <span class="keyword">if</span> (!member.equals(actor)) &#123; <span class="comment">// 不通知自己</span></span><br><span class="line">                member.partyAction(action); <span class="comment">// 广播给其他成员</span></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">addMember</span><span class="params">(PartyMember member)</span> &#123;</span><br><span class="line">        members.add(member);</span><br><span class="line">        member.joinedParty(<span class="built_in">this</span>); <span class="comment">// 通知成员：你已加入本队</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>对中介者能力的具体实现</p></li>
+<li><p>同事类基类</p>
+<p>每个成员持有中介者引用，对于关键操作，也就是中介者的核心能力，交给中介者来做，实现同事类只与中介者通信</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">PartyMemberBase</span> <span class="keyword">implements</span> <span class="title class_">PartyMember</span> &#123;</span><br><span class="line">    <span class="keyword">protected</span> Party party; <span class="comment">// 每个成员持有中介者引用</span></span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">joinedParty</span><span class="params">(Party party)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.party = party;</span><br><span class="line">        LOGGER.info(<span class="string">&quot;&#123;&#125; joins the party&quot;</span>, <span class="built_in">this</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">partyAction</span><span class="params">(Action action)</span> &#123;</span><br><span class="line">        LOGGER.info(<span class="string">&quot;&#123;&#125; &#123;&#125;&quot;</span>, <span class="built_in">this</span>, action.getDescription());</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">act</span><span class="params">(Action action)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (party != <span class="literal">null</span>) &#123;</span><br><span class="line">            LOGGER.info(<span class="string">&quot;&#123;&#125; &#123;&#125;&quot;</span>, <span class="built_in">this</span>, action);</span><br><span class="line">            party.act(<span class="built_in">this</span>, action); <span class="comment">// 通过中介者广播</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>具体同事类，所有交互逻辑继承自 <code>PartyMemberBase</code></p>
+<figure>
+<img src="/posts/59606/image-20260131103525478.png" alt="image-20260131103525478">
+<figcaption aria-hidden="true">image-20260131103525478</figcaption>
+</figure></li>
+<li><p>动作定义不展开细说了，就一枚举</p></li>
+<li><p>客户端</p>
+<figure>
+<img src="/posts/59606/image-20260131103817309.png" alt="image-20260131103817309">
+<figcaption aria-hidden="true">image-20260131103817309</figcaption>
+</figure></li>
+</ul>
+<p>同事类之间<strong>零依赖</strong>，只依赖中介者，而且所有交互逻辑在
+<code>PartyImpl.act()</code> 中，易于修改，好处不言而喻</p>
+<p>但是如果交互逻辑复杂，<code>PartyImpl</code>
+会变得庞大，而且中介者成为“上帝对象”，可能违反单一职责，此时就需要根据组合模式什么的进行拆分了</p>
+<h2 id="备忘录模式">备忘录模式</h2>
+<blockquote>
+<p>备忘录模式（Memento
+Pattern）保存一个对象的某个状态，以便在适当的时候恢复对象，备忘录模式属于行为型模式。</p>
+</blockquote>
+<p>在不破坏封装性的前提下，捕获一个对象的内部状态，并允许在对象之外保存和恢复这些状态。这样以后就可将该对象恢复到原先保存的状态。</p>
+<p>使用这个设计模式通常就是当需要提供一种撤销机制，允许用户回退到之前的状态时。</p>
+<p>来看实现方式</p>
+<ul>
+<li><strong>创建备忘录类</strong>：用于存储和封装对象的状态。一般是存储发起人的状态信息。</li>
+<li><strong>创建发起人角色</strong>：负责创建备忘录，并根据需要恢复状态。</li>
+<li><strong>创建备忘录管理类</strong>（可选）：负责管理所有备忘录对象。</li>
+</ul>
+<figure>
+<img src="/posts/59606/image-20260131105408841.png" alt="image-20260131105408841">
+<figcaption aria-hidden="true">image-20260131105408841</figcaption>
+</figure>
+<p>最早围棋的悔棋就是这种设计模式，它提供一种撤销操作的功能。而且游戏存档保存游戏进度，允许玩家加载之前的存档，大部分都使用了这种设计模式。</p>
+<p>但是，问题很明显，如果对象的状态复杂，保存状态可能会占用较多资源。牛魔的例如博德之门3存档在我电脑里达到了惊人了8.1G</p>
+<p>备忘录模式包含以下几个主要角色：</p>
+<table>
+<colgroup>
+<col style="width: 20%">
+<col style="width: 34%">
+<col style="width: 44%">
+</colgroup>
+<thead>
+<tr>
+<th>角色</th>
+<th>说明</th>
+<th>在你例子中的对应</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Originator（发起人）</td>
+<td>创建备忘录 &amp; 恢复状态的对象</td>
+<td><code>Star</code></td>
+</tr>
+<tr>
+<td>Memento（备忘录）</td>
+<td>存储 Originator 的内部状态</td>
+<td><code>StarMementoInternal</code>（实现
+<code>StarMemento</code>）</td>
+</tr>
+<tr>
+<td>Caretaker（管理者）</td>
+<td>负责保存/管理备忘录（但不能修改）</td>
+<td><code>App.main()</code> 中的
+<code>Stack&lt;StarMemento&gt;</code></td>
+</tr>
+</tbody>
+</table>
+<figure>
+<img src="/posts/59606/image-20260131105404122.png" alt="image-20260131105404122">
+<figcaption aria-hidden="true">image-20260131105404122</figcaption>
+</figure>
+<ul>
+<li><p>发起人</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Star</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> StarType type;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> ageYears;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> massTons;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// ... 构造函数、timePasses() 等</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 创建备忘录（保存当前状态）</span></span><br><span class="line">    StarMemento <span class="title function_">getMemento</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="type">var</span> <span class="variable">state</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">StarMementoInternal</span>();</span><br><span class="line">        state.setAgeYears(ageYears);</span><br><span class="line">        state.setMassTons(massTons);</span><br><span class="line">        state.setType(type);</span><br><span class="line">        <span class="keyword">return</span> state;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 恢复状态（从备忘录）</span></span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">setMemento</span><span class="params">(StarMemento memento)</span> &#123;</span><br><span class="line">        <span class="type">var</span> <span class="variable">state</span> <span class="operator">=</span> (StarMementoInternal) memento;</span><br><span class="line">        <span class="built_in">this</span>.type = state.getType();</span><br><span class="line">        <span class="built_in">this</span>.ageYears = state.getAgeYears();</span><br><span class="line">        <span class="built_in">this</span>.massTons = state.getMassTons();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><strong>内部类
+<code>StarMementoInternal</code></strong>：作为真正的备忘录实现</li>
+</ul></li>
+<li><p>备忘录是<code>StarMemento.java</code> + 上面的内部类</p>
+<p>而<code>StarMemento.java</code>接口是一个窄接口，Caretaker
+只能持有此接口，<strong>无法读取/修改状态</strong></p>
+<figure>
+<img src="/posts/59606/image-20260131105554132.png" alt="image-20260131105554132">
+<figcaption aria-hidden="true">image-20260131105554132</figcaption>
+</figure>
+<p>而实现者这个宽接口，只能在 Originator 可见</p>
+<figure>
+<img src="/posts/59606/image-20260131105710879.png" alt="image-20260131105710879">
+<figcaption aria-hidden="true">image-20260131105710879</figcaption>
+</figure>
+<p>这是<strong>双重接口（Dual Interface）</strong> 的经典应用：</p>
+<ul>
+<li>对 Caretaker：窄接口（只能传递）</li>
+<li>对 Originator：宽接口（可读写）</li>
+</ul></li>
+<li><p>管理者，在这里是客户端</p>
+<p><strong><code>Stack&lt;StarMemento&gt;</code></strong>用栈结构实现“后进先出”的撤销</p>
+<figure>
+<img src="/posts/59606/image-20260131105808758.png" alt="image-20260131105808758">
+<figcaption aria-hidden="true">image-20260131105808758</figcaption>
+</figure></li>
+</ul>
+<p>可以看出这个例子是描述的恒星的演化，还挺有意思的</p>
+<figure>
+<img src="/posts/59606/image-20260131105854830.png" alt="image-20260131105854830">
+<figcaption aria-hidden="true">image-20260131105854830</figcaption>
+</figure>
+<p>备忘录模式<strong>提供状态恢复能力</strong>，但是<strong>资源消耗大</strong>，而且频繁创建备忘录影响性能，双刃剑了</p>
+<p>命令模式的撤销这种逆向操作，一般都是相对简单的情况下，能够直接用命令撤销，而且只能是针对上个版本的情况下，而备忘录模式就比较复杂和自由了，因为它复制的是指定版本的快照</p>
+<p>我们智研平台对于 wiki 就使用了备忘录模式</p>
+<p><strong>给对象一个“后悔药”，让它能随时回到过去的状态，而无需暴露自己的秘密。</strong></p>
+<h2 id="观察者模式">观察者模式</h2>
+<blockquote>
+<p>观察者模式是一种行为型设计模式，它定义了一种一对多的依赖关系，当一个对象的状态发生改变时，其所有依赖者都会收到通知并自动更新。</p>
+<p>当对象间存在一对多关系时，则使用观察者模式（Observer
+Pattern）。比如，当一个对象被修改时，则会自动通知依赖它的对象。观察者模式属于行为型模式。</p>
+</blockquote>
+<p>也就是，当一个对象状态改变时，所有依赖于它的对象都会得到通知并自动更新。保持对象间的低耦合和高协作性</p>
+<ul>
+<li><strong>解耦 Subject（主题）和 Observer（观察者）</strong></li>
+<li><strong>广播通信</strong>：Subject 不关心谁在观察，只负责通知</li>
+<li><strong>动态订阅</strong>：观察者可随时加入/退出</li>
+</ul>
+<p>就好像微信公众号（Subject） vs
+订阅用户（Observer）。公众号发文章，所有订阅者自动收到。</p>
+<p>实现方式也是两边接口两边实现</p>
+<ul>
+<li><strong>定义观察者接口</strong>：包含一个更新方法。</li>
+<li><strong>创建具体观察者</strong>：实现观察者接口，定义接收到通知时的行为。</li>
+<li><strong>定义主题接口</strong>：包含添加、删除和通知观察者的方法。</li>
+<li><strong>创建具体主题</strong>：实现主题接口，管理观察者列表，并在状态改变时通知它们。</li>
+</ul>
+<figure>
+<img src="/posts/59606/image-20260131110334643.png" alt="image-20260131110334643">
+<figcaption aria-hidden="true">image-20260131110334643</figcaption>
+</figure>
+<p>观察者模式的主要角色如下，还是以一个例子说明</p>
+<table>
+<colgroup>
+<col style="width: 29%">
+<col style="width: 29%">
+<col style="width: 41%">
+</colgroup>
+<thead>
+<tr>
+<th>角色</th>
+<th>说明</th>
+<th>在你例子中的对应</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Subject（主题/被观察者）</td>
+<td>管理观察者列表，状态变化时通知</td>
+<td><code>Weather</code>, <code>GenWeather</code></td>
+</tr>
+<tr>
+<td>Observer（观察者）</td>
+<td>定义接收通知的接口</td>
+<td><code>WeatherObserver</code>, <code>Race</code></td>
+</tr>
+<tr>
+<td>ConcreteSubject（具体主题）</td>
+<td>实现 Subject，维护状态</td>
+<td><code>Weather</code>, <code>GenWeather</code></td>
+</tr>
+<tr>
+<td>ConcreteObserver（具体观察者）</td>
+<td>实现 Observer，响应通知</td>
+<td><code>Orcs</code>, <code>Hobbits</code>, <code>GenOrcs</code>,
+<code>GenHobbits</code></td>
+</tr>
+</tbody>
+</table>
+<figure>
+<img src="/posts/59606/image-20260131110246110.png" alt="image-20260131110246110">
+<figcaption aria-hidden="true">image-20260131110246110</figcaption>
+</figure>
+<h4 id="传统实现">传统实现</h4>
+<p>来看观察者接口</p>
+<figure>
+<img src="/posts/59606/image-20260131110420529.png" alt="image-20260131110420529">
+<figcaption aria-hidden="true">image-20260131110420529</figcaption>
+</figure>
+<ul>
+<li>所有观察者必须实现此接口，此时，<code>update()</code>
+是通知入口</li>
+</ul>
+<p>对于具体的观察者</p>
+<figure>
+<img src="/posts/59606/image-20260131110450607.png" alt="image-20260131110450607">
+<figcaption aria-hidden="true">image-20260131110450607</figcaption>
+</figure>
+<figure>
+<img src="/posts/59606/image-20260131110457529.png" alt="image-20260131110457529">
+<figcaption aria-hidden="true">image-20260131110457529</figcaption>
+</figure>
+<ul>
+<li>实现 <code>update()</code>
+方法，定义自己的响应逻辑，而且他们完全不知道 <code>Weather</code>
+的内部细节</li>
+</ul>
+<p>那么，这个例子描述的是天气预报，那么被观察者就是<code>Weather.java</code></p>
+<figure>
+<img src="/posts/59606/image-20260131110630880.png" alt="image-20260131110630880">
+<figcaption aria-hidden="true">image-20260131110630880</figcaption>
+</figure>
+<p>首先，它维护了一个观察者列表，然后对应的是add/remove，也就是订阅和退订，状态变更时广播。通过<code>notifyObservers()</code>
+遍历调用 <code>update()</code></p>
+<h4 id="泛型增强实现">泛型增强实现</h4>
+<p>再看使用泛型对其增强实现，泛型观察者基类：<code>Observable.java</code></p>
+<figure>
+<img src="/posts/59606/image-20260131110750435.png" alt="image-20260131110750435">
+<figcaption aria-hidden="true">image-20260131110750435</figcaption>
+</figure>
+<ul>
+<li>那么其中涉及到了一个泛型递归
+<ul>
+<li><code>S</code> = 具体主题类型（如 <code>GenWeather</code>）</li>
+<li><code>O</code> = 具体观察者类型（如 <code>GenOrcs</code>）</li>
+<li><code>A</code> = 通知参数类型（如 <code>WeatherType</code>）</li>
+</ul></li>
+<li>使用了并发编程中常用的
+<code>CopyOnWriteArrayList</code>来保证线程安全</li>
+<li>强类型回调：<code>update(S subject, A argument)</code>
+提供主题引用，避免了传统实现中 <code>update()</code>
+参数类型不明确的问题。</li>
+</ul>
+<p>泛型观察者接口：<code>Observer.java</code></p>
+<figure>
+<img src="/posts/59606/image-20260131110922593.png" alt="image-20260131110922593">
+<figcaption aria-hidden="true">image-20260131110922593</figcaption>
+</figure>
+<p>回调方法接收<strong>主题实例</strong>和<strong>参数</strong>，功能更强</p>
+<p>对于具体的主题</p>
+<figure>
+<img src="/posts/59606/image-20260131111006364.png" alt="image-20260131111006364">
+<figcaption aria-hidden="true">image-20260131111006364</figcaption>
+</figure>
+<ul>
+<li>继承 <code>Observable</code>观察者基类，指定泛型参数</li>
+<li><strong>无需重复实现观察者管理逻辑</strong></li>
+</ul>
+<p>对于具体的观察者</p>
+<ul>
+<li>实现
+<code>update(GenWeather, WeatherType)</code>，<strong>直接获得主题引用</strong></li>
+</ul>
+<figure>
+<img src="/posts/59606/image-20260131111055732.png" alt="image-20260131111055732">
+<figcaption aria-hidden="true">image-20260131111055732</figcaption>
+</figure>
+<p>其中，Race 接口是一个窄接口，仅声明并且被持有，无法做出改动</p>
+<figure>
+<img src="/posts/59606/image-20260131111126532.png" alt="image-20260131111126532">
+<figcaption aria-hidden="true">image-20260131111126532</figcaption>
+</figure>
+<p>两者的客户端使用都是一样的，只不过泛型版类型更安全</p>
+<p>客户端只与主题交互，观察者自动响应</p>
+<figure>
+<img src="/posts/59606/image-20260131111231840.png" alt="image-20260131111231840">
+<figcaption aria-hidden="true">image-20260131111231840</figcaption>
+</figure>
+<h2 id="状态模式">状态模式</h2>
+<blockquote>
+<p>在状态模式（State
+Pattern）中，类的行为是基于它的状态改变的，这种类型的设计模式属于行为型模式。</p>
+<p>在状态模式中，我们创建表示各种状态的对象和一个行为随着状态对象改变而改变的
+context 对象。</p>
+<p>状态模式允许对象在内部状态改变时改变其行为，使得对象在不同的状态下有不同的行为表现。通过将每个状态封装成独立的类，可以避免使用大量的条件语句来实现状态切换。</p>
+</blockquote>
+<p>这个说的太抽象了，我来说的清楚一点</p>
+<p>就是它允许一个对象在其内部状态改变时改变它的行为。对象看起来似乎修改了它的类。</p>
+<p>我的状态从睡觉变成了苏醒，那么我就需要执行起床这个一个动作</p>
+<ul>
+<li><strong>将状态相关的行为封装到独立的状态类中</strong></li>
+<li><strong>状态转换由状态类自身或上下文管理</strong></li>
+<li><strong>避免庞大的条件语句（if-else / switch）</strong></li>
+</ul>
+<p>状态模式的角色如下</p>
+<table>
+<colgroup>
+<col style="width: 25%">
+<col style="width: 46%">
+<col style="width: 28%">
+</colgroup>
+<thead>
+<tr>
+<th>角色</th>
+<th>说明</th>
+<th>在你例子中的对应</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Context（上下文）</td>
+<td>持有当前状态的引用，将客户端请求委托给状态对象</td>
+<td><code>Mammoth</code></td>
+</tr>
+<tr>
+<td>State（状态接口）</td>
+<td>定义状态相关行为的接口</td>
+<td><code>State</code></td>
+</tr>
+<tr>
+<td>ConcreteState（具体状态）</td>
+<td>实现 State 接口，封装特定状态的行为</td>
+<td><code>PeacefulState</code>, <code>AngryState</code></td>
+</tr>
+</tbody>
+</table>
+<p>状态接口如下，对于一个状态，需要进入状态触发的方法和查询当前状态的行为表现的方法</p>
+<figure>
+<img src="/posts/59606/image-20260131112140398.png" alt="image-20260131112140398">
+<figcaption aria-hidden="true">image-20260131112140398</figcaption>
+</figure>
+<p>具体状态如下，以和平状态为例子</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">PeacefulState</span> <span class="keyword">implements</span> <span class="title class_">State</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Mammoth mammoth; <span class="comment">// 持有上下文引用</span></span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">observe</span><span class="params">()</span> &#123;</span><br><span class="line">        LOGGER.info(<span class="string">&quot;&#123;&#125; is calm and peaceful.&quot;</span>, mammoth);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">onEnterState</span><span class="params">()</span> &#123;</span><br><span class="line">        LOGGER.info(<span class="string">&quot;&#123;&#125; calms down.&quot;</span>, mammoth);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><strong>持有 <code>Mammoth</code>
+引用</strong>：状态对象可以访问上下文</li>
+<li>状态之间不会相互影响</li>
+</ul>
+<p>上下文就是<code>Mammoth</code></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Mammoth</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> State state; <span class="comment">// 当前状态</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Mammoth</span><span class="params">()</span> &#123;</span><br><span class="line">        state = <span class="keyword">new</span> <span class="title class_">PeacefulState</span>(<span class="built_in">this</span>); <span class="comment">// 初始状态</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 核心方法：时间流逝 → 切换状态</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">timePasses</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (state.getClass().equals(PeacefulState.class)) &#123;</span><br><span class="line">            changeStateTo(<span class="keyword">new</span> <span class="title class_">AngryState</span>(<span class="built_in">this</span>));</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            changeStateTo(<span class="keyword">new</span> <span class="title class_">PeacefulState</span>(<span class="built_in">this</span>));</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">changeStateTo</span><span class="params">(State newState)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.state = newState;</span><br><span class="line">        <span class="built_in">this</span>.state.onEnterState(); <span class="comment">// 触发新状态的进入动作</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 委托方法：将 observe 请求转发给当前状态</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">observe</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.state.observe();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">toString</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">&quot;The mammoth&quot;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><strong><code>changeStateTo()</code>
+封装切换细节</strong>，进入状态涉及到了更新引用和触发<strong><code>onEnterState()</code></strong>，这说明了什么，说明了<strong>行为委托</strong>，对象行为随状态改变</li>
+</ul>
+<p>对于客户端，直接使用上下文就可以实现状态切换额外附带的一堆动作</p>
+<figure>
+<img src="/posts/59606/image-20260131112517638.png" alt="image-20260131112517638">
+<figcaption aria-hidden="true">image-20260131112517638</figcaption>
+</figure>
+<ul>
+<li>客户端只与 <code>Mammoth</code>
+交互<strong>，</strong>完全不知道内部状态的具体细节</li>
+<li>通过简单的方法调用触发状态切换</li>
+</ul>
+<p>也就是说，状态模式的核心就是将 if-else/switch
+转为多态，而且<strong>符合开闭原则</strong>，新增状态只需添加新类，不修改现有代码</p>
+<h2 id="策略模式">策略模式</h2>
+<blockquote>
+<p>在策略模式（Strategy
+Pattern）中一个类的行为或其算法可以在运行时更改。这种类型的设计模式属于行为型模式。</p>
+<p>在策略模式定义了一系列算法或策略，并将每个算法封装在独立的类中，使得它们可以互相替换。通过使用策略模式，可以在运行时根据需要选择不同的算法，而不需要修改客户端代码。</p>
+<p>在策略模式中，我们创建表示各种策略的对象和一个行为随着策略对象改变而改变的
+context 对象。策略对象改变 context 对象的执行算法。</p>
+</blockquote>
+<p>策略模式的意图就是将每个算法封装起来，使它们可以互换使用。</p>
+<ul>
+<li><strong>将“做什么”（策略）与“怎么做”（执行者）分离</strong>，这样就能运行时切换算法了</li>
+</ul>
+<p>解决在多种相似算法存在时，使用条件语句（如if…else）导致的复杂性和难以维护的问题。</p>
+<p>这个就比较清晰了说的，而且和状态模式比较像，只不过是一个是根据状态改变行为，一个是运行时切换策略或算法</p>
+<table>
+<colgroup>
+<col style="width: 11%">
+<col style="width: 44%">
+<col style="width: 44%">
+</colgroup>
+<thead>
+<tr>
+<th>特性</th>
+<th>状态模式</th>
+<th>策略模式</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>目的</td>
+<td>对象行为随内部状态改变</td>
+<td>封装算法族，运行时切换</td>
+</tr>
+<tr>
+<td>状态转换</td>
+<td>通常由 Context 或 State 自身触发</td>
+<td>由 Client 显式设置</td>
+</tr>
+<tr>
+<td>耦合度</td>
+<td>State 通常持有 Context 引用</td>
+<td>Strategy 通常不持有 Context 引用</td>
+</tr>
+<tr>
+<td>行为变化</td>
+<td>隐式（状态自动切换）</td>
+<td>显式（Client 选择策略）</td>
+</tr>
+</tbody>
+</table>
+<p>实现方式如下</p>
+<ul>
+<li><strong>定义策略接口</strong>：所有策略类都将实现这个统一的接口。规定了所有策略类必须实现的方法。</li>
+<li><strong>创建具体策略类</strong>：每个策略类封装一个具体的算法或行为。实现了策略接口，包含具体的算法实现。</li>
+<li><strong>上下文类</strong>：包含一个策略对象的引用，并通过该引用调用策略。</li>
+</ul>
+<table>
+<colgroup>
+<col style="width: 25%">
+<col style="width: 26%">
+<col style="width: 48%">
+</colgroup>
+<thead>
+<tr>
+<th>角色</th>
+<th>说明</th>
+<th>在你例子中的对应</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Strategy（策略接口）</td>
+<td>定义所有支持的算法的公共接口</td>
+<td><code>DragonSlayingStrategy</code></td>
+</tr>
+<tr>
+<td>ConcreteStrategy（具体策略）</td>
+<td>实现 Strategy 接口的具体算法</td>
+<td><code>MeleeStrategy</code>, <code>ProjectileStrategy</code>,
+<code>SpellStrategy</code></td>
+</tr>
+<tr>
+<td>Context（上下文）</td>
+<td>持有 Strategy 引用，调用其算法</td>
+<td><code>DragonSlayer</code></td>
+</tr>
+<tr>
+<td>Client（客户端）</td>
+<td>配置 Context 使用哪个 Strategy</td>
+<td><code>App.main()</code></td>
+</tr>
+</tbody>
+</table>
+<p>策略接口如下</p>
+<figure>
+<img src="/posts/59606/image-20260131114054360.png" alt="image-20260131114054360">
+<figcaption aria-hidden="true">image-20260131114054360</figcaption>
+</figure>
+<ul>
+<li>标记<strong><code>@FunctionalInterface</code></strong>的原因是成为函数式接口，这样就能被
+Lambda 表达式实现</li>
+<li><strong>单一方法
+<code>execute()</code></strong>：定义策略的核心行为</li>
+</ul>
+<p>具体策略类，这些实现都一样，挑一个来说，每个策略封装一种屠龙算法</p>
+<figure>
+<img src="/posts/59606/image-20260131114159308.png" alt="image-20260131114159308">
+<figcaption aria-hidden="true">image-20260131114159308</figcaption>
+</figure>
+<p>上下文类，<code>DragonSlayer.java</code>，它持有策略引用，而且支持动态的切换</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">DragonSlayer</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> DragonSlayingStrategy strategy;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 构造时注入策略</span></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">DragonSlayer</span><span class="params">(DragonSlayingStrategy strategy)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.strategy = strategy;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 运行时切换策略</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">changeStrategy</span><span class="params">(DragonSlayingStrategy strategy)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.strategy = strategy;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 执行当前策略</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">goToBattle</span><span class="params">()</span> &#123;</span><br><span class="line">        strategy.execute();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>goToBattle()</code> 不直接实现逻辑，而是调用
+<code>strategy.execute()</code>，这就是算法与使用解耦的实现，通过切换策略来切换算法</li>
+</ul>
+<p>客户端使用了三种方式</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">    <span class="comment">// ===== GoF 传统策略模式 =====</span></span><br><span class="line">    <span class="type">var</span> <span class="variable">dragonSlayer</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">DragonSlayer</span>(<span class="keyword">new</span> <span class="title class_">MeleeStrategy</span>());</span><br><span class="line">    dragonSlayer.goToBattle();</span><br><span class="line">    dragonSlayer.changeStrategy(<span class="keyword">new</span> <span class="title class_">ProjectileStrategy</span>());</span><br><span class="line">    dragonSlayer.goToBattle();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// ===== Java 8 Lambda 实现 =====</span></span><br><span class="line">    dragonSlayer = <span class="keyword">new</span> <span class="title class_">DragonSlayer</span>(() -&gt; LOGGER.info(<span class="string">&quot;With your Excalibur...&quot;</span>));</span><br><span class="line">    dragonSlayer.goToBattle();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// ===== 枚举策略实现 =====</span></span><br><span class="line">    dragonSlayer.changeStrategy(LambdaStrategy.Strategy.MELEE_STRATEGY);</span><br><span class="line">    dragonSlayer.goToBattle();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>枚举策略：<code>LambdaStrategy.java</code>就是几种策略的枚举，不说了</p>
+<p>这就是策略模式的精髓：<strong>让算法成为可插拔的组件，赋予对象运行时改变行为的能力。</strong></p>
+<h2 id="模板方法模式">模板方法模式</h2>
+<blockquote>
+<p>在模板模式（Template
+Pattern）中，一个抽象类公开定义了执行它的方法的方式/模板。它的子类可以按需要重写方法实现，但调用将以抽象类中定义的方式进行。这种类型的设计模式属于行为型模式。</p>
+</blockquote>
+<p><strong>模板方法模式（Template Method Pattern）</strong>
+是一种<strong>行为型设计模式</strong>，它在一个方法中定义一个算法的骨架，而将一些步骤延迟到子类中。模板方法使得子类可以在不改变算法结构的情况下重新定义该算法的某些特定步骤。</p>
+<p>关键是在父类中定义了算法的骨架，并允许子类在不改变算法结构的前提下重定义算法的某些特定步骤。</p>
+<p>解决在多个子类中重复实现相同的方法的问题，通过将通用方法抽象到父类中来避免代码重复。</p>
+<p>一般情况下，当存在一些通用的方法，可以在多个子类中共用时。</p>
+<p>实现方式</p>
+<ul>
+<li><strong>定义抽象父类</strong>：包含模板方法和一些抽象方法或具体方法。抽象方法代表算法中的可变部分。具体方法代表算法的不变部分。</li>
+<li><strong>实现子类</strong>：继承抽象父类并实现抽象方法，不改变算法结构。</li>
+</ul>
+<figure>
+<img src="/posts/59606/image-20260131114822294.png" alt="image-20260131114822294">
+<figcaption aria-hidden="true">image-20260131114822294</figcaption>
+</figure>
+<table>
+<colgroup>
+<col style="width: 31%">
+<col style="width: 27%">
+<col style="width: 41%">
+</colgroup>
+<thead>
+<tr>
+<th>角色</th>
+<th>说明</th>
+<th>在你例子中的对应</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>AbstractClass（抽象类）</td>
+<td>定义模板方法和抽象步骤</td>
+<td><code>StealingMethod</code></td>
+</tr>
+<tr>
+<td>ConcreteClass（具体子类）</td>
+<td>实现抽象步骤，完成算法</td>
+<td><code>HitAndRunMethod</code>, <code>SubtleMethod</code></td>
+</tr>
+</tbody>
+</table>
+<figure>
+<img src="/posts/59606/image-20260131114828748.png" alt="image-20260131114828748">
+<figcaption aria-hidden="true">image-20260131114828748</figcaption>
+</figure>
+<ul>
+<li><p>抽象类（模板定义）：<code>StealingMethod.java</code></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">StealingMethod</span> &#123;</span><br><span class="line">    <span class="comment">// === 抽象步骤（由子类实现） ===</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">abstract</span> String <span class="title function_">pickTarget</span><span class="params">()</span>;</span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">abstract</span> <span class="keyword">void</span> <span class="title function_">confuseTarget</span><span class="params">(String target)</span>;</span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">abstract</span> <span class="keyword">void</span> <span class="title function_">stealTheItem</span><span class="params">(String target)</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// === 模板方法（final 禁止子类重写） ===</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title function_">steal</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="type">var</span> <span class="variable">target</span> <span class="operator">=</span> pickTarget();</span><br><span class="line">        LOGGER.info(<span class="string">&quot;The target has been chosen as &#123;&#125;.&quot;</span>, target);</span><br><span class="line">        confuseTarget(target);</span><br><span class="line">        stealTheItem(target);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>steal()</code> 是模板方法：
+<ul>
+<li>定义了偷窃的<strong>固定流程</strong>：选目标 → 迷惑目标 →
+偷窃物品</li>
+<li><strong><code>final</code>
+关键字</strong>：确保算法骨架不被子类篡改</li>
+</ul></li>
+<li>三个抽象方法：
+<ul>
+<li><code>pickTarget()</code>：选择目标</li>
+<li><code>confuseTarget()</code>：迷惑目标</li>
+<li><code>stealTheItem()</code>：执行偷窃</li>
+<li><strong><code>protected</code> 访问权限</strong>：仅限子类访问</li>
+</ul></li>
+</ul></li>
+<li><p>具体子类</p>
+<figure>
+<img src="/posts/59606/image-20260131114949131.png" alt="image-20260131114949131">
+<figcaption aria-hidden="true">image-20260131114949131</figcaption>
+</figure>
+<p>他们都都遵循 <code>steal()</code>
+定义的三步走，不同的策略实现了对应的实现</p></li>
+<li><p>上下文使用者：<code>HalflingThief.java</code></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">HalflingThief</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> StealingMethod method;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">HalflingThief</span><span class="params">(StealingMethod method)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.method = method;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">steal</span><span class="params">()</span> &#123;</span><br><span class="line">        method.steal(); <span class="comment">// 调用模板方法</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">changeMethod</span><span class="params">(StealingMethod method)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.method = method; <span class="comment">// 支持切换策略</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里也使用了组合模式</p></li>
+<li><p>客户端使用起来就可以很灵活了</p>
+<figure>
+<img src="/posts/59606/image-20260131115116763.png" alt="image-20260131115116763">
+<figcaption aria-hidden="true">image-20260131115116763</figcaption>
+</figure></li>
+</ul>
+<p>模板方法模式和策略模式这俩互相都有着对面的影子</p>
+<table>
+<colgroup>
+<col style="width: 11%">
+<col style="width: 34%">
+<col style="width: 54%">
+</colgroup>
+<thead>
+<tr>
+<th>特性</th>
+<th>模板方法模式</th>
+<th>策略模式</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>实现方式</td>
+<td>继承（Inheritance）</td>
+<td>组合（Composition）</td>
+</tr>
+<tr>
+<td>变化点</td>
+<td>算法的特定步骤</td>
+<td>整个算法</td>
+</tr>
+<tr>
+<td>控制权</td>
+<td>父类控制流程，子类实现细节</td>
+<td>Context 完全委托给 Strategy</td>
+</tr>
+<tr>
+<td>灵活性</td>
+<td>较低（需通过继承扩展）</td>
+<td>高（运行时动态切换）</td>
+</tr>
+<tr>
+<td>代码复用</td>
+<td>通过父类复用骨架</td>
+<td>通过接口复用契约</td>
+</tr>
+<tr>
+<td>你的代码体现</td>
+<td><code>StealingMethod</code> 的 <code>steal()</code> 流程固定</td>
+<td><code>HalflingThief</code> 通过 <code>changeMethod()</code> 切换
+<code>StealingMethod</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="访问者模式">访问者模式</h2>
+<blockquote>
+<p>在访问者模式（Visitor
+Pattern）中，我们使用了一个访问者类，它改变了元素类的执行算法。</p>
+<p>通过这种方式，元素的执行算法可以随着访问者改变而改变。这种类型的设计模式属于行为型模式。</p>
+<p>根据模式，元素对象已接受访问者对象，这样访问者对象就可以处理元素对象上的操作。</p>
+</blockquote>
+<p>什么意思，访问者模式将<strong>算法</strong>与<strong>对象结构</strong>分离。通过这种方式，可以在不修改对象结构的情况下定义新的操作。</p>
+<p>解决在稳定数据结构和易变操作之间的耦合问题，使得操作可以独立于数据结构变化。</p>
+<p>当需要对一个对象结构中的对象执行多种不同的且不相关的操作时，尤其是这些操作需要避免”污染”对象类本身，会使用这个设计模式</p>
+<p>它的实现方式也是双接口双实现</p>
+<ul>
+<li><strong>定义访问者接口</strong>：声明一系列访问不同元素的方法，一个访问方法对应数据结构中的一个元素类。</li>
+<li><strong>创建具体访问者</strong>：实现访问者接口，为每个访问方法提供具体实现，包含对每个元素类的访问逻辑。</li>
+<li><strong>定义元素接口</strong>：声明一个接受访问者的方法。</li>
+<li><strong>创建具体元素</strong>：实现元素接口，每个具体元素类对应数据结构中的一个具体对象，提供给访问者访问的入口。</li>
+</ul>
+<figure>
+<img src="/posts/59606/image-20260131115708704.png" alt="image-20260131115708704">
+<figcaption aria-hidden="true">image-20260131115708704</figcaption>
+</figure>
+<p>那么，访问者模式的角色有如下，最后一个还是用例子来描述</p>
+<table>
+<colgroup>
+<col style="width: 23%">
+<col style="width: 33%">
+<col style="width: 43%">
+</colgroup>
+<thead>
+<tr>
+<th>角色</th>
+<th>说明</th>
+<th>在你例子中的对应</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Visitor（访问者接口）</td>
+<td>声明访问每个具体元素的方法</td>
+<td><code>UnitVisitor</code></td>
+</tr>
+<tr>
+<td>ConcreteVisitor（具体访问者）</td>
+<td>实现 Visitor 接口，定义具体操作</td>
+<td><code>SoldierVisitor</code>, <code>SergeantVisitor</code>,
+<code>CommanderVisitor</code></td>
+</tr>
+<tr>
+<td>Element（元素接口）</td>
+<td>声明接受访问者的方法</td>
+<td><code>Unit</code>（抽象类）</td>
+</tr>
+<tr>
+<td>ConcreteElement（具体元素）</td>
+<td>实现 Element 接口，调用 Visitor 的具体方法</td>
+<td><code>Soldier</code>, <code>Sergeant</code>,
+<code>Commander</code></td>
+</tr>
+<tr>
+<td>ObjectStructure（对象结构）</td>
+<td>管理元素集合，提供高层遍历接口</td>
+<td><code>Commander</code>（作为根节点）</td>
+</tr>
+</tbody>
+</table>
+<figure>
+<img src="/posts/59606/image-20260131115737685.png" alt="image-20260131115737685">
+<figcaption aria-hidden="true">image-20260131115737685</figcaption>
+</figure>
+<ul>
+<li><p>访问者接口</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">UnitVisitor</span> &#123;</span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">visit</span><span class="params">(Soldier soldier)</span>;</span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">visit</span><span class="params">(Sergeant sergeant)</span>;</span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">visit</span><span class="params">(Commander commander)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>为每种具体元素声明一个 <code>visit()</code>
+方法，这样根据参数类型区分不同操作</li>
+</ul></li>
+<li><p>具体访问者</p>
+<figure>
+<img src="/posts/59606/image-20260131115827320.png" alt="image-20260131115827320">
+<figcaption aria-hidden="true">image-20260131115827320</figcaption>
+</figure>
+<figure>
+<img src="/posts/59606/image-20260131115840497.png" alt="image-20260131115840497">
+<figcaption aria-hidden="true">image-20260131115840497</figcaption>
+</figure>
+<ul>
+<li>每个访客只关心特定类型的元素，对不关心的元素提供空实现</li>
+</ul></li>
+<li><p>元素基类 Unit</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">Unit</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Unit[] children;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Unit</span><span class="params">(Unit... children)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.children = children;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 接受访问者（模板方法）</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">accept</span><span class="params">(UnitVisitor visitor)</span> &#123;</span><br><span class="line">        Arrays.stream(children).forEach(child -&gt; child.accept(visitor));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>Unit</code> 可以包含子 <code>Unit</code>（形成树形结构）</li>
+<li><strong><code>accept()</code>
+方法</strong>：提供遍历子节点的通用逻辑</li>
+<li><strong>注意</strong>：这里没有调用
+<code>visitor.visit(this)</code>！这个调用在子类中完成</li>
+</ul></li>
+<li><p>具体元素</p>
+<figure>
+<img src="/posts/59606/image-20260131115950322.png" alt="image-20260131115950322">
+<figcaption aria-hidden="true">image-20260131115950322</figcaption>
+</figure>
+<figure>
+<img src="/posts/59606/image-20260131115956627.png" alt="image-20260131115956627">
+<figcaption aria-hidden="true">image-20260131115956627</figcaption>
+</figure></li>
+<li><p>最后对于客户端，只需调用根节点的
+<code>accept()</code>，就能按照指挥官 → 军士 →
+士兵这样的树形结构访问，这样，同一结构可应用不同算法</p>
+<figure>
+<img src="/posts/59606/image-20260131120145576.png" alt="image-20260131120145576">
+<figcaption aria-hidden="true">image-20260131120145576</figcaption>
+</figure></li>
+</ul>
+<p>这样，通过 <code>UnitVisitor</code> 接口和 <code>accept()</code>
+方法的分发，使得同一军队结构可以轻松应用不同的问候策略，而无需修改任何单位类。因为面对不同的对象，它会使用不同的方法</p>
+<p><strong>当你的对象结构稳定但操作多变时，让操作成为可插拔的访客，而不是硬编码在对象内部。</strong></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a target="_blank" rel="noopener" href="https://github.com/ergou10086">ErgouTree</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://ergou10086.github.io/posts/59606.html">https://ergou10086.github.io/posts/59606.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://ergou10086.github.io" target="_blank">ErgouTree's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E5%AD%A6%E4%B9%A0/">学习</a><a class="post-meta__tags" href="/tags/%E5%AE%9E%E7%94%A8%E7%9F%A5%E8%AF%86/">实用知识</a><a class="post-meta__tags" href="/tags/Java%E5%AD%A6%E4%B9%A0/">Java学习</a><a class="post-meta__tags" href="/tags/%E5%90%8E%E7%AB%AF/">后端</a><a class="post-meta__tags" href="/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/">设计模式</a><a class="post-meta__tags" href="/tags/%E9%A1%B9%E7%9B%AE%E8%AE%BE%E8%AE%A1/">项目设计</a><a class="post-meta__tags" href="/tags/%E5%BC%80%E5%8F%91%E5%8E%9F%E5%88%99/">开发原则</a><a class="post-meta__tags" href="/tags/%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1/">面向对象</a></div><div class="post-share"><div class="addtoany"><div class="a2a_kit a2a_kit_size_32 a2a_default_style"><a class="a2a_button_facebook"></a><a class="a2a_button_twitter"></a><a class="a2a_button_wechat"></a><a class="a2a_button_sina_weibo"></a><a class="a2a_button_facebook_messenger"></a><a class="a2a_button_email"></a><a class="a2a_button_copy_link"></a><a class="a2a_dd" target="_blank" rel="noopener" href="https://www.addtoany.com/share"></a></div></div><script async="async" src="https://static.addtoany.com/menu/page.js"></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width" href="/posts/20991.html" title="面向对象编程的设计模式之详解结构型模式"><img class="cover" src="/images/posts/cover_docker2.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">面向对象编程的设计模式之详解结构型模式</div></div><div class="info-2"><div class="info-item-1">结构型设计模式 结构型设计模式关注处理类或对象的组合，形成更大的结构。  适配器模式（Adapter）：将一个类的接口转换成客户期望的另一个接口，使原本不兼容的类能一起工作。 桥接模式（Bridge）：将抽象部分与实现部分分离，使它们可以独立变化。 组合模式（Composite）：将对象组合成树形结构以表示“部分-整体”的层次关系，统一处理单个对象和组合对象。 装饰器模式（Decorator）：动态地给对象添加额外职责，比继承更灵活。 外观模式（Facade）：为子系统提供一个统一的高层接口，简化客户端使用。 享元模式（Flyweight）：通过共享技术有效支持大量细粒度对象的复用。 代理模式（Proxy）：为其他对象提供一种代理以控制对这个对象的访问。  适配器模式 对象适配器模式 适配器模式（Adapter...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/posts/20991.html" title="面向对象编程的设计模式之详解结构型模式"><img class="cover" src="/images/posts/cover_docker2.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-01-29</div><div class="info-item-2">面向对象编程的设计模式之详解结构型模式</div></div><div class="info-2"><div class="info-item-1">结构型设计模式 结构型设计模式关注处理类或对象的组合，形成更大的结构。  适配器模式（Adapter）：将一个类的接口转换成客户期望的另一个接口，使原本不兼容的类能一起工作。 桥接模式（Bridge）：将抽象部分与实现部分分离，使它们可以独立变化。 组合模式（Composite）：将对象组合成树形结构以表示“部分-整体”的层次关系，统一处理单个对象和组合对象。 装饰器模式（Decorator）：动态地给对象添加额外职责，比继承更灵活。 外观模式（Facade）：为子系统提供一个统一的高层接口，简化客户端使用。 享元模式（Flyweight）：通过共享技术有效支持大量细粒度对象的复用。 代理模式（Proxy）：为其他对象提供一种代理以控制对这个对象的访问。  适配器模式 对象适配器模式 适配器模式（Adapter...</div></div></div></a><a class="pagination-related" href="/posts/21748.html" title="面向对象编程的设计模式之详解创建型模式"><img class="cover" src="/images/posts/cover_springcloud4.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-01-27</div><div class="info-item-2">面向对象编程的设计模式之详解创建型模式</div></div><div class="info-2"><div class="info-item-1">设计模式介绍 设计模式是一套被广泛接受和验证的软件设计解决方案，它描述了在特定情境下的解决问题的方法。设计模式提供了一套通用的设计原则和模式，用于解决软件设计和开发过程中的常见问题，例如对象创建、行为管理和结构组织等。 一般来说，设计模式解决的最经典的问题就是结构清晰，提高复用性  提高代码的可重用性：设计模式提供了经过验证的解决方案，可以在不同的项目和场景中重复使用。 提高代码的可维护性：设计模式使得代码结构更加清晰，易于理解和维护。 提高代码的可扩展性：设计模式使得系统更容易进行功能扩展和修改，同时降低了对现有代码的影响。 提高开发效率：设计模式提供了一种标准化的设计方法，可以加快开发过程，并减少出错的可能性。 提高代码的质量：设计模式经过多次验证和实践，可以帮助开发者编写更加优雅和高效的代码。  一些面向对象设计原则 单一职责原则  一个类应该只有一个引起它变化的原因。  每个类/模块/函数只负责一项功能。 这样很好的降低了耦合度，提高可读性和可维护性。  反例：一个...</div></div></div></a><a class="pagination-related" href="/posts/10821.html" title="Spring Boot part20-事件驱动开发"><img class="cover" src="/images/posts/cover_wish.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-06-21</div><div class="info-item-2">Spring Boot part20-事件驱动开发</div></div><div class="info-2"><div class="info-item-1">事件驱动开发 简介 在现代应用程序开发中，事件驱动架构（EDA）越来越受欢迎。它不仅可以提高系统的解耦性，还能提升系统的可扩展性和响应速度。Spring Boot 中的事件驱动开发是一种解耦业务逻辑的设计模式，核心思想是：通过 “事件发布 - 监听” 机制，让不同组件在不直接依赖的情况下协作。 事件驱动开发是一种软件架构模式，系统通过事件来进行通信和协调。事件可以是系统中发生的任何有意义的事情，如用户点击按钮、数据更新等。事件驱动架构的核心思想是将事件的发布者和事件的处理者解耦，通过事件总线来传递事件。这样可以使得系统更加灵活，易于扩展和维护。 Spring Boot中的事件模型基于 Spring Framework 的 ApplicationEvent 和 ApplicationListener。ApplicationEvent 是所有事件的基类，ApplicationListener 是所有事件监听器的接口。我们可以自定义事件并发布，自定义监听器来处理这些事件。 简单说，事件驱动开发是用 “事件” 作为业务流程的 “粘合剂”，让不同组件在...</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="gitalk-container"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/arp.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">ErgouTree</div><div class="author-info-description">I start a brand-new life with you.</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">289</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">174</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">97</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/ergou10086"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/ergou10086" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="/zjm88822201@126.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a><a class="social-icon" href="https://space.bilibili.com/142045656?spm_id_from=333.1007.0.0" target="_blank" title="bilibili"><i class="fas fa-brands fa-bilibili" style="color: #4a72be;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">作者长期陷入galgame和osu!maina4k中 祝他好运吧 对了 如果图片加载过慢 建议科学上网进行使用</div></div><div class="card-widget card-weather"><div class="item-headline"><i class="fas fa-cloud-sun"></i><span>aside.card_weather</span></div><div class="weather-content"><div class="weather-loading"><i class="fas fa-spinner fa-spin"></i><span>加载中...</span></div><div class="weather-main" style="display: none;"><div class="weather-location"><i class="fas fa-map-marker-alt"></i><span id="weather-location">获取中...</span></div><div class="weather-info"><div class="weather-temp"><span id="weather-temp">--</span><span class="unit">°C</span></div><div class="weather-desc"><span id="weather-weather">--</span></div><div class="weather-details"><div class="weather-item"><i class="fas fa-wind"></i><span id="weather-windpower">--</span></div><div class="weather-item"><i class="fas fa-tint"></i><span id="weather-humidity">--</span></div><div class="weather-item"><i class="fas fa-eye"></i><span id="weather-winddir">--</span></div></div></div><div class="weather-update-time"><i class="fas fa-clock"></i><span id="weather-update-time">更新中...</span></div></div></div></div><div class="sticky_layout"></div><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%A1%8C%E4%B8%BA%E5%9E%8B%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F"><span class="toc-number">1.</span> <span class="toc-text">行为型设计模式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%B4%A3%E4%BB%BB%E9%93%BE%E6%A8%A1%E5%BC%8F"><span class="toc-number">2.</span> <span class="toc-text">责任链模式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%91%BD%E4%BB%A4%E6%A8%A1%E5%BC%8F"><span class="toc-number">3.</span> <span class="toc-text">命令模式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%A7%A3%E9%87%8A%E5%99%A8%E6%A8%A1%E5%BC%8F"><span class="toc-number">4.</span> <span class="toc-text">解释器模式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BF%AD%E4%BB%A3%E5%99%A8%E6%A8%A1%E5%BC%8F"><span class="toc-number">5.</span> <span class="toc-text">迭代器模式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%AD%E4%BB%8B%E8%80%85%E6%A8%A1%E5%BC%8F"><span class="toc-number">6.</span> <span class="toc-text">中介者模式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%87%E5%BF%98%E5%BD%95%E6%A8%A1%E5%BC%8F"><span class="toc-number">7.</span> <span class="toc-text">备忘录模式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%A7%82%E5%AF%9F%E8%80%85%E6%A8%A1%E5%BC%8F"><span class="toc-number">8.</span> <span class="toc-text">观察者模式</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BC%A0%E7%BB%9F%E5%AE%9E%E7%8E%B0"><span class="toc-number">8.0.1.</span> <span class="toc-text">传统实现</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B3%9B%E5%9E%8B%E5%A2%9E%E5%BC%BA%E5%AE%9E%E7%8E%B0"><span class="toc-number">8.0.2.</span> <span class="toc-text">泛型增强实现</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%8A%B6%E6%80%81%E6%A8%A1%E5%BC%8F"><span class="toc-number">9.</span> <span class="toc-text">状态模式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AD%96%E7%95%A5%E6%A8%A1%E5%BC%8F"><span class="toc-number">10.</span> <span class="toc-text">策略模式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A8%A1%E6%9D%BF%E6%96%B9%E6%B3%95%E6%A8%A1%E5%BC%8F"><span class="toc-number">11.</span> <span class="toc-text">模板方法模式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AE%BF%E9%97%AE%E8%80%85%E6%A8%A1%E5%BC%8F"><span class="toc-number">12.</span> <span class="toc-text">访问者模式</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/59606.html" title="面向对象编程的设计模式之行为型模式"><img src="/images/posts/cover_math4.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="面向对象编程的设计模式之行为型模式"/></a><div class="content"><a class="title" href="/posts/59606.html" title="面向对象编程的设计模式之行为型模式">面向对象编程的设计模式之行为型模式</a><time datetime="2026-01-31T04:18:30.000Z" title="发表于 2026-01-31 12:18:30">2026-01-31</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/20991.html" title="面向对象编程的设计模式之详解结构型模式"><img src="/images/posts/cover_docker2.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="面向对象编程的设计模式之详解结构型模式"/></a><div class="content"><a class="title" href="/posts/20991.html" title="面向对象编程的设计模式之详解结构型模式">面向对象编程的设计模式之详解结构型模式</a><time datetime="2026-01-28T16:40:02.000Z" title="发表于 2026-01-29 00:40:02">2026-01-29</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/21748.html" title="面向对象编程的设计模式之详解创建型模式"><img src="/images/posts/cover_springcloud4.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="面向对象编程的设计模式之详解创建型模式"/></a><div class="content"><a class="title" href="/posts/21748.html" title="面向对象编程的设计模式之详解创建型模式">面向对象编程的设计模式之详解创建型模式</a><time datetime="2026-01-27T04:39:22.000Z" title="发表于 2026-01-27 12:39:22">2026-01-27</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/2878.html" title="使用Arthas来监控线上服务并定位问题"><img src="/images/posts/cover_java3.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="使用Arthas来监控线上服务并定位问题"/></a><div class="content"><a class="title" href="/posts/2878.html" title="使用Arthas来监控线上服务并定位问题">使用Arthas来监控线上服务并定位问题</a><time datetime="2026-01-26T12:22:23.000Z" title="发表于 2026-01-26 20:22:23">2026-01-26</time></div></div></div></div></div></main><div class="fps-display"><span id="fps">FPS: 60</span></div><footer id="footer" style="background-image: url(/images/posts/cover_math4.jpg);"><div id="footer-wrap"><div class="copyright">&copy;2024 - 2026 By ErgouTree</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">忘れたくない思い、ありますか？ <br>,<span id="realtime_duration" style="font-family: monospace;"></span>,<br><a href="https://icp.gov.moe/?keyword=20257009" target="_blank">萌ICP备20257009号</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><a class="icon-V hidden" onclick="switchNightMode()" title="日间和夜间模式切换"><svg width="25" height="25" viewBox="0 0 1024 1024"><use id="modeicon" xlink:href="#icon-moon"></use></svg></a><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="chat-btn" type="button" title="聊天" style="display:none"><i class="fas fa-comment"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (true) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script><script>(() => {
+  const applyThemeDefaultsConfig = theme => {
+    if (theme === 'dark-mode') {
+      Chart.defaults.color = "rgba(255, 255, 255, 0.8)"
+      Chart.defaults.borderColor = "rgba(255, 255, 255, 0.2)"
+      Chart.defaults.scale.ticks.backdropColor = "transparent"
+    } else {
+      Chart.defaults.color = "rgba(0, 0, 0, 0.8)"
+      Chart.defaults.borderColor = "rgba(0, 0, 0, 0.1)"
+      Chart.defaults.scale.ticks.backdropColor = "transparent"
+    }
+  }
+
+  // Recursively traverse the config object and automatically apply theme-specific color schemes
+  const applyThemeConfig = (obj, theme) => {
+    if (typeof obj !== 'object' || obj === null) return
+
+    Object.keys(obj).forEach(key => {
+      const value = obj[key]
+      // If the property is an object and has theme-specific options, apply them
+      if (typeof value === 'object' && value !== null) {
+        if (value[theme]) {
+          obj[key] = value[theme] // Apply the value for the current theme
+        } else {
+          // Recursively process child objects
+          applyThemeConfig(value, theme)
+        }
+      }
+    })
+  }
+
+  const runChartJS = ele => {
+    window.loadChartJS = true
+
+    Array.from(ele).forEach((item, index) => {
+      const chartSrc = item.firstElementChild
+      const chartID = item.getAttribute('data-chartjs-id') || ('chartjs-' + index) // Use custom ID or default ID
+      const width = item.getAttribute('data-width')
+      const existingCanvas = document.getElementById(chartID)
+
+      // If a canvas already exists, remove it to avoid rendering duplicates
+      if (existingCanvas) {
+          existingCanvas.parentNode.remove()
+      }
+
+      const chartDefinition = chartSrc.textContent
+      const canvas = document.createElement('canvas')
+      canvas.id = chartID
+
+      const div = document.createElement('div')
+      div.className = 'chartjs-wrap'
+
+      if (width) {
+        div.style.width = width
+      }
+
+      div.appendChild(canvas)
+      chartSrc.insertAdjacentElement('afterend', div)
+
+      const ctx = document.getElementById(chartID).getContext('2d')
+
+      const config = JSON.parse(chartDefinition)
+
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark-mode' : 'light-mode'
+
+      // Set default styles (initial setup)
+      applyThemeDefaultsConfig(theme)
+
+      // Automatically traverse the config and apply dual-mode color schemes
+      applyThemeConfig(config, theme)
+
+      new Chart(ctx, config)
+    })
+  }
+
+  const loadChartJS = () => {
+    const chartJSEle = document.querySelectorAll('#article-container .chartjs-container')
+    if (chartJSEle.length === 0) return
+
+    window.loadChartJS ? runChartJS(chartJSEle) : btf.getScript('https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.min.js').then(() => runChartJS(chartJSEle))
+  }
+
+  // Listen for theme change events
+  btf.addGlobalFn('themeChange', loadChartJS, 'chartjs')
+  btf.addGlobalFn('encrypt', loadChartJS, 'chartjs')
+
+  window.pjax ? loadChartJS() : document.addEventListener('DOMContentLoaded', loadChartJS)
+})()</script><script>(function() {
+  const abcjsInit = function() {
+    const abcjsFn = function() {
+      setTimeout(function() {
+        const sheets = document.querySelectorAll(".abc-music-sheet")
+        for (let i = 0; i < sheets.length; i++) {
+          const ele = sheets[i]
+          if (ele.children.length > 0) continue
+
+          // Parse parameters from data-params attribute
+          let params = {}
+          const dp = ele.getAttribute("data-params")
+          if (dp) {
+            try {
+              params = JSON.parse(dp)
+            } catch (e) {
+              console.error("Failed to parse data-params:", e)
+            }
+          }
+
+          // Merge parsed parameters with the responsive option
+          // Ensures params content appears before responsive
+          const options = { ...params, responsive: "resize" }
+
+          // Render the music score using ABCJS.renderAbc
+          ABCJS.renderAbc(ele, ele.innerHTML, options)
+        }
+      }, 100)
+    }
+
+    if (typeof ABCJS === "object") {
+      abcjsFn()
+    } else {
+      btf.getScript("https://cdn.jsdelivr.net/npm/abcjs/dist/abcjs-basic-min.min.js").then(abcjsFn)
+    }
+  }
+
+  if (window.pjax) {
+    abcjsInit()
+  } else {
+    window.addEventListener("load", abcjsInit)
+  }
+
+  btf.addGlobalFn("encrypt", abcjsInit, "abcjs")
+})()</script><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = {"labels":["Gitalk","Comment"],"createIssueManually":false,"distractionFreeMode":false}
+
+  const commentCount = n => {
+    const isCommentCount = document.querySelector('#post-meta .gitalk-comment-count')
+    if (isCommentCount) {
+      isCommentCount.textContent= n
+    }
+  }
+
+  const initGitalk = (el, path) => {
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGitalk = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+
+    const gitalk = new Gitalk({
+      clientID: 'Ov23li3vDQANiUddL4XB',
+      clientSecret: '5c9a56d02995340fca117809cd414662aadce6ff',
+      repo: 'HexoComment',
+      owner: 'ergou10086',
+      admin: ['ergou10086'],
+      updateCountCallback: commentCount,
+      ...option,
+      id: isShuoshuo ? path : (option && option.id) || '93bf8a1a6149596a5fdc364389c150f3'
+    })
+
+    gitalk.render('gitalk-container')
+  }
+
+  const loadGitalk = async(el, path) => {
+    if (typeof Gitalk === 'function') initGitalk(el, path)
+    else {
+      await btf.getCSS('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.css')
+      await btf.getScript('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.js')
+      initGitalk(el, path)
+    }
+  }
+
+  if (isShuoshuo) {
+    'Gitalk' === 'Gitalk'
+      ? window.shuoshuoComment = { loadComment: loadGitalk }
+      : window.loadOtherComment = loadGitalk
+    return
+  }
+
+  if ('Gitalk' === 'Gitalk' || !false) {
+    if (false) btf.loadComment(document.getElementById('gitalk-container'), loadGitalk)
+    else loadGitalk()
+  } else {
+    window.loadOtherComment = loadGitalk
+  }
+})()</script></div><div class="aplayer no-destroy" data-id="13587761608" data-server="netease" data-type="playlist" data-fixed="true" data-autoplay="false" data-lrcType="-1"> </div><script src="https://cdn.jsdelivr.net/npm/abcjs@7.1.2/dist/abcjs-basic-min.js"></script><script src="/js/sun_moon.js" async></script><script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.7/dayjs.min.js"></script><script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.7/plugin/duration.min.js"></script><script src="/scripts/realtime.js"></script><script src="/scripts/random.js"></script><script src="/scripts/weather.js"></script><script>if(window.location.pathname.includes('/viewpoint/')){function loadViewpointScripts(){var loadScript=function(src,callback){var s=document.createElement('script');s.src=src;s.async=false;s.defer=false;s.onload=function(){console.log('脚本加载成功:',src);setTimeout(function(){if(callback)callback();},100);};s.onerror=function(){console.error('脚本加载失败:',src);setTimeout(function(){if(callback)callback();},100);};document.body.appendChild(s);};loadScript('/scripts/viewpoint/math.js',function(){console.log('math.js 加载完成, math:',typeof math);loadScript('/scripts/viewpoint/katex.min.js',function(){console.log('katex.min.js 加载完成, katex:',typeof katex);loadScript('/scripts/viewpoint/sweetalert2@11.js',function(){console.log('sweetalert2@11.js 加载完成, Swal:',typeof Swal,'Sweetalert2:',typeof Sweetalert2);if(typeof Swal==='undefined'&&typeof Sweetalert2!=='undefined'){window.Swal=window.Sweetalert2;console.log('已设置 Swal 别名');}loadScript('/scripts/viewpoint/main.js',function(){console.log('Viewpoint 页面所有脚本加载完成');});});});});}if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',loadViewpointScripts);}else{loadViewpointScripts();}}</script><script>if(window.location.pathname.includes('/littleGame/')){function loadLittleGameScripts(){var load=function(src,cb){var s=document.createElement('script');s.src=src;s.async=false;s.defer=false;s.onload=function(){if(cb)cb();};document.body.appendChild(s);};load('/scripts/littleGame/2048.js',function(){load('/scripts/littleGame/extra-games.js');});}if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',loadLittleGameScripts);}else{loadLittleGameScripts();}}</script><script defer="defer" id="ribbon" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-ribbon.min.js" size="150" alpha="0.6" zIndex="-1" mobile="null" data-click="true"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = false;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><script id="click-heart" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/click-heart.min.js" async="async" mobile="false"></script><script>(() => {
+  window.ChatraID = '4bzb546NSBoJcrNyu'
+  window.Chatra = window.Chatra || function() {
+    (window.Chatra.q = window.Chatra.q || []).push(arguments)
+  }
+
+  btf.getScript('https://call.chatra.io/chatra.js').then(() => {
+    const isChatBtn = true
+    const isChatHideShow = true
+
+    if (isChatBtn) {
+      const close = () => {
+        Chatra('minimizeWidget')
+        Chatra('hide')
+      }
+
+      const open = () => {
+        Chatra('openChat', true)
+        Chatra('show')
+      }
+
+      window.ChatraSetup = { startHidden: true }
+    
+      window.chatBtnFn = () => document.getElementById('chatra').classList.contains('chatra--expanded') ? close() : open()
+
+      document.getElementById('chat-btn').style.display = 'block'
+    } else if (isChatHideShow) {
+      window.chatBtn = {
+        hide: () => Chatra('hide'),
+        show: () => Chatra('show')
+      }
+    }
+  })
+})()</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/metingjs/dist/Meting.min.js"></script><script>(() => {
+  const destroyAplayer = () => {
+    if (window.aplayers) {
+      for (let i = 0; i < window.aplayers.length; i++) {
+        if (!window.aplayers[i].options.fixed) {
+          window.aplayers[i].destroy()
+        }
+      }
+    }
+  }
+
+  const runMetingJS = () => {
+    typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+  }
+
+  btf.addGlobalFn('pjaxSend', destroyAplayer, 'destroyAplayer')
+  btf.addGlobalFn('pjaxComplete', loadMeting, 'runMetingJS')
+})()</script><script src="https://cdn.jsdelivr.net/npm/pjax/pjax.min.js"></script><script>(() => {
+  const pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+  window.pjax = new Pjax({
+    elements: 'a:not([target="_blank"]):not([href="/music/"]):not([href="/viewpoint/"])',
+    selectors: pjaxSelectors,
+    cacheBust: false,
+    analytics: false,
+    scrollRestoration: false
+  })
+
+  const triggerPjaxFn = (val) => {
+    if (!val) return
+    Object.values(val).forEach(fn => fn())
+  }
+
+  document.addEventListener('pjax:send', () => {
+    // removeEventListener
+    btf.removeGlobalFnEvent('pjaxSendOnce')
+    btf.removeGlobalFnEvent('themeChange')
+
+    // reset readmode
+    const $bodyClassList = document.body.classList
+    if ($bodyClassList.contains('read-mode')) $bodyClassList.remove('read-mode')
+
+    triggerPjaxFn(window.globalFn.pjaxSend)
+  })
+
+  document.addEventListener('pjax:complete', () => {
+    btf.removeGlobalFnEvent('pjaxCompleteOnce')
+    document.querySelectorAll('script[data-pjax]').forEach(item => {
+      const newScript = document.createElement('script')
+      const content = item.text || item.textContent || item.innerHTML || ""
+      Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+      newScript.appendChild(document.createTextNode(content))
+      item.parentNode.replaceChild(newScript, item)
+    })
+
+    triggerPjaxFn(window.globalFn.pjaxComplete)
+  })
+
+  document.addEventListener('pjax:error', e => {
+    if (e.request.status === 404) {
+      const usePjax = true
+      true 
+        ? (usePjax ? pjax.loadUrl('/404.html') : window.location.href = '/404.html')
+        : window.location.href = e.request.responseURL
+    }
+  })
+})()</script><script src="/js/fps-display.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><!-- hexo injector body_end start --><script data-pjax>
+  function butterfly_swiper_injector_config(){
+    var parent_div_git = document.getElementById('recent-posts');
+    var item_html = '<div class="recent-post-item" style="height: auto;width: 100%"><div class="blog-slider swiper-container-fade swiper-container-horizontal" id="swiper_container"><div class="blog-slider__wrp swiper-wrapper" style="transition-duration: 0ms;"><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_database.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-14</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt="">结构化查询语言SQL</a><div class="blog-slider__text">SQL基本很常用的语句都在这里了，本质上是当初为了应付数据库考试整理的，后来发现还蛮有用的很方便查常用的语句</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java4.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-22</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt="">SpringBoot part0?INF-SpringBoot这个框架都需要学习什么</a><div class="blog-slider__text">主要围绕Spring Boot中重要知识来简洁或详细的说明，其中部分不够完全，持续更新</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java11.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-15</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt="">关于Lombok在高版本IDEA中注解处理不生效的问题解决</a><div class="blog-slider__text">基本上是彻底的解决了用 IDEA 新建 Spring Boot 项目时候会产生的 Lombok 注解处理失效的各种问题</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_实用.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-05</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt="">个人向galgame原声带或相关音乐整理及其资源</a><div class="blog-slider__text">整理了我喜欢的galgame ost或者衍生的音乐专辑，部分资源是自己扒盘扒下来的，部分来自鸟白岛放映厅</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_math.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-17</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt="">对书上证明样本方差是总体方差的无偏估计量的解析</a><div class="blog-slider__text">对书上证明样本方差是总体方差的无偏估计量的解析，高等教育出版社-华科大版本</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_alog.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-04-24</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt="">第十五届蓝桥杯Java国赛B组D题-园丁题解</a><div class="blog-slider__text">第十五届蓝桥杯Java国赛B组D题-园丁题解，该题解已经发布到洛谷社区中并且被全站推荐</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java4.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-04-29</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt="">操作系统之处理机的死锁部分概述</a><div class="blog-slider__text">对操作系统之处理机的死锁部分知识的总结，包括代码复现</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_lb.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-09</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt="">Little Busters!EX游戏攻略</a><div class="blog-slider__text">整理了一份详细清晰的Little Busters！EX的游戏攻略，因为我自己也在推，就顺手整理了一份方便查阅的md文档</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java9.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-16</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt="">Spring Boot中使用Hibernate框架</a><div class="blog-slider__text">对学习完Hibernate的应用部分，主要围绕Spring Boot中使用Hibernate框架，建议学习完 Hibernate 框架再看</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div></div><div class="blog-slider__pagination swiper-pagination-clickable swiper-pagination-bullets"></div></div></div>';
+    console.log('已挂载butterfly_swiper')
+    parent_div_git.insertAdjacentHTML("afterbegin",item_html)
+    }
+  var elist = 'undefined'.split(',');
+  var cpage = location.pathname;
+  var epage = '/';
+  var flag = 0;
+
+  for (var i=0;i<elist.length;i++){
+    if (cpage.includes(elist[i])){
+      flag++;
+    }
+  }
+
+  if ((epage ==='all')&&(flag == 0)){
+    butterfly_swiper_injector_config();
+  }
+  else if (epage === cpage){
+    butterfly_swiper_injector_config();
+  }
+  </script><script defer src="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper.min.js"></script><script defer data-pjax src="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper_init.js"></script><!-- hexo injector body_end end --></body></html>
