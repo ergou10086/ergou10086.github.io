@@ -1,0 +1,1006 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Redis part6—Redis3种常用的缓存读写策略及其缓存问题详解 | ErgouTree's Blog</title><meta name="author" content="ErgouTree"><meta name="copyright" content="ErgouTree"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="介绍Redis的缓存读写策略 前一阵子，我写了个熟练使用 Redis，但是我一想，缓存常用的 3 种读写策略，我却不怎么知道 所以说，今天来系统的介绍一下这些内容，Redis有三种读写策略分别是：  旁路缓存策略 读写穿透策略 异步缓存写入策略  三种缓存读写策略各有优势，需要我们根据实际的业务场景选择最合适的 Cache Aside Pattern 旁路缓存模式 Redi">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Redis part6—Redis3种常用的缓存读写策略及其缓存问题详解">
+<meta property="og:url" content="https://ergou10086.github.io/posts/36227.html">
+<meta property="og:site_name" content="ErgouTree&#39;s Blog">
+<meta property="og:description" content="介绍Redis的缓存读写策略 前一阵子，我写了个熟练使用 Redis，但是我一想，缓存常用的 3 种读写策略，我却不怎么知道 所以说，今天来系统的介绍一下这些内容，Redis有三种读写策略分别是：  旁路缓存策略 读写穿透策略 异步缓存写入策略  三种缓存读写策略各有优势，需要我们根据实际的业务场景选择最合适的 Cache Aside Pattern 旁路缓存模式 Redi">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://ergou10086.github.io/images/posts/cover_galgame.png">
+<meta property="article:published_time" content="2026-02-03T09:33:57.000Z">
+<meta property="article:modified_time" content="2026-02-03T10:06:41.480Z">
+<meta property="article:author" content="ErgouTree">
+<meta property="article:tag" content="学习类">
+<meta property="article:tag" content="数据库">
+<meta property="article:tag" content="开发组件">
+<meta property="article:tag" content="NoSQL">
+<meta property="article:tag" content="Redis">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ergou10086.github.io/images/posts/cover_galgame.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Redis part6—Redis3种常用的缓存读写策略及其缓存问题详解",
+  "url": "https://ergou10086.github.io/posts/36227.html",
+  "image": "https://ergou10086.github.io/images/posts/cover_galgame.png",
+  "datePublished": "2026-02-03T09:33:57.000Z",
+  "dateModified": "2026-02-03T10:06:41.480Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "ErgouTree",
+      "url": "https://github.com/ergou10086"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/pi.ico"><link rel="canonical" href="https://ergou10086.github.io/posts/36227.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//hm.baidu.com"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!true && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?https://hm.baidu.com/hm.js?a6ab1b78e2c6320b664f31e8b9bf0e36";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+btf.addGlobalFn('pjaxComplete', () => {
+  _hmt.push(['_trackPageview',window.location.pathname])
+}, 'baidu_analytics')
+</script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.json","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":true},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: {"chs_to_cht":"已切换为繁体中文","cht_to_chs":"已切换为简体中文","day_to_night":"已切换为深色模式","night_to_day":"已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#1f1f1f","position":"bottom-left"},
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Redis part6—Redis3种常用的缓存读写策略及其缓存问题详解',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css"><link rel="stylesheet" href="/css/littleGame.css"><svg aria-hidden="true" style="position:absolute; overflow:hidden; width:0; height:0"><symbol id="icon-sun" viewBox="0 0 1024 1024"><path d="M960 512l-128 128v192h-192l-128 128-128-128H192v-192l-128-128 128-128V192h192l128-128 128 128h192v192z" fill="#FFD878" p-id="8420"></path><path d="M736 512a224 224 0 1 0-448 0 224 224 0 1 0 448 0z" fill="#FFE4A9" p-id="8421"></path><path d="M512 109.248L626.752 224H800v173.248L914.752 512 800 626.752V800h-173.248L512 914.752 397.248 800H224v-173.248L109.248 512 224 397.248V224h173.248L512 109.248M512 64l-128 128H192v192l-128 128 128 128v192h192l128 128 128-128h192v-192l128-128-128-128V192h-192l-128-128z" fill="#4D5152" p-id="8422"></path><path d="M512 320c105.888 0 192 86.112 192 192s-86.112 192-192 192-192-86.112-192-192 86.112-192 192-192m0-32a224 224 0 1 0 0 448 224 224 0 0 0 0-448z" fill="#4D5152" p-id="8423"></path></symbol><symbol id="icon-moon" viewBox="0 0 1024 1024"><path d="M611.370667 167.082667a445.013333 445.013333 0 0 1-38.4 161.834666 477.824 477.824 0 0 1-244.736 244.394667 445.141333 445.141333 0 0 1-161.109334 38.058667 85.077333 85.077333 0 0 0-65.066666 135.722666A462.08 462.08 0 1 0 747.093333 102.058667a85.077333 85.077333 0 0 0-135.722666 65.024z" fill="#FFB531" p-id="11345"></path><path d="M329.728 274.133333l35.157333-35.157333a21.333333 21.333333 0 1 0-30.165333-30.165333l-35.157333 35.157333-35.114667-35.157333a21.333333 21.333333 0 0 0-30.165333 30.165333l35.114666 35.157333-35.114666 35.157334a21.333333 21.333333 0 1 0 30.165333 30.165333l35.114667-35.157333 35.157333 35.157333a21.333333 21.333333 0 1 0 30.165333-30.165333z" fill="#030835" p-id="11346"></path></symbol></svg><link rel="stylesheet" href="/css/custom.css"><!-- hexo injector head_end start --><link rel="stylesheet" href="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiperstyle.css" media="print" onload="this.media='all'"><!-- hexo injector head_end end --><meta name="generator" content="Hexo 7.3.0"></head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js/pace.min.js"></script><div id="web_bg" style="background: linear-gradient(20deg, #0062be, #925696, #cc426e, #fb0347);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/arp.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">293</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">179</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">100</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-images"></i><span> Gallery</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/games/"><i class="fa-fw fas fa-trophy"></i><span> GalGame</span></a></li><li><a class="site-page child" href="/video/"><i class="fa-fw fas fa-video"></i><span> Video</span></a></li><li><a class="site-page child" href="/viewpoint/"><i class="fa-fw fas fa-calculator"></i><span> ViewPoint</span></a></li><li><a class="site-page child" href="/littleGame/"><i class="fa-fw fas fa-thumbs-up"></i><span> littleGame</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div><div class="menus_item"><a class="site-page" href="javascript:randomPost();"><span> Random</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/images/posts/cover_galgame.png);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">ErgouTree's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">Redis part6—Redis3种常用的缓存读写策略及其缓存问题详解</span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-images"></i><span> Gallery</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/games/"><i class="fa-fw fas fa-trophy"></i><span> GalGame</span></a></li><li><a class="site-page child" href="/video/"><i class="fa-fw fas fa-video"></i><span> Video</span></a></li><li><a class="site-page child" href="/viewpoint/"><i class="fa-fw fas fa-calculator"></i><span> ViewPoint</span></a></li><li><a class="site-page child" href="/littleGame/"><i class="fa-fw fas fa-thumbs-up"></i><span> littleGame</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div><div class="menus_item"><a class="site-page" href="javascript:randomPost();"><span> Random</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div><div id="randomPost"><a class="site-page social-icon search" href="javascript:;" onclick="randomPost()" title="随机访问一篇文章"><i class="fas fa-circle-notch fa-fw"></i></a></div></nav><div id="post-info"><h1 class="post-title">Redis part6—Redis3种常用的缓存读写策略及其缓存问题详解<a class="post-edit-link" href="https://github.com/ergou10086/ergou10086.github.io/edit/main/source/_posts/_posts/Redis-part6—Redis3种常用的缓存读写策略详解.md" title="编辑" target="_blank"><i class="fas fa-pencil-alt"></i></a></h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-02-03T09:33:57.000Z" title="发表于 2026-02-03 17:33:57">2026-02-03</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-02-03T10:06:41.480Z" title="更新于 2026-02-03 18:06:41">2026-02-03</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%AD%A6%E4%B9%A0%E7%B1%BB/">学习类</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%AD%A6%E4%B9%A0%E7%B1%BB/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%AD%A6%E4%B9%A0%E7%B1%BB/%E6%95%B0%E6%8D%AE%E5%BA%93/NoSQL/">NoSQL</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%AD%A6%E4%B9%A0%E7%B1%BB/%E6%95%B0%E6%8D%AE%E5%BA%93/NoSQL/Redis/">Redis</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">6.2k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>20分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span><span class="post-meta-separator">|</span><span class="post-meta-commentcount"><i class="far fa-comments fa-fw post-meta-icon"></i><span class="post-meta-label">评论数:</span><a href="/posts/36227.html#post-comment"><span class="gitalk-comment-count"><i class="fa-solid fa-spinner fa-spin"></i></span></a></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="介绍redis的缓存读写策略">介绍Redis的缓存读写策略</h2>
+<p>前一阵子，我写了个熟练使用 Redis，但是我一想，<strong>缓存常用的 3
+种读写策略</strong>，我却不怎么知道</p>
+<p>所以说，今天来系统的介绍一下这些内容，Redis有三种读写策略分别是：</p>
+<ul>
+<li>旁路缓存策略</li>
+<li>读写穿透策略</li>
+<li>异步缓存写入策略</li>
+</ul>
+<p>三种缓存读写策略各有优势，需要我们根据实际的业务场景选择最合适的</p>
+<h2 id="cache-aside-pattern-旁路缓存模式">Cache Aside Pattern
+旁路缓存模式</h2>
+<p>Redis 的 <strong>旁路缓存模式</strong>（Cache-Aside
+Pattern），也被称为 <strong>懒加载缓存</strong>（Lazy Loading）或
+<strong>旁观者缓存模式</strong>，是目前最常用、最经典的缓存使用策略之一，比较适合<strong>读请求</strong>比较多的场景</p>
+<p>旁路缓存模式中服务端需要同时维护<code>DB</code>和<code>Cache</code>，并且是以<code>DB</code>的结果为准。</p>
+<p>也就是</p>
+<blockquote>
+<p><strong>缓存是“旁路”的，不是主数据源；数据库才是权威数据源。</strong></p>
+</blockquote>
+<p>那么，整个读写操作的流程大概如下</p>
+<p>读：</p>
+<ul>
+<li><p>应用程序在读取数据时，<strong>先查 Redis 缓存</strong>。</p>
+<ul>
+<li>如果缓存命中（cache hit），直接返回；</li>
+<li>如果未命中（cache
+miss），则去查数据库，并将结果<strong>回填</strong>（write-through）到缓存中，供后续请求使用。</li>
+</ul>
+<figure>
+<img src="/posts/36227/v2-b6e237ce8bab2b688237781d7fdd3c1f_r.jpg" alt="img">
+<figcaption aria-hidden="true">img</figcaption>
+</figure></li>
+</ul>
+<p>写：</p>
+<ul>
+<li><p>在写入数据时，<strong>先更新数据库</strong>，<strong>再删除缓存</strong>，而非更新缓存。（如果你先删缓存再更新DB会导致脏数据回填）</p>
+<figure>
+<img src="/posts/36227/v2-a6442ac36abd8c827bd53b7299380f26_r.jpg" alt="img">
+<figcaption aria-hidden="true">img</figcaption>
+</figure></li>
+</ul>
+<p>所以说，这种读写模式下，缓存不参与业务逻辑的核心流程，只是作为数据库的加速副本存在，因此缓存是旁路。</p>
+<p>而且对于写操作，它是直接删除缓存，等到后面用的时候再回填，而不是更新缓存，这是在考虑什么？</p>
+<ul>
+<li>并发安全：若多个线程同时更新同一数据，直接 <code>SET</code>
+缓存可能导致<strong>旧值覆盖新值</strong>，很容易时空混乱，不知道真正被需要的是哪个进程写入的内容</li>
+<li>简单且保证数据安全：这样实现不仅实现简单，而且能保证数据安全，天然保证一致性。而且如果更新后无人读取，就不需要缓存，节省内存</li>
+</ul>
+<p>那么，上面说到。先删除cache，再更新DB，会造成读写竞争导致的数据不一致问题，那么先写BD，再删除cache就不会造成数据不一致了吗？emmmm，我想了一下，好像也不是一定的。</p>
+<p>理论上来说还是会出现数据不一致的问题（更新DB前被读了），不过概率很小，因为缓存的写入速度是比数据库写入速度快很多的。</p>
+<p>但是这个问题本质上是一个并发时序问题：只要“读 DB → 写
+Cache”这段时间窗口内，恰好有写请求完成了 DB
+更新，就有可能产生不一致。在大多数业务里，这个窗口时间相对较短，而且还需要与写请求并发“撞车”，所以发生概率不算高，但绝不是不可能。</p>
+<p>那么，旁路缓存模式存在的缺点就是很明显了：</p>
+<ul>
+<li><strong>首次请求的数据一定不在cache的</strong>，当然，你可以完全可以将热点数据提前写入<code>cache</code>中。</li>
+<li>但是如果，写操作比较频繁的话导致cache中的数据会被频繁的删除，这样会影响缓存命中率。
+<ul>
+<li>数据库和缓存数据强一致场景：更新 DB 的时候同样更新
+Cache，不过我们需要加一个锁/分布式锁来保证更新 Cache
+的时候不存在线程安全问题。</li>
+<li>可以短暂地允许数据库和缓存数据不一致的场景：更新 DB 的时候同样更新
+Cache，但是给缓存加一个比较短的过期时间（如 1
+分钟），这样的话就可以保证即使数据不一致的话影响也比较小</li>
+</ul></li>
+</ul>
+<h2 id="readwrite-through-pattern-读写穿透">Read/Write Through Pattern
+读写穿透</h2>
+<p>在这种模式下，应用程序将<strong>Cache
+视为唯一的、主要的存储</strong>。所有的读写请求都直接打向 Cache，而
+Cache
+服务负责将此数据读取和写入<code>DB</code>，从而减轻应用程序的职责。</p>
+<p>这种缓存读写策略小伙伴们应该也发现了在平时在开发过程中非常少见。抛去写回
+DB 等位置产生的性能方面的影响，大概率是因为我们经常使用的分布式缓存
+Redis 本身并没有提供 Cache 将数据写入 DB
+的功能，需要我们在业务侧或中间件里自己实现。</p>
+<blockquote>
+<p>该模式在开源 Redis 生态中 <strong>极少直接使用</strong>，因为 Redis
+定位为“缓存”，而非“带持久化代理的数据存储” 。</p>
+</blockquote>
+<p>在这个模式下，读写步骤如下：</p>
+<p>读：</p>
+<ul>
+<li>先从<code>cache</code>中读取数据，读取到直接返回。</li>
+<li>从<code>cache</code>中读取不到，则先从<code>DB</code>加载写入到<code>cache</code>后返回响应。</li>
+</ul>
+<figure>
+<img src="/posts/36227/v2-67af24f125a1e7a772dab803b04e08cc_r.jpg" alt="img">
+<figcaption aria-hidden="true">img</figcaption>
+</figure>
+<p>写：</p>
+<ul>
+<li>先查<code>cache</code>，<code>cache</code>中不存在，直接更新<code>DB</code>。</li>
+<li><code>cache</code>中存在，则先更新<code>cache</code>，然后<code>cache</code>服务自己更新去更新<code>DB</code>（同时更新<code>DB</code>和<code>cache</code>）</li>
+</ul>
+<figure>
+<img src="/posts/36227/v2-4262223ba42ac26bf8c5ba96a7cd39fa_r.jpg" alt="img">
+<figcaption aria-hidden="true">img</figcaption>
+</figure>
+<p>从实现角度看，Read-Through 本质上是把 Cache-Aside 中“读 Miss → 读 DB
+→ 回填 Cache”的逻辑，下沉到了缓存服务内部，对客户端透明。</p>
+<p>什么意思，也就是这里面涉及到了一个代理模式，应用程序认为自己在操作一个
+完整的数据存储系统，而实际上这个系统由缓存 +
+数据库组成，<strong>所有读写都必须经过缓存</strong>。</p>
+<p>这种模式实现了逻辑解耦，业务代码无需关心数据库，只需操作缓存即可
+。</p>
+<p>这种模式的缺点也很明显，除了需要自己实现写回DB的功能，而且还存在：</p>
+<ul>
+<li>和旁路缓存一样，读写穿透也存在首次请求数据一定不在<code>cache</code>中的问题，对于热点数据可以提前写入缓存中。</li>
+<li>所有读写流量都经过缓存服务，若其性能不足，会拖垮整个系统</li>
+<li>每次写操作都要等待 DB 确认，无法像 Write-Behind 那样异步提交 。</li>
+</ul>
+<h2 id="write-behind-pattern-异步缓存写入">Write Behind Pattern
+异步缓存写入</h2>
+<p><strong>Write Behind Pattern（异步缓存写入）</strong>，又称
+<strong>Write-Back（写回模式）</strong>，是一种以<strong>极致写性能</strong>为目标的缓存策略。</p>
+<p>读写传统和异步缓存写入很相似，两者都是由 Cache 服务来负责 Cache 和 DB
+的读写。</p>
+<p>但是，两个又有很大的不同：读写穿透是同步更新 Cache 和 DB，而 异步缓存
+则是只更新缓存，不直接更新 DB，改为异步批量的方式来更新 DB。</p>
+<blockquote>
+<p><strong>先写缓存，后异步刷盘</strong></p>
+<p><strong>应用程序只与缓存交互，写操作立即在缓存中完成并返回成功，而数据库的更新则由缓存服务在后台异步、批量地执行</strong>。</p>
+</blockquote>
+<p>对于写回模式，读写的操作如下</p>
+<p>读：</p>
+<ul>
+<li>与 Read-Through
+相同：直接从缓存读取，因为两种模式下，缓存都是最新数据源</li>
+</ul>
+<p>写：</p>
+<ul>
+<li>应用将数据写入 Cache，然后<strong>立即返回</strong>。</li>
+<li>Cache 服务将这个写操作放入一个队列中。</li>
+<li>通过一个独立的异步线程/任务，将队列中的写操作<strong>批量地、合并地</strong>写入
+DB。</li>
+</ul>
+<p>很明显，<strong>数据库不是实时更新的</strong>！数据持久化存在延迟，甚至可能丢失，这种模式对数据一致性带来了挑战（例如：Cache
+中的数据还没来得及写回
+DB，系统就挂了），因此不适用于对强一致性高的场景（如交易、库存）。</p>
+<p>Write-Behind 是 Write-Through 的异步优化版，用 一致性换性能。</p>
+<p>但是，它的异步和批量特性，带来了<strong>无与伦比的写性能</strong>。它在很多高性能系统中都有广泛应用：</p>
+<ul>
+<li><strong>MySQL 的 InnoDB Buffer Pool 机制：</strong> 数据修改先在内存
+Buffer Pool 中完成，然后由后台线程异步刷写到磁盘。</li>
+<li><strong>操作系统的页缓存（Page Cache）：</strong>
+文件写入也是先写到内存，再由操作系统异步刷盘。</li>
+<li><strong>高频计数场景：</strong>
+对于文章浏览量、帖子点赞数这类允许短暂数据不一致、但写入极其频繁的场景，可以先在
+Redis 中快速累加，再通过定时任务异步同步回数据库</li>
+</ul>
+<p>emmm，这种情况用的其实也不多，因为和读写穿透一样，Redis
+本身无“异步写回 DB”功能，需自行开发中间件或使用消息队列桥接。</p>
+<h2 id="redis的三种缓存问题">Redis的三种缓存问题</h2>
+<p>那么，既然刚刚介绍了三种缓存读写的策略，那么就来说一下缓存会遇到的三大问题</p>
+<p>在现代高并发分布式系统中，Redis作为高性能缓存层被广泛应用，但不当的设计会引发三大经典问题：缓存击穿、缓存穿透和缓存雪崩。这些问题在不同场景下对后端数据库构成致命威胁，需要针对性策略进行防护。</p>
+<h3 id="缓存穿透">缓存穿透</h3>
+<p>恶意请求大量查询
+<code>id=-1</code>这种根本不存在的数据，导致请求每次都穿透到 DB。</p>
+<p>那么此时大量的请求都落在数据库中，导致数据库压力骤增，这就是缓存穿透问题。</p>
+<figure>
+<img src="/posts/36227/e72e43b5170ce15fae0493fd6bd3274c.png" alt="img">
+<figcaption aria-hidden="true">img</figcaption>
+</figure>
+<p>对于这种形式的解决方式</p>
+<ul>
+<li><p>布隆过滤器：</p>
+<ul>
+<li><p>最经典的方式，快速判断 key 是否可能存在，如果不存在
+那这个请求直接无效，如果存在那就在缓存中查找对应的数据。这样当出现大量请求的时候，会先查询布隆过滤器和Redis，不会对数据库造成压力。</p>
+<blockquote>
+<p>别忘了，布隆过滤器说数据不存在，那么数据库中一定不会有这个数据。如果说数据存在，并不一定证明数据库中存在这个数据，有误判的几率，只不过几率非常小。</p>
+</blockquote></li>
+<li><p>布隆过滤器由「初始值都为 0 的位图数组」和「 N
+个哈希函数」两部分组成。</p>
+<p>布隆过滤器会通过 3 个操作完成标记：</p>
+<ul>
+<li>第一步，使用 N 个哈希函数分别对数据做哈希计算，得到 N
+个哈希值；</li>
+<li>第二步，将第一步得到的 N
+个哈希值对位图数组的长度取模，得到每个哈希值在位图数组的对应位置。</li>
+<li>第三步，将每个哈希值在位图数组的对应位置的值设置为 1；</li>
+</ul>
+<p>举个例子，假设有一个位图数组长度为 8，哈希函数 3 个的布隆过滤器。</p>
+<figure>
+<img src="/posts/36227/19488c00c8b7ee55d5b5d43b7991d5e9.png" alt="img">
+<figcaption aria-hidden="true">img</figcaption>
+</figure></li>
+</ul></li>
+<li><p>空值缓存或者限制非法请求</p>
+<ul>
+<li><p>这种方式的根本逻辑是保证不合法的参数请求不到达DB，直接抛出特定内容返回给客户端。</p></li>
+<li><p>对于非法请求不再多说，对于空值缓存：</p>
+<ul>
+<li><p>即使数据库返回空结果，也将一个<strong>特殊标记的空值</strong>写入缓存，并设置<strong>较短
+TTL</strong>（如 1～5
+分钟）。后续相同请求直接命中缓存，不再访问数据库。</p>
+<pre><code class="highlight mermaid">graph LR
+    A[请求 Key=X] --&gt; B&#123;Redis 有 X?&#125;
+    B -- 是 --&gt; C&#123;值是否为空标记?&#125;
+    C -- 是 --&gt; D[返回 null/错误]
+    C -- 否 --&gt; E[返回数据]
+    B -- 否 --&gt; F[查询数据库]
+    F -- 有数据 --&gt; G[写入缓存 + 返回]
+    F -- 无数据 --&gt; H[写入空值缓存 + 返回 null]</code></pre>
+<p>最近的我找到了这样的内容，我是这样实现的</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Service</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">UserService</span> &#123;</span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> RedisTemplate&lt;String, Object&gt; redisTemplate;</span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> UserMapper userMapper;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 自定义空值标记类</span></span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">NullValue</span> <span class="keyword">implements</span> <span class="title class_">Serializable</span> &#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> User <span class="title function_">getUserById</span><span class="params">(Long id)</span> &#123;</span><br><span class="line">        <span class="type">String</span> <span class="variable">key</span> <span class="operator">=</span> <span class="string">&quot;user:&quot;</span> + id;</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 1. 查缓存</span></span><br><span class="line">        <span class="type">Object</span> <span class="variable">cached</span> <span class="operator">=</span> redisTemplate.opsForValue().get(key);</span><br><span class="line">        <span class="keyword">if</span> (cached != <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> cached <span class="keyword">instanceof</span> NullValue ? <span class="literal">null</span> : (User) cached;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 2. 缓存未命中，查数据库</span></span><br><span class="line">        <span class="type">User</span> <span class="variable">user</span> <span class="operator">=</span> userMapper.selectById(id);</span><br><span class="line">        <span class="keyword">if</span> (user == <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="comment">// 3. 数据库无结果：缓存空值（TTL=5分钟）</span></span><br><span class="line">            redisTemplate.opsForValue()</span><br><span class="line">                .set(key, <span class="keyword">new</span> <span class="title class_">NullValue</span>(), Duration.ofMinutes(<span class="number">5</span>));</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 4. 有结果：缓存真实数据（TTL=30分钟）</span></span><br><span class="line">        redisTemplate.opsForValue()</span><br><span class="line">            .set(key, user, Duration.ofMinutes(<span class="number">30</span>));</span><br><span class="line">        <span class="keyword">return</span> user;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ul></li>
+</ul></li>
+</ul>
+<h3 id="缓存击穿">缓存击穿</h3>
+<p>热门数据的缓存过期，大量请求同时查 DB。这是由热点 Key
+失效引起的瞬间高并发</p>
+<p>其根本原因是热点数据在缓存过期的瞬间，海量请求同时到达，缓存层无法拦截，形成”击穿”效应
+。例如秒杀商品、热门新闻等场景，单个Key的失效可能引发数据库连接池瞬间耗尽
+。</p>
+<figure>
+<img src="/posts/36227/4876aab126e73cdc6aa54b251c0a8544.png" alt="img">
+<figcaption aria-hidden="true">img</figcaption>
+</figure>
+<p>所以说，缓存击穿的发生需满足三要素：热点数据、缓存过期、瞬时高并发。</p>
+<p>当热点Key
+TTL归零被清除后，第一个请求发现缓存缺失，触发数据库查询。在数据回写缓存前，后续请求全部穿透到数据库，形成”请求风暴”
+。在Java应用中，若未加保护，1000 个线程完全可能在 10ms 内生成 1000
+次数据库查询。</p>
+<p>检测缓存击穿可通过以下指标检查和监控：</p>
+<ul>
+<li><strong>缓存命中率骤降</strong>：热点Key所在命名空间命中率从95%跌至10%以下</li>
+<li><strong>数据库QPS激增</strong>：监控慢查询日志，观察特定SQL执行频率异常上升</li>
+<li><strong>Redis连接数异常</strong>：客户端连接数激增但缓存GET操作减少</li>
+</ul>
+<p>对于解决方案，通常是</p>
+<ul>
+<li><p><strong>互斥锁</strong>（分布式锁）</p>
+<ul>
+<li><p>当缓存失效时，仅允许一个线程获取锁并查询数据库，根据上面讲的缓存读写策略，那么接下来缓存从数据库被更新同步之后再释放掉锁，其余线程等待锁释放后重试缓存读取，实现<strong>请求串行化</strong>
+。</p></li>
+<li><p>而且分布式锁能够<strong>强一致，保安全</strong></p></li>
+<li><p>实现方式：就看大概的逻辑吧，这是我从别的地方摘来的实现</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Service</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ProductService</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> RedisTemplate&lt;String, Object&gt; redisTemplate;</span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> ProductMapper productMapper;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">String</span> <span class="variable">LOCK_PREFIX</span> <span class="operator">=</span> <span class="string">&quot;lock:product:&quot;</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">long</span> <span class="variable">LOCK_EXPIRE</span> <span class="operator">=</span> <span class="number">5000</span>; <span class="comment">// 5秒</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">long</span> <span class="variable">RETRY_DELAY</span> <span class="operator">=</span> <span class="number">100</span>;  <span class="comment">// 重试间隔</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> Product <span class="title function_">getProduct</span><span class="params">(Long id)</span> &#123;</span><br><span class="line">        <span class="type">String</span> <span class="variable">cacheKey</span> <span class="operator">=</span> <span class="string">&quot;product:&quot;</span> + id;</span><br><span class="line">        <span class="comment">// 1. 先查缓存</span></span><br><span class="line">        <span class="type">Product</span> <span class="variable">product</span> <span class="operator">=</span> (Product) redisTemplate.opsForValue().get(cacheKey);</span><br><span class="line">        <span class="keyword">if</span> (product != <span class="literal">null</span>) <span class="keyword">return</span> product;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 2. 缓存失效，尝试加锁</span></span><br><span class="line">        <span class="type">String</span> <span class="variable">lockKey</span> <span class="operator">=</span> LOCK_PREFIX + id;</span><br><span class="line">        <span class="type">Boolean</span> <span class="variable">locked</span> <span class="operator">=</span> redisTemplate.opsForValue()</span><br><span class="line">            .setIfAbsent(lockKey, <span class="string">&quot;1&quot;</span>, Duration.ofMillis(LOCK_EXPIRE));</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (Boolean.TRUE.equals(locked)) &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="comment">// 双重检查：防止锁等待期间已被其他线程重建</span></span><br><span class="line">                product = (Product) redisTemplate.opsForValue().get(cacheKey);</span><br><span class="line">                <span class="keyword">if</span> (product != <span class="literal">null</span>) <span class="keyword">return</span> product;</span><br><span class="line"></span><br><span class="line">                <span class="comment">// 查数据库</span></span><br><span class="line">                product = productMapper.selectById(id);</span><br><span class="line">                <span class="keyword">if</span> (product != <span class="literal">null</span>) &#123;</span><br><span class="line">                    <span class="comment">// 重建后的缓存设置随机TTL防雪崩：30～55分钟</span></span><br><span class="line">                    <span class="type">int</span> <span class="variable">ttl</span> <span class="operator">=</span> <span class="number">30</span> + <span class="keyword">new</span> <span class="title class_">Random</span>().nextInt(<span class="number">25</span>);</span><br><span class="line">                    redisTemplate.opsForValue().set(cacheKey, product, Duration.ofMinutes(ttl));</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    <span class="comment">// 防穿透：缓存空值</span></span><br><span class="line">                    redisTemplate.opsForValue().set(cacheKey, <span class="string">&quot;&quot;</span>, Duration.ofSeconds(<span class="number">30</span>));</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">return</span> product;</span><br><span class="line">            &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">                <span class="comment">// 安全释放锁（Lua脚本保证原子性）</span></span><br><span class="line">                <span class="type">String</span> <span class="variable">script</span> <span class="operator">=</span> <span class="string">&quot;if redis.call(&#x27;get&#x27;, KEYS[1]) == ARGV[1] then return redis.call(&#x27;del&#x27;, KEYS[1]) else return 0 end&quot;</span>;</span><br><span class="line">                redisTemplate.execute(</span><br><span class="line">                    <span class="keyword">new</span> <span class="title class_">DefaultRedisScript</span>&lt;&gt;(script, Long.class),</span><br><span class="line">                    Collections.singletonList(lockKey),</span><br><span class="line">                    <span class="string">&quot;1&quot;</span></span><br><span class="line">                );</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="comment">// 未获取锁，短暂等待后重试</span></span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                Thread.sleep(RETRY_DELAY);</span><br><span class="line">                <span class="keyword">return</span> getProduct(id); <span class="comment">// 递归重试</span></span><br><span class="line">            &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                Thread.currentThread().interrupt();</span><br><span class="line">                <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ul></li>
+<li><p><strong>逻辑过期</strong>：<strong>高性能，最终一致</strong></p>
+<ul>
+<li><p>热点数据不存在真正的过期时间，是有一个逻辑上的过期时间，此时间到达前会提前通知后台线程，引发由后台异步更新缓存来更新热点数据，然后时间重置</p></li>
+<li><p>那么整体的实现流程大概是</p>
+<pre><code class="highlight mermaid">graph LR
+    A[请求到达] --&gt; B&#123;缓存存在?&#125;
+    B -- 否 --&gt; C[返回默认值/降级]
+    B -- 是 --&gt; D&#123;逻辑过期?&#125;
+    D -- 否 --&gt; E[返回缓存数据]
+    D -- 是 --&gt; F[启动异步更新任务]
+    F --&gt; G[返回旧数据（不阻塞）]</code></pre>
+<p>所以一般用在，对实时性要求不高但 QPS
+极高的数据（如热门榜单、首页推荐）</p></li>
+<li><p>实现方式</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">HotCacheService</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">ExecutorService</span> <span class="variable">refreshPool</span> <span class="operator">=</span> Executors.newFixedThreadPool(<span class="number">5</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">getHotData</span><span class="params">(String key)</span> &#123;</span><br><span class="line">        <span class="type">String</span> <span class="variable">json</span> <span class="operator">=</span> redisTemplate.opsForValue().get(key);</span><br><span class="line">        <span class="keyword">if</span> (json == <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> getDefaultData(); <span class="comment">// 降级处理</span></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="type">JSONObject</span> <span class="variable">obj</span> <span class="operator">=</span> JSON.parseObject(json);</span><br><span class="line">        <span class="type">long</span> <span class="variable">expireTime</span> <span class="operator">=</span> obj.getLong(<span class="string">&quot;expireTime&quot;</span>);</span><br><span class="line">        <span class="type">String</span> <span class="variable">data</span> <span class="operator">=</span> obj.getString(<span class="string">&quot;data&quot;</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 未过期，直接返回</span></span><br><span class="line">        <span class="keyword">if</span> (System.currentTimeMillis() &lt; expireTime) &#123;</span><br><span class="line">            <span class="keyword">return</span> data;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 已过期，异步刷新（仅第一个请求触发）</span></span><br><span class="line">        <span class="type">String</span> <span class="variable">refreshLock</span> <span class="operator">=</span> <span class="string">&quot;refresh:&quot;</span> + key;</span><br><span class="line">        <span class="type">Boolean</span> <span class="variable">needRefresh</span> <span class="operator">=</span> redisTemplate.opsForValue()</span><br><span class="line">            .setIfAbsent(refreshLock, <span class="string">&quot;1&quot;</span>, Duration.ofSeconds(<span class="number">10</span>));</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (Boolean.TRUE.equals(needRefresh)) &#123;</span><br><span class="line">            refreshPool.submit(() -&gt; &#123;</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    <span class="comment">// 从DB加载新数据</span></span><br><span class="line">                    <span class="type">String</span> <span class="variable">newData</span> <span class="operator">=</span> loadFromDB(key);</span><br><span class="line">                    <span class="type">long</span> <span class="variable">newExpire</span> <span class="operator">=</span> System.currentTimeMillis() + <span class="number">3600_000</span>; <span class="comment">// 1小时</span></span><br><span class="line">                    <span class="type">JSONObject</span> <span class="variable">updated</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">JSONObject</span>();</span><br><span class="line">                    updated.put(<span class="string">&quot;data&quot;</span>, newData);</span><br><span class="line">                    updated.put(<span class="string">&quot;expireTime&quot;</span>, newExpire);</span><br><span class="line">                    redisTemplate.opsForValue().set(key, updated.toJSONString());</span><br><span class="line">                &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">                    redisTemplate.delete(refreshLock); <span class="comment">// 释放刷新锁</span></span><br><span class="line">                &#125;</span><br><span class="line">            &#125;);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> data; <span class="comment">// 返回旧数据，保证响应速度</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>类似逻辑过期还有一种方案，就是热点数据永不过期，然后以固定逻辑（<strong>定时任务或事件驱动</strong>）来主动的更新缓存，这种方式也很常用，但是这种方式相对复杂了就</p></li>
+</ul></li>
+</ul>
+<h3 id="缓存雪崩">缓存雪崩</h3>
+<p>缓存雪崩是大量Key在同一时间段集体失效，或Redis服务宕机，导致所有请求转发至数据库。</p>
+<p>其破坏力最大，可能引发整个微服务架构的级联故障。典型场景包括批量导入数据时设置相同TTL、Redis集群节点故障等。</p>
+<figure>
+<img src="/posts/36227/973a13319fa9d8ecedb786d8a0bd05b0.png" alt="img">
+<figcaption aria-hidden="true">img</figcaption>
+</figure>
+<p>导致原因</p>
+<ul>
+<li>大量数据同时过期；</li>
+<li>Redis 故障宕机；</li>
+</ul>
+<p>针对大量数据同时过期而引发的缓存雪崩问题，常见的应对方法有下面这几种</p>
+<ul>
+<li>设置过期时间
+<ul>
+<li>大量的数据设置不同的过期时间，避免同时过期。也可以选择给过期时间加上一个随机数，这样就可以不会在同一时间过期。</li>
+</ul></li>
+<li>互斥锁
+<ul>
+<li>发现访问的数据不在Redis中，加上互斥锁，保证同一时间内只有一个请求来构建缓存（
+从数据库读取数据，再将数据更新到 Redis
+里），当缓存构建完成后，再释放锁。未能获取互斥锁的请求，要么等待锁释放后重新读取缓存，要么就返回空值或者默认值。</li>
+<li>对了，实现互斥锁的时候，最好设置超时时间，差不多两分钟就够了，不然第一个请求拿到了锁，然后这个请求发生了某种意外而一直阻塞，一直不释放锁，这时
+其他请求也一直拿不到锁，整个系统就会出现无响应的现象。</li>
+</ul></li>
+</ul>
+<p>当然，对于服务治理的角度，缓存雪崩一旦发生，也可以这样处理</p>
+<p>这两个实现方法和缓存击穿差不多，但是出现缓存雪崩的情况，建议启动
+服务熔断
+机制，暂停业务应用对缓存服务的访问，直接返回错误，然后根据服务的情况判断对数据库的使用情况，等Redis恢复正常后，在允许业务应用缓存服务。</p>
+<p>这时候一般会结合启动 请求限流
+机制，只将少部分请求发送到数据库进行处理，再多的请求就在入口直接拒绝服务。</p>
+<p>然后就是构建 Redis 集群，就是主从节点的方式构建 Redis
+缓存高可靠集群。不多说了</p>
+<h2 id="redis内存碎片">Redis内存碎片</h2>
+<h3 id="什么是内存碎片">什么是内存碎片</h3>
+<p>你可以将内存碎片简单地理解为那些不可用的空闲内存。</p>
+<p>就假如，操作系统为你分配了 32
+字节的连续内存空间，而你存储数据实际只需要使用 24
+字节内存空间，那这多余出来的 8
+字节内存空间如果后续没办法再被分配存储其他数据的话，就可以被称为内存碎片。</p>
+<p>Redis 内存碎片虽然不会影响 Redis
+性能，但是会增加内存消耗，内存是很珍贵的</p>
+<h3 id="为什么会有-redis-内存碎片">为什么会有 Redis 内存碎片</h3>
+<p>Redis 内存碎片产生比较常见的 2 个原因：</p>
+<h4 id="redis-存储数据的时候向操作系统申请的内存空间可能会大于数据实际需要的存储空间"><strong>Redis
+存储数据的时候向操作系统申请的内存空间可能会大于数据实际需要的存储空间。</strong></h4>
+<p><strong>Redis
+实际使用的内存大小（RSS）远大于它真正存储数据所需的内存大小（Used
+Memory）</strong>。</p>
+<ul>
+<li><code>Used Memory</code>：Redis 认为“自己用了多少内存”（通过
+<code>INFO memory</code> 查看）</li>
+<li><code>RSS</code>（Resident Set Size）：操作系统实际分配给 Redis
+的物理内存（可通过 <code>ps aux | grep redis</code> 查看）</li>
+</ul>
+<blockquote>
+<p>To store user keys, Redis allocates at most as much memory as the
+<code>maxmemory</code> setting enables (however there are small extra
+allocations possible).</p>
+<hr>
+<p>来自，Redis 官方</p>
+</blockquote>
+<p>Redis 使用 <code>zmalloc</code> 方法(Redis
+自己实现的内存分配方法)进行内存分配的时候，除了要分配 <code>size</code>
+大小的内存之外，还会多分配 <code>PREFIX_SIZE</code>
+大小的内存，用于冗余，这样保证高可用。</p>
+<p><code>zmalloc</code>
+方法源码地址：https://github.com/antirez/redis-tools/blob/master/zmalloc.c）：</p>
+<p>另外，Redis 可以使用多种内存分配器来分配内存（
+libc、jemalloc、tcmalloc），默认使用 <a target="_blank" rel="noopener" href="https://github.com/jemalloc/jemalloc">jemalloc</a>，而 jemalloc
+按照一系列固定的大小（8 字节、16 字节、32 字节……）来分配内存的。jemalloc
+划分的内存单元如下图所示：</p>
+<figure>
+<img src="/posts/36227/6803d3929e3e46c1b1c9d0bb9ee8e717.png" alt="jemalloc 内存单元示意图">
+<figcaption aria-hidden="true">jemalloc 内存单元示意图</figcaption>
+</figure>
+<p>那么，按照这种情况，按固定大小块分配内存，肯定会出现内存碎片的情况，而且出现内存碎片的关键是，<strong>只分配预定义的、固定大小的内存块</strong>，而不是任意大小，它会选择<strong>比你请求大的最小可用块</strong>。</p>
+<p>但是，兄弟没办法，这种浪费是<strong>不可避免的</strong>，因为
+jemalloc 的设计就是如此，这是高可用的重要保障</p>
+<h4 id="频繁修改-redis-中的数据也会产生内存碎片"><strong>频繁修改 Redis
+中的数据也会产生内存碎片。</strong></h4>
+<p>当 Redis 中的某个数据删除时，Redis
+通常不会轻易释放内存给操作系统。</p>
+<p>这个在 Redis 官方文档中也有对应的原话:</p>
+<p>文档地址：https://redis.io/topics/memory-optimization</p>
+<p>这两个一搞，肯定会产生一些内存碎片，所以我们需要收回</p>
+<h3 id="如何查看-redis-内存碎片的信息">如何查看 Redis
+内存碎片的信息？</h3>
+<p>使用 <code>info memory</code> 命令即可查看 Redis 内存相关的信息</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">info memory</span><br></pre></td></tr></table></figure>
+<figure>
+<img src="/posts/36227/image-20260203173156967.png" alt="image-20260203173156967">
+<figcaption aria-hidden="true">image-20260203173156967</figcaption>
+</figure>
+<p>重点关注：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">used_memory:1073741824      <span class="comment"># Redis 实际使用内存（1GB）</span></span><br><span class="line">used_memory_rss:1610612736  <span class="comment"># OS 分配内存（1.5GB）</span></span><br><span class="line">mem_fragmentation_ratio:1.5 <span class="comment"># 碎片率</span></span><br></pre></td></tr></table></figure>
+<p>如下命令查看是否正在整理</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">info stats</span><br></pre></td></tr></table></figure>
+<figure>
+<img src="/posts/36227/image-20260203173226408.png" alt="image-20260203173226408">
+<figcaption aria-hidden="true">image-20260203173226408</figcaption>
+</figure>
+<p>输出包含：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">active_defrag_running:1     <span class="comment"># 1=正在整理，0=未运行</span></span><br><span class="line">active_defrag_hits:12345    <span class="comment"># 成功整理的 key 数量</span></span><br><span class="line">active_defrag_misses:6789   <span class="comment"># 无法整理的 key 数量</span></span><br><span class="line">active_defrag_key_hits:100  <span class="comment"># 移动的 key 总数</span></span><br><span class="line">active_defrag_key_misses:20 <span class="comment"># 未移动的 key 数</span></span><br></pre></td></tr></table></figure>
+<h3 id="如何清理-redis-内存碎片">如何清理 Redis 内存碎片？</h3>
+<p>Redis4.0-RC3
+版本以后自带了内存整理，可以避免内存碎片率过大的问题。好消息，这样不用自己清理了</p>
+<p>如下启用主动碎片整理，直接通过 <code>config set</code> 命令将
+<code>activedefrag</code> 配置项设置为 <code>yes</code> 即可。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 动态开启（无需重启）</span></span><br><span class="line">config <span class="built_in">set</span> activedefrag <span class="built_in">yes</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 永久生效：在 redis.conf 中添加</span></span><br><span class="line">activedefrag <span class="built_in">yes</span></span><br></pre></td></tr></table></figure>
+<p>Redis
+主动碎片清理的原理是这样的，和大部分内存碎片清理算法差不多，简单说一下吧</p>
+<p>当 Redis 发现内存碎片过多时，它会在<strong>后台线程</strong>中：</p>
+<ol type="1">
+<li>找到那些<strong>占用连续物理内存但逻辑上分散</strong>的数据</li>
+<li>将它们<strong>复制到新的连续内存区域</strong></li>
+<li><strong>释放原来的碎片空间</strong></li>
+<li>最终使空闲内存变成<strong>大块连续区域</strong>，提高内存利用率</li>
+</ol>
+<blockquote>
+<p>这个过程是<strong>渐进式</strong>的，不会一次性阻塞主线程。</p>
+</blockquote>
+<p>具体什么时候清理需要通过下面两个参数控制：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 内存碎片占用空间达到 500mb 的时候开始清理</span></span><br><span class="line">config <span class="built_in">set</span> active-defrag-ignore-bytes 500mb</span><br><span class="line"><span class="comment"># 内存碎片率大于 1.5 的时候开始清理</span></span><br><span class="line">config <span class="built_in">set</span> active-defrag-threshold-lower 50</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>其中关于内存相关内容的计算逻辑如下</p>
+<ul>
+<li>碎片空间 = <code>used_memory_rss - used_memory</code></li>
+<li>碎片率 = <code>used_memory_rss / used_memory</code></li>
+<li>触发条件 =
+<code>(碎片空间 ≥ ignore-bytes) AND (碎片率 ≥ 1 + threshold-lower/100)</code></li>
+</ul>
+<p>也就是说，<code>mem_fragmentation_ratio</code>
+内存碎片率的值越大代表内存碎片率越严重。</p>
+<p>如果想要快速查看内存碎片率的话，你还可以通过下面这个命令</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">redis-cli -p 6379 info | grep mem_fragmentation_ratio</span><br></pre></td></tr></table></figure>
+</blockquote>
+<p>通过 Redis 自动内存碎片清理机制可能会对 Redis
+的性能产生影响，我们可以通过下面两个参数来减少对 Redis 性能的影响：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 内存碎片清理所占用 CPU 时间的比例不低于 20%</span></span><br><span class="line">config <span class="built_in">set</span> active-defrag-cycle-min 20</span><br><span class="line"><span class="comment"># 内存碎片清理所占用 CPU 时间的比例不高于 50%</span></span><br><span class="line">config <span class="built_in">set</span> active-defrag-cycle-max 50</span><br></pre></td></tr></table></figure>
+<figure>
+<img src="/posts/36227/image-20260203173246109.png" alt="image-20260203173246109">
+<figcaption aria-hidden="true">image-20260203173246109</figcaption>
+</figure>
+<p>另外，重启节点可以做到内存碎片重新整理。如果你采用的是高可用架构的
+Redis
+集群的话，你可以将碎片率过高的主节点转换为从节点，以便进行安全重启</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a target="_blank" rel="noopener" href="https://github.com/ergou10086">ErgouTree</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://ergou10086.github.io/posts/36227.html">https://ergou10086.github.io/posts/36227.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://ergou10086.github.io" target="_blank">ErgouTree's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E5%AD%A6%E4%B9%A0%E7%B1%BB/">学习类</a><a class="post-meta__tags" href="/tags/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a><a class="post-meta__tags" href="/tags/%E5%BC%80%E5%8F%91%E7%BB%84%E4%BB%B6/">开发组件</a><a class="post-meta__tags" href="/tags/NoSQL/">NoSQL</a><a class="post-meta__tags" href="/tags/Redis/">Redis</a></div><div class="post-share"><div class="addtoany"><div class="a2a_kit a2a_kit_size_32 a2a_default_style"><a class="a2a_button_facebook"></a><a class="a2a_button_twitter"></a><a class="a2a_button_wechat"></a><a class="a2a_button_sina_weibo"></a><a class="a2a_button_facebook_messenger"></a><a class="a2a_button_email"></a><a class="a2a_button_copy_link"></a><a class="a2a_dd" target="_blank" rel="noopener" href="https://www.addtoany.com/share"></a></div></div><script async="async" src="https://static.addtoany.com/menu/page.js"></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/posts/7217.html" title="Dubbo part1—重新认识Dubbo并且使用Dubbo框架搭建微服务"><img class="cover" src="/images/posts/cover_dubbo.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">Dubbo part1—重新认识Dubbo并且使用Dubbo框架搭建微服务</div></div><div class="info-2"><div class="info-item-1">重新认识Dubbo Dubbo 最初被定位为一个高性能的 RPC 框架，但这是过去，随着 Dubbo 3 的演进（尤其是与 Spring Cloud Alibaba 的整合），这个定义已远远不足以描述它的全貌。 因为，它已经具备了完整的 微服务治理能力，包括服务注册发现、配置中心、熔断限流、可观测性等，是一个面向云原生、支持多语言、具备完整微服务治理能力的一站式微服务解决方案。 什么意思，Dubbo 不是只有那几个注解来作为 RPC 框架的能力了，而是可以作为 Spring Cloud Alibaba 中的单独一个框架，自己实现服务注册发现、配置中心、熔断限流、可观测性等这些微服务框架需要的功能。 所以说，Dubbo 3 不再只是调用远程方法，而是构建和运维整个微服务体系的基础设施。   img  服务治理、服务通信。这是dubbo框架所提供的核心功能。实际上也是微服务框架所要提供的核心功能。 Dubbo 与 Spring Cloud 对比 而且Dubbo开发相较于 Spring Cloud 具有一些优势  Dubbo 开箱即用，相对于...</div></div></div></a><a class="pagination-related" href="/posts/47992.html" title="Dubbo_part2—详解Dubbo的RPC远程服务调用"><img class="cover" src="/images/posts/cover_dubbo.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Dubbo_part2—详解Dubbo的RPC远程服务调用</div></div><div class="info-2"><div class="info-item-1">前言 上次我们说了，Dubbo 主要用于构建分布式服务架构。其前身是阿里巴巴公司开源的一个高性能、轻量级的开源Java RPC框架，这篇文章就细说如何使用 Dubbo 进行 RPC 远程调用 别忘了，Dubbo 是提供了地址发现、负载均衡、流量管控等治理能力，上次我们说了Dubbo的架构如下  服务提供者：实现业务逻辑的模块，将业务接口暴露为RPC服务，供其他服务调用 服务消费者：调用远程服务的模块 注册中心 负载均衡器 监控中心    img  架构上我们抽象成了两层，代表了一个微服务框架必须具有的基本功能：  服务治理层：服务治理控制面不是特指如注册中心类的单个具体组件，而是对 Dubbo 治理体系的抽象表达。控制面包含协调服务发现的注册中心、流量管控策略、Dubbo Admin 控制台等。 服务调用层：实际上，这是一整个数据面，数据面代表集群部署的所有 Dubbo 进程，进程之间通过 RPC 协议实现数据交换，Dubbo 定义了微服务应用开发与调用规范并负责完成数据传输的编解码工作。  所以说今天回到...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/posts/1472.html" title="Redis part5—RDB持久化和AOF持久化"><img class="cover" src="/images/posts/cover_springcloud.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-10-31</div><div class="info-item-2">Redis part5—RDB持久化和AOF持久化</div></div><div class="info-2"><div class="info-item-1">Redis 持久化 Redis 本身是缓存，为什么它的持久化会被如此重视呢？ 如何确保内存中的数据不因突发事件而丢失？如何在确保性能的前提下，为数据提供一个更加稳固的避风港？这是否矛盾 现在的情况差不多是这样，Redis 早期是纯缓存，但随着功能迭代，很多场景下它被当作内存数据库使用（如存储用户会话、购物车、实时排行榜）。此时持久化的价值体现在两点： 本质是因为它早已超越纯缓存，承担了数据库的职能，数据丢失会直接影响业务 Redis 提供三种持久化的方式: 分别是 RDB（Redis Database Snapshot） 和 AOF（Append Only...</div></div></div></a><a class="pagination-related" href="/posts/44679.html" title="Redis part4—Redis布隆过滤器"><img class="cover" src="/images/posts/cover_database4.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-10-31</div><div class="info-item-2">Redis part4—Redis布隆过滤器</div></div><div class="info-2"><div class="info-item-1">什么是布隆过滤器 布隆过滤器简介 首先，布隆过滤器不是 redis 特有的东西，它是一种通用的数据结构，日常开发中，Redis 4.0 的时候官方提供了插件机制，布隆过滤器正式登场，使用 redisbloom 插件版本，但是 8.0.0 中 redis 正式添加了布隆过滤器。 布隆过滤器 (Bloom Filter)是由 Burton Howard Bloom 于 1970 年提出，它是一种 space efficient 的概率型数据结构，用于判断一个元素是否在集合中。 当布隆过滤器说，某个数据存在时，这个数据可能不存在；当布隆过滤器说，某个数据不存在时，那么这个数据一定不存在。 布隆过滤器（Bloom Filter）是一种空间效率极高的概率型数据结构，本质是 “一个二进制数组 +...</div></div></div></a><a class="pagination-related" href="/posts/32715.html" title="Redis part1—介绍NoSQL和缓存技术"><img class="cover" src="/images/posts/cover_config.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-09-24</div><div class="info-item-2">Redis part1—介绍NoSQL和缓存技术</div></div><div class="info-2"><div class="info-item-1">介绍 Redis REmote DIctionary Server(Redis) 是一个由 Salvatore Sanfilippo 写的 key-value 存储系统，是跨平台的非关系型数据库。 Redis 是一个开源的使用 ANSI C 语言编写、遵守 BSD 协议、支持网络、可基于内存、分布式、可选持久性的键值对(Key-Value)存储数据库，并提供多种语言的 API。 Redis 通常被称为数据结构服务器，因为值（value）可以是字符串(String)、哈希(Hash)、列表(list)、集合(sets)和有序集合(sorted sets)等类型。 Redis 简介 Redis（Remote Dictionary Server）是一个开源的内存数据库，遵守...</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="gitalk-container"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/arp.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">ErgouTree</div><div class="author-info-description">I start a brand-new life with you.</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">293</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">179</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">100</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/ergou10086"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/ergou10086" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="/zjm88822201@126.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a><a class="social-icon" href="https://space.bilibili.com/142045656?spm_id_from=333.1007.0.0" target="_blank" title="bilibili"><i class="fas fa-brands fa-bilibili" style="color: #4a72be;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">作者长期陷入galgame和osu!maina4k中 祝他好运吧 对了 如果图片加载过慢 建议科学上网进行使用</div></div><div class="card-widget card-weather"><div class="item-headline"><i class="fas fa-cloud-sun"></i><span>aside.card_weather</span></div><div class="weather-content"><div class="weather-loading"><i class="fas fa-spinner fa-spin"></i><span>加载中...</span></div><div class="weather-main" style="display: none;"><div class="weather-location"><i class="fas fa-map-marker-alt"></i><span id="weather-location">获取中...</span></div><div class="weather-info"><div class="weather-temp"><span id="weather-temp">--</span><span class="unit">°C</span></div><div class="weather-desc"><span id="weather-weather">--</span></div><div class="weather-details"><div class="weather-item"><i class="fas fa-wind"></i><span id="weather-windpower">--</span></div><div class="weather-item"><i class="fas fa-tint"></i><span id="weather-humidity">--</span></div><div class="weather-item"><i class="fas fa-eye"></i><span id="weather-winddir">--</span></div></div></div><div class="weather-update-time"><i class="fas fa-clock"></i><span id="weather-update-time">更新中...</span></div></div></div></div><div class="sticky_layout"></div><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%8B%E7%BB%8Dredis%E7%9A%84%E7%BC%93%E5%AD%98%E8%AF%BB%E5%86%99%E7%AD%96%E7%95%A5"><span class="toc-number">1.</span> <span class="toc-text">介绍Redis的缓存读写策略</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#cache-aside-pattern-%E6%97%81%E8%B7%AF%E7%BC%93%E5%AD%98%E6%A8%A1%E5%BC%8F"><span class="toc-number">2.</span> <span class="toc-text">Cache Aside Pattern
+旁路缓存模式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#readwrite-through-pattern-%E8%AF%BB%E5%86%99%E7%A9%BF%E9%80%8F"><span class="toc-number">3.</span> <span class="toc-text">Read&#x2F;Write Through Pattern
+读写穿透</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#write-behind-pattern-%E5%BC%82%E6%AD%A5%E7%BC%93%E5%AD%98%E5%86%99%E5%85%A5"><span class="toc-number">4.</span> <span class="toc-text">Write Behind Pattern
+异步缓存写入</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#redis%E7%9A%84%E4%B8%89%E7%A7%8D%E7%BC%93%E5%AD%98%E9%97%AE%E9%A2%98"><span class="toc-number">5.</span> <span class="toc-text">Redis的三种缓存问题</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BC%93%E5%AD%98%E7%A9%BF%E9%80%8F"><span class="toc-number">5.1.</span> <span class="toc-text">缓存穿透</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BC%93%E5%AD%98%E5%87%BB%E7%A9%BF"><span class="toc-number">5.2.</span> <span class="toc-text">缓存击穿</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BC%93%E5%AD%98%E9%9B%AA%E5%B4%A9"><span class="toc-number">5.3.</span> <span class="toc-text">缓存雪崩</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#redis%E5%86%85%E5%AD%98%E7%A2%8E%E7%89%87"><span class="toc-number">6.</span> <span class="toc-text">Redis内存碎片</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E5%86%85%E5%AD%98%E7%A2%8E%E7%89%87"><span class="toc-number">6.1.</span> <span class="toc-text">什么是内存碎片</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E4%BC%9A%E6%9C%89-redis-%E5%86%85%E5%AD%98%E7%A2%8E%E7%89%87"><span class="toc-number">6.2.</span> <span class="toc-text">为什么会有 Redis 内存碎片</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#redis-%E5%AD%98%E5%82%A8%E6%95%B0%E6%8D%AE%E7%9A%84%E6%97%B6%E5%80%99%E5%90%91%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%94%B3%E8%AF%B7%E7%9A%84%E5%86%85%E5%AD%98%E7%A9%BA%E9%97%B4%E5%8F%AF%E8%83%BD%E4%BC%9A%E5%A4%A7%E4%BA%8E%E6%95%B0%E6%8D%AE%E5%AE%9E%E9%99%85%E9%9C%80%E8%A6%81%E7%9A%84%E5%AD%98%E5%82%A8%E7%A9%BA%E9%97%B4"><span class="toc-number">6.2.1.</span> <span class="toc-text">Redis
+存储数据的时候向操作系统申请的内存空间可能会大于数据实际需要的存储空间。</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%A2%91%E7%B9%81%E4%BF%AE%E6%94%B9-redis-%E4%B8%AD%E7%9A%84%E6%95%B0%E6%8D%AE%E4%B9%9F%E4%BC%9A%E4%BA%A7%E7%94%9F%E5%86%85%E5%AD%98%E7%A2%8E%E7%89%87"><span class="toc-number">6.2.2.</span> <span class="toc-text">频繁修改 Redis
+中的数据也会产生内存碎片。</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A6%82%E4%BD%95%E6%9F%A5%E7%9C%8B-redis-%E5%86%85%E5%AD%98%E7%A2%8E%E7%89%87%E7%9A%84%E4%BF%A1%E6%81%AF"><span class="toc-number">6.3.</span> <span class="toc-text">如何查看 Redis
+内存碎片的信息？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A6%82%E4%BD%95%E6%B8%85%E7%90%86-redis-%E5%86%85%E5%AD%98%E7%A2%8E%E7%89%87"><span class="toc-number">6.4.</span> <span class="toc-text">如何清理 Redis 内存碎片？</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/30193.html" title="详解Java之集合框架 part1—集合框架概述及其List接口下的常用容器"><img src="/images/posts/cover_math.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="详解Java之集合框架 part1—集合框架概述及其List接口下的常用容器"/></a><div class="content"><a class="title" href="/posts/30193.html" title="详解Java之集合框架 part1—集合框架概述及其List接口下的常用容器">详解Java之集合框架 part1—集合框架概述及其List接口下的常用容器</a><time datetime="2026-02-04T17:27:35.000Z" title="发表于 2026-02-05 01:27:35">2026-02-05</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/47992.html" title="Dubbo_part2—详解Dubbo的RPC远程服务调用"><img src="/images/posts/cover_dubbo.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Dubbo_part2—详解Dubbo的RPC远程服务调用"/></a><div class="content"><a class="title" href="/posts/47992.html" title="Dubbo_part2—详解Dubbo的RPC远程服务调用">Dubbo_part2—详解Dubbo的RPC远程服务调用</a><time datetime="2026-02-04T02:51:08.000Z" title="发表于 2026-02-04 10:51:08">2026-02-04</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/36227.html" title="Redis part6—Redis3种常用的缓存读写策略及其缓存问题详解"><img src="/images/posts/cover_galgame.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis part6—Redis3种常用的缓存读写策略及其缓存问题详解"/></a><div class="content"><a class="title" href="/posts/36227.html" title="Redis part6—Redis3种常用的缓存读写策略及其缓存问题详解">Redis part6—Redis3种常用的缓存读写策略及其缓存问题详解</a><time datetime="2026-02-03T09:33:57.000Z" title="发表于 2026-02-03 17:33:57">2026-02-03</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/7217.html" title="Dubbo part1—重新认识Dubbo并且使用Dubbo框架搭建微服务"><img src="/images/posts/cover_dubbo.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Dubbo part1—重新认识Dubbo并且使用Dubbo框架搭建微服务"/></a><div class="content"><a class="title" href="/posts/7217.html" title="Dubbo part1—重新认识Dubbo并且使用Dubbo框架搭建微服务">Dubbo part1—重新认识Dubbo并且使用Dubbo框架搭建微服务</a><time datetime="2026-02-01T08:39:36.000Z" title="发表于 2026-02-01 16:39:36">2026-02-01</time></div></div></div></div></div></main><div class="fps-display"><span id="fps">FPS: 60</span></div><footer id="footer" style="background-image: url(/images/posts/cover_galgame.png);"><div id="footer-wrap"><div class="copyright">&copy;2024 - 2026 By ErgouTree</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">忘れたくない思い、ありますか？ <br>,<span id="realtime_duration" style="font-family: monospace;"></span>,<br><a href="https://icp.gov.moe/?keyword=20257009" target="_blank">萌ICP备20257009号</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><a class="icon-V hidden" onclick="switchNightMode()" title="日间和夜间模式切换"><svg width="25" height="25" viewBox="0 0 1024 1024"><use id="modeicon" xlink:href="#icon-moon"></use></svg></a><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="chat-btn" type="button" title="聊天" style="display:none"><i class="fas fa-comment"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (true) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script><script>(() => {
+  const applyThemeDefaultsConfig = theme => {
+    if (theme === 'dark-mode') {
+      Chart.defaults.color = "rgba(255, 255, 255, 0.8)"
+      Chart.defaults.borderColor = "rgba(255, 255, 255, 0.2)"
+      Chart.defaults.scale.ticks.backdropColor = "transparent"
+    } else {
+      Chart.defaults.color = "rgba(0, 0, 0, 0.8)"
+      Chart.defaults.borderColor = "rgba(0, 0, 0, 0.1)"
+      Chart.defaults.scale.ticks.backdropColor = "transparent"
+    }
+  }
+
+  // Recursively traverse the config object and automatically apply theme-specific color schemes
+  const applyThemeConfig = (obj, theme) => {
+    if (typeof obj !== 'object' || obj === null) return
+
+    Object.keys(obj).forEach(key => {
+      const value = obj[key]
+      // If the property is an object and has theme-specific options, apply them
+      if (typeof value === 'object' && value !== null) {
+        if (value[theme]) {
+          obj[key] = value[theme] // Apply the value for the current theme
+        } else {
+          // Recursively process child objects
+          applyThemeConfig(value, theme)
+        }
+      }
+    })
+  }
+
+  const runChartJS = ele => {
+    window.loadChartJS = true
+
+    Array.from(ele).forEach((item, index) => {
+      const chartSrc = item.firstElementChild
+      const chartID = item.getAttribute('data-chartjs-id') || ('chartjs-' + index) // Use custom ID or default ID
+      const width = item.getAttribute('data-width')
+      const existingCanvas = document.getElementById(chartID)
+
+      // If a canvas already exists, remove it to avoid rendering duplicates
+      if (existingCanvas) {
+          existingCanvas.parentNode.remove()
+      }
+
+      const chartDefinition = chartSrc.textContent
+      const canvas = document.createElement('canvas')
+      canvas.id = chartID
+
+      const div = document.createElement('div')
+      div.className = 'chartjs-wrap'
+
+      if (width) {
+        div.style.width = width
+      }
+
+      div.appendChild(canvas)
+      chartSrc.insertAdjacentElement('afterend', div)
+
+      const ctx = document.getElementById(chartID).getContext('2d')
+
+      const config = JSON.parse(chartDefinition)
+
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark-mode' : 'light-mode'
+
+      // Set default styles (initial setup)
+      applyThemeDefaultsConfig(theme)
+
+      // Automatically traverse the config and apply dual-mode color schemes
+      applyThemeConfig(config, theme)
+
+      new Chart(ctx, config)
+    })
+  }
+
+  const loadChartJS = () => {
+    const chartJSEle = document.querySelectorAll('#article-container .chartjs-container')
+    if (chartJSEle.length === 0) return
+
+    window.loadChartJS ? runChartJS(chartJSEle) : btf.getScript('https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.min.js').then(() => runChartJS(chartJSEle))
+  }
+
+  // Listen for theme change events
+  btf.addGlobalFn('themeChange', loadChartJS, 'chartjs')
+  btf.addGlobalFn('encrypt', loadChartJS, 'chartjs')
+
+  window.pjax ? loadChartJS() : document.addEventListener('DOMContentLoaded', loadChartJS)
+})()</script><script>(function() {
+  const abcjsInit = function() {
+    const abcjsFn = function() {
+      setTimeout(function() {
+        const sheets = document.querySelectorAll(".abc-music-sheet")
+        for (let i = 0; i < sheets.length; i++) {
+          const ele = sheets[i]
+          if (ele.children.length > 0) continue
+
+          // Parse parameters from data-params attribute
+          let params = {}
+          const dp = ele.getAttribute("data-params")
+          if (dp) {
+            try {
+              params = JSON.parse(dp)
+            } catch (e) {
+              console.error("Failed to parse data-params:", e)
+            }
+          }
+
+          // Merge parsed parameters with the responsive option
+          // Ensures params content appears before responsive
+          const options = { ...params, responsive: "resize" }
+
+          // Render the music score using ABCJS.renderAbc
+          ABCJS.renderAbc(ele, ele.innerHTML, options)
+        }
+      }, 100)
+    }
+
+    if (typeof ABCJS === "object") {
+      abcjsFn()
+    } else {
+      btf.getScript("https://cdn.jsdelivr.net/npm/abcjs/dist/abcjs-basic-min.min.js").then(abcjsFn)
+    }
+  }
+
+  if (window.pjax) {
+    abcjsInit()
+  } else {
+    window.addEventListener("load", abcjsInit)
+  }
+
+  btf.addGlobalFn("encrypt", abcjsInit, "abcjs")
+})()</script><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = {"labels":["Gitalk","Comment"],"createIssueManually":false,"distractionFreeMode":false}
+
+  const commentCount = n => {
+    const isCommentCount = document.querySelector('#post-meta .gitalk-comment-count')
+    if (isCommentCount) {
+      isCommentCount.textContent= n
+    }
+  }
+
+  const initGitalk = (el, path) => {
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGitalk = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+
+    const gitalk = new Gitalk({
+      clientID: 'Ov23li3vDQANiUddL4XB',
+      clientSecret: '5c9a56d02995340fca117809cd414662aadce6ff',
+      repo: 'HexoComment',
+      owner: 'ergou10086',
+      admin: ['ergou10086'],
+      updateCountCallback: commentCount,
+      ...option,
+      id: isShuoshuo ? path : (option && option.id) || '1ce0533aedd528fd590c0172800bc4aa'
+    })
+
+    gitalk.render('gitalk-container')
+  }
+
+  const loadGitalk = async(el, path) => {
+    if (typeof Gitalk === 'function') initGitalk(el, path)
+    else {
+      await btf.getCSS('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.css')
+      await btf.getScript('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.js')
+      initGitalk(el, path)
+    }
+  }
+
+  if (isShuoshuo) {
+    'Gitalk' === 'Gitalk'
+      ? window.shuoshuoComment = { loadComment: loadGitalk }
+      : window.loadOtherComment = loadGitalk
+    return
+  }
+
+  if ('Gitalk' === 'Gitalk' || !false) {
+    if (false) btf.loadComment(document.getElementById('gitalk-container'), loadGitalk)
+    else loadGitalk()
+  } else {
+    window.loadOtherComment = loadGitalk
+  }
+})()</script></div><div class="aplayer no-destroy" data-id="13587761608" data-server="netease" data-type="playlist" data-fixed="true" data-autoplay="false" data-lrcType="-1"> </div><script src="https://cdn.jsdelivr.net/npm/abcjs@7.1.2/dist/abcjs-basic-min.js"></script><script src="/js/sun_moon.js" async></script><script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.7/dayjs.min.js"></script><script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.7/plugin/duration.min.js"></script><script src="/scripts/realtime.js"></script><script src="/scripts/random.js"></script><script src="/scripts/weather.js"></script><script>if(window.location.pathname.includes('/viewpoint/')){function loadViewpointScripts(){var loadScript=function(src,callback){var s=document.createElement('script');s.src=src;s.async=false;s.defer=false;s.onload=function(){console.log('脚本加载成功:',src);setTimeout(function(){if(callback)callback();},100);};s.onerror=function(){console.error('脚本加载失败:',src);setTimeout(function(){if(callback)callback();},100);};document.body.appendChild(s);};loadScript('/scripts/viewpoint/math.js',function(){console.log('math.js 加载完成, math:',typeof math);loadScript('/scripts/viewpoint/katex.min.js',function(){console.log('katex.min.js 加载完成, katex:',typeof katex);loadScript('/scripts/viewpoint/sweetalert2@11.js',function(){console.log('sweetalert2@11.js 加载完成, Swal:',typeof Swal,'Sweetalert2:',typeof Sweetalert2);if(typeof Swal==='undefined'&&typeof Sweetalert2!=='undefined'){window.Swal=window.Sweetalert2;console.log('已设置 Swal 别名');}loadScript('/scripts/viewpoint/main.js',function(){console.log('Viewpoint 页面所有脚本加载完成');});});});});}if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',loadViewpointScripts);}else{loadViewpointScripts();}}</script><script>if(window.location.pathname.includes('/littleGame/')){function loadLittleGameScripts(){var load=function(src,cb){var s=document.createElement('script');s.src=src;s.async=false;s.defer=false;s.onload=function(){if(cb)cb();};document.body.appendChild(s);};load('/scripts/littleGame/2048.js',function(){load('/scripts/littleGame/extra-games.js');});}if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',loadLittleGameScripts);}else{loadLittleGameScripts();}}</script><script defer="defer" id="ribbon" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-ribbon.min.js" size="150" alpha="0.6" zIndex="-1" mobile="null" data-click="true"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = false;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><script id="click-heart" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/click-heart.min.js" async="async" mobile="false"></script><script>(() => {
+  window.ChatraID = '4bzb546NSBoJcrNyu'
+  window.Chatra = window.Chatra || function() {
+    (window.Chatra.q = window.Chatra.q || []).push(arguments)
+  }
+
+  btf.getScript('https://call.chatra.io/chatra.js').then(() => {
+    const isChatBtn = true
+    const isChatHideShow = true
+
+    if (isChatBtn) {
+      const close = () => {
+        Chatra('minimizeWidget')
+        Chatra('hide')
+      }
+
+      const open = () => {
+        Chatra('openChat', true)
+        Chatra('show')
+      }
+
+      window.ChatraSetup = { startHidden: true }
+    
+      window.chatBtnFn = () => document.getElementById('chatra').classList.contains('chatra--expanded') ? close() : open()
+
+      document.getElementById('chat-btn').style.display = 'block'
+    } else if (isChatHideShow) {
+      window.chatBtn = {
+        hide: () => Chatra('hide'),
+        show: () => Chatra('show')
+      }
+    }
+  })
+})()</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/metingjs/dist/Meting.min.js"></script><script>(() => {
+  const destroyAplayer = () => {
+    if (window.aplayers) {
+      for (let i = 0; i < window.aplayers.length; i++) {
+        if (!window.aplayers[i].options.fixed) {
+          window.aplayers[i].destroy()
+        }
+      }
+    }
+  }
+
+  const runMetingJS = () => {
+    typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+  }
+
+  btf.addGlobalFn('pjaxSend', destroyAplayer, 'destroyAplayer')
+  btf.addGlobalFn('pjaxComplete', loadMeting, 'runMetingJS')
+})()</script><script src="https://cdn.jsdelivr.net/npm/pjax/pjax.min.js"></script><script>(() => {
+  const pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+  window.pjax = new Pjax({
+    elements: 'a:not([target="_blank"]):not([href="/music/"]):not([href="/viewpoint/"])',
+    selectors: pjaxSelectors,
+    cacheBust: false,
+    analytics: false,
+    scrollRestoration: false
+  })
+
+  const triggerPjaxFn = (val) => {
+    if (!val) return
+    Object.values(val).forEach(fn => fn())
+  }
+
+  document.addEventListener('pjax:send', () => {
+    // removeEventListener
+    btf.removeGlobalFnEvent('pjaxSendOnce')
+    btf.removeGlobalFnEvent('themeChange')
+
+    // reset readmode
+    const $bodyClassList = document.body.classList
+    if ($bodyClassList.contains('read-mode')) $bodyClassList.remove('read-mode')
+
+    triggerPjaxFn(window.globalFn.pjaxSend)
+  })
+
+  document.addEventListener('pjax:complete', () => {
+    btf.removeGlobalFnEvent('pjaxCompleteOnce')
+    document.querySelectorAll('script[data-pjax]').forEach(item => {
+      const newScript = document.createElement('script')
+      const content = item.text || item.textContent || item.innerHTML || ""
+      Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+      newScript.appendChild(document.createTextNode(content))
+      item.parentNode.replaceChild(newScript, item)
+    })
+
+    triggerPjaxFn(window.globalFn.pjaxComplete)
+  })
+
+  document.addEventListener('pjax:error', e => {
+    if (e.request.status === 404) {
+      const usePjax = true
+      true 
+        ? (usePjax ? pjax.loadUrl('/404.html') : window.location.href = '/404.html')
+        : window.location.href = e.request.responseURL
+    }
+  })
+})()</script><script src="/js/fps-display.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><!-- hexo injector body_end start --><script data-pjax>
+  function butterfly_swiper_injector_config(){
+    var parent_div_git = document.getElementById('recent-posts');
+    var item_html = '<div class="recent-post-item" style="height: auto;width: 100%"><div class="blog-slider swiper-container-fade swiper-container-horizontal" id="swiper_container"><div class="blog-slider__wrp swiper-wrapper" style="transition-duration: 0ms;"><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_database.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-14</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt="">结构化查询语言SQL</a><div class="blog-slider__text">SQL基本很常用的语句都在这里了，本质上是当初为了应付数据库考试整理的，后来发现还蛮有用的很方便查常用的语句</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java4.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-22</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt="">SpringBoot part0?INF-SpringBoot这个框架都需要学习什么</a><div class="blog-slider__text">主要围绕Spring Boot中重要知识来简洁或详细的说明，其中部分不够完全，持续更新</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java11.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-15</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt="">关于Lombok在高版本IDEA中注解处理不生效的问题解决</a><div class="blog-slider__text">基本上是彻底的解决了用 IDEA 新建 Spring Boot 项目时候会产生的 Lombok 注解处理失效的各种问题</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_实用.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-05</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt="">个人向galgame原声带或相关音乐整理及其资源</a><div class="blog-slider__text">整理了我喜欢的galgame ost或者衍生的音乐专辑，部分资源是自己扒盘扒下来的，部分来自鸟白岛放映厅</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_math.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-17</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt="">对书上证明样本方差是总体方差的无偏估计量的解析</a><div class="blog-slider__text">对书上证明样本方差是总体方差的无偏估计量的解析，高等教育出版社-华科大版本</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_alog.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-04-24</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt="">第十五届蓝桥杯Java国赛B组D题-园丁题解</a><div class="blog-slider__text">第十五届蓝桥杯Java国赛B组D题-园丁题解，该题解已经发布到洛谷社区中并且被全站推荐</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java4.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-04-29</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt="">操作系统之处理机的死锁部分概述</a><div class="blog-slider__text">对操作系统之处理机的死锁部分知识的总结，包括代码复现</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_lb.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-09</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt="">Little Busters!EX游戏攻略</a><div class="blog-slider__text">整理了一份详细清晰的Little Busters！EX的游戏攻略，因为我自己也在推，就顺手整理了一份方便查阅的md文档</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java9.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-16</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt="">Spring Boot中使用Hibernate框架</a><div class="blog-slider__text">对学习完Hibernate的应用部分，主要围绕Spring Boot中使用Hibernate框架，建议学习完 Hibernate 框架再看</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div></div><div class="blog-slider__pagination swiper-pagination-clickable swiper-pagination-bullets"></div></div></div>';
+    console.log('已挂载butterfly_swiper')
+    parent_div_git.insertAdjacentHTML("afterbegin",item_html)
+    }
+  var elist = 'undefined'.split(',');
+  var cpage = location.pathname;
+  var epage = '/';
+  var flag = 0;
+
+  for (var i=0;i<elist.length;i++){
+    if (cpage.includes(elist[i])){
+      flag++;
+    }
+  }
+
+  if ((epage ==='all')&&(flag == 0)){
+    butterfly_swiper_injector_config();
+  }
+  else if (epage === cpage){
+    butterfly_swiper_injector_config();
+  }
+  </script><script defer src="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper.min.js"></script><script defer data-pjax src="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper_init.js"></script><!-- hexo injector body_end end --></body></html>
