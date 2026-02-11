@@ -1,0 +1,1334 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>详解JavaSE之并发编程 part6—JUC锁机制的底层原理AQS | ErgouTree's Blog</title><meta name="author" content="ErgouTree"><meta name="copyright" content="ErgouTree"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="了解 AQS 什么是 AQS 我倒是觉得我应该把这个放在前面 AQS 的全称为 AbstractQueuedSynchronizer ，翻译过来的意思就是抽象队列同步器。这个类在 java.util.concurrent.locks 包下面。   image-20260211105950840  AQS 就是一个抽象类，主要用来构建锁和同步器。为他们提供一个底层的、通用的同步">
+<meta property="og:type" content="article">
+<meta property="og:title" content="详解JavaSE之并发编程 part6—JUC锁机制的底层原理AQS">
+<meta property="og:url" content="https://ergou10086.github.io/posts/28919.html">
+<meta property="og:site_name" content="ErgouTree&#39;s Blog">
+<meta property="og:description" content="了解 AQS 什么是 AQS 我倒是觉得我应该把这个放在前面 AQS 的全称为 AbstractQueuedSynchronizer ，翻译过来的意思就是抽象队列同步器。这个类在 java.util.concurrent.locks 包下面。   image-20260211105950840  AQS 就是一个抽象类，主要用来构建锁和同步器。为他们提供一个底层的、通用的同步">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://ergou10086.github.io/images/posts/cover_java.jpg">
+<meta property="article:published_time" content="2026-02-11T09:27:01.000Z">
+<meta property="article:modified_time" content="2026-02-11T09:27:46.921Z">
+<meta property="article:author" content="ErgouTree">
+<meta property="article:tag" content="使用知识">
+<meta property="article:tag" content="实用知识">
+<meta property="article:tag" content="JavaSE">
+<meta property="article:tag" content="Java基础知识">
+<meta property="article:tag" content="多线程">
+<meta property="article:tag" content="操作系统">
+<meta property="article:tag" content="JVM">
+<meta property="article:tag" content="并发编程">
+<meta property="article:tag" content="高并发">
+<meta property="article:tag" content="计算机基础">
+<meta property="article:tag" content="JUC">
+<meta property="article:tag" content="源码讲解">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ergou10086.github.io/images/posts/cover_java.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "详解JavaSE之并发编程 part6—JUC锁机制的底层原理AQS",
+  "url": "https://ergou10086.github.io/posts/28919.html",
+  "image": "https://ergou10086.github.io/images/posts/cover_java.jpg",
+  "datePublished": "2026-02-11T09:27:01.000Z",
+  "dateModified": "2026-02-11T09:27:46.921Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "ErgouTree",
+      "url": "https://github.com/ergou10086"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/pi.ico"><link rel="canonical" href="https://ergou10086.github.io/posts/28919.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//hm.baidu.com"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!true && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?https://hm.baidu.com/hm.js?a6ab1b78e2c6320b664f31e8b9bf0e36";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+btf.addGlobalFn('pjaxComplete', () => {
+  _hmt.push(['_trackPageview',window.location.pathname])
+}, 'baidu_analytics')
+</script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.json","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":true},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: {"chs_to_cht":"已切换为繁体中文","cht_to_chs":"已切换为简体中文","day_to_night":"已切换为深色模式","night_to_day":"已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#1f1f1f","position":"bottom-left"},
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '详解JavaSE之并发编程 part6—JUC锁机制的底层原理AQS',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css"><link rel="stylesheet" href="/css/littleGame.css"><svg aria-hidden="true" style="position:absolute; overflow:hidden; width:0; height:0"><symbol id="icon-sun" viewBox="0 0 1024 1024"><path d="M960 512l-128 128v192h-192l-128 128-128-128H192v-192l-128-128 128-128V192h192l128-128 128 128h192v192z" fill="#FFD878" p-id="8420"></path><path d="M736 512a224 224 0 1 0-448 0 224 224 0 1 0 448 0z" fill="#FFE4A9" p-id="8421"></path><path d="M512 109.248L626.752 224H800v173.248L914.752 512 800 626.752V800h-173.248L512 914.752 397.248 800H224v-173.248L109.248 512 224 397.248V224h173.248L512 109.248M512 64l-128 128H192v192l-128 128 128 128v192h192l128 128 128-128h192v-192l128-128-128-128V192h-192l-128-128z" fill="#4D5152" p-id="8422"></path><path d="M512 320c105.888 0 192 86.112 192 192s-86.112 192-192 192-192-86.112-192-192 86.112-192 192-192m0-32a224 224 0 1 0 0 448 224 224 0 0 0 0-448z" fill="#4D5152" p-id="8423"></path></symbol><symbol id="icon-moon" viewBox="0 0 1024 1024"><path d="M611.370667 167.082667a445.013333 445.013333 0 0 1-38.4 161.834666 477.824 477.824 0 0 1-244.736 244.394667 445.141333 445.141333 0 0 1-161.109334 38.058667 85.077333 85.077333 0 0 0-65.066666 135.722666A462.08 462.08 0 1 0 747.093333 102.058667a85.077333 85.077333 0 0 0-135.722666 65.024z" fill="#FFB531" p-id="11345"></path><path d="M329.728 274.133333l35.157333-35.157333a21.333333 21.333333 0 1 0-30.165333-30.165333l-35.157333 35.157333-35.114667-35.157333a21.333333 21.333333 0 0 0-30.165333 30.165333l35.114666 35.157333-35.114666 35.157334a21.333333 21.333333 0 1 0 30.165333 30.165333l35.114667-35.157333 35.157333 35.157333a21.333333 21.333333 0 1 0 30.165333-30.165333z" fill="#030835" p-id="11346"></path></symbol></svg><link rel="stylesheet" href="/css/custom.css"><!-- hexo injector head_end start --><link rel="stylesheet" href="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiperstyle.css" media="print" onload="this.media='all'"><!-- hexo injector head_end end --><meta name="generator" content="Hexo 7.3.0"></head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js/pace.min.js"></script><div id="web_bg" style="background: linear-gradient(20deg, #0062be, #925696, #cc426e, #fb0347);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/arp.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">299</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">184</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">101</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-images"></i><span> Gallery</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/games/"><i class="fa-fw fas fa-trophy"></i><span> GalGame</span></a></li><li><a class="site-page child" href="/video/"><i class="fa-fw fas fa-video"></i><span> Video</span></a></li><li><a class="site-page child" href="/viewpoint/"><i class="fa-fw fas fa-calculator"></i><span> ViewPoint</span></a></li><li><a class="site-page child" href="/littleGame/"><i class="fa-fw fas fa-thumbs-up"></i><span> littleGame</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div><div class="menus_item"><a class="site-page" href="javascript:randomPost();"><span> Random</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/images/posts/cover_java.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">ErgouTree's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">详解JavaSE之并发编程 part6—JUC锁机制的底层原理AQS</span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-images"></i><span> Gallery</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/games/"><i class="fa-fw fas fa-trophy"></i><span> GalGame</span></a></li><li><a class="site-page child" href="/video/"><i class="fa-fw fas fa-video"></i><span> Video</span></a></li><li><a class="site-page child" href="/viewpoint/"><i class="fa-fw fas fa-calculator"></i><span> ViewPoint</span></a></li><li><a class="site-page child" href="/littleGame/"><i class="fa-fw fas fa-thumbs-up"></i><span> littleGame</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div><div class="menus_item"><a class="site-page" href="javascript:randomPost();"><span> Random</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div><div id="randomPost"><a class="site-page social-icon search" href="javascript:;" onclick="randomPost()" title="随机访问一篇文章"><i class="fas fa-circle-notch fa-fw"></i></a></div></nav><div id="post-info"><h1 class="post-title">详解JavaSE之并发编程 part6—JUC锁机制的底层原理AQS<a class="post-edit-link" href="https://github.com/ergou10086/ergou10086.github.io/edit/main/source/_posts/_posts/详解JavaSE之并发编程part6—JUC锁机制的底层原理AQS.md" title="编辑" target="_blank"><i class="fas fa-pencil-alt"></i></a></h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-02-11T09:27:01.000Z" title="发表于 2026-02-11 17:27:01">2026-02-11</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-02-11T09:27:46.921Z" title="更新于 2026-02-11 17:27:46">2026-02-11</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Java%E5%AD%A6%E4%B9%A0/">Java学习</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Java%E5%AD%A6%E4%B9%A0/JavaSE/">JavaSE</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Java%E5%AD%A6%E4%B9%A0/JavaSE/%E5%A4%9A%E7%BA%BF%E7%A8%8B%E5%B9%B6%E5%8F%91/">多线程并发</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">11.3k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>39分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span><span class="post-meta-separator">|</span><span class="post-meta-commentcount"><i class="far fa-comments fa-fw post-meta-icon"></i><span class="post-meta-label">评论数:</span><a href="/posts/28919.html#post-comment"><span class="gitalk-comment-count"><i class="fa-solid fa-spinner fa-spin"></i></span></a></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="了解-aqs">了解 AQS</h2>
+<h3 id="什么是-aqs">什么是 AQS</h3>
+<p>我倒是觉得我应该把这个放在前面</p>
+<p>AQS 的全称为 <code>AbstractQueuedSynchronizer</code>
+，翻译过来的意思就是抽象队列同步器。这个类在
+<code>java.util.concurrent.locks</code> 包下面。</p>
+<figure>
+<img src="/posts/28919/image-20260211105950840.png" alt="image-20260211105950840">
+<figcaption aria-hidden="true">image-20260211105950840</figcaption>
+</figure>
+<p>AQS
+就是一个抽象类，主要用来构建锁和同步器。为他们提供一个底层的、通用的同步机制，它帮你处理了复杂的线程排队、阻塞、唤醒等底层细节，你只需要按需实现一些关键的方法，就能定制出自己的同步工具。</p>
+<figure>
+<img src="/posts/28919/image-20260211110027359.png" alt="image-20260211110027359">
+<figcaption aria-hidden="true">image-20260211110027359</figcaption>
+</figure>
+<p>AQS 是 JUC
+锁的“大脑”，它管理着线程的排队、阻塞和唤醒。它的核心思想我先放到这里</p>
+<blockquote>
+<p>如果被请求的共享资源空闲，则将当前请求资源的线程设置为有效的工作线程，并且将共享资源设置为锁定状态。</p>
+<p>如果被请求的共享资源被占用，那么就需要一套线程阻塞等待以及被唤醒时锁分配的机制，这个机制
+AQS 是用 <strong>CLH 队列锁</strong>
+实现的，即将暂时获取不到锁的线程加入到队列中。</p>
+</blockquote>
+<p>AQS 为构建锁和同步器提供了一些通用功能的实现。因此，使用 AQS
+能简单且高效地构造出应用广泛的大量的锁，比如我们前面提到的
+<code>ReentrantLock</code>，<code>Semaphore</code>这种，其他的诸如
+<code>ReentrantReadWriteLock</code>读写分离锁，<code>SynchronousQueue</code>等等皆是基于
+AQS 的</p>
+<p>在真正讲解 AQS 源码之前，需要对 AQS
+有一个整体层面的认识。也就是从整体层面上认识 AQS，了解 AQS 在整个 Java
+并发中所位于的层面</p>
+<h3 id="aqs的作用是什么">AQS的作用是什么</h3>
+<p>正如上述所说，AQS 解决了开发者在实现同步器时的复杂性问题。</p>
+<p>它提供了一个通用框架，用于实现各种同步器，它通过对底层的线程同步机制管理的各种方法的封装，为
+Java 中的同步器提供了一个底层的、通用的同步机制，AQS
+将复杂的线程管理逻辑隐藏起来，使开发者只需专注于具体的同步逻辑。</p>
+<p>简单来说，AQS 是一个抽象类，为同步器提供了通用的
+<strong>执行框架</strong>。它定义了
+<strong>资源获取和释放的通用流程</strong>，而具体的资源获取和释放的详细逻辑则由具体同步器通过重写模板方法来实现。
+因此，可以将 AQS 看作是同步器的
+<strong>基础“底座”</strong>，而同步器则是基于 AQS 实现的
+<strong>具体“应用”</strong>。</p>
+<h3 id="什么是-clh-锁队列">什么是 CLH 锁队列</h3>
+<p><strong>CLH = Craig, Landin, and Hagersten</strong></p>
+<p>这三位学者在 1993
+年提出了一种<strong>公平、可扩展的自旋锁算法</strong>，称为 <strong>CLH
+Lock</strong>。</p>
+<p>原始的 CLH 是一种<strong>基于链表的自旋锁</strong>，它是一种基于
+<strong>自旋锁</strong> 的优化实现，用于多处理器系统，保证 FIFO
+公平性，避免线程饥饿。 但注意，<strong>Java AQS 中的“CLH 队列”并不是原始
+CLH 锁，而是其变体（variant）</strong>！</p>
+<p>自旋锁通过线程不断对一个原子变量执行 CAS
+操作来尝试获取锁，直到该方法返回成功时即为成功获取锁。在高并发场景下，多个线程会同时竞争同一个原子变量，容易造成某个线程的
+<code>CAS</code> 操作长时间失败导致饥饿，而且很明显的性能不好。</p>
+<blockquote>
+<p>关于性能不好，这是因为自旋锁锁状态中心化，在竞争激烈的情况下，锁状态变更会导致多个
+CPU 的高速缓存的频繁同步，从而拖慢 CPU 效率</p>
+<p><strong>因此自旋锁适用于锁竞争不激烈、锁持有时间短的场景。</strong></p>
+</blockquote>
+<p>那么 CLH
+锁是对自旋锁的一个改进，它把这些线程组织成了一个队列（单链表实现），在多线程场景下，会将请求获取锁的线程通过单链表组织成一个单向队列，每个等待的线程会通过自旋访问前一个线程节点的状态，前一个节点释放锁之后，当前节点才可以获取锁，它是这样对上面描述自旋锁进行了改进的：</p>
+<ul>
+<li>每个线程会作为一个节点加入到队列中，并通过自旋监控前一个线程节点的状态，而不是直接竞争共享变量。</li>
+<li>线程按顺序排队，确保公平性，先请求的线程先获得锁，从而避免了 “饥饿”
+问题。</li>
+</ul>
+<p><strong>CLH 锁</strong> 的队列结构如下图所示。</p>
+<figure>
+<img src="/posts/28919/clh-lock-queue-structure.png" alt="CLH 锁的队列结构">
+<figcaption aria-hidden="true">CLH 锁的队列结构</figcaption>
+</figure>
+<p>CLH
+锁数据结构很简单，类似一个链表队列，所有请求获取锁的线程会排列在链表队列中，自旋访问队列中前一个节点的状态。当一个节点释放锁时，只有它的后一个节点才可以得到锁。CLH
+锁本身有一个队尾指针 Tail，它是一个原子变量，指向队列最末端的 CLH
+节点。每一个 CLH
+节点有两个属性：所代表的线程和标识是否持有锁的状态变量。当一个线程要获取锁时，它会对
+Tail 进行一个 getAndSet 的原子操作。该操作会返回 Tail
+当前指向的节点，也就是当前队尾节点，然后使 Tail 指向这个线程对应的 CLH
+节点，成为新的队尾节点。入队成功后，该线程会轮询上一个队尾节点的状态变量，当上一个节点释放锁后，它将得到这个锁。</p>
+<p>很明显，CLH 队列的提出了一种公平性的锁实现，严格
+FIFO，先到先得，而我们上篇内容提到的不同锁的公平锁都是直接依赖此队列顺序的</p>
+<h3 id="aqs-为什么使用-clh-锁队列的变体">AQS 为什么使用 CLH
+锁队列的变体？</h3>
+<p>普通的 CLH
+它也有两个缺点：第一是因为有自旋操作，当锁持有时间长时会带来较大的 CPU
+开销。第二是基本的 CLH 锁功能单一，不改造不能支持复杂的功能。</p>
+<p>AQS（AbstractQueuedSynchronizer）在 CLH
+锁的基础上进一步优化，形成了其内部的 CLH
+队列变体。但是核心思路没变，还是会暂时获取不到锁的线程将被加入到该队列中</p>
+<p>主要改进点有以下三方面</p>
+<ol type="1">
+<li><p><strong>自旋 + 阻塞</strong>： CLH
+锁使用纯自旋方式等待锁的释放，但大量的自旋操作会占用过多的 CPU 资源。AQS
+引入了 <strong>自旋 + 阻塞</strong> 的混合机制：</p>
+<ul>
+<li>如果线程获取锁失败，会先短暂自旋尝试获取锁；</li>
+<li>如果仍然失败，则线程会进入阻塞状态，等待被唤醒，从而减少 CPU
+的浪费。</li>
+</ul></li>
+<li><p><strong>单向队列改为双向队列</strong>：CLH
+锁使用单向队列，节点只知道前驱节点的状态，而当某个节点释放锁时，需要通过队列唤醒后续节点。AQS
+将队列改为 <strong>双向队列</strong>，新增了 <code>next</code>
+指针，使得节点不仅知道前驱节点，也可以直接唤醒后继节点，从而简化了队列操作，提高了唤醒效率，而且双向结构允许在
+O(1)
+时间内断开被取消的节点，这样，就实现了<strong>显式的维护前驱节点和后继节点</strong></p></li>
+<li><p><strong>扩展每个节点的状态</strong>：AQS
+每个节点的状态如下所示，在源码中如下所示</p>
+<figure>
+<img src="/posts/28919/image-20260211121035478.png" alt="image-20260211121035478">
+<figcaption aria-hidden="true">image-20260211121035478</figcaption>
+</figure>
+<blockquote>
+<p><strong>节点中的状态变量为什么用 volatile 修饰？</strong></p>
+<p>这个状态变量只会被持有该状态变量的线程写入，只会被队列中该线程的后驱节点对应的线程读，而且后者会轮询读取。因此，可见性问题不会影响锁的正确性，那么，还为什么要写
+volatile</p>
+<p>实际上，要实现一个可以在多线程程序中正确执行的锁，别忘了还需要解决重排序问题。</p>
+<p>而自定义互斥锁就需要自己保证这一规则的成立，因此上述代码通过 volatile
+的 Happens-Before（先行发生）规则来解决重排序问题。JMM 的
+Happens-Before（先行发生）规则有一条针对 volatile
+关键字的规则：“volatile 变量的写操作发生在该变量的后续读之前”。</p>
+</blockquote></li>
+<li><p><strong>辅助GC</strong>：JVM
+的垃圾回收机制使开发者无需手动释放对象。但在 AQS
+中需要在释放锁时显式的设置为
+null，避免引用的残留，辅助垃圾回收。</p></li>
+</ol>
+<p>AQS 将每条请求共享资源的线程封装成一个 CLH
+变体队列的一个结点（Node）来实现锁的分配。在 CLH
+变体队列中，一个节点表示一个线程，它保存着线程的引用（thread）、
+当前节点在队列中的状态（waitStatus）、前驱节点（prev）、后继节点（next）</p>
+<figure>
+<img src="/posts/28919/clh-queue-structure-bianti.png" alt="CLH 变体队列结构">
+<figcaption aria-hidden="true">CLH 变体队列结构</figcaption>
+</figure>
+<p>最后对比一下两者，原始的 CLH
+锁是忙等待，它的等待方式是自旋，队列结构是单向链表，逻辑上是队列的形式，而且节点状态仅仅就是前面节点是否持有锁，而
+JDK 针对 AQS 中的 CLH
+队列，它的目的是实现阻塞式同步器，所以说，它的等待方式是阻塞，数据结构也是双向链表，节点状态是一种表示<code>state</code>的<code>int</code>，因此可以表示比较复杂的内容</p>
+<blockquote>
+<p>二编：<strong>AQS 的 CLH 队列 = CLH 思想 + 双向链表 + 阻塞 +
+状态机</strong></p>
+</blockquote>
+<p>具体体现简单看一下，是这样的，AQS 内部维护一个 <strong>FIFO
+双向链表</strong>，用于存放<strong>获取同步状态失败的线程</strong>。</p>
+<figure>
+<img src="/posts/28919/image-20260211113123994.png" alt="image-20260211113123994">
+<figcaption aria-hidden="true">image-20260211113123994</figcaption>
+</figure>
+<blockquote>
+<p>emmm，和我们学习的链表一样，<code>head</code>
+节点是一个哑节点，不关联任何线程，仅作为队列起点。真正等待的线程从
+<code>head.next</code> 开始</p>
+</blockquote>
+<h3 id="为什么-aqs-的性能较好">为什么 AQS 的性能较好？</h3>
+<p>因为 AQS 内部大量使用了 <code>CAS</code> 操作。</p>
+<p>AQS 内部通过 CLH
+队列来存储等待的线程节点。由于队列是共享资源，在多线程场景下，需要保证队列的同步访问。</p>
+<p>AQS 内部通过 <code>CAS</code>
+操作来控制队列的同步访问，<code>CAS</code> 操作主要用于控制
+<code>队列初始化</code> 、 <code>线程节点入队</code>
+这两个操作的并发安全。虽然利用 <code>CAS</code>
+控制并发安全可以保证比较好的性能，但同时会带来比较高的
+<strong>编码复杂度</strong></p>
+<p>在 AQS 中 CAS 是无锁竞争，先自旋再阻塞，避免一上来就挂线程，这是 AQS
+性能碾压传统管程的关键</p>
+<ul>
+<li>对于传统锁，竞争失败就会被阻塞，它设涉及到上下文切换</li>
+<li>对于 AQS 实现的锁机制，它先尝试用 CAS
+抢锁，抢不到就自旋一小段时间继续抢，如果自旋还是抢不到，才进入CLH队列阻塞</li>
+</ul>
+<p>那么，这样的结果是，很多多线程的线程竞争中，一个线程在获取之后根本不会持有共享资源太久，传统情况下大量短时间的竞争完全可以被避免，自旋就节省了大量的短持有时间的竞争中，对于线程需要阻塞的开销</p>
+<blockquote>
+<p>大量<strong>短时间竞争</strong>的场景，线程根本不会进入阻塞，直接在用户态搞定。吞吐量直接起飞。</p>
+</blockquote>
+<p>而对于队列，上面也说了，AQS 没有用真实的阻塞队列，用的是
+CLH，入队只用一次
+CAS，出队正常操作指针，全程无加锁、无扩容、无迭代、不抽象</p>
+<p>而且对于唤醒，AQS
+只会唤醒后继节点，不全部唤醒，在<code>notifyAll()</code>
+会唤醒所有的等待线程，大伙都醒了然后又开始强锁，无数线程抢不到又要滚回去睡觉阻塞，而
+AQS 只唤醒 <strong>队列里的下一个节点</strong>，每次只唤醒一个线程，而且
+AQS
+的阻塞唤醒方法<code>LockSupport.park()</code>/<code>LockSupport.unpark()</code>也轻量级了太多，他们不需要锁块就能调用</p>
+<h3 id="aqs-中为什么-node-节点需要不同的状态">AQS 中为什么 Node
+节点需要不同的状态</h3>
+<p>如果没有 <code>status</code>，AQS 将面临以下问题：</p>
+<ul>
+<li>无法知道后继是否需要被唤醒，那按这样每次释放锁都要遍历整个队列</li>
+<li>无法处理线程中断或者超时，被中断的线程会永远阻塞，死锁了就，而且队列中很容易存在僵尸节点</li>
+<li>共享模式下唤醒型号无法传递，多个许可无法连续分配</li>
+</ul>
+<p><code>waitStatus</code> 的本质是把原来 CLH 的单布尔变量变成一个
+<code>int</code>，使用这个来完整的表达一个入队节点被阻塞的线程的生命周期和状态意图</p>
+<p>所以说，AQS 中的 <code>waitStatus</code> 状态类似于
+<strong>状态机</strong> ，通过不同状态来表明 Node
+节点的不同含义，并且根据不同操作，来控制状态之间的流转。</p>
+<p><code>Node.status</code> 的几种状态如下：</p>
+<figure>
+<img src="/posts/28919/image-20260211115639492.png" alt="image-20260211115639492">
+<figcaption aria-hidden="true">image-20260211115639492</figcaption>
+</figure>
+<ul>
+<li><code>WAITING</code>：值为 1，标记线程需要被唤醒（park
+状态），也就是节点等待被唤醒的状态，需要前驱节点释放锁后调用方法唤醒后面的</li>
+<li><code>CANCELLED</code>：值为
+<code>Integer.MIN_VALUE</code>，值为负数，标记节点被取消，大部分情况是给中断和超时用的，所以说，源码中是通过
+<code>status &lt; 0</code>
+快速判断节点是否被取消的。它的含义是取消获取锁，这种状态的节点是异常的，无法被唤醒，也无法唤醒后继节点</li>
+<li><code>COND</code>：值为2，标记节点处于 Condition 条件队列中，而非
+AQS 主等待队列，也就是说，线程正在等待 Condition 的
+<code>signal()</code>/<code>signalAll()</code> 唤醒。</li>
+</ul>
+<blockquote>
+<p>注意：早期 JDK 版本的 AQS Node 还有 <code>SIGNAL</code>（对应这里的
+<code>WAITING</code>）、<code>PROPAGATE</code> 等状态，我这里是
+JDK21</p>
+</blockquote>
+<blockquote>
+<p>Node 的状态不是单一值，而是<strong>位掩码（bitmask）</strong>
+设计，多个状态可以通过按位与 / 或组合，所以才能用一个 <code>int</code>
+字段同时表示多种状态</p>
+</blockquote>
+<h2 id="aqs-核心思想">AQS 核心思想</h2>
+<blockquote>
+<p>如果被请求的共享资源空闲，则将当前请求资源的线程设置为有效的工作线程，并且将共享资源设置为锁定状态。</p>
+<p>如果被请求的共享资源被占用，那么就需要一套线程阻塞等待以及被唤醒时锁分配的机制，这个机制
+AQS 是用 <strong>CLH 队列锁</strong>
+进一步优化实现的，即将暂时获取不到锁的线程加入到队列中。</p>
+</blockquote>
+<p>这就是 AQS 的核心思想，我觉得应该多看几次 CLH 锁那部分，所以涉及到
+CLH 的我就不说了，因为本来这部分 CLH 的移到上面去了</p>
+<p>AQS(<code>AbstractQueuedSynchronizer</code>)的核心原理图如下</p>
+<figure>
+<img src="/posts/28919/clh-queue-state.png" alt="CLH 变体队列">
+<figcaption aria-hidden="true">CLH 变体队列</figcaption>
+</figure>
+<p>AQS 使用 <strong>int 成员变量 <code>state</code>
+表示同步状态</strong>，通过内置的 <strong>FIFO
+线程等待/等待队列</strong> 来完成获取资源线程的排队工作。</p>
+<p>其中，<code>int</code>的<code>state</code>表示如下，它和<code>status</code>完全完全是两个东西，千万不要混淆</p>
+<ul>
+<li><code>state</code>
+是表示同步状态的，比如锁是否被持有啊、重入次数啊等，属于
+<code>AbstractQueuedSynchronizer</code> 类本身</li>
+<li><code>status</code>是表示CLH队列中入队线程节点的状态，属于
+<code>AbstractQueuedSynchronizer.Node</code> 内部类</li>
+</ul>
+<figure>
+<img src="/posts/28919/image-20260211121616949-1770783377545-7.png" alt="image-20260211121616949">
+<figcaption aria-hidden="true">image-20260211121616949</figcaption>
+</figure>
+<ul>
+<li><code>state</code> 变量由 <code>volatile</code>
+修饰，用于展示当前临界资源的获取情况。</li>
+</ul>
+<p>另外，状态信息 <code>state</code> 可以通过 <code>protected</code>
+类型的<code>getState()</code>、<code>setState()</code>和<code>compareAndSetState()</code>
+进行操作<code>state</code>。并且，这几个方法都是 <code>final</code>
+修饰的，在子类中无法被重写，保证底层操作的一致性，我相信大伙读名就知道这些是干什么的</p>
+<figure>
+<img src="/posts/28919/image-20260211121814022.png" alt="image-20260211121814022">
+<figcaption aria-hidden="true">image-20260211121814022</figcaption>
+</figure>
+<p><code>state</code>是 AQS 最核心的成员变量，它的设计直接决定了 AQS
+能实现独占锁、共享锁、计数类同步器（分别如ReentrantLock、Semaphore、CountDownLatch）。</p>
+<p>那么，AQS 把所有同步逻辑的核心，都抽象成对 <code>state</code>
+的操作，不同的同步器，本质上就是对 <code>state</code> 的语义定义不同</p>
+<p>子类如何利用 <code>state</code>？很简单，自定义
+<code>tryAcquire</code>/<code>tryRelease</code></p>
+<figure>
+<img src="/posts/28919/image-20260211123141811.png" alt="image-20260211123141811">
+<figcaption aria-hidden="true">image-20260211123141811</figcaption>
+</figure>
+<p>如果在你这
+<code>state</code>是要表示共享锁的，那么就需要变成这样的重写方法</p>
+<figure>
+<img src="/posts/28919/image-20260211123213607.png" alt="image-20260211123213607">
+<figcaption aria-hidden="true">image-20260211123213607</figcaption>
+</figure>
+<p>以可重入的互斥锁 <code>ReentrantLock</code> 为例，它的内部维护了一个
+<code>state</code> 变量，用来表示锁的占用状态。<code>state</code>
+的初始值为 0，表示锁处于未锁定状态。当线程 A 调用 <code>lock()</code>
+方法时，会尝试通过 <code>tryAcquire()</code> 方法独占该锁，并让
+<code>state</code> 的值加 1。如果成功了，那么线程 A
+就获取到了锁。如果失败了，那么线程 A 就会被加入到一个等待队列（CLH
+变体队列）中，直到其他线程释放该锁。假设线程 A
+获取锁成功了，释放锁之前，A
+线程自己是可以重复获取此锁的（<code>state</code> 会累加）。</p>
+<figure>
+<img src="/posts/28919/aqs-exclusive-mode-acquire-lock.png" alt="AQS 独占模式获取锁">
+<figcaption aria-hidden="true">AQS 独占模式获取锁</figcaption>
+</figure>
+<p>前面也说了，这就是<code>ReentrantLock</code>可重入性的体现：一个线程可以多次获取同一个锁而不会被阻塞。但是，这也意味着，一个线程必须释放与获取的次数相同的锁，才能让
+<code>state</code> 的值回到
+0，也就是让锁恢复到未锁定状态。只有这样，其他等待的线程才能有机会获取该锁。</p>
+<p>可见，一个锁，它的状态，它的定性，它的实现，都严格依赖<code>state</code>，因为<code>state</code>本质上就是对线程同步状态或者整个同步器的标志变量，而锁的根本就是管理线程的同步状态</p>
+<p>再以倒计时器 <code>CountDownLatch</code> 以例，任务分为 N
+个子线程去执行，<code>state</code> 也初始化为 N（注意 N
+要与线程个数一致）。这 N
+个子线程开始执行任务，每执行完一个子线程，就调用一次
+<code>countDown()</code> 方法。该方法会尝试使用 CAS 操作，让
+<code>state</code> 的值减少 1。当所有的子线程都执行完毕后（即
+<code>state</code> 的值变为 0），<code>CountDownLatch</code> 会调用
+<code>unpark()</code> 方法，唤醒主线程。这时，主线程就可以从
+<code>await()</code> 方法（<code>CountDownLatch</code>
+中的<code>await()</code> 方法而非 AQS
+中的）返回，继续执行后续的操作，信号量<code>Semaphone</code>跟这个差不多</p>
+<h2 id="aqs-资源获取方式分析">AQS 资源获取方式分析</h2>
+<p>AQS 定义两种资源共享方式</p>
+<ul>
+<li><code>Exclusive</code>：也就是独占锁，只有一个线程能执行</li>
+<li><code>Share</code>：也就是共享锁，多个线程可同时执行</li>
+</ul>
+<p>一般来说，自定义同步器的共享方式要么是独占，要么是共享，他们也只需实现<code>tryAcquire-tryRelease</code>、<code>tryAcquireShared-tryReleaseShared</code>中的一种即可。但
+AQS
+也支持自定义同步器同时实现独占和共享两种方式，如<code>ReentrantReadWriteLock</code>，他不就是读共享，写独占</p>
+<h3 id="独占模式">独占模式</h3>
+<p>AQS 中对应的 <code>tryAcquire()</code>
+模板方法如下，不提供默认实现</p>
+<figure>
+<img src="/posts/28919/image-20260211125825240.png" alt="image-20260211125825240">
+<figcaption aria-hidden="true">image-20260211125825240</figcaption>
+</figure>
+<p>分析一下调用链路，对于很多锁实现<code>tryAcquire()</code>
+，它们都在其中包裹了最核心的调用入口，是AQS 的
+<code>acquire(int arg)</code>
+方法，它是独占模式获取锁的核心入口，所以说，我们之前分析的锁，例如
+<code>ReentrantLock</code> ，他的加锁方法都是委托
+Sync，在尝试获取独占锁的时候，直接一个<code>return sync.tryAcquire(1);</code>，然后线程在调用
+<code>tryAcquire(arg)</code> 尝试获取锁</p>
+<p>在 <code>acquire()</code>
+中，线程会先尝试获取共享资源；如果获取失败，会将线程封装为 Node
+节点加入到 AQS
+的等待队列中，加入队列之后，会让等待队列中的线程尝试获取资源，并且会对线程进行阻塞操作。</p>
+<figure>
+<img src="/posts/28919/image-20260211130504334.png" alt="image-20260211130504334">
+<figcaption aria-hidden="true">image-20260211130504334</figcaption>
+</figure>
+<p>若返回 <code>false</code>（获取失败），则进入
+<code>acquire(...)</code> 方法执行入队和阻塞逻辑。</p>
+<p>以前有个
+<code>addWaiter()</code>是当获取锁失败了，自旋也失败了的情况下，需要将线程封装为
+Node 加入等待队列这个过程，这个方法在我这版 JDK21 没了，而是内联在核心的
+<code>acquire(Node node, int arg, ...)</code> 方法中</p>
+<p>在 <code>acquire(...)</code> 方法的无限循环中，当
+<code>tryAcquire()</code> 失败后，会执行以下步骤封装 Node 并加入 CLH
+队列：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">final</span> <span class="type">int</span> <span class="title function_">acquire</span><span class="params">(Node node, <span class="type">int</span> arg, <span class="type">boolean</span> shared,</span></span><br><span class="line"><span class="params">                  <span class="type">boolean</span> interruptible, <span class="type">boolean</span> timed, <span class="type">long</span> time)</span> &#123;</span><br><span class="line">    <span class="type">Thread</span> <span class="variable">current</span> <span class="operator">=</span> Thread.currentThread();</span><br><span class="line">    <span class="comment">// 省略其他变量定义...</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (;;) &#123;</span><br><span class="line">        <span class="comment">// 第一步：尝试获取锁失败后，进入入队逻辑</span></span><br><span class="line">        <span class="keyword">if</span> ((t = tail) == <span class="literal">null</span>) &#123;     <span class="comment">// 队列未初始化，先初始化头节点</span></span><br><span class="line">            <span class="keyword">if</span> (tryInitializeHead() == <span class="literal">null</span>)</span><br><span class="line">                <span class="keyword">return</span> acquireOnOOME(shared, arg);</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (node == <span class="literal">null</span>) &#123;     <span class="comment">// 第二步：创建 Node 节点封装当前线程</span></span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="comment">// 根据模式创建 ExclusiveNode（独占）或 SharedNode（共享）</span></span><br><span class="line">                node = (shared) ? <span class="keyword">new</span> <span class="title class_">SharedNode</span>() : <span class="keyword">new</span> <span class="title class_">ExclusiveNode</span>();</span><br><span class="line">            &#125; <span class="keyword">catch</span> (OutOfMemoryError oome) &#123;</span><br><span class="line">                <span class="keyword">return</span> acquireOnOOME(shared, arg);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (pred == <span class="literal">null</span>) &#123;      <span class="comment">// 第三步：将 Node 加入队列尾部</span></span><br><span class="line">            node.waiter = current;      <span class="comment">// 绑定当前线程到 Node</span></span><br><span class="line">            node.setPrevRelaxed(t);     <span class="comment">// 设置 Node 的 prev 指向原尾节点</span></span><br><span class="line">            <span class="comment">// CAS 更新 tail 为新 Node（核心入队操作）</span></span><br><span class="line">            <span class="keyword">if</span> (!casTail(t, node))</span><br><span class="line">                node.setPrevRelaxed(<span class="literal">null</span>);  <span class="comment">// CAS 失败则回滚</span></span><br><span class="line">            <span class="keyword">else</span></span><br><span class="line">                t.next = node;              <span class="comment">// 原尾节点的 next 指向新 Node</span></span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 省略阻塞逻辑...</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>通过
+<code>new ExclusiveNode()</code>/<code>new SharedNode()</code>
+创建节点，并用 <code>node.waiter = current</code> 绑定当前线程；若
+<code>tail == null</code>，调用 <code>tryInitializeHead()</code>
+创建空的头节点，然后通过 <code>casTail(t, node)</code>
+原子性地将新节点设为尾节点，保证多线程下入队的线程安全；再设置新节点的
+<code>prev</code> 指向原尾节点，原尾节点的 <code>next</code>
+指向新节点，形成 CLH 双向链表</p></li>
+<li><p>初始化的队列后如图</p>
+<figure>
+<img src="/posts/28919/clh-queue-structure-init.png" alt="img">
+<figcaption aria-hidden="true">img</figcaption>
+</figure></li>
+</ul>
+<p>而且传统 <code>acquireQueued()</code> 的阻塞线程的逻辑（阻塞线程 +
+唤醒后重试 <code>tryAcquire()</code>）同样内联在
+<code>acquire(...)</code> 方法中，核心逻辑如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">final</span> <span class="type">int</span> <span class="title function_">acquire</span><span class="params">(Node node, <span class="type">int</span> arg, <span class="type">boolean</span> shared,</span></span><br><span class="line"><span class="params">                  <span class="type">boolean</span> interruptible, <span class="type">boolean</span> timed, <span class="type">long</span> time)</span> &#123;</span><br><span class="line">    <span class="comment">// 省略前面的入队逻辑...</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (;;) &#123;</span><br><span class="line">        <span class="comment">// 省略入队逻辑...</span></span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (node.status == <span class="number">0</span>) &#123;</span><br><span class="line">            node.status = WAITING;          <span class="comment">// 标记节点为等待状态</span></span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="type">long</span> nanos;</span><br><span class="line">            spins = postSpins = (<span class="type">byte</span>)((postSpins &lt;&lt; <span class="number">1</span>) | <span class="number">1</span>);</span><br><span class="line">            <span class="keyword">if</span> (!timed)</span><br><span class="line">                LockSupport.park(<span class="built_in">this</span>);     <span class="comment">// 核心：阻塞当前线程</span></span><br><span class="line">            <span class="keyword">else</span> <span class="keyword">if</span> ((nanos = time - System.nanoTime()) &gt; <span class="number">0L</span>)</span><br><span class="line">                LockSupport.parkNanos(<span class="built_in">this</span>, nanos); <span class="comment">// 定时阻塞</span></span><br><span class="line">            <span class="keyword">else</span></span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            node.clearStatus();             <span class="comment">// 唤醒后清除等待状态</span></span><br><span class="line">            <span class="keyword">if</span> ((interrupted |= Thread.interrupted()) &amp;&amp; interruptible)</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 唤醒后重试获取锁（循环体再次执行 tryAcquire 逻辑）</span></span><br><span class="line">        <span class="keyword">if</span> (first || pred == <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="type">boolean</span> acquired;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="keyword">if</span> (shared)</span><br><span class="line">                    acquired = (tryAcquireShared(arg) &gt;= <span class="number">0</span>);</span><br><span class="line">                <span class="keyword">else</span></span><br><span class="line">                    acquired = tryAcquire(arg); <span class="comment">// 重试获取锁</span></span><br><span class="line">            &#125; <span class="keyword">catch</span> (Throwable ex) &#123;</span><br><span class="line">                cancelAcquire(node, interrupted, <span class="literal">false</span>);</span><br><span class="line">                <span class="keyword">throw</span> ex;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (acquired) &#123;</span><br><span class="line">                <span class="comment">// 获取成功，更新头节点，返回成功状态</span></span><br><span class="line">                <span class="comment">// 省略后续清理逻辑...</span></span><br><span class="line">                <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 省略取消获取逻辑...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>通过 <code>LockSupport.park(this)</code> 阻塞当前线程（底层调用
+Unsafe 的 <code>park</code> 方法，挂起线程），然后阻塞前将
+<code>node.status</code> 设为
+<code>WAITING</code>，标记线程处于等待状态，线程被唤醒后（其他线程释放锁时调用
+<code>signalNext()</code> 执行
+<code>LockSupport.unpark()</code>），会再次进入循环，调用
+<code>tryAcquire()</code> 重试获取锁；若线程被中断，根据
+<code>interruptible</code> 参数决定是否退出循环。</li>
+</ul>
+<p>最后，它还有个取消获取的逻辑<code>cancelAcquire</code>，当线程被中断（<code>interruptible=true</code>）或超时（<code>timed=true</code>）时，执行
+<code>cancelAcquire</code></p>
+<figure>
+<img src="/posts/28919/image-20260211142509373.png" alt="image-20260211142509373">
+<figcaption aria-hidden="true">image-20260211142509373</figcaption>
+</figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="type">int</span> <span class="title function_">cancelAcquire</span><span class="params">(Node node, <span class="type">boolean</span> interrupted,</span></span><br><span class="line"><span class="params">                              <span class="type">boolean</span> interruptible)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (node != <span class="literal">null</span>) &#123;</span><br><span class="line">            node.waiter = <span class="literal">null</span>;</span><br><span class="line">            node.status = CANCELLED;    <span class="comment">// 将节点状态设为 CANCELLED</span></span><br><span class="line">            <span class="keyword">if</span> (node.prev != <span class="literal">null</span>)</span><br><span class="line">                cleanQueue();    <span class="comment">// 清理队列中取消的节点</span></span><br><span class="line">        &#125;</span><br><span class="line">       <span class="comment">// 若线程被中断，根据 interruptible 决定是返回 CANCELLED 还是恢复中断状态</span></span><br><span class="line">        <span class="keyword">if</span> (interrupted) &#123;</span><br><span class="line">            <span class="keyword">if</span> (interruptible)</span><br><span class="line">                <span class="comment">// 也就是说，返回复数是中断</span></span><br><span class="line">                <span class="keyword">return</span> CANCELLED;</span><br><span class="line">            <span class="keyword">else</span></span><br><span class="line">                Thread.currentThread().interrupt();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 返回0是超时</span></span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>对于这个<code>cleanQueue()</code>方法，也没什么太多好说的，双向链表的断开删节点，懂得都懂</p>
+<figure>
+<img src="/posts/28919/image-20260211142828002.png" alt="image-20260211142828002">
+<figcaption aria-hidden="true">image-20260211142828002</figcaption>
+</figure>
+<h3 id="共享模式">共享模式</h3>
+<p>差别不大，只不过是通过
+<code>tryAcquireShared</code>，然后同样的模板方法，然后子类实现也是内部调用<code>acquire(int arg)</code>，整体流程一致，只不过走的是判断为共享锁那边的情况，使用共享锁的逻辑，多了一点点无可厚非的处理</p>
+<p>AQS 中以共享模式获取资源的入口方法是 <code>acquireShared()</code>
+，如下</p>
+<figure>
+<img src="/posts/28919/image-20260211135042509.png" alt="image-20260211135042509">
+<figcaption aria-hidden="true">image-20260211135042509</figcaption>
+</figure>
+<p>在 <code>acquireShared()</code>
+方法中，会先尝试获取共享锁，如果获取失败，则将当前线程加入到队列中阻塞，等待唤醒后尝试获取共享锁，分别对应上面
+<code>acquireShared()</code>
+中的两个方法：<code>tryAcquireShared()</code> 和
+<code>acquire(....)</code></p>
+<p>其中 <code>tryAcquireShared()</code> 方法是 AQS
+提供的模板方法，由同步器来实现具体逻辑。因此这里以
+<code>Semaphore</code> 为例，来分析共享模式下，如何获取资源</p>
+<figure>
+<img src="/posts/28919/image-20260211135145285.png" alt="image-20260211135145285">
+<figcaption aria-hidden="true">image-20260211135145285</figcaption>
+</figure>
+<p><code>Semaphore</code>
+中实现了公平锁和非公平锁，接下来以非公平锁为例来分析
+<code>tryAcquireShared()</code></p>
+<p><code>Semaphore</code> 中重写的 <code>tryAcquireShared()</code>
+方法会调用下边的 <code>nonfairTryAcquireShared()</code> 方法</p>
+<figure>
+<img src="/posts/28919/image-20260211135544102.png" alt="image-20260211135544102">
+<figcaption aria-hidden="true">image-20260211135544102</figcaption>
+</figure>
+<figure>
+<img src="/posts/28919/image-20260211135601434.png" alt="image-20260211135601434">
+<figcaption aria-hidden="true">image-20260211135601434</figcaption>
+</figure>
+<ul>
+<li>默认情况下，Semaphone 采用非公平模式获取资源</li>
+</ul>
+<p>在共享模式下，AQS 中的 <code>state</code> 值表示共享资源的数量。</p>
+<p>在 <code>nonfairTryAcquireShared()</code>
+方法中，会在死循环中不断尝试获取资源</p>
+<figure>
+<img src="/posts/28919/image-20260211135648762.png" alt="image-20260211135648762">
+<figcaption aria-hidden="true">image-20260211135648762</figcaption>
+</figure>
+<p>如果 「剩余资源数不足」 或者 「当前线程成功获取资源」
+，就退出死循环。如果正常获取，方法返回 <strong>剩余的资源数量</strong>
+，根据返回值的不同，分为 3 种情况：</p>
+<ul>
+<li><strong>剩余资源数量 &gt; 0</strong>
+：表示成功获取资源，并且后续的线程也可以成功获取资源。</li>
+<li><strong>剩余资源数量 = 0</strong>
+：表示成功获取资源，但是后续的线程无法成功获取资源。</li>
+<li><strong>剩余资源数量 &lt; 0</strong> ：表示获取资源失败</li>
+</ul>
+<p>对于<code>acquire(....)</code> ，在获取失败的情况下，将当前线程加入到
+CLH
+队列阻塞，等待唤醒后尝试获取共享锁，他的实现和上述独占模式并无太大差异，只不过是针对共享模式的一些判断罢了</p>
+<blockquote>
+<p>所以，我们能说，这个 <code>acquire</code> 方法是 AQS
+「获取资源」的统一底层实现，同时支持共享模式和独占模式，可中断（<code>interruptible=true</code>）和不可中断获取，定时（<code>timed=true</code>）和非定时获取，处理队列初始化、节点入队、线程阻塞
+/ 唤醒、取消获取等全流程，对 OOM 等异常场景的鲁棒性设计</p>
+</blockquote>
+<p>对于<code>acquire(...)</code> 是 AQS
+内部核心方法（你之前看过的源码），这里第三个参数
+<code>shared=true</code> 标识共享模式，会将线程封装为
+<code>SharedNode</code> 入队并阻塞。</p>
+<p>完整的放一下这个方法吧，上面说的好像不怎么清楚</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">final</span> <span class="type">int</span> <span class="title function_">acquire</span><span class="params">(Node node, <span class="type">int</span> arg, <span class="type">boolean</span> shared,</span></span><br><span class="line"><span class="params">                      <span class="type">boolean</span> interruptible, <span class="type">boolean</span> timed, <span class="type">long</span> time)</span> &#123;</span><br><span class="line">        <span class="type">Thread</span> <span class="variable">current</span> <span class="operator">=</span> Thread.currentThread();   <span class="comment">// 当前线程</span></span><br><span class="line">        <span class="type">byte</span> <span class="variable">spins</span> <span class="operator">=</span> <span class="number">0</span>, postSpins = <span class="number">0</span>;     <span class="comment">// 自旋次数</span></span><br><span class="line">        <span class="comment">// 线程是否被中断、当前节点是否是队列第一个等待节点</span></span><br><span class="line">        <span class="type">boolean</span> <span class="variable">interrupted</span> <span class="operator">=</span> <span class="literal">false</span>, first = <span class="literal">false</span>;</span><br><span class="line">        <span class="type">Node</span> <span class="variable">pred</span> <span class="operator">=</span> <span class="literal">null</span>;   <span class="comment">// 当前节点的前驱节点</span></span><br><span class="line">       <span class="comment">// 整个方法的核心是一个无限 for 循环，循环内按 检查节点位置 → 尝试获取资源 → 队列初始化 / 节点创建 → 节点入队 → 自旋 / 阻塞的 逻辑执行</span></span><br><span class="line">        <span class="keyword">for</span> (;;) &#123;</span><br><span class="line">            <span class="comment">// 检查节点位置 → 尝试获取资源 → 队列初始化 / 节点创建 → 节点入队 → 自旋 或阻塞的</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>然后，它会判断当前节点是否是队列中第一个等待节点</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (!first &amp;&amp; (pred = (node == <span class="literal">null</span>) ? <span class="literal">null</span> : node.prev) != <span class="literal">null</span> &amp;&amp;</span><br><span class="line">    !(first = (head == pred))) &#123;</span><br><span class="line">    <span class="keyword">if</span> (pred.status &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        cleanQueue();           <span class="comment">// 前驱节点已取消，清理队列</span></span><br><span class="line">        <span class="keyword">continue</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (pred.prev == <span class="literal">null</span>) &#123;</span><br><span class="line">        Thread.onSpinWait();    <span class="comment">// 前驱是头节点，自旋等待序列化</span></span><br><span class="line">        <span class="keyword">continue</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>接着，它会尝试获取资源</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (first || pred == <span class="literal">null</span>) &#123;</span><br><span class="line">    <span class="type">boolean</span> acquired;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (shared)</span><br><span class="line">            acquired = (tryAcquireShared(arg) &gt;= <span class="number">0</span>); <span class="comment">// 共享模式</span></span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">            acquired = tryAcquire(arg);              <span class="comment">// 独占模式</span></span><br><span class="line">    &#125; <span class="keyword">catch</span> (Throwable ex) &#123;</span><br><span class="line">        cancelAcquire(node, interrupted, <span class="literal">false</span>);</span><br><span class="line">        <span class="keyword">throw</span> ex;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (acquired) &#123; <span class="comment">// 获取资源成功</span></span><br><span class="line">        <span class="keyword">if</span> (first) &#123; <span class="comment">// 当前节点是第一个等待节点</span></span><br><span class="line">            <span class="comment">// 1. 更新队列头节点（将当前节点设为新的head）</span></span><br><span class="line">            node.prev = <span class="literal">null</span>;</span><br><span class="line">            head = node;</span><br><span class="line">            pred.next = <span class="literal">null</span>; <span class="comment">// 断开旧前驱的引用，便于GC</span></span><br><span class="line">            node.waiter = <span class="literal">null</span>; <span class="comment">// 清空节点关联的线程</span></span><br><span class="line">            <span class="comment">// 2. 共享模式</span></span><br><span class="line">            <span class="keyword">if</span> (shared)</span><br><span class="line">                <span class="comment">// 链式唤醒后续的共享节点</span></span><br><span class="line">                signalNextIfShared(node);</span><br><span class="line">            <span class="comment">// 3. 若线程被中断过，恢复中断状态</span></span><br><span class="line">            <span class="keyword">if</span> (interrupted)</span><br><span class="line">                current.interrupt();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">1</span>; <span class="comment">// 返回1表示获取成功</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>当线程被唤醒并成功获取资源后，会调用
+<code>signalNextIfShared(node)</code>
+唤醒后续的共享节点，实现链式唤醒，保证多个线程能同时获取资源，比如
+Semaphore 释放多个许可时，多个等待线程能依次被唤醒。</li>
+</ul>
+<blockquote>
+<p>二遍：这里举个例子</p>
+<p>当线程 A 释放资源（<code>releaseShared</code>），会调用
+<code>signalNext(head)</code> 唤醒头节点的后继节点（线程 B）；</p>
+<p>线程 B 被唤醒后，执行 <code>tryAcquireShared</code>
+获取资源成功；</p>
+<p>线程 B 会调用 <code>signalNextIfShared(node)</code>
+唤醒自己的后继节点（线程 C）；</p>
+<p>线程 C 重复步骤 2-3，直到没有可获取资源的线程。</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">signalNextIfShared</span><span class="params">(Node h)</span> &#123;</span><br><span class="line">        Node s;</span><br><span class="line">    	<span class="comment">// 如果它及它的后继为SharedNode且status != 0</span></span><br><span class="line">        <span class="keyword">if</span> (h != <span class="literal">null</span> &amp;&amp; (s = h.next) != <span class="literal">null</span> &amp;&amp;</span><br><span class="line">            (s <span class="keyword">instanceof</span> SharedNode) &amp;&amp; s.status != <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="comment">// 改状态</span></span><br><span class="line">            s.getAndUnsetStatus(WAITING);</span><br><span class="line">            <span class="comment">// 唤醒</span></span><br><span class="line">            LockSupport.unpark(s.waiter);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>独占模式只会唤醒一个节点，而共享模式会链式唤醒所有可获取资源的节点。</li>
+</ul>
+<p>然后是一个队列初始化，接着就是区分共享和独占的核心内容了，创建节点</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">else</span> <span class="keyword">if</span> (node == <span class="literal">null</span>) &#123;          <span class="comment">// 节点还未创建</span></span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="comment">// 共享模式创建SharedNode，独占模式创建ExclusiveNode</span></span><br><span class="line">        node = (shared) ? <span class="keyword">new</span> <span class="title class_">SharedNode</span>() : <span class="keyword">new</span> <span class="title class_">ExclusiveNode</span>();</span><br><span class="line">    &#125; <span class="keyword">catch</span> (OutOfMemoryError oome) &#123;</span><br><span class="line">        <span class="keyword">return</span> acquireOnOOME(shared, arg); <span class="comment">// OOM自旋等待</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>继续是 CAS 保证节点原子性入队，其实就是双向链表的尾插</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">else</span> <span class="keyword">if</span> (pred == <span class="literal">null</span>) &#123;          <span class="comment">// 节点已创建但未入队</span></span><br><span class="line">    node.waiter = current; <span class="comment">// 绑定当前线程到节点</span></span><br><span class="line">    node.setPrevRelaxed(t); <span class="comment">// 设置前驱为tail（无需内存屏障，轻量级）</span></span><br><span class="line">    <span class="keyword">if</span> (!casTail(t, node)) <span class="comment">// CAS将tail更新为当前节点（原子操作）</span></span><br><span class="line">        node.setPrevRelaxed(<span class="literal">null</span>);  <span class="comment">// CAS失败，回滚前驱设置</span></span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        t.next = node; <span class="comment">// CAS成功，将旧tail的next指向当前节点</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>共享模式下，线程会被封装为 <code>SharedNode</code> 入队</li>
+</ul>
+<p>自旋等待，减少不公平性</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">else</span> <span class="keyword">if</span> (first &amp;&amp; spins != <span class="number">0</span>) &#123;</span><br><span class="line">    --spins;                        <span class="comment">// 减少自旋次数</span></span><br><span class="line">    Thread.onSpinWait();            <span class="comment">// 轻量级自旋（不消耗CPU）</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>最后才是设置节点状态 &amp; 线程阻塞</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">else</span> <span class="keyword">if</span> (node.status == <span class="number">0</span>) &#123;</span><br><span class="line">    node.status = WAITING;          <span class="comment">// 设置节点为WAITING状态，允许被唤醒</span></span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="type">long</span> nanos;</span><br><span class="line">    <span class="comment">// 指数级增加自旋次数（最多256次），避免频繁阻塞</span></span><br><span class="line">    spins = postSpins = (<span class="type">byte</span>)((postSpins &lt;&lt; <span class="number">1</span>) | <span class="number">1</span>);</span><br><span class="line">    <span class="keyword">if</span> (!timed)</span><br><span class="line">        LockSupport.park(<span class="built_in">this</span>); <span class="comment">// 非定时：无限阻塞</span></span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> ((nanos = time - System.nanoTime()) &gt; <span class="number">0L</span>)</span><br><span class="line">        LockSupport.parkNanos(<span class="built_in">this</span>, nanos); <span class="comment">// 定时：阻塞指定时间</span></span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        <span class="keyword">break</span>; <span class="comment">// 超时，退出循环</span></span><br><span class="line">    node.clearStatus(); <span class="comment">// 唤醒后清空WAITING状态</span></span><br><span class="line">    <span class="comment">// 检查线程是否被中断，若支持中断则退出循环</span></span><br><span class="line">    <span class="keyword">if</span> ((interrupted |= Thread.interrupted()) &amp;&amp; interruptible)</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>先将节点状态设为
+<code>WAITING</code>：标记节点可被唤醒，然后就是<code>LockSupport.park</code>调用这个方法进行阻塞</li>
+</ul>
+<p>Semaphore 的 <code>acquire()</code>
+实际调用的是这个方法，只不过是支持中断了，AQS 中的源码如下：</p>
+<figure>
+<img src="/posts/28919/image-20260211141038478.png" alt="image-20260211141038478">
+<figcaption aria-hidden="true">image-20260211141038478</figcaption>
+</figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title function_">acquireSharedInterruptibly</span><span class="params">(<span class="type">int</span> arg)</span></span><br><span class="line">    <span class="keyword">throws</span> InterruptedException &#123;</span><br><span class="line">    <span class="comment">// 先检查线程是否被中断，是则抛异常</span></span><br><span class="line">    <span class="keyword">if</span> (Thread.interrupted() ||</span><br><span class="line">        (tryAcquireShared(arg) &lt; <span class="number">0</span> &amp;&amp; acquire(<span class="literal">null</span>, arg, <span class="literal">true</span>, <span class="literal">true</span>, <span class="literal">false</span>, <span class="number">0L</span>) &lt; <span class="number">0</span>))</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">InterruptedException</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>那么<code>Semaphore</code>中的尝试获取，也就是非阻塞获取，也离不开上面的<code>acquire</code>方法，对应
+<code>Semaphore</code> 的
+<code>tryAcquire(long timeout, TimeUnit unit)</code>，支持超时获取，核心逻辑如下，它支持中断，超时时间到仍未获取资源，返回
+<code>false</code>，剩下没啥好说的</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="type">boolean</span> <span class="title function_">tryAcquireSharedNanos</span><span class="params">(<span class="type">int</span> arg, <span class="type">long</span> nanosTimeout)</span></span><br><span class="line">    <span class="keyword">throws</span> InterruptedException &#123;</span><br><span class="line">    <span class="keyword">if</span> (!Thread.interrupted()) &#123;</span><br><span class="line">        <span class="keyword">if</span> (tryAcquireShared(arg) &gt;= <span class="number">0</span>)</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">        <span class="keyword">if</span> (nanosTimeout &lt;= <span class="number">0L</span>)</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        <span class="comment">// 超时等待获取</span></span><br><span class="line">        <span class="type">int</span> <span class="variable">stat</span> <span class="operator">=</span> acquire(<span class="literal">null</span>, arg, <span class="literal">true</span>, <span class="literal">true</span>, <span class="literal">true</span>, System.nanoTime() + nanosTimeout);</span><br><span class="line">        <span class="keyword">if</span> (stat &gt; <span class="number">0</span>)</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">        <span class="keyword">if</span> (stat == <span class="number">0</span>)</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">InterruptedException</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>所以，完整的调用链路如下</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">Semaphore.acquire() </span><br><span class="line">  ↓</span><br><span class="line">Semaphore.Sync.acquireSharedInterruptibly(<span class="number">1</span>) </span><br><span class="line">  ↓</span><br><span class="line">AQS.acquireSharedInterruptibly(<span class="type">int</span> arg) </span><br><span class="line">  ↓</span><br><span class="line">  ├─ Semaphore.NonfairSync.tryAcquireShared(<span class="number">1</span>) </span><br><span class="line">  │   ↓</span><br><span class="line">  │   Semaphore.Sync.nonfairTryAcquireShared(<span class="number">1</span>)（自旋CAS修改state）</span><br><span class="line">  │       ↓</span><br><span class="line">  │       若返回 ≥<span class="number">0</span> → 获取成功，直接返回；</span><br><span class="line">  │       若返回 &lt;<span class="number">0</span> → 执行acquire(...)入队阻塞；</span><br><span class="line">  └─ AQS.acquire(<span class="literal">null</span>, <span class="number">1</span>, <span class="literal">true</span>, <span class="literal">true</span>, <span class="literal">false</span>, <span class="number">0L</span>) </span><br><span class="line">      ↓</span><br><span class="line">      <span class="number">1.</span> 创建SharedNode封装当前线程；</span><br><span class="line">      <span class="number">2.</span> 将Node入队到AQS等待队列；</span><br><span class="line">      <span class="number">3.</span> LockSupport.park()阻塞当前线程；</span><br><span class="line">      <span class="number">4.</span> 被唤醒后重新执行tryAcquireShared，成功则唤醒后续SharedNode；</span><br></pre></td></tr></table></figure>
+<h2 id="aqs-资源释放方式分析">AQS 资源释放方式分析</h2>
+<h3 id="独占模式-1">独占模式</h3>
+<p>AQS 中以独占模式释放资源的入口方法是 <code>release()</code>
+，代码如下：</p>
+<figure>
+<img src="/posts/28919/image-20260211132056271.png" alt="image-20260211132056271">
+<figcaption aria-hidden="true">image-20260211132056271</figcaption>
+</figure>
+<p>这是独占锁释放的顶层入口方法（对应各种 <code>Lock.unlock()</code>
+的底层实现），分析一下</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="type">boolean</span> <span class="title function_">release</span><span class="params">(<span class="type">int</span> arg)</span> &#123;</span><br><span class="line">    <span class="comment">// 第一步：调用子类实现的tryRelease释放同步状态</span></span><br><span class="line">    <span class="keyword">if</span> (tryRelease(arg)) &#123;</span><br><span class="line">        <span class="comment">// 第二步：释放成功则唤醒队列的后继线程</span></span><br><span class="line">        signalNext(head);</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><p><code>tryRelease</code> 也是 AQS
+留给子类的抽象方法，子类需实现释放锁的状态修改逻辑，比如
+<code>ReentrantLock</code> 中会减少重入次数，直到 state=0
+表示完全释放</p>
+<figure>
+<img src="/posts/28919/image-20260211132943690.png" alt="image-20260211132943690">
+<figcaption aria-hidden="true">image-20260211132943690</figcaption>
+</figure></li>
+<li><p>只有 <code>tryRelease</code> 返回
+<code>true</code>，表示锁已完全释放，才会执行 <code>signalNext</code>
+唤醒后继线程。</p></li>
+</ul>
+<p>以 <code>ReentrantLock</code> 的 Sync 为例</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// ReentrantLock 中非公平锁 Sync 中的 tryRelease 实现</span></span><br><span class="line"><span class="keyword">protected</span> <span class="keyword">final</span> <span class="type">boolean</span> <span class="title function_">tryRelease</span><span class="params">(<span class="type">int</span> releases)</span> &#123;</span><br><span class="line">    <span class="comment">// 减少重入次数（state -= releases）</span></span><br><span class="line">    <span class="type">int</span> <span class="variable">c</span> <span class="operator">=</span> getState() - releases;</span><br><span class="line">    <span class="comment">// 校验：释放锁的线程必须是持有锁的线程</span></span><br><span class="line">    <span class="keyword">if</span> (getExclusiveOwnerThread() != Thread.currentThread())</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">IllegalMonitorStateException</span>();</span><br><span class="line">    <span class="type">boolean</span> <span class="variable">free</span> <span class="operator">=</span> (c == <span class="number">0</span>);</span><br><span class="line">    <span class="comment">// 只有当 state=0 时，才表示锁完全释放</span></span><br><span class="line">    <span class="keyword">if</span> (free)</span><br><span class="line">        <span class="comment">// 清空持有锁的线程标识</span></span><br><span class="line">        setExclusiveOwnerThread(<span class="literal">null</span>);</span><br><span class="line">    <span class="comment">// 更新同步状态</span></span><br><span class="line">    setState(c);</span><br><span class="line">    <span class="keyword">return</span> free;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>tryRelease</code> 的返回值决定是否唤醒后继线程：只有返回
+<code>true</code>（完全释放）才会唤醒，其中包装的核心逻辑一般都是<code>修改 state + 校验释放合法性</code></li>
+</ul>
+<p>唤醒后继线程：<code>signalNext (Node h)</code>，这是 AQS
+内部的核心唤醒方法，源码如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">signalNext</span><span class="params">(Node h)</span> &#123;</span><br><span class="line">    Node s;</span><br><span class="line">    <span class="comment">// 校验条件：</span></span><br><span class="line">    <span class="comment">// 1. 头节点不为空；2. 头节点有后继节点；3. 后继节点状态不为0（有效节点）</span></span><br><span class="line">    <span class="keyword">if</span> (h != <span class="literal">null</span> &amp;&amp; (s = h.next) != <span class="literal">null</span> &amp;&amp; s.status != <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="comment">// 第一步：清除后继节点的WAITING状态，避免重复唤醒</span></span><br><span class="line">        s.getAndUnsetStatus(WAITING);</span><br><span class="line">        <span class="comment">// 第二步：唤醒后继节点对应的线程（解除线程的park状态）</span></span><br><span class="line">        <span class="comment">// 交给了LockSupport实现</span></span><br><span class="line">        LockSupport.unpark(s.waiter);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>二编：别忘<code>s = h.next</code> 是真正等待锁的第一个有效节点；</p>
+</blockquote>
+<p>接下来进入 <code>LockSupport.unpark</code>
+方法查看如何唤醒后继节点</p>
+<figure>
+<img src="/posts/28919/image-20260211133518477.png" alt="image-20260211133518477">
+<figcaption aria-hidden="true">image-20260211133518477</figcaption>
+</figure>
+<p>虚拟线程就用虚拟线程自己对<code>unpark</code>节点唤醒的实现，如果是真实的线程，就使用
+Unsafe，来唤醒该节点的后继节点对应的线程</p>
+<figure>
+<img src="/posts/28919/image-20260211133612410.png" alt="image-20260211133612410">
+<figcaption aria-hidden="true">image-20260211133612410</figcaption>
+</figure>
+<p>最后唤醒的逻辑交给了 native 方法，给 Java 外部实现</p>
+<p>AQS 中 Node 的核心状态常量上面也提到过，为了方便看，再放一下</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">WAITING</span>   <span class="operator">=</span> <span class="number">1</span>;          <span class="comment">// 线程等待被唤醒</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">CANCELLED</span> <span class="operator">=</span> <span class="number">0x80000000</span>; <span class="comment">// 节点已取消（超时/中断）</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">COND</span>      <span class="operator">=</span> <span class="number">2</span>;          <span class="comment">// 节点在条件队列中</span></span><br></pre></td></tr></table></figure>
+<p>其中，上面<code>signalNext (Node h)</code>中的<code>getAndUnsetStatus(WAITING)</code>就是原子清除节点的
+WAITING 状态，避免重复唤醒；</p>
+<p>只有状态不为 CANCELLED（&lt;0） 且不为 0
+的节点，才是有效等待节点。</p>
+<p>以 ReentrantLock 为例，锁释放设计 AQS 的调用链路如下</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">Lock.unlock() </span><br><span class="line">  ↓</span><br><span class="line">ReentrantLock.Sync.release(<span class="number">1</span>) </span><br><span class="line">  ↓</span><br><span class="line">AQS.release(<span class="type">int</span> arg) </span><br><span class="line">  ↓</span><br><span class="line">  ├─ ReentrantLock.Sync.tryRelease(<span class="type">int</span> arg) （修改state，返回是否完全释放）</span><br><span class="line">  │   ↓</span><br><span class="line">  │   若返回<span class="literal">true</span> → 执行signalNext(head)</span><br><span class="line">  │       ↓</span><br><span class="line">  │       AQS.signalNext(Node h) </span><br><span class="line">  │           ↓</span><br><span class="line">  │           ├─ 校验头节点后继节点有效性</span><br><span class="line">  │           ├─ 清除后继节点WAITING状态</span><br><span class="line">  │           └─ LockSupport.unpark(s.waiter)（唤醒线程）</span><br><span class="line">  └─ 若返回<span class="literal">false</span> → 直接返回<span class="literal">false</span>（未完全释放，比如重入锁还有剩余次数）</span><br></pre></td></tr></table></figure>
+<h3 id="共享模式-1">共享模式</h3>
+<p>AQS 中以共享模式释放资源的入口方法是 <code>releaseShared()</code>
+，代码如下</p>
+<figure>
+<img src="/posts/28919/image-20260211141805783.png" alt="image-20260211141805783">
+<figcaption aria-hidden="true">image-20260211141805783</figcaption>
+</figure>
+<ul>
+<li>可以看到，其中，它调用了 <code>tryReleaseShared()</code>
+方法和<code>singalNext()</code></li>
+</ul>
+<p>其中 <code>tryReleaseShared()</code> 方法是 AQS 提供的模板方法</p>
+<figure>
+<img src="/posts/28919/image-20260211141706824.png" alt="image-20260211141706824">
+<figcaption aria-hidden="true">image-20260211141706824</figcaption>
+</figure>
+<p>这里同样以 <code>Semaphore</code> 来讲解，那么就是如下</p>
+<p>首先<code>Semaphore</code> 调用<code>release</code>来释放资源</p>
+<figure>
+<img src="/posts/28919/image-20260211142007512.png" alt="image-20260211142007512">
+<figcaption aria-hidden="true">image-20260211142007512</figcaption>
+</figure>
+<p>那么它就会调用<code>tryReleaseShared</code></p>
+<figure>
+<img src="/posts/28919/image-20260211141739394.png" alt="image-20260211141739394">
+<figcaption aria-hidden="true">image-20260211141739394</figcaption>
+</figure>
+<p>在 <code>Semaphore</code> 实现的 <code>tryReleaseShared()</code>
+方法中，会在死循环内不断尝试释放资源，即通过 <code>CAS</code> 操作来更新
+<code>state</code> 值。</p>
+<p>如果更新成功，则证明资源释放成功，会进入到 <code>singalNext()</code>
+方法。<code>singalNext()</code>方法和在在前文共享模式下获取资源的部分提到的<code>singalNextIfShared()</code>方法的逻辑是差不多的，只是缺了个检查，在上面我已进行了详细的源码分析，此处不再重复。</p>
+<figure>
+<img src="/posts/28919/image-20260211142229514.png" alt="image-20260211142229514">
+<figcaption aria-hidden="true">image-20260211142229514</figcaption>
+</figure>
+<h3 id="condition-条件队列的释放">Condition 条件队列的释放</h3>
+<p>若独占锁结合 Condition 使用，释放逻辑会涉及「条件队列 →
+同步队列」的节点转移，核心方法是
+<code>ConditionObject.signal()</code>：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title function_">signal</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="comment">// 校验：当前线程必须持有独占锁</span></span><br><span class="line">    <span class="keyword">if</span> (!isHeldExclusively())</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">IllegalMonitorStateException</span>();</span><br><span class="line">    <span class="type">ConditionNode</span> <span class="variable">first</span> <span class="operator">=</span> firstWaiter;</span><br><span class="line">    <span class="keyword">if</span> (first != <span class="literal">null</span>)</span><br><span class="line">        <span class="comment">// 转移条件队列节点到同步队列</span></span><br><span class="line">        doSignal(first, <span class="literal">false</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>对于<code>doSignal(ConditionNode first, boolean all)</code></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">doSignal</span><span class="params">(ConditionNode first, <span class="type">boolean</span> all)</span> &#123;</span><br><span class="line">    <span class="keyword">while</span> (first != <span class="literal">null</span>) &#123;</span><br><span class="line">        <span class="comment">// 同步队列 -&gt; 条件队列</span></span><br><span class="line">        <span class="type">ConditionNode</span> <span class="variable">next</span> <span class="operator">=</span> first.nextWaiter;</span><br><span class="line">        <span class="keyword">if</span> ((firstWaiter = next) == <span class="literal">null</span>)</span><br><span class="line">            lastWaiter = <span class="literal">null</span>;</span><br><span class="line">        <span class="comment">// 清除COND状态，标记节点已经被转移到条件队列</span></span><br><span class="line">        <span class="keyword">if</span> ((first.getAndUnsetStatus(COND) &amp; COND) != <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="comment">// 将条件队列节点入队到同步队列</span></span><br><span class="line">            enqueue(first);</span><br><span class="line">            <span class="keyword">if</span> (!all)</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        first = next;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>Condition 的 <code>signal()</code> 会将条件队列的节点转移到 AQS
+同步队列；</li>
+<li>转移后的节点需等待 AQS 同步队列的 <code>signalNext</code>
+唤醒，它的本质还是依赖 <code>release</code>
+方法的唤醒逻辑，复用就完事了</li>
+</ul>
+<h2 id="自定义同步器">自定义同步器</h2>
+<p>基于 AQS 可以实现自定义的同步器， AQS 提供了 5
+个模板方法和其他各种东西。如果需要自定义同步器一般的方式是这样，这是模板设计模式很好的一个应用</p>
+<p>别急，别忘了 AQS 能帮你做了哪些比较底层的事情，AQS
+的源码结构决定了自定义同步器的分工</p>
+<ol type="1">
+<li>维护 CLH</li>
+<li>线程挂起与唤醒</li>
+<li>原子操作<code>state</code></li>
+<li>中断与超时的处理</li>
+</ol>
+<p>所以说，我们需要做的事情，也就是需要重写的方法，那么先自定义的同步器继承
+<code>AbstractQueuedSynchronizer</code> ，然后按需要重写 AQS
+暴露的如下模板方法</p>
+<table>
+<colgroup>
+<col style="width: 20%">
+<col style="width: 18%">
+<col style="width: 15%">
+<col style="width: 45%">
+</colgroup>
+<thead>
+<tr>
+<th>方法</th>
+<th>作用</th>
+<th>适用模式</th>
+<th>核心逻辑</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>tryAcquire(int arg)</code></td>
+<td>尝试独占式获取资源</td>
+<td>独占锁（如锁）</td>
+<td>判断 <code>state</code> 是否允许获取，允许则通过 CAS 修改
+<code>state</code>，返回 true/false</td>
+</tr>
+<tr>
+<td><code>tryRelease(int arg)</code></td>
+<td>尝试独占式释放资源</td>
+<td>独占锁</td>
+<td>修改 <code>state</code> 为释放状态，返回是否完全释放（true
+则唤醒队列线程）</td>
+</tr>
+<tr>
+<td><code>tryAcquireShared(int arg)</code></td>
+<td>尝试共享式获取资源</td>
+<td>共享锁（如信号量）</td>
+<td>返回负数（失败）/0（成功但无剩余资源）/
+正数（成功且有剩余资源）</td>
+</tr>
+<tr>
+<td><code>tryReleaseShared(int arg)</code></td>
+<td>尝试共享式释放资源</td>
+<td>共享锁</td>
+<td>修改 <code>state</code>，返回是否释放成功（true
+则唤醒后续共享线程）</td>
+</tr>
+<tr>
+<td><code>isHeldExclusively()</code></td>
+<td>判断是否当前线程独占资源</td>
+<td>条件变量（Condition）</td>
+<td>实现 Condition 时需要，返回 true/false</td>
+</tr>
+</tbody>
+</table>
+<p>然后，<code>state</code> 是 AQS
+唯一的核心变量（<code>private volatile int</code>），你需要为它定义业务语义</p>
+<ul>
+<li>比如实现「不可重入独占锁」：<code>state=0</code>
+表示锁空闲，<code>state=1</code> 表示锁被持有；</li>
+<li>比如实现「二元信号量」：<code>state=0</code>
+无许可，<code>state=1</code> 有许可；</li>
+<li>所有对 <code>state</code> 的修改，必须通过 AQS 提供的
+<code>getState()</code>/<code>compareAndSetState()</code>
+等方法，保证线程安全。</li>
+</ul>
+<p><strong>什么是钩子方法呢？</strong>
+钩子方法是一种被声明在抽象类中的方法，一般使用 <code>protected</code>
+关键字修饰，它可以是空方法，由子类实现，也可以是默认实现的方法。模板设计模式通过钩子方法控制固定步骤的实现。</p>
+<p>除了上面提到的五个钩子方法之外，AQS 类中的其他方法都是
+<code>final</code> ，所以无法被其他类重写。</p>
+<p>我们先实现一个最简单的独占锁：同一时间只有一个线程能获取锁，释放后其他线程才能获取。</p>
+<ol type="1">
+<li><p>定义同步器类，继承 AQS</p>
+<p>重写
+<code>tryAcquire</code>/<code>tryRelease</code>/<code>isHeldExclusively</code>，定义
+<code>state</code> 语义</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.util.concurrent.locks.AbstractQueuedSynchronizer;</span><br><span class="line"><span class="keyword">import</span> java.util.concurrent.locks.Lock;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 1. 自定义独占锁（实现 Lock 接口，让用法和原生锁一致）</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MyExclusiveLock</span> <span class="keyword">implements</span> <span class="title class_">Lock</span> &#123;</span><br><span class="line">    <span class="comment">// 2. 内部类Sync继承 AQS，重写钩子方法</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">Sync</span> <span class="keyword">extends</span> <span class="title class_">AbstractQueuedSynchronizer</span> &#123;</span><br><span class="line">        </span><br><span class="line">        <span class="comment">/**</span></span><br><span class="line"><span class="comment">         * 尝试获取锁：state=0 表示空闲，CAS 修改为 1 则获取成功</span></span><br><span class="line"><span class="comment">         * <span class="doctag">@param</span> arg 传 1（表示获取 1 把锁）</span></span><br><span class="line"><span class="comment">         */</span></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="keyword">protected</span> <span class="type">boolean</span> <span class="title function_">tryAcquire</span><span class="params">(<span class="type">int</span> arg)</span> &#123;</span><br><span class="line">            <span class="comment">// 必须用 CAS 保证原子性（多线程竞争时）</span></span><br><span class="line">            <span class="keyword">if</span> (compareAndSetState(<span class="number">0</span>, <span class="number">1</span>)) &#123;</span><br><span class="line">                <span class="comment">// 记录当前持有锁的线程</span></span><br><span class="line">                setExclusiveOwnerThread(Thread.currentThread());</span><br><span class="line">                <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>; <span class="comment">// state≠0，获取失败</span></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">/**</span></span><br><span class="line"><span class="comment">         * 尝试释放锁：把 state 置为 0，释放锁</span></span><br><span class="line"><span class="comment">         * <span class="doctag">@param</span> arg 传 1（表示释放 1 把锁）</span></span><br><span class="line"><span class="comment">         */</span></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="keyword">protected</span> <span class="type">boolean</span> <span class="title function_">tryRelease</span><span class="params">(<span class="type">int</span> arg)</span> &#123;</span><br><span class="line">            <span class="comment">// 只有持有锁的线程能释放</span></span><br><span class="line">            <span class="keyword">if</span> (!isHeldExclusively()) &#123;</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">IllegalMonitorStateException</span>(<span class="string">&quot;当前线程未持有锁&quot;</span>);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">// 释放锁,清空持有线程，state 置 0</span></span><br><span class="line">            setExclusiveOwnerThread(<span class="literal">null</span>);</span><br><span class="line">            setState(<span class="number">0</span>);  <span class="comment">// 独占锁释放无需 CAS,只有持有线程能执行</span></span><br><span class="line">            <span class="keyword">return</span> <span class="literal">true</span>;  <span class="comment">// 返回 true，AQS 会唤醒队列中的线程</span></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">/**</span></span><br><span class="line"><span class="comment">         * 判断是否当前线程独占锁（Condition 需要）</span></span><br><span class="line"><span class="comment">         */</span></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="keyword">protected</span> <span class="type">boolean</span> <span class="title function_">isHeldExclusively</span><span class="params">()</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> getExclusiveOwnerThread() == Thread.currentThread();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 创建 Condition</span></span><br><span class="line">        <span class="keyword">public</span> Condition <span class="title function_">newCondition</span><span class="params">()</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">ConditionObject</span>(); <span class="comment">// 复用 AQS 的 Condition 实现</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 3. 封装 Sync，对外提供 Lock 接口的方法</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">Sync</span> <span class="variable">sync</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Sync</span>();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 获取锁</span></span><br><span class="line">    <span class="comment">// 它们看起来是调用 AQS 的 final acquire 方法，但是实际上内部会调用我们重写的 tryAcquire</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">lock</span><span class="params">()</span> &#123;</span><br><span class="line">        sync.acquire(<span class="number">1</span>); <span class="comment">// arg=1 表示获取 1 把锁</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 尝试获取锁（直接调用 tryAcquire）</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">tryLock</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> sync.tryAcquire(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 释放锁（调用 AQS 的 release 方法，内部调用 tryRelease）</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">unlock</span><span class="params">()</span> &#123;</span><br><span class="line">        sync.release(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 以下是 Lock 接口的默认实现，直接复用 Sync 的能力</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">lockInterruptibly</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException &#123;</span><br><span class="line">        sync.acquireInterruptibly(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">tryLock</span><span class="params">(<span class="type">long</span> time, java.util.concurrent.TimeUnit unit)</span> <span class="keyword">throws</span> InterruptedException &#123;</span><br><span class="line">        <span class="keyword">return</span> sync.tryAcquireNanos(<span class="number">1</span>, unit.toNanos(time));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> java.util.concurrent.locks.Condition <span class="title function_">newCondition</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> sync.newCondition();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>来测试一下</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MyLockTest</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">MyExclusiveLock</span> <span class="variable">lock</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">MyExclusiveLock</span>();</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="type">int</span> <span class="variable">count</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> InterruptedException &#123;</span><br><span class="line">        <span class="comment">// 启动 10 个线程，每个线程累加 1000 次</span></span><br><span class="line">        Thread[] threads = <span class="keyword">new</span> <span class="title class_">Thread</span>[<span class="number">10</span>];</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; <span class="number">10</span>; i++) &#123;</span><br><span class="line">            threads[i] = <span class="keyword">new</span> <span class="title class_">Thread</span>(() -&gt; &#123;</span><br><span class="line">                <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> <span class="number">0</span>; j &lt; <span class="number">1000</span>; j++) &#123;</span><br><span class="line">                    lock.lock(); <span class="comment">// 获取自定义锁</span></span><br><span class="line">                    <span class="keyword">try</span> &#123;</span><br><span class="line">                        count++;</span><br><span class="line">                    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">                        lock.unlock(); <span class="comment">// 释放锁</span></span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;);</span><br><span class="line">            threads[i].start();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 等待所有线程执行完毕</span></span><br><span class="line">        <span class="keyword">for</span> (Thread t : threads) &#123;</span><br><span class="line">            t.join();</span><br><span class="line">        &#125;</span><br><span class="line">        System.out.println(<span class="string">&quot;最终计数：&quot;</span> + count); <span class="comment">// 预期输出 10000（线程安全）</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure>
+<img src="/posts/28919/image-20260211124805721.png" alt="image-20260211124805721">
+<figcaption aria-hidden="true">image-20260211124805721</figcaption>
+</figure></li>
+</ol>
+<p>那么，共享锁如何自定义，共享锁的特点是「多个线程可同时获取资源」，比如实现一个「最多允许
+3 个线程同时访问」的信号量</p>
+<ol type="1">
+<li><p>先定义共享同步器</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.util.concurrent.locks.AbstractQueuedSynchronizer;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 自定义共享信号量</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MySharedSemaphore</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">Sync</span> <span class="keyword">extends</span> <span class="title class_">AbstractQueuedSynchronizer</span> &#123;</span><br><span class="line">        <span class="comment">// 初始化信号量的许可数（state = 许可数）</span></span><br><span class="line">        <span class="keyword">public</span> <span class="title function_">Sync</span><span class="params">(<span class="type">int</span> <span class="keyword">permits</span>)</span> &#123;</span><br><span class="line">            setState(<span class="keyword">permits</span>); <span class="comment">// AQS 的 setState 方法，设置初始 state</span></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">/**</span></span><br><span class="line"><span class="comment">         * 尝试共享式获取许可：剩余许可 &gt; 0 则获取</span></span><br><span class="line"><span class="comment">         * <span class="doctag">@param</span> arg 获取的许可数（这里固定为 1）</span></span><br><span class="line"><span class="comment">         * <span class="doctag">@return</span> 负数：失败；0：成功但无剩余许可；正数：成功且有剩余许可</span></span><br><span class="line"><span class="comment">         */</span></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="keyword">protected</span> <span class="type">int</span> <span class="title function_">tryAcquireShared</span><span class="params">(<span class="type">int</span> arg)</span> &#123;</span><br><span class="line">            <span class="comment">// 循环 CAS 保证多线程下修改 state 成功</span></span><br><span class="line">            <span class="keyword">for</span> (;;) &#123;</span><br><span class="line">                <span class="type">int</span> <span class="variable">current</span> <span class="operator">=</span> getState(); <span class="comment">// 获取当前剩余许可</span></span><br><span class="line">                <span class="type">int</span> <span class="variable">remaining</span> <span class="operator">=</span> current - arg; <span class="comment">// 剩余许可 = 当前 - 要获取的</span></span><br><span class="line">                <span class="comment">// 剩余许可 &lt; 0 则失败；否则 CAS 修改 state</span></span><br><span class="line">                <span class="keyword">if</span> (remaining &lt; <span class="number">0</span> || compareAndSetState(current, remaining)) &#123;</span><br><span class="line">                    <span class="keyword">return</span> remaining; <span class="comment">// 返回剩余许可（负数=失败，非负=成功）</span></span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">/**</span></span><br><span class="line"><span class="comment">         * 尝试共享式释放许可</span></span><br><span class="line"><span class="comment">         * <span class="doctag">@param</span> arg 释放的许可数（这里固定为 1）</span></span><br><span class="line"><span class="comment">         * <span class="doctag">@return</span> 是否释放成功（true 则 AQS 唤醒后续线程）</span></span><br><span class="line"><span class="comment">         */</span></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="keyword">protected</span> <span class="type">boolean</span> <span class="title function_">tryReleaseShared</span><span class="params">(<span class="type">int</span> arg)</span> &#123;</span><br><span class="line">            <span class="comment">// 循环 CAS 修改 state</span></span><br><span class="line">            <span class="keyword">for</span> (;;) &#123;</span><br><span class="line">                <span class="type">int</span> <span class="variable">current</span> <span class="operator">=</span> getState();</span><br><span class="line">                <span class="type">int</span> <span class="variable">next</span> <span class="operator">=</span> current + arg; <span class="comment">// 释放后许可数 +=1</span></span><br><span class="line">                <span class="keyword">if</span> (next &lt; current) &#123; <span class="comment">// 检查溢出</span></span><br><span class="line">            		<span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">Error</span>(<span class="string">&quot;Maximum permit count exceeded&quot;</span>);</span><br><span class="line">        		&#125;</span><br><span class="line">                <span class="keyword">if</span> (compareAndSetState(current, next)) &#123;</span><br><span class="line">                    <span class="keyword">return</span> <span class="literal">true</span>; <span class="comment">// 释放成功，AQS 会唤醒队列中的共享线程</span></span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 获取当前剩余许可数</span></span><br><span class="line">        <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">getPermits</span><span class="params">()</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> getState();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Sync sync;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 构造方法：初始化许可数</span></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">MySharedSemaphore</span><span class="params">(<span class="type">int</span> <span class="keyword">permits</span>)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">permits</span> &lt; <span class="number">0</span>) <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">IllegalArgumentException</span>(<span class="string">&quot;许可数不能为负&quot;</span>);</span><br><span class="line">        <span class="built_in">this</span>.sync = <span class="keyword">new</span> <span class="title class_">Sync</span>(<span class="keyword">permits</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 获取许可（阻塞）</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">acquire</span><span class="params">()</span> &#123;</span><br><span class="line">        sync.acquireShared(<span class="number">1</span>); <span class="comment">// AQS 的共享获取方法</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 释放许可</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">release</span><span class="params">()</span> &#123;</span><br><span class="line">        sync.releaseShared(<span class="number">1</span>); <span class="comment">// AQS 的共享释放方法</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 获取剩余许可数</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">availablePermits</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> sync.getPermits();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>测试共享信号量</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MySemaphoreTest</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">MySharedSemaphore</span> <span class="variable">semaphore</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">MySharedSemaphore</span>(<span class="number">3</span>); <span class="comment">// 最多 3 个线程同时执行</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">AtomicInteger</span> <span class="variable">count</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">AtomicInteger</span>(<span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> InterruptedException &#123;</span><br><span class="line">        Thread[] threads = <span class="keyword">new</span> <span class="title class_">Thread</span>[<span class="number">10</span>];</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; <span class="number">10</span>; i++) &#123;</span><br><span class="line">            threads[i] = <span class="keyword">new</span> <span class="title class_">Thread</span>(() -&gt; &#123;</span><br><span class="line">                semaphore.acquire(); <span class="comment">// 获取许可</span></span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    System.out.println(Thread.currentThread().getName() + <span class="string">&quot; 获取许可，剩余：&quot;</span> + semaphore.availablePermits());</span><br><span class="line">                    Thread.sleep(<span class="number">1000</span>); <span class="comment">// 模拟业务逻辑</span></span><br><span class="line">                    count.incrementAndGet();</span><br><span class="line">                &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                    Thread.currentThread().interrupt();</span><br><span class="line">                &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">                    semaphore.release(); <span class="comment">// 释放许可</span></span><br><span class="line">                    System.out.println(Thread.currentThread().getName() + <span class="string">&quot; 释放许可，剩余：&quot;</span> + semaphore.availablePermits());</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;, <span class="string">&quot;线程&quot;</span> + i);</span><br><span class="line">            threads[i].start();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (Thread t : threads) &#123;</span><br><span class="line">            t.join();</span><br><span class="line">        &#125;</span><br><span class="line">        System.out.println(<span class="string">&quot;最终计数：&quot;</span> + count); <span class="comment">// 输出 10（所有线程都执行了）</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ol>
+<figure>
+<img src="/posts/28919/image-20260211125723160.png" alt="image-20260211125723160">
+<figcaption aria-hidden="true">image-20260211125723160</figcaption>
+</figure>
+<p>为了修改<code>state</code>操作保证的线程安全，修改 <code>state</code>
+时，独占锁可用 <code>setState()</code>（只有持有线程操作），共享锁必须用
+<code>compareAndSetState()</code>，而且和原生锁一样，获取资源后要在
+finally
+中释放，避免死锁；而且<code>tryAcquire</code>/<code>tryRelease</code>
+等方法要轻量，只做 <code>state</code> 判断和修改，阻塞逻辑由 AQS 的
+<code>acquire()</code>/<code>release()</code> 处理，要不然 AQS
+就白用了</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a target="_blank" rel="noopener" href="https://github.com/ergou10086">ErgouTree</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://ergou10086.github.io/posts/28919.html">https://ergou10086.github.io/posts/28919.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://ergou10086.github.io" target="_blank">ErgouTree's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E4%BD%BF%E7%94%A8%E7%9F%A5%E8%AF%86/">使用知识</a><a class="post-meta__tags" href="/tags/%E5%AE%9E%E7%94%A8%E7%9F%A5%E8%AF%86/">实用知识</a><a class="post-meta__tags" href="/tags/JavaSE/">JavaSE</a><a class="post-meta__tags" href="/tags/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/">Java基础知识</a><a class="post-meta__tags" href="/tags/%E5%A4%9A%E7%BA%BF%E7%A8%8B/">多线程</a><a class="post-meta__tags" href="/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/">操作系统</a><a class="post-meta__tags" href="/tags/JVM/">JVM</a><a class="post-meta__tags" href="/tags/%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/">并发编程</a><a class="post-meta__tags" href="/tags/%E9%AB%98%E5%B9%B6%E5%8F%91/">高并发</a><a class="post-meta__tags" href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/">计算机基础</a><a class="post-meta__tags" href="/tags/JUC/">JUC</a><a class="post-meta__tags" href="/tags/%E6%BA%90%E7%A0%81%E8%AE%B2%E8%A7%A3/">源码讲解</a></div><div class="post-share"><div class="addtoany"><div class="a2a_kit a2a_kit_size_32 a2a_default_style"><a class="a2a_button_facebook"></a><a class="a2a_button_twitter"></a><a class="a2a_button_wechat"></a><a class="a2a_button_sina_weibo"></a><a class="a2a_button_facebook_messenger"></a><a class="a2a_button_email"></a><a class="a2a_button_copy_link"></a><a class="a2a_dd" target="_blank" rel="noopener" href="https://www.addtoany.com/share"></a></div></div><script async="async" src="https://static.addtoany.com/menu/page.js"></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width" href="/posts/45598.html" title="详解JavaSE之并发编程 part5—JUC锁机制"><img class="cover" src="/images/posts/cover_vue1.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">详解JavaSE之并发编程 part5—JUC锁机制</div></div><div class="info-2"><div class="info-item-1">JUC锁机制   image-20260210113908812  我们都知道，synchronized是 Java 关于锁的一个关键字，那么，它自动进行锁的释放的，所以只存在两种释放锁的情况：  获取了对应方法锁的对象执行完了该方法 线程执行异常或被中断，JVM会让线程自动释放锁  不仅如此，synchronized 的局限性还在于  无法中断等待锁的线程，不可响应中断。 无法设置超时，只能无限等待。 无法尝试获取锁而不阻塞，非阻塞尝试。 读写无法分离  它不够灵活，而且容易出现阻塞，因为方法或者代码块一旦执行，就独占该锁，直到结束才返回锁，此时就出现了JUC中的各种锁，它们灵活且强大 locks包概述 对于 Lock 接口本身，就有一些需要做铺垫的内容讲解，这里我们先看看 JUC 的锁机制主要包中都有什么内容，先了解一下 前面说过，Lock 锁实现提供了比使用同步方法和语句可以获得的更广泛的锁操作，所以说，它这个接口是代表着什么呢，首先看看 JUC lock...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/posts/25779.html" title="详解JavaSE之并发编程 part4—Java并发工具包JUC概述及其原子操作类"><img class="cover" src="/images/posts/cover_Tijie.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-02-11</div><div class="info-item-2">详解JavaSE之并发编程 part4—Java并发工具包JUC概述及其原子操作类</div></div><div class="info-2"><div class="info-item-1">JUC 并发工具包介绍 JUC 并发工具包介绍 JUC 是 java.util.concurrent 包的简称，从 Java 5 开始引入，专门用于解决并发编程中的线程同步、线程池、锁机制、并发集合等问题，是 Java 处理高并发场景的核心工具包。 它弥补了传统 synchronized 关键字、Thread 类的局限性，提供了更高效、更灵活的并发编程方案。 JUC 的设计：  分离锁与同步机制：将锁（Lock）、条件（Condition）、原子操作（Atomic）、并发容器等组件解耦，按需使用； CAS 无锁优化：基于 CPU 原语的 CAS（Compare-And-Swap）实现无锁并发，减少线程阻塞开销； 线程池化：通过线程池管理线程生命周期，避免频繁创建 / 销毁线程的性能损耗； 并发容器：针对多线程场景优化的集合类，替代线程不安全的 HashMap、ArrayList 等。  JUC 并发工具包都包括什么   img  原子操作类 基于 CAS 实现的无锁原子操作，避免...</div></div></div></a><a class="pagination-related" href="/posts/45598.html" title="详解JavaSE之并发编程 part5—JUC锁机制"><img class="cover" src="/images/posts/cover_vue1.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-02-11</div><div class="info-item-2">详解JavaSE之并发编程 part5—JUC锁机制</div></div><div class="info-2"><div class="info-item-1">JUC锁机制   image-20260210113908812  我们都知道，synchronized是 Java 关于锁的一个关键字，那么，它自动进行锁的释放的，所以只存在两种释放锁的情况：  获取了对应方法锁的对象执行完了该方法 线程执行异常或被中断，JVM会让线程自动释放锁  不仅如此，synchronized 的局限性还在于  无法中断等待锁的线程，不可响应中断。 无法设置超时，只能无限等待。 无法尝试获取锁而不阻塞，非阻塞尝试。 读写无法分离  它不够灵活，而且容易出现阻塞，因为方法或者代码块一旦执行，就独占该锁，直到结束才返回锁，此时就出现了JUC中的各种锁，它们灵活且强大 locks包概述 对于 Lock 接口本身，就有一些需要做铺垫的内容讲解，这里我们先看看 JUC 的锁机制主要包中都有什么内容，先了解一下 前面说过，Lock 锁实现提供了比使用同步方法和语句可以获得的更广泛的锁操作，所以说，它这个接口是代表着什么呢，首先看看 JUC lock...</div></div></div></a><a class="pagination-related" href="/posts/18664.html" title="详解JavaSE之多线程并发线程 part1—理解Java并发编程基本内容"><img class="cover" src="/images/posts/cover_juc2.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-02-07</div><div class="info-item-2">详解JavaSE之多线程并发线程 part1—理解Java并发编程基本内容</div></div><div class="info-2"><div class="info-item-1">基础概念 进程，线程 进程 何为进程 进程是程序的一次执行过程，是程序执行的一次执行实例，是系统运行程序的基本单位，是操作系统进行资源分配和调度的基本单位，因此进程是动态的。 进程 = 程序 + 数据 + 执行状态 系统运行一个程序的本质即是一个进程从创建，运行到消亡的过程。  讲一下相对底层的内容，一个程序在磁盘上只是一串二进制指令和数据。CPU 只能执行内存中的指令。因此，运行程序的第一步是将其加载到主存RAM，而 CPU 内部有一个关键寄存器，程序计数器（PC, Program Counter），它指向下一条要执行的指令地址，差不多就是 PC → 取指令 → 解码 → 执行 → 更新PC → 循环，此时，整个机器只能运行一个程序，CPU 的 PC 寄存器始终指向该程序的指令 问题来了，如果我想同时运行两个程序怎么办？所以才引入的进程。  进程是实现多道程序设计的核心设计，多个进程可同时存在于内存中才能使得 CPU 同时运行多个程序，操作系统通过 PCB 控制每个进程能使用的资源，所以它才能动态，并发，独立，异步 在 Java...</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="gitalk-container"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/arp.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">ErgouTree</div><div class="author-info-description">I start a brand-new life with you.</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">299</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">184</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">101</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/ergou10086"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/ergou10086" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="/zjm88822201@126.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a><a class="social-icon" href="https://space.bilibili.com/142045656?spm_id_from=333.1007.0.0" target="_blank" title="bilibili"><i class="fas fa-brands fa-bilibili" style="color: #4a72be;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">作者长期陷入galgame和osu!maina4k中 祝他好运吧 对了 如果图片加载过慢 建议科学上网进行使用</div></div><div class="card-widget card-weather"><div class="item-headline"><i class="fas fa-cloud-sun"></i><span>aside.card_weather</span></div><div class="weather-content"><div class="weather-loading"><i class="fas fa-spinner fa-spin"></i><span>加载中...</span></div><div class="weather-main" style="display: none;"><div class="weather-location"><i class="fas fa-map-marker-alt"></i><span id="weather-location">获取中...</span></div><div class="weather-info"><div class="weather-temp"><span id="weather-temp">--</span><span class="unit">°C</span></div><div class="weather-desc"><span id="weather-weather">--</span></div><div class="weather-details"><div class="weather-item"><i class="fas fa-wind"></i><span id="weather-windpower">--</span></div><div class="weather-item"><i class="fas fa-tint"></i><span id="weather-humidity">--</span></div><div class="weather-item"><i class="fas fa-eye"></i><span id="weather-winddir">--</span></div></div></div><div class="weather-update-time"><i class="fas fa-clock"></i><span id="weather-update-time">更新中...</span></div></div></div></div><div class="sticky_layout"></div><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%86%E8%A7%A3-aqs"><span class="toc-number">1.</span> <span class="toc-text">了解 AQS</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF-aqs"><span class="toc-number">1.1.</span> <span class="toc-text">什么是 AQS</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#aqs%E7%9A%84%E4%BD%9C%E7%94%A8%E6%98%AF%E4%BB%80%E4%B9%88"><span class="toc-number">1.2.</span> <span class="toc-text">AQS的作用是什么</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF-clh-%E9%94%81%E9%98%9F%E5%88%97"><span class="toc-number">1.3.</span> <span class="toc-text">什么是 CLH 锁队列</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#aqs-%E4%B8%BA%E4%BB%80%E4%B9%88%E4%BD%BF%E7%94%A8-clh-%E9%94%81%E9%98%9F%E5%88%97%E7%9A%84%E5%8F%98%E4%BD%93"><span class="toc-number">1.4.</span> <span class="toc-text">AQS 为什么使用 CLH
+锁队列的变体？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88-aqs-%E7%9A%84%E6%80%A7%E8%83%BD%E8%BE%83%E5%A5%BD"><span class="toc-number">1.5.</span> <span class="toc-text">为什么 AQS 的性能较好？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#aqs-%E4%B8%AD%E4%B8%BA%E4%BB%80%E4%B9%88-node-%E8%8A%82%E7%82%B9%E9%9C%80%E8%A6%81%E4%B8%8D%E5%90%8C%E7%9A%84%E7%8A%B6%E6%80%81"><span class="toc-number">1.6.</span> <span class="toc-text">AQS 中为什么 Node
+节点需要不同的状态</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#aqs-%E6%A0%B8%E5%BF%83%E6%80%9D%E6%83%B3"><span class="toc-number">2.</span> <span class="toc-text">AQS 核心思想</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#aqs-%E8%B5%84%E6%BA%90%E8%8E%B7%E5%8F%96%E6%96%B9%E5%BC%8F%E5%88%86%E6%9E%90"><span class="toc-number">3.</span> <span class="toc-text">AQS 资源获取方式分析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%8B%AC%E5%8D%A0%E6%A8%A1%E5%BC%8F"><span class="toc-number">3.1.</span> <span class="toc-text">独占模式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B1%E4%BA%AB%E6%A8%A1%E5%BC%8F"><span class="toc-number">3.2.</span> <span class="toc-text">共享模式</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#aqs-%E8%B5%84%E6%BA%90%E9%87%8A%E6%94%BE%E6%96%B9%E5%BC%8F%E5%88%86%E6%9E%90"><span class="toc-number">4.</span> <span class="toc-text">AQS 资源释放方式分析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%8B%AC%E5%8D%A0%E6%A8%A1%E5%BC%8F-1"><span class="toc-number">4.1.</span> <span class="toc-text">独占模式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B1%E4%BA%AB%E6%A8%A1%E5%BC%8F-1"><span class="toc-number">4.2.</span> <span class="toc-text">共享模式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#condition-%E6%9D%A1%E4%BB%B6%E9%98%9F%E5%88%97%E7%9A%84%E9%87%8A%E6%94%BE"><span class="toc-number">4.3.</span> <span class="toc-text">Condition 条件队列的释放</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%87%AA%E5%AE%9A%E4%B9%89%E5%90%8C%E6%AD%A5%E5%99%A8"><span class="toc-number">5.</span> <span class="toc-text">自定义同步器</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/28919.html" title="详解JavaSE之并发编程 part6—JUC锁机制的底层原理AQS"><img src="/images/posts/cover_java.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="详解JavaSE之并发编程 part6—JUC锁机制的底层原理AQS"/></a><div class="content"><a class="title" href="/posts/28919.html" title="详解JavaSE之并发编程 part6—JUC锁机制的底层原理AQS">详解JavaSE之并发编程 part6—JUC锁机制的底层原理AQS</a><time datetime="2026-02-11T09:27:01.000Z" title="发表于 2026-02-11 17:27:01">2026-02-11</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/45598.html" title="详解JavaSE之并发编程 part5—JUC锁机制"><img src="/images/posts/cover_vue1.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="详解JavaSE之并发编程 part5—JUC锁机制"/></a><div class="content"><a class="title" href="/posts/45598.html" title="详解JavaSE之并发编程 part5—JUC锁机制">详解JavaSE之并发编程 part5—JUC锁机制</a><time datetime="2026-02-11T09:25:53.000Z" title="发表于 2026-02-11 17:25:53">2026-02-11</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/25779.html" title="详解JavaSE之并发编程 part4—Java并发工具包JUC概述及其原子操作类"><img src="/images/posts/cover_Tijie.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="详解JavaSE之并发编程 part4—Java并发工具包JUC概述及其原子操作类"/></a><div class="content"><a class="title" href="/posts/25779.html" title="详解JavaSE之并发编程 part4—Java并发工具包JUC概述及其原子操作类">详解JavaSE之并发编程 part4—Java并发工具包JUC概述及其原子操作类</a><time datetime="2026-02-11T09:23:48.000Z" title="发表于 2026-02-11 17:23:48">2026-02-11</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/24116.html" title="详解JavaSE之并发编程 part3—Java内存模型JMM基础"><img src="/images/posts/cover_Tijie4.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="详解JavaSE之并发编程 part3—Java内存模型JMM基础"/></a><div class="content"><a class="title" href="/posts/24116.html" title="详解JavaSE之并发编程 part3—Java内存模型JMM基础">详解JavaSE之并发编程 part3—Java内存模型JMM基础</a><time datetime="2026-02-09T04:32:31.000Z" title="发表于 2026-02-09 12:32:31">2026-02-09</time></div></div></div></div></div></main><div class="fps-display"><span id="fps">FPS: 60</span></div><footer id="footer" style="background-image: url(/images/posts/cover_java.jpg);"><div id="footer-wrap"><div class="copyright">&copy;2024 - 2026 By ErgouTree</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">忘れたくない思い、ありますか？ <br>,<span id="realtime_duration" style="font-family: monospace;"></span>,<br><a href="https://icp.gov.moe/?keyword=20257009" target="_blank">萌ICP备20257009号</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><a class="icon-V hidden" onclick="switchNightMode()" title="日间和夜间模式切换"><svg width="25" height="25" viewBox="0 0 1024 1024"><use id="modeicon" xlink:href="#icon-moon"></use></svg></a><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="chat-btn" type="button" title="聊天" style="display:none"><i class="fas fa-comment"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (true) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script><script>(() => {
+  const applyThemeDefaultsConfig = theme => {
+    if (theme === 'dark-mode') {
+      Chart.defaults.color = "rgba(255, 255, 255, 0.8)"
+      Chart.defaults.borderColor = "rgba(255, 255, 255, 0.2)"
+      Chart.defaults.scale.ticks.backdropColor = "transparent"
+    } else {
+      Chart.defaults.color = "rgba(0, 0, 0, 0.8)"
+      Chart.defaults.borderColor = "rgba(0, 0, 0, 0.1)"
+      Chart.defaults.scale.ticks.backdropColor = "transparent"
+    }
+  }
+
+  // Recursively traverse the config object and automatically apply theme-specific color schemes
+  const applyThemeConfig = (obj, theme) => {
+    if (typeof obj !== 'object' || obj === null) return
+
+    Object.keys(obj).forEach(key => {
+      const value = obj[key]
+      // If the property is an object and has theme-specific options, apply them
+      if (typeof value === 'object' && value !== null) {
+        if (value[theme]) {
+          obj[key] = value[theme] // Apply the value for the current theme
+        } else {
+          // Recursively process child objects
+          applyThemeConfig(value, theme)
+        }
+      }
+    })
+  }
+
+  const runChartJS = ele => {
+    window.loadChartJS = true
+
+    Array.from(ele).forEach((item, index) => {
+      const chartSrc = item.firstElementChild
+      const chartID = item.getAttribute('data-chartjs-id') || ('chartjs-' + index) // Use custom ID or default ID
+      const width = item.getAttribute('data-width')
+      const existingCanvas = document.getElementById(chartID)
+
+      // If a canvas already exists, remove it to avoid rendering duplicates
+      if (existingCanvas) {
+          existingCanvas.parentNode.remove()
+      }
+
+      const chartDefinition = chartSrc.textContent
+      const canvas = document.createElement('canvas')
+      canvas.id = chartID
+
+      const div = document.createElement('div')
+      div.className = 'chartjs-wrap'
+
+      if (width) {
+        div.style.width = width
+      }
+
+      div.appendChild(canvas)
+      chartSrc.insertAdjacentElement('afterend', div)
+
+      const ctx = document.getElementById(chartID).getContext('2d')
+
+      const config = JSON.parse(chartDefinition)
+
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark-mode' : 'light-mode'
+
+      // Set default styles (initial setup)
+      applyThemeDefaultsConfig(theme)
+
+      // Automatically traverse the config and apply dual-mode color schemes
+      applyThemeConfig(config, theme)
+
+      new Chart(ctx, config)
+    })
+  }
+
+  const loadChartJS = () => {
+    const chartJSEle = document.querySelectorAll('#article-container .chartjs-container')
+    if (chartJSEle.length === 0) return
+
+    window.loadChartJS ? runChartJS(chartJSEle) : btf.getScript('https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.min.js').then(() => runChartJS(chartJSEle))
+  }
+
+  // Listen for theme change events
+  btf.addGlobalFn('themeChange', loadChartJS, 'chartjs')
+  btf.addGlobalFn('encrypt', loadChartJS, 'chartjs')
+
+  window.pjax ? loadChartJS() : document.addEventListener('DOMContentLoaded', loadChartJS)
+})()</script><script>(function() {
+  const abcjsInit = function() {
+    const abcjsFn = function() {
+      setTimeout(function() {
+        const sheets = document.querySelectorAll(".abc-music-sheet")
+        for (let i = 0; i < sheets.length; i++) {
+          const ele = sheets[i]
+          if (ele.children.length > 0) continue
+
+          // Parse parameters from data-params attribute
+          let params = {}
+          const dp = ele.getAttribute("data-params")
+          if (dp) {
+            try {
+              params = JSON.parse(dp)
+            } catch (e) {
+              console.error("Failed to parse data-params:", e)
+            }
+          }
+
+          // Merge parsed parameters with the responsive option
+          // Ensures params content appears before responsive
+          const options = { ...params, responsive: "resize" }
+
+          // Render the music score using ABCJS.renderAbc
+          ABCJS.renderAbc(ele, ele.innerHTML, options)
+        }
+      }, 100)
+    }
+
+    if (typeof ABCJS === "object") {
+      abcjsFn()
+    } else {
+      btf.getScript("https://cdn.jsdelivr.net/npm/abcjs/dist/abcjs-basic-min.min.js").then(abcjsFn)
+    }
+  }
+
+  if (window.pjax) {
+    abcjsInit()
+  } else {
+    window.addEventListener("load", abcjsInit)
+  }
+
+  btf.addGlobalFn("encrypt", abcjsInit, "abcjs")
+})()</script><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = {"labels":["Gitalk","Comment"],"createIssueManually":false,"distractionFreeMode":false}
+
+  const commentCount = n => {
+    const isCommentCount = document.querySelector('#post-meta .gitalk-comment-count')
+    if (isCommentCount) {
+      isCommentCount.textContent= n
+    }
+  }
+
+  const initGitalk = (el, path) => {
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGitalk = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+
+    const gitalk = new Gitalk({
+      clientID: 'Ov23li3vDQANiUddL4XB',
+      clientSecret: '5c9a56d02995340fca117809cd414662aadce6ff',
+      repo: 'HexoComment',
+      owner: 'ergou10086',
+      admin: ['ergou10086'],
+      updateCountCallback: commentCount,
+      ...option,
+      id: isShuoshuo ? path : (option && option.id) || 'a7d8f822a666c090bdbf2a468e47af77'
+    })
+
+    gitalk.render('gitalk-container')
+  }
+
+  const loadGitalk = async(el, path) => {
+    if (typeof Gitalk === 'function') initGitalk(el, path)
+    else {
+      await btf.getCSS('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.css')
+      await btf.getScript('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.js')
+      initGitalk(el, path)
+    }
+  }
+
+  if (isShuoshuo) {
+    'Gitalk' === 'Gitalk'
+      ? window.shuoshuoComment = { loadComment: loadGitalk }
+      : window.loadOtherComment = loadGitalk
+    return
+  }
+
+  if ('Gitalk' === 'Gitalk' || !false) {
+    if (false) btf.loadComment(document.getElementById('gitalk-container'), loadGitalk)
+    else loadGitalk()
+  } else {
+    window.loadOtherComment = loadGitalk
+  }
+})()</script></div><div class="aplayer no-destroy" data-id="13587761608" data-server="netease" data-type="playlist" data-fixed="true" data-autoplay="false" data-lrcType="-1"> </div><script src="https://cdn.jsdelivr.net/npm/abcjs@7.1.2/dist/abcjs-basic-min.js"></script><script src="/js/sun_moon.js" async></script><script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.7/dayjs.min.js"></script><script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.7/plugin/duration.min.js"></script><script src="/scripts/realtime.js"></script><script src="/scripts/random.js"></script><script src="/scripts/weather.js"></script><script>if(window.location.pathname.includes('/viewpoint/')){function loadViewpointScripts(){var loadScript=function(src,callback){var s=document.createElement('script');s.src=src;s.async=false;s.defer=false;s.onload=function(){console.log('脚本加载成功:',src);setTimeout(function(){if(callback)callback();},100);};s.onerror=function(){console.error('脚本加载失败:',src);setTimeout(function(){if(callback)callback();},100);};document.body.appendChild(s);};loadScript('/scripts/viewpoint/math.js',function(){console.log('math.js 加载完成, math:',typeof math);loadScript('/scripts/viewpoint/katex.min.js',function(){console.log('katex.min.js 加载完成, katex:',typeof katex);loadScript('/scripts/viewpoint/sweetalert2@11.js',function(){console.log('sweetalert2@11.js 加载完成, Swal:',typeof Swal,'Sweetalert2:',typeof Sweetalert2);if(typeof Swal==='undefined'&&typeof Sweetalert2!=='undefined'){window.Swal=window.Sweetalert2;console.log('已设置 Swal 别名');}loadScript('/scripts/viewpoint/main.js',function(){console.log('Viewpoint 页面所有脚本加载完成');});});});});}if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',loadViewpointScripts);}else{loadViewpointScripts();}}</script><script>if(window.location.pathname.includes('/littleGame/')){function loadLittleGameScripts(){var load=function(src,cb){var s=document.createElement('script');s.src=src;s.async=false;s.defer=false;s.onload=function(){if(cb)cb();};document.body.appendChild(s);};load('/scripts/littleGame/2048.js',function(){load('/scripts/littleGame/extra-games.js');});}if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',loadLittleGameScripts);}else{loadLittleGameScripts();}}</script><script defer="defer" id="ribbon" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-ribbon.min.js" size="150" alpha="0.6" zIndex="-1" mobile="null" data-click="true"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = false;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><script id="click-heart" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/click-heart.min.js" async="async" mobile="false"></script><script>(() => {
+  window.ChatraID = '4bzb546NSBoJcrNyu'
+  window.Chatra = window.Chatra || function() {
+    (window.Chatra.q = window.Chatra.q || []).push(arguments)
+  }
+
+  btf.getScript('https://call.chatra.io/chatra.js').then(() => {
+    const isChatBtn = true
+    const isChatHideShow = true
+
+    if (isChatBtn) {
+      const close = () => {
+        Chatra('minimizeWidget')
+        Chatra('hide')
+      }
+
+      const open = () => {
+        Chatra('openChat', true)
+        Chatra('show')
+      }
+
+      window.ChatraSetup = { startHidden: true }
+    
+      window.chatBtnFn = () => document.getElementById('chatra').classList.contains('chatra--expanded') ? close() : open()
+
+      document.getElementById('chat-btn').style.display = 'block'
+    } else if (isChatHideShow) {
+      window.chatBtn = {
+        hide: () => Chatra('hide'),
+        show: () => Chatra('show')
+      }
+    }
+  })
+})()</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/metingjs/dist/Meting.min.js"></script><script>(() => {
+  const destroyAplayer = () => {
+    if (window.aplayers) {
+      for (let i = 0; i < window.aplayers.length; i++) {
+        if (!window.aplayers[i].options.fixed) {
+          window.aplayers[i].destroy()
+        }
+      }
+    }
+  }
+
+  const runMetingJS = () => {
+    typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+  }
+
+  btf.addGlobalFn('pjaxSend', destroyAplayer, 'destroyAplayer')
+  btf.addGlobalFn('pjaxComplete', loadMeting, 'runMetingJS')
+})()</script><script src="https://cdn.jsdelivr.net/npm/pjax/pjax.min.js"></script><script>(() => {
+  const pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+  window.pjax = new Pjax({
+    elements: 'a:not([target="_blank"]):not([href="/music/"]):not([href="/viewpoint/"])',
+    selectors: pjaxSelectors,
+    cacheBust: false,
+    analytics: false,
+    scrollRestoration: false
+  })
+
+  const triggerPjaxFn = (val) => {
+    if (!val) return
+    Object.values(val).forEach(fn => fn())
+  }
+
+  document.addEventListener('pjax:send', () => {
+    // removeEventListener
+    btf.removeGlobalFnEvent('pjaxSendOnce')
+    btf.removeGlobalFnEvent('themeChange')
+
+    // reset readmode
+    const $bodyClassList = document.body.classList
+    if ($bodyClassList.contains('read-mode')) $bodyClassList.remove('read-mode')
+
+    triggerPjaxFn(window.globalFn.pjaxSend)
+  })
+
+  document.addEventListener('pjax:complete', () => {
+    btf.removeGlobalFnEvent('pjaxCompleteOnce')
+    document.querySelectorAll('script[data-pjax]').forEach(item => {
+      const newScript = document.createElement('script')
+      const content = item.text || item.textContent || item.innerHTML || ""
+      Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+      newScript.appendChild(document.createTextNode(content))
+      item.parentNode.replaceChild(newScript, item)
+    })
+
+    triggerPjaxFn(window.globalFn.pjaxComplete)
+  })
+
+  document.addEventListener('pjax:error', e => {
+    if (e.request.status === 404) {
+      const usePjax = true
+      true 
+        ? (usePjax ? pjax.loadUrl('/404.html') : window.location.href = '/404.html')
+        : window.location.href = e.request.responseURL
+    }
+  })
+})()</script><script src="/js/fps-display.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><!-- hexo injector body_end start --><script data-pjax>
+  function butterfly_swiper_injector_config(){
+    var parent_div_git = document.getElementById('recent-posts');
+    var item_html = '<div class="recent-post-item" style="height: auto;width: 100%"><div class="blog-slider swiper-container-fade swiper-container-horizontal" id="swiper_container"><div class="blog-slider__wrp swiper-wrapper" style="transition-duration: 0ms;"><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_database.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-14</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt="">结构化查询语言SQL</a><div class="blog-slider__text">SQL基本很常用的语句都在这里了，本质上是当初为了应付数据库考试整理的，后来发现还蛮有用的很方便查常用的语句</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java4.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-22</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt="">SpringBoot part0?INF-SpringBoot这个框架都需要学习什么</a><div class="blog-slider__text">主要围绕Spring Boot中重要知识来简洁或详细的说明，其中部分不够完全，持续更新</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java11.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-15</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt="">关于Lombok在高版本IDEA中注解处理不生效的问题解决</a><div class="blog-slider__text">基本上是彻底的解决了用 IDEA 新建 Spring Boot 项目时候会产生的 Lombok 注解处理失效的各种问题</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_实用.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-05</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt="">个人向galgame原声带或相关音乐整理及其资源</a><div class="blog-slider__text">整理了我喜欢的galgame ost或者衍生的音乐专辑，部分资源是自己扒盘扒下来的，部分来自鸟白岛放映厅</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_math.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-17</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt="">对书上证明样本方差是总体方差的无偏估计量的解析</a><div class="blog-slider__text">对书上证明样本方差是总体方差的无偏估计量的解析，高等教育出版社-华科大版本</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_alog.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-04-24</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt="">第十五届蓝桥杯Java国赛B组D题-园丁题解</a><div class="blog-slider__text">第十五届蓝桥杯Java国赛B组D题-园丁题解，该题解已经发布到洛谷社区中并且被全站推荐</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java4.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-04-29</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt="">操作系统之处理机的死锁部分概述</a><div class="blog-slider__text">对操作系统之处理机的死锁部分知识的总结，包括代码复现</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_lb.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-09</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt="">Little Busters!EX游戏攻略</a><div class="blog-slider__text">整理了一份详细清晰的Little Busters！EX的游戏攻略，因为我自己也在推，就顺手整理了一份方便查阅的md文档</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java9.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-16</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt="">Spring Boot中使用Hibernate框架</a><div class="blog-slider__text">对学习完Hibernate的应用部分，主要围绕Spring Boot中使用Hibernate框架，建议学习完 Hibernate 框架再看</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div></div><div class="blog-slider__pagination swiper-pagination-clickable swiper-pagination-bullets"></div></div></div>';
+    console.log('已挂载butterfly_swiper')
+    parent_div_git.insertAdjacentHTML("afterbegin",item_html)
+    }
+  var elist = 'undefined'.split(',');
+  var cpage = location.pathname;
+  var epage = '/';
+  var flag = 0;
+
+  for (var i=0;i<elist.length;i++){
+    if (cpage.includes(elist[i])){
+      flag++;
+    }
+  }
+
+  if ((epage ==='all')&&(flag == 0)){
+    butterfly_swiper_injector_config();
+  }
+  else if (epage === cpage){
+    butterfly_swiper_injector_config();
+  }
+  </script><script defer src="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper.min.js"></script><script defer data-pjax src="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper_init.js"></script><!-- hexo injector body_end end --></body></html>
