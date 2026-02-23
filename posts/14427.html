@@ -1,0 +1,1381 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>面向对象编程的设计模式之架构设计模式 | ErgouTree's Blog</title><meta name="author" content="ErgouTree"><meta name="copyright" content="ErgouTree"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="前言：这些是什么样的设计模式 之前，我们学习的是GoF（Gang of Four）提出的 23 种经典设计模式（5 创建型 + 7 结构型 + 11 行为型） 接下来，我提到的这些设计模式，他们属于更高层次的 架构模式（Architectural Patterns） 或 企业级设计模式（Enterprise Design Patterns），而不是 GoF 的微观设计模式。它们关注的">
+<meta property="og:type" content="article">
+<meta property="og:title" content="面向对象编程的设计模式之架构设计模式">
+<meta property="og:url" content="https://ergou10086.github.io/posts/14427.html">
+<meta property="og:site_name" content="ErgouTree&#39;s Blog">
+<meta property="og:description" content="前言：这些是什么样的设计模式 之前，我们学习的是GoF（Gang of Four）提出的 23 种经典设计模式（5 创建型 + 7 结构型 + 11 行为型） 接下来，我提到的这些设计模式，他们属于更高层次的 架构模式（Architectural Patterns） 或 企业级设计模式（Enterprise Design Patterns），而不是 GoF 的微观设计模式。它们关注的">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://ergou10086.github.io/images/posts/cover_other4.jpg">
+<meta property="article:published_time" content="2026-02-22T18:26:49.000Z">
+<meta property="article:modified_time" content="2026-02-22T18:28:02.536Z">
+<meta property="article:author" content="ErgouTree">
+<meta property="article:tag" content="学习">
+<meta property="article:tag" content="实用知识">
+<meta property="article:tag" content="Java学习">
+<meta property="article:tag" content="后端">
+<meta property="article:tag" content="设计模式">
+<meta property="article:tag" content="项目设计">
+<meta property="article:tag" content="开发原则">
+<meta property="article:tag" content="面向对象">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ergou10086.github.io/images/posts/cover_other4.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "面向对象编程的设计模式之架构设计模式",
+  "url": "https://ergou10086.github.io/posts/14427.html",
+  "image": "https://ergou10086.github.io/images/posts/cover_other4.jpg",
+  "datePublished": "2026-02-22T18:26:49.000Z",
+  "dateModified": "2026-02-22T18:28:02.536Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "ErgouTree",
+      "url": "https://github.com/ergou10086"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/pi.ico"><link rel="canonical" href="https://ergou10086.github.io/posts/14427.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//hm.baidu.com"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!true && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?https://hm.baidu.com/hm.js?a6ab1b78e2c6320b664f31e8b9bf0e36";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+btf.addGlobalFn('pjaxComplete', () => {
+  _hmt.push(['_trackPageview',window.location.pathname])
+}, 'baidu_analytics')
+</script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.json","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":true},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: {"chs_to_cht":"已切换为繁体中文","cht_to_chs":"已切换为简体中文","day_to_night":"已切换为深色模式","night_to_day":"已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#1f1f1f","position":"bottom-left"},
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '面向对象编程的设计模式之架构设计模式',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css"><link rel="stylesheet" href="/css/littleGame.css"><svg aria-hidden="true" style="position:absolute; overflow:hidden; width:0; height:0"><symbol id="icon-sun" viewBox="0 0 1024 1024"><path d="M960 512l-128 128v192h-192l-128 128-128-128H192v-192l-128-128 128-128V192h192l128-128 128 128h192v192z" fill="#FFD878" p-id="8420"></path><path d="M736 512a224 224 0 1 0-448 0 224 224 0 1 0 448 0z" fill="#FFE4A9" p-id="8421"></path><path d="M512 109.248L626.752 224H800v173.248L914.752 512 800 626.752V800h-173.248L512 914.752 397.248 800H224v-173.248L109.248 512 224 397.248V224h173.248L512 109.248M512 64l-128 128H192v192l-128 128 128 128v192h192l128 128 128-128h192v-192l128-128-128-128V192h-192l-128-128z" fill="#4D5152" p-id="8422"></path><path d="M512 320c105.888 0 192 86.112 192 192s-86.112 192-192 192-192-86.112-192-192 86.112-192 192-192m0-32a224 224 0 1 0 0 448 224 224 0 0 0 0-448z" fill="#4D5152" p-id="8423"></path></symbol><symbol id="icon-moon" viewBox="0 0 1024 1024"><path d="M611.370667 167.082667a445.013333 445.013333 0 0 1-38.4 161.834666 477.824 477.824 0 0 1-244.736 244.394667 445.141333 445.141333 0 0 1-161.109334 38.058667 85.077333 85.077333 0 0 0-65.066666 135.722666A462.08 462.08 0 1 0 747.093333 102.058667a85.077333 85.077333 0 0 0-135.722666 65.024z" fill="#FFB531" p-id="11345"></path><path d="M329.728 274.133333l35.157333-35.157333a21.333333 21.333333 0 1 0-30.165333-30.165333l-35.157333 35.157333-35.114667-35.157333a21.333333 21.333333 0 0 0-30.165333 30.165333l35.114666 35.157333-35.114666 35.157334a21.333333 21.333333 0 1 0 30.165333 30.165333l35.114667-35.157333 35.157333 35.157333a21.333333 21.333333 0 1 0 30.165333-30.165333z" fill="#030835" p-id="11346"></path></symbol></svg><link rel="stylesheet" href="/css/custom.css"><!-- hexo injector head_end start --><link rel="stylesheet" href="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiperstyle.css" media="print" onload="this.media='all'"><!-- hexo injector head_end end --><meta name="generator" content="Hexo 7.3.0"></head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js/pace.min.js"></script><div id="web_bg" style="background: linear-gradient(20deg, #0062be, #925696, #cc426e, #fb0347);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/arp.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">308</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">188</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">103</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-images"></i><span> Gallery</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/games/"><i class="fa-fw fas fa-trophy"></i><span> GalGame</span></a></li><li><a class="site-page child" href="/video/"><i class="fa-fw fas fa-video"></i><span> Video</span></a></li><li><a class="site-page child" href="/viewpoint/"><i class="fa-fw fas fa-calculator"></i><span> ViewPoint</span></a></li><li><a class="site-page child" href="/littleGame/"><i class="fa-fw fas fa-thumbs-up"></i><span> littleGame</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div><div class="menus_item"><a class="site-page" href="javascript:randomPost();"><span> Random</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/images/posts/cover_other4.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">ErgouTree's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">面向对象编程的设计模式之架构设计模式</span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-images"></i><span> Gallery</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/games/"><i class="fa-fw fas fa-trophy"></i><span> GalGame</span></a></li><li><a class="site-page child" href="/video/"><i class="fa-fw fas fa-video"></i><span> Video</span></a></li><li><a class="site-page child" href="/viewpoint/"><i class="fa-fw fas fa-calculator"></i><span> ViewPoint</span></a></li><li><a class="site-page child" href="/littleGame/"><i class="fa-fw fas fa-thumbs-up"></i><span> littleGame</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div><div class="menus_item"><a class="site-page" href="javascript:randomPost();"><span> Random</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div><div id="randomPost"><a class="site-page social-icon search" href="javascript:;" onclick="randomPost()" title="随机访问一篇文章"><i class="fas fa-circle-notch fa-fw"></i></a></div></nav><div id="post-info"><h1 class="post-title">面向对象编程的设计模式之架构设计模式<a class="post-edit-link" href="https://github.com/ergou10086/ergou10086.github.io/edit/main/source/_posts/_posts/面向对象编程的设计模式之架构设计模式.md" title="编辑" target="_blank"><i class="fas fa-pencil-alt"></i></a></h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-02-22T18:26:49.000Z" title="发表于 2026-02-23 02:26:49">2026-02-23</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-02-22T18:28:02.536Z" title="更新于 2026-02-23 02:28:02">2026-02-23</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%BC%80%E5%8F%91%E7%9F%A5%E8%AF%86/">开发知识</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%BC%80%E5%8F%91%E7%9F%A5%E8%AF%86/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/">设计模式</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">8.3k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>29分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span><span class="post-meta-separator">|</span><span class="post-meta-commentcount"><i class="far fa-comments fa-fw post-meta-icon"></i><span class="post-meta-label">评论数:</span><a href="/posts/14427.html#post-comment"><span class="gitalk-comment-count"><i class="fa-solid fa-spinner fa-spin"></i></span></a></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="前言这些是什么样的设计模式">前言：这些是什么样的设计模式</h2>
+<p>之前，我们学习的是GoF（Gang of Four）提出的 <strong>23
+种经典设计模式</strong>（5 创建型 + 7 结构型 + 11 行为型）</p>
+<p>接下来，我提到的这些设计模式，他们属于更高层次的
+<strong>架构模式（Architectural Patterns）</strong> 或
+<strong>企业级设计模式（Enterprise Design Patterns）</strong>，而不是
+GoF
+的微观设计模式。它们关注的是整个系统的组织结构、职责划分和控制流，而非单个类或对象之间的交互。</p>
+<p>从经典设计模式迈向现代软件架构的关键节点就在这里。掌握这些高层次模式，将帮助你设计出<strong>可维护、可扩展、高内聚、低耦合</strong>的企业级系统。</p>
+<p>他们有很多经典的实现，我只讲解最常使用的和看到的</p>
+<h3 id="架构设计模式">架构设计模式</h3>
+<p>关注<strong>整个系统的高层结构</strong>，决定组件如何组织、通信和部署。</p>
+<p>它的选择影响全局、难以后期修改、而且通常决定技术选型。</p>
+<p>常见的架构模式如下</p>
+<ul>
+<li><strong>MVC 模式</strong></li>
+<li><strong>MVVM 模式</strong></li>
+<li><strong>三层架构</strong>（表现层-业务层-数据层）模式</li>
+<li><strong>管道-过滤器模式</strong></li>
+<li><strong>微服务架构</strong></li>
+<li><strong>事件驱动架构</strong></li>
+<li><strong>CQRS（Command Query Responsibility
+Segregation）</strong></li>
+<li><strong>六边形架构（Hexagonal Architecture） /
+端口与适配器</strong></li>
+<li><strong>整洁架构</strong></li>
+</ul>
+<h3 id="企业设计模式">企业设计模式</h3>
+<p>而它关注<strong>企业应用中的常见问题</strong>（如数据访问、请求处理、服务调用等）。</p>
+<p>解决特定场景问题、通常在框架或中间件中实现</p>
+<ul>
+<li><strong>前端控制器模式</strong></li>
+<li><strong>拦截过滤器模式</strong></li>
+<li><strong>服务定位器模式</strong></li>
+<li><strong>数据访问对象模式（DAO）</strong></li>
+<li><strong>传输对象模式（TO / DTO）</strong></li>
+<li><strong>业务代表模式（Business Delegate）</strong></li>
+<li><strong>组合实体模式（Composite Entity）</strong></li>
+<li><strong>依赖注入（Dependency Injection, DI）</strong></li>
+<li><strong>仓储模式（Repository Pattern）</strong></li>
+<li><strong>工作单元（Unit of Work）</strong></li>
+</ul>
+<h2 id="常见常用架构设计模式详解">常见常用架构设计模式详解</h2>
+<h3 id="mvc模式">MVC模式</h3>
+<p>首先，MVC 指的就是 Model-View-Controller
+，是一种经典的软件架构模式，旨在通过职责分离提高代码的可维护性、扩展性和复用性。</p>
+<p>这种模式用于应用程序的分层开发。特别适用于构建用户界面（UI）应用程序。</p>
+<ul>
+<li><strong>Model（模型）</strong> - 模型代表一个存取数据的对象或 JAVA
+POJO。它也可以带有逻辑，在数据变化时更新控制器。</li>
+<li><strong>View（视图）</strong> -
+视图代表模型包含的数据的可视化。</li>
+<li><strong>Controller（控制器）</strong> -
+控制器作用于模型和视图上。它控制数据流向模型对象，并在数据变化时更新视图。它使视图与模型分离开。</li>
+</ul>
+<figure>
+<img src="/posts/14427/eef2f21f3b1a47b58a2b4e9d55a0d768.png" alt="img">
+<figcaption aria-hidden="true">img</figcaption>
+</figure>
+<p>关注点分离是如何实现的，如下：</p>
+<ul>
+<li>Model 不知道 View 和 Controller 的存在；</li>
+<li>View 只读取 Model 的数据（或通过 Controller 获取）；</li>
+<li>Controller 决定如何响应用户操作，并驱动 Model 和 View 的变化。</li>
+</ul>
+<figure>
+<img src="/posts/14427/image-20260201001120138.png" alt="image-20260201001120138">
+<figcaption aria-hidden="true">image-20260201001120138</figcaption>
+</figure>
+<p>还是以一个例子来说明</p>
+<figure>
+<img src="/posts/14427/image-20260201001115031.png" alt="image-20260201001115031">
+<figcaption aria-hidden="true">image-20260201001115031</figcaption>
+</figure>
+<ul>
+<li><p>Model，可以看到这些就是一些字段的模型，就是POJO数据对象</p>
+<p>这里只关心是什么的问题</p>
+<figure>
+<img src="/posts/14427/image-20260201001005497.png" alt="image-20260201001005497">
+<figcaption aria-hidden="true">image-20260201001005497</figcaption>
+</figure></li>
+<li><p>View，将 <code>GiantModel</code>
+的状态以日志形式“显示”出来。只是<strong>被动展示</strong>。</p>
+<p>View 的职责就是“呈现”，它不知道用户如何操作，也不知道数据怎么变。</p>
+<figure>
+<img src="/posts/14427/image-20260201001109070.png" alt="image-20260201001109070">
+<figcaption aria-hidden="true">image-20260201001109070</figcaption>
+</figure></li>
+<li><p>Controller，一般是接收外部指令来更新
+Model，决定何时改数据、何时刷新界面。</p>
+<figure>
+<img src="/posts/14427/image-20260201001214393.png" alt="image-20260201001214393">
+<figcaption aria-hidden="true">image-20260201001214393</figcaption>
+</figure></li>
+<li><p>抛去一些枚举类带来的类型安全默认值外，主程序就是分别创建这些东西，然后调用对应的
+View 和 Controller 来展示和操作 Model</p>
+<figure>
+<img src="/posts/14427/image-20260201001317391.png" alt="image-20260201001317391">
+<figcaption aria-hidden="true">image-20260201001317391</figcaption>
+</figure></li>
+</ul>
+<p>当开发中型应用程序，需要清晰分离数据、业务逻辑和用户界面时，考虑使用MVC模式。</p>
+<p>而很多简单的 Web
+应用程序就是用户通过浏览器（视图）发送请求，服务器端的控制器处理请求，模型进行数据处理。</p>
+<h3 id="mvvm模式"><strong>MVVM</strong>模式</h3>
+<p>https://zhuanlan.zhihu.com/p/11669116019</p>
+<p>MVVM 是 <strong>Model-View-ViewModel</strong>
+的缩写，是一种用于构建用户界面的架构模式，特别适用于<strong>数据驱动型
+UI</strong>（如 Web 前端、桌面应用、移动端）。它最早由微软在
+WPF/Silverlight 中推广，现广泛应用于 Vue.js、Angular、Knockout.js
+等框架。</p>
+<p>MVVM 架构的最终目标是使视图完全独立于应用程序逻辑。</p>
+<p>那么 MVVM 中的角色如下</p>
+<ul>
+<li><strong>模型：</strong>该模型代表应用的域模型，其中可能包括数据模型以及业务和验证逻辑。它与
+ViewModel 进行通信，但无法感知 View。</li>
+<li><strong>视图：</strong>View
+代表应用程序的用户界面，包含有限的、纯粹的展示逻辑，用于实现视觉行为。View
+与业务逻辑完全无关。换句话说，View
+是一个“哑”类，它从不包含数据，也不会直接操作数据。它通过数据绑定与
+ViewModel 通信，并且不知道 Model 的存在。</li>
+<li><strong>视图模型：</strong>ViewModel 是 View 和 Model
+之间的纽带。它通过数据绑定实现并公开 View
+使用的公共属性和命令。如果发生任何状态更改，ViewModel 会通过通知事件通知
+View。</li>
+</ul>
+<p>理解 MVVM 架构的关键是理解 MVVM 中的三个关键组件如何相互作用。因为
+View 只与 ViewModel 通信，而 ViewModel 只与 Model 通信。</p>
+<p>所有用户交互都发生在 View 中，View
+负责检测用户的输入（鼠标点击、键盘输入）并通过数据绑定将其转发给
+ViewModel。数据绑定可以通过回调或属性实现，并构成 View 和 ViewModel
+之间的具体链接。</p>
+<p>ViewModel
+实现视图可以绑定到的属性和命令。这些属性和命令定义了视图可以向用户提供的功能，尽管如何显示它完全取决于视图。</p>
+<figure>
+<img src="/posts/14427/image-20260201002113802.png" alt="image-20260201002113802">
+<figcaption aria-hidden="true">image-20260201002113802</figcaption>
+</figure>
+<p>要注意如下内容，一般情况下，View 和 ViewModel
+之间通过“数据绑定”自动同步，而且ViewModel 不知道 View
+的具体实现，命令（Command）模式处理用户操作</p>
+<p>使用一个例子来讲解其内容</p>
+<figure>
+<img src="/posts/14427/image-20260201002118962.png" alt="image-20260201002118962">
+<figcaption aria-hidden="true">image-20260201002118962</figcaption>
+</figure>
+<p>其中，Model：<code>Book.java</code> +
+<code>BookService.java</code></p>
+<figure>
+<img src="/posts/14427/image-20260201002145465.png" alt="image-20260201002145465">
+<figcaption aria-hidden="true">image-20260201002145465</figcaption>
+</figure>
+<ul>
+<li>纯数据对象，代表书一本</li>
+</ul>
+<p>其 Model 中的业务逻辑接口和业务逻辑实现如下</p>
+<figure>
+<img src="/posts/14427/image-20260201002219815.png" alt="image-20260201002219815">
+<figcaption aria-hidden="true">image-20260201002219815</figcaption>
+</figure>
+<figure>
+<img src="/posts/14427/image-20260201002256920.png" alt="image-20260201002256920">
+<figcaption aria-hidden="true">image-20260201002256920</figcaption>
+</figure>
+<p>其中，Model 层的逻辑就是提供数据和业务逻辑，<strong>完全独立于
+UI</strong>。</p>
+<p>那么，其中 View 就是 zul 文件，但是由于 ZK
+我确实不熟悉，只能放这里看看了</p>
+<figure>
+<img src="/posts/14427/image-20260201002414039.png" alt="image-20260201002414039">
+<figcaption aria-hidden="true">image-20260201002414039</figcaption>
+</figure>
+<p>这个
+<code>@bind()</code>应该也是双向绑定，而且查了一下<code>@command('deleteBook')</code>
+绑定 的是 ViewModel 中的命令方法，ZK 是一个纯声明式 UI。</p>
+<p>其中，ViewModel：<code>BookViewModel.java</code>，如下</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">BookViewModel</span> &#123;</span><br><span class="line">    <span class="meta">@WireVariable</span></span><br><span class="line">    <span class="keyword">private</span> List&lt;Book&gt; bookList; <span class="comment">// ⚠️ 注意：这个字段其实未被使用！</span></span><br><span class="line"></span><br><span class="line">    <span class="meta">@Getter</span></span><br><span class="line">    <span class="keyword">private</span> Book selectedBook;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="type">BookService</span> <span class="variable">bookService</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BookServiceImpl</span>();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Getter for bookList —— 这才是 View 绑定的数据源！</span></span><br><span class="line">    <span class="keyword">public</span> List&lt;Book&gt; <span class="title function_">getBookList</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> bookService.load(); <span class="comment">// 每次访问都重新加载（简单实现）</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Setter with @NotifyChange —— 当 selectedBook 改变时通知 View</span></span><br><span class="line">    <span class="meta">@NotifyChange(&quot;selectedBook&quot;)</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setSelectedBook</span><span class="params">(Book selectedBook)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.selectedBook = selectedBook;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 命令方法：处理删除操作</span></span><br><span class="line">    <span class="meta">@Command</span></span><br><span class="line">    <span class="meta">@NotifyChange(&#123;&quot;selectedBook&quot;, &quot;bookList&quot;&#125;)</span> <span class="comment">// 删除后通知 View 刷新这两个属性</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">deleteBook</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (selectedBook != <span class="literal">null</span>) &#123;</span><br><span class="line">            getBookList().remove(selectedBook); <span class="comment">// 直接从列表移除</span></span><br><span class="line">            selectedBook = <span class="literal">null</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>其中，<code>@Command</code>标记该方法可被 View 通过
+<code>@command('methodName')</code>
+调用，<code>@NotifyChange(&#123;"prop1", "prop2"&#125;)</code>是而当方法执行后，通知
+View 刷新指定属性的绑定值</p>
+<p>什么意思，它暴露数据给 View，通过 <code>getBookList()</code> 和
+<code>getSelectedBook()</code>；而且用<code>deleteBook()</code>
+是这个命令响应用户操作，再通过 <code>@NotifyChange</code> 告知 View
+何时刷新，实现了把业务逻辑和代码逻辑几乎完全分离</p>
+<table>
+<colgroup>
+<col style="width: 13%">
+<col style="width: 39%">
+<col style="width: 46%">
+</colgroup>
+<thead>
+<tr>
+<th>特性</th>
+<th>MVC（巨人例子）</th>
+<th>MVVM（书籍例子）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>数据流向</td>
+<td>Controller 主动调用 View.update()</td>
+<td>View 通过绑定自动监听 ViewModel 变化</td>
+</tr>
+<tr>
+<td>UI 更新方式</td>
+<td>手动（命令式）</td>
+<td>自动（声明式 + 数据绑定）</td>
+</tr>
+<tr>
+<td>View 依赖</td>
+<td>View 依赖 Model（直接读取）</td>
+<td>View 只依赖 ViewModel（通过绑定表达式）</td>
+</tr>
+<tr>
+<td>测试性</td>
+<td>Controller 需要 mock View</td>
+<td>ViewModel 完全独立于 View，极易单元测试</td>
+</tr>
+<tr>
+<td>适用场景</td>
+<td>简单 UI、服务端渲染</td>
+<td>复杂交互、富客户端应用</td>
+</tr>
+</tbody>
+</table>
+<p>MVVM
+是核心价值是<strong>通过数据绑定消除样板代码，让开发者专注于业务逻辑而非
+UI 同步</strong></p>
+<p>Vue.js 的整体设计，就是基于这个设计模式</p>
+<h3 id="三层架构">三层架构</h3>
+<p>三层架构（Three-Tier / Three-Layer Architecture）指的是哪三层？</p>
+<p>实际上，三层架构的核心也是分离数据和视图，那么三层应该也是大差不差的</p>
+<ul>
+<li><strong>UI(表现层):</strong>
+主要是指与用户交互的界面。用于接收用户输入的数据和显示处理后用户需要的数据。</li>
+<li><strong>BLL:(业务逻辑层):</strong>
+UI层和DAL层之间的桥梁。实现业务逻辑。业务逻辑具体包含：验证、计算、业务规则等等。</li>
+<li><strong>DAL:(数据访问层):</strong>
+与数据库打交道。主要实现对数据的增、删、改、查。将存储在数据库中的数据提交给业务层，同时将业务层处理的数据保存到数据库。（当然这些操作都是基于UI层的。用户的需求反映给界面（UI），UI反映给BLL，BLL反映给DAL，DAL进行数据的操作，操作后再一一返回，直到将用户所需数据反馈给用户）</li>
+</ul>
+<table>
+<colgroup>
+<col style="width: 32%">
+<col style="width: 15%">
+<col style="width: 52%">
+</colgroup>
+<thead>
+<tr>
+<th>层级</th>
+<th>名称</th>
+<th>职责</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1. 表示层（Presentation Layer）</td>
+<td>又称 UI 层、视图层</td>
+<td>负责与用户交互：接收输入、展示结果（如 Web
+页面、命令行、移动端界面）。</td>
+</tr>
+<tr>
+<td>2. 业务逻辑层（Business Logic Layer）</td>
+<td>又称服务层、应用层</td>
+<td>封装核心业务规则、流程控制、事务管理等。它是系统“大脑”。</td>
+</tr>
+<tr>
+<td>3. 数据访问层（Data Access Layer）</td>
+<td>又称持久层、DAO 层</td>
+<td>负责与数据库或其他数据源交互：增删改查（CRUD），屏蔽底层存储细节。</td>
+</tr>
+</tbody>
+</table>
+<p>一般来说</p>
+<ul>
+<li><strong>表示层</strong> → 调用 <strong>业务逻辑层</strong></li>
+<li><strong>业务逻辑层</strong> → 调用 <strong>数据访问层</strong></li>
+<li><strong>表示层不能直接访问数据访问层</strong>（违反分层原则）</li>
+</ul>
+<figure>
+<img src="/posts/14427/1535337833-4838-1359192395-1143.png" alt="img">
+<figcaption aria-hidden="true">img</figcaption>
+</figure>
+<p>联系他们的通常模式是使用实体类，那么，是不是有一点回到了我们编写
+Spring 应用时候的设计思路了，一个 Model，一个 Repository，一个 Web
+前端，但是纯三层模式写 Spring 还是比较吃力的，但是 Spring
+应用在开发的时候，三层模式在其中很常见</p>
+<p>其中，Entity在三层架构中，最主观的就是在三层之间传递数据，然后将实体与数据库字段对应，然后每一层（UI—&gt;BLL—&gt;DAL）之间的数据传递（单向）是靠变量或实体作为参数来传递的，其中，传递一般使用实体或者额外构建传输层DTO</p>
+<p>综上所述，三层及实体层之间的依赖关系</p>
+<figure>
+<img src="/posts/14427/image-20260201003305950.png" alt="image-20260201003305950">
+<figcaption aria-hidden="true">image-20260201003305950</figcaption>
+</figure>
+<p>使用一个实际例子来讲解这个设计模式</p>
+<p>首先，定义实体类（Entity），共享模型，被所有层共享。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// model/User.java</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">User</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> String id;</span><br><span class="line">    <span class="keyword">private</span> String name;</span><br><span class="line">    <span class="keyword">private</span> String email;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 构造函数、getter/setter</span></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">User</span><span class="params">(String id, String name, String email)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.id = id;</span><br><span class="line">        <span class="built_in">this</span>.name = name;</span><br><span class="line">        <span class="built_in">this</span>.email = email;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Getters</span></span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">getId</span><span class="params">()</span> &#123; <span class="keyword">return</span> id; &#125;</span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">getName</span><span class="params">()</span> &#123; <span class="keyword">return</span> name; &#125;</span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">getEmail</span><span class="params">()</span> &#123; <span class="keyword">return</span> email; &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">toString</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">&quot;User&#123;id=&#x27;&quot;</span> + id + <span class="string">&quot;&#x27;, name=&#x27;&quot;</span> + name + <span class="string">&quot;&#x27;, email=&#x27;&quot;</span> + email + <span class="string">&quot;&#x27;&#125;&quot;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>然后定义数据访问层，DAO 层只关心如何存取数据</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// dao/UserDao.java</span></span><br><span class="line"><span class="keyword">import</span> java.util.*;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">UserDao</span> &#123;</span><br><span class="line">    <span class="comment">// 模拟数据库</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Map&lt;String, User&gt; database = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 初始化一些测试数据</span></span><br><span class="line">    <span class="keyword">static</span> &#123;</span><br><span class="line">        database.put(<span class="string">&quot;1&quot;</span>, <span class="keyword">new</span> <span class="title class_">User</span>(<span class="string">&quot;1&quot;</span>, <span class="string">&quot;Alice&quot;</span>, <span class="string">&quot;alice@example.com&quot;</span>));</span><br><span class="line">        database.put(<span class="string">&quot;2&quot;</span>, <span class="keyword">new</span> <span class="title class_">User</span>(<span class="string">&quot;2&quot;</span>, <span class="string">&quot;Bob&quot;</span>, <span class="string">&quot;bob@example.com&quot;</span>));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 根据 ID 查询用户</span></span><br><span class="line">    <span class="keyword">public</span> User <span class="title function_">findById</span><span class="params">(String id)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> database.get(id);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 保存新用户</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">save</span><span class="params">(User user)</span> &#123;</span><br><span class="line">        database.put(user.getId(), user);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 检查邮箱是否已存在</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">isEmailExists</span><span class="params">(String email)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> database.values().stream()</span><br><span class="line">                .anyMatch(u -&gt; u.getEmail().equals(email));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>一般来说，你还需要一个服务层接口，目的就是在 DAO
+中添加规定需要的业务逻辑，然后实现类来实现这些方法描述具体的业务逻辑，调用
+DAO</p>
+<p>表示层就不写了，写个 html 就够了用
+Thymeleaf，一般来说，表示层只负责</p>
+<ul>
+<li>接收用户输入</li>
+<li>调用 Service</li>
+<li>展示结果</li>
+</ul>
+<table>
+<colgroup>
+<col style="width: 11%">
+<col style="width: 49%">
+<col style="width: 39%">
+</colgroup>
+<thead>
+<tr>
+<th>对比项</th>
+<th>三层架构</th>
+<th>MVC</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>目的</td>
+<td>整体系统分层（宏观架构）</td>
+<td>UI 内部结构组织（微观模式）</td>
+</tr>
+<tr>
+<td>适用范围</td>
+<td>整个应用程序</td>
+<td>主要用于表示层内部</td>
+</tr>
+<tr>
+<td>层级</td>
+<td>表示层、业务层、数据层</td>
+<td>Model、View、Controller</td>
+</tr>
+<tr>
+<td>关系</td>
+<td>MVC 通常位于三层架构的“表示层”内部</td>
+<td>三层架构可包含 MVC</td>
+</tr>
+</tbody>
+</table>
+<p>在一个 Web 应用中：</p>
+<ul>
+<li><strong>三层架构</strong>：前端（HTML/JS）←→ 后端 Controller（MVC 的
+C）←→ Service ←→ DAO</li>
+</ul>
+<p>三层架构的核心就是<strong>让代码结构清晰、职责分明，使大型项目可持续演进。</strong></p>
+<h3 id="管道-过滤器模式">管道-过滤器模式</h3>
+<p>管道-过滤器模式 是一种用于处理数据流的架构模式。</p>
+<p>它将复杂的处理过程分解为一系列独立的、可重用的处理单元（称为“过滤器”），这些单元通过管道（Pipe）连接起来，前一个过滤器的输出作为后一个过滤器的输入，形成一条数据处理流水线（Pipeline）。</p>
+<p>这种模式与工业制造生产流水线非常类似</p>
+<p>想象汽车装配线：</p>
+<ul>
+<li>工件（原始数据）进入流水线；</li>
+<li>第一个工位（Filter 1）安装轮胎；</li>
+<li>第二个工位（Filter 2）喷漆；</li>
+<li>第三个工位（Filter 3）安装座椅；</li>
+<li>最终成品（处理结果）流出。</li>
+</ul>
+<p>每个工位<strong>只关心自己的任务</strong>，不关心上游怎么来、下游怎么用。因为这么说我实际上是想说，<strong>过滤器之间通常松耦合</strong>，每个
+Filter 只知道自己的输入/输出类型；所以可以像搭积木一样组合不同
+Filter</p>
+<p>用一幅图来形象描述这个过程，如下图所示</p>
+<figure>
+<img src="/posts/14427/v2-d01cefd6ccd37b11d6bd6192349a31fb_r.jpg" alt="img">
+<figcaption aria-hidden="true">img</figcaption>
+</figure>
+<p>这个是一个极为重要的设计模式，我想起什么举什么例子了</p>
+<ul>
+<li><p>在 Spring Web MVC
+<code>HandlerInterceptor</code>的拦截器链，他就是管道过滤器模式，每个拦截器只关注自己的职责</p></li>
+<li><p>例如在 Spring Security 中的认证过滤器链（Spring Security
+将整个认证/授权流程拆分为 16 个标准 Filter，组成一条
+<code>FilterChain</code>。）和 <code>Security Filter Chain</code>
+那一串一串的过滤器链，这是 最经典、最显式的管道-过滤器实现</p></li>
+</ul>
+<p>那么，管道过滤器链需要如下角色</p>
+<table>
+<colgroup>
+<col style="width: 15%">
+<col style="width: 33%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr>
+<th>角色</th>
+<th>职责</th>
+<th>在你代码中的对应</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Filter（过滤器）</td>
+<td>执行单一数据处理任务，输入 → 处理 → 输出</td>
+<td><code>RemoveAlphabetsHandler</code>,
+<code>RemoveDigitsHandler</code>,
+<code>ConvertToCharArrayHandler</code></td>
+</tr>
+<tr>
+<td>Pipe（管道）</td>
+<td>连接过滤器，传递数据（通常隐式实现）</td>
+<td><code>Pipeline</code> 类内部的函数组合逻辑</td>
+</tr>
+<tr>
+<td>Pipeline（流水线）</td>
+<td>组装多个过滤器，形成处理链</td>
+<td><code>Pipeline</code> 类本身</td>
+</tr>
+</tbody>
+</table>
+<figure>
+<img src="/posts/14427/image-20260201010147306.png" alt="image-20260201010147306">
+<figcaption aria-hidden="true">image-20260201010147306</figcaption>
+</figure>
+<p>基础契约：<code>Handler.java</code>，他是一个 Filter 接口</p>
+<figure>
+<img src="/posts/14427/image-20260201010213049.png" alt="image-20260201010213049">
+<figcaption aria-hidden="true">image-20260201010213049</figcaption>
+</figure>
+<ul>
+<li>输入类型 I，输入类型 O，这既是 Filter 的抽象接口。所以说，每个具体
+Filter 必须实现 <code>process</code> 方法</li>
+</ul>
+<p>具体过滤器，例如</p>
+<figure>
+<img src="/posts/14427/image-20260201010306753.png" alt="image-20260201010306753">
+<figcaption aria-hidden="true">image-20260201010306753</figcaption>
+</figure>
+<ul>
+<li>可以看到的， 每个 Filter 职责单一，例子中的核心体现是可独立测试</li>
+</ul>
+<p>管道组装器：<code>Pipeline.java</code>，有了这么多过滤器实现，通常需要组成流水线才能更好处理业务</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Pipeline</span>&lt;I, O&gt; &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Handler&lt;I, O&gt; currentHandler;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 构造：初始处理器</span></span><br><span class="line">    Pipeline(Handler&lt;I, O&gt; currentHandler) &#123;</span><br><span class="line">        <span class="built_in">this</span>.currentHandler = currentHandler;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 添加新处理器（关键！）</span></span><br><span class="line">    &lt;K&gt; Pipeline&lt;I, K&gt; <span class="title function_">addHandler</span><span class="params">(Handler&lt;O, K&gt; newHandler)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Pipeline</span>&lt;&gt;(input -&gt; </span><br><span class="line">            newHandler.process(currentHandler.process(input))</span><br><span class="line">        );</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 执行整个流水线</span></span><br><span class="line">    O <span class="title function_">execute</span><span class="params">(I input)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> currentHandler.process(input);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>说一下其中的组合逻辑，挺抽象的
+<ul>
+<li><code>addHandler</code> 并不是简单地把 Handler 存入列表；</li>
+<li>而是<strong>立即构建一个新的复合函数</strong>：
+<code>input → currentHandler → newHandler → output</code></li>
+<li>这种递归嵌套实现了<strong>隐式的管道连接</strong>。</li>
+</ul></li>
+</ul>
+<p>对应主程序<code>App.java</code>，使用起来就比较简单了 ——
+构建并运行流水线</p>
+<figure>
+<img src="/posts/14427/image-20260201010551707.png" alt="image-20260201010551707">
+<figcaption aria-hidden="true">image-20260201010551707</figcaption>
+</figure>
+<p>对于管道过滤器模式和责任链模式</p>
+<table>
+<colgroup>
+<col style="width: 12%">
+<col style="width: 37%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr>
+<th>对比项</th>
+<th>管道-过滤器</th>
+<th>责任链（Chain of Responsibility）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>目的</td>
+<td>数据转换流水线</td>
+<td>请求处理分发</td>
+</tr>
+<tr>
+<td>数据流向</td>
+<td>单向流动，每站加工</td>
+<td>可能中途终止（如找到处理者就停）</td>
+</tr>
+<tr>
+<td>输出类型</td>
+<td>可变化（String → char[]）</td>
+<td>通常相同（如都返回 boolean）</td>
+</tr>
+<tr>
+<td>耦合性</td>
+<td>通过类型匹配自动连接</td>
+<td>通常需显式设置 next handler</td>
+</tr>
+</tbody>
+</table>
+<p>而且这种设计模式对并行的实现，也相当友好，但是我就不特意去实现了））</p>
+<p>而且，23 个经典设计模式里面有一个设计模式叫组合模式，当 Pipe-Filter
+遇上组合模式时，多个 Filter 又可以再组合成一个新的
+Filter，如下图所示，组合出来的 Filter 接收的数据与第一个 Filter
+保持一致，返回的数据与最后一个 Filter
+保持一致。通过组合，就可以将多个简单的 Filter 可以组合成一个更复杂的
+Filter。应用这一套理论去实践，我们会发现，Filter
+既可以做的很轻便，也可以做得很强大。</p>
+<figure>
+<img src="/posts/14427/v2-8086534bddf81262002cf3de83602efe_r.jpg" alt="img">
+<figcaption aria-hidden="true">img</figcaption>
+</figure>
+<h3 id="事件驱动模式"><strong>事件驱动</strong>模式</h3>
+<blockquote>
+<p><strong>系统的行为由“事件”（Event）的产生、发布和响应来驱动</strong>，而不是通过直接的方法调用或紧耦合的流程控制。</p>
+</blockquote>
+<p>事件驱动架构（ Event-Driven
+Architecture，EDA），核心思想是让系统组件通过事件来传递信息，而不是直接互相调用。</p>
+<p>事件驱动架构是一种基于异步处理的架构风格，通过高度解耦的事件处理器来触发和响应系统中发生的事件。其中大多数事件驱动架构由以下组件组成：</p>
+<ul>
+<li><strong>事件（Event）</strong>：系统中发生的任何有意义的变化（例如：用户下单、支付成功、库存不足）。</li>
+<li><strong>驱动（Driven）</strong>：事件触发后续动作（例如：支付成功事件自动触发发货流程）。</li>
+<li><strong>架构（Architecture）</strong>：组件之间<strong>不直接通信</strong>，而是通过<strong>事件管理器（如<a target="_blank" rel="noopener" href="https://zhida.zhihu.com/search?content_id=261789988&amp;content_type=Article&amp;match_order=1&amp;q=消息队列&amp;zd_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ6aGlkYV9zZXJ2ZXIiLCJleHAiOjE3NzAwNTIxNDQsInEiOiLmtojmga_pmJ_liJciLCJ6aGlkYV9zb3VyY2UiOiJlbnRpdHkiLCJjb250ZW50X2lkIjoyNjE3ODk5ODgsImNvbnRlbnRfdHlwZSI6IkFydGljbGUiLCJtYXRjaF9vcmRlciI6MSwiemRfdG9rZW4iOm51bGx9.zzjuBrLeLzj5AWke-PnhkqqlSjpH8i_JgYb8uyEj_dU&amp;zhida_source=entity">消息队列</a>）</strong>
+中转消息。
+<ul>
+<li><strong>生产者</strong>：发现事件并通知（如：“订单已创建！”）。</li>
+<li><strong>消费者</strong>：订阅事件并行动（如：库存系统听到“订单创建”就扣库存）。</li>
+</ul></li>
+</ul>
+<p>那么，事件驱动系统这件事情也很明显了</p>
+<ol type="1">
+<li><p><strong>事件发布</strong>：</p>
+<p>服务A（生产者）发生状态变化（如用户支付成功），将事件扔进“<a target="_blank" rel="noopener" href="https://zhida.zhihu.com/search?content_id=261789988&amp;content_type=Article&amp;match_order=1&amp;q=事件通道&amp;zd_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ6aGlkYV9zZXJ2ZXIiLCJleHAiOjE3NzAwNTIxNDQsInEiOiLkuovku7bpgJrpgZMiLCJ6aGlkYV9zb3VyY2UiOiJlbnRpdHkiLCJjb250ZW50X2lkIjoyNjE3ODk5ODgsImNvbnRlbnRfdHlwZSI6IkFydGljbGUiLCJtYXRjaF9vcmRlciI6MSwiemRfdG9rZW4iOm51bGx9.7P1hwL037SMiccqBR57UZ261LEFYUEi7EFQixMQR0rs&amp;zhida_source=entity">事件通道</a>”（如
+<a target="_blank" rel="noopener" href="https://zhida.zhihu.com/search?content_id=261789988&amp;content_type=Article&amp;match_order=1&amp;q=Kafka&amp;zd_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ6aGlkYV9zZXJ2ZXIiLCJleHAiOjE3NzAwNTIxNDQsInEiOiJLYWZrYSIsInpoaWRhX3NvdXJjZSI6ImVudGl0eSIsImNvbnRlbnRfaWQiOjI2MTc4OTk4OCwiY29udGVudF90eXBlIjoiQXJ0aWNsZSIsIm1hdGNoX29yZGVyIjoxLCJ6ZF90b2tlbiI6bnVsbH0.MAASwSXFBZMA654e8lhejHSQk82HFhePwOJv9RD6EJo&amp;zhida_source=entity">Kafka</a>、<a target="_blank" rel="noopener" href="https://zhida.zhihu.com/search?content_id=261789988&amp;content_type=Article&amp;match_order=1&amp;q=RabbitMQ&amp;zd_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ6aGlkYV9zZXJ2ZXIiLCJleHAiOjE3NzAwNTIxNDQsInEiOiJSYWJiaXRNUSIsInpoaWRhX3NvdXJjZSI6ImVudGl0eSIsImNvbnRlbnRfaWQiOjI2MTc4OTk4OCwiY29udGVudF90eXBlIjoiQXJ0aWNsZSIsIm1hdGNoX29yZGVyIjoxLCJ6ZF90b2tlbiI6bnVsbH0.N3jYmhf7xT3OvG1WnDdapS-kp_-ZzIHPrL5NP7yeOsc&amp;zhida_source=entity">RabbitMQ</a>）。</p></li>
+<li><p><strong>事件传递</strong>：</p>
+<p>事件通道像邮局，把事件传递给所有订阅该事件的服务（消费者）。</p></li>
+<li><p><strong>事件处理</strong>：</p>
+<p>服务B（消费者）收到事件，执行自己的逻辑（如通知用户支付成功）。</p></li>
+</ol>
+<figure>
+<img src="/posts/14427/3054031-20240217103533575-1560902180.png" alt="img">
+<figcaption aria-hidden="true">img</figcaption>
+</figure>
+<p>可以看到，Java 开发中几乎所有消息队列都是这种设计模式</p>
+<p>而且Spring 内置了强大的事件机制，就是这种设计模式</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 1. 定义事件</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">OrderPlacedEvent</span> <span class="keyword">extends</span> <span class="title class_">ApplicationEvent</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">OrderPlacedEvent</span><span class="params">(Order order)</span> &#123; <span class="built_in">super</span>(order); &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 2. 发布事件</span></span><br><span class="line"><span class="meta">@Service</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">OrderService</span> &#123;</span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> ApplicationEventPublisher publisher;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">placeOrder</span><span class="params">(Order order)</span> &#123;</span><br><span class="line">        <span class="comment">// ... 保存订单</span></span><br><span class="line">        publisher.publishEvent(<span class="keyword">new</span> <span class="title class_">OrderPlacedEvent</span>(order)); <span class="comment">// 发布</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 3. 监听事件</span></span><br><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">EmailNotificationListener</span> &#123;</span><br><span class="line">    <span class="meta">@EventListener</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">handleOrderPlaced</span><span class="params">(OrderPlacedEvent event)</span> &#123;</span><br><span class="line">        <span class="comment">// 发送邮件</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>当然，事件驱动模式，我两个月前就做了一个很经典的 Kafka + Spring Cloud
+Stream 的分布式事件驱动</p>
+<p>那么，还是来举一个具体的例子来掩饰这个设计模式如何实现</p>
+<table>
+<colgroup>
+<col style="width: 28%">
+<col style="width: 48%">
+<col style="width: 24%">
+</colgroup>
+<thead>
+<tr>
+<th>角色</th>
+<th>职责</th>
+<th>别名</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Event（事件）</td>
+<td>表示系统中发生的“事实”（如“用户已创建”）。它是不可变的数据载体。</td>
+<td>Message</td>
+</tr>
+<tr>
+<td>Event Producer（生产者）</td>
+<td>检测到业务动作后，发布事件。</td>
+<td>Publisher, Emitter</td>
+</tr>
+<tr>
+<td>Event Dispatcher/Bus（分发器/总线）</td>
+<td>路由事件到对应的处理器。</td>
+<td>Event Router, Mediator</td>
+</tr>
+<tr>
+<td>Event Handler（处理器）</td>
+<td>监听并处理特定类型的事件。</td>
+<td>Listener, Subscriber, Consumer</td>
+</tr>
+</tbody>
+</table>
+<p>对于其中的事件</p>
+<p>基础接口</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">Event</span> &#123;</span><br><span class="line">    Class&lt;? <span class="keyword">extends</span> <span class="title class_">Event</span>&gt; getType(); <span class="comment">// 用于类型匹配</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>对于抽象基类<code>AbstractEvent.java</code></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">AbstractEvent</span> <span class="keyword">implements</span> <span class="title class_">Event</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> Class&lt;? <span class="keyword">extends</span> <span class="title class_">Event</span>&gt; getType() &#123;</span><br><span class="line">        <span class="keyword">return</span> getClass(); <span class="comment">// 返回具体子类类型</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>具体事件：</p>
+<figure>
+<img src="/posts/14427/image-20260201011419503.png" alt="image-20260201011419503">
+<figcaption aria-hidden="true">image-20260201011419503</figcaption>
+</figure>
+<figure>
+<img src="/posts/14427/image-20260201011425281.png" alt="image-20260201011425281">
+<figcaption aria-hidden="true">image-20260201011425281</figcaption>
+</figure>
+<ul>
+<li>每个事件是一个独立的、语义明确的“事实”。它们携带数据（如
+<code>User</code> 对象），但不包含行为。</li>
+</ul>
+<p>对于事件处理器</p>
+<ul>
+<li><p>接口：<code>Handler.java</code></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">Handler</span>&lt;E <span class="keyword">extends</span> <span class="title class_">Event</span>&gt; &#123;</span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">onEvent</span><span class="params">(E event)</span>; <span class="comment">// 处理事件</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>对于具体实现</p>
+<figure>
+<img src="/posts/14427/image-20260201011526063.png" alt="image-20260201011526063">
+<figcaption aria-hidden="true">image-20260201011526063</figcaption>
+</figure>
+<figure>
+<img src="/posts/14427/image-20260201011532339.png" alt="image-20260201011532339">
+<figcaption aria-hidden="true">image-20260201011532339</figcaption>
+</figure>
+<p>可以看到他们都是对上述具体事件的具体方法处理，是对事件语义的行为解释</p></li>
+</ul>
+<p>然后核心是事件分发器<code>EventDispatcher</code></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">EventDispatcher</span> &#123;</span><br><span class="line">    <span class="comment">// 存储 &lt;事件类型, 处理器&gt; 的映射</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Map&lt;Class&lt;? <span class="keyword">extends</span> <span class="title class_">Event</span>&gt;, Handler&lt;? <span class="keyword">extends</span> <span class="title class_">Event</span>&gt;&gt; handlers;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 注册：将事件类型绑定到处理器</span></span><br><span class="line">    <span class="keyword">public</span> &lt;E <span class="keyword">extends</span> <span class="title class_">Event</span>&gt; <span class="keyword">void</span> <span class="title function_">registerHandler</span><span class="params">(Class&lt;E&gt; eventType, Handler&lt;E&gt; handler)</span> &#123;</span><br><span class="line">        handlers.put(eventType, handler);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 分发：根据事件类型找到处理器并调用</span></span><br><span class="line">    <span class="meta">@SuppressWarnings(&quot;unchecked&quot;)</span></span><br><span class="line">    <span class="keyword">public</span> &lt;E <span class="keyword">extends</span> <span class="title class_">Event</span>&gt; <span class="keyword">void</span> <span class="title function_">dispatch</span><span class="params">(E event)</span> &#123;</span><br><span class="line">        <span class="type">var</span> <span class="variable">handler</span> <span class="operator">=</span> (Handler&lt;E&gt;) handlers.get(event.getClass());</span><br><span class="line">        <span class="keyword">if</span> (handler != <span class="literal">null</span>) &#123;</span><br><span class="line">            handler.onEvent(event);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><strong>这就是“中介者”（Mediator）模式的体现</strong>！所有通信都通过
+<code>EventDispatcher</code> 中转，避免了生产者与消费者直接依赖。</li>
+</ul>
+<p>其中，对于客户端</p>
+<figure>
+<img src="/posts/14427/image-20260201011741729.png" alt="image-20260201011741729">
+<figcaption aria-hidden="true">image-20260201011741729</figcaption>
+</figure>
+<p>emmm，我一直感觉事件驱动很像观察者模式，因为都是都是“发布-订阅”模型，都是监听一个事件，而且通常是一对多，而且通过
+<strong>中介（EventDispatcher）</strong> 解耦</p>
+<p>而且，一般情况下，事件驱动模式通常需要和中介者模式一起使用，因为
+<code>EventDispatcher</code>就是典型的
+Mediator！它封装了多个对象（Handler）之间的交互逻辑，避免它们相互引用。</p>
+<p>而且，每个 <code>Handler</code>
+可以看作一种“处理策略”。<code>EventDispatcher</code>
+在运行时根据事件类型<strong>动态选择策略</strong>。这是否又是策略模式？而且是不是其中也有命令模式的影子？</p>
+<p>所以说，我认为，事件驱动模式是很多设计模式的组合</p>
+<h3 id="整洁架构模式">整洁架构模式</h3>
+<p>这张图描述的是著名的 <strong>“整洁架构”</strong>，The Clean
+Architecture</p>
+<figure>
+<img src="/posts/14427/v2-fe2d9ebc22da1693aec698298a0685ad_r.jpg" alt="img">
+<figcaption aria-hidden="true">img</figcaption>
+</figure>
+<p>想象一个<strong>洋葱</strong>，它从内到外分成一层层的圈</p>
+<ul>
+<li><strong>最里圈</strong>：Entities，实体，是整个项目中最核心的、最稳定的业务规则和数据，所以，它是核心</li>
+<li><strong>中间圈</strong>：Use Cases，用例，
+代表使用核心规则完成具体业务功能的逻辑，也就是核心的业务</li>
+<li><strong>再外圈：</strong>支持项目架构的一些内容，通常在这负责将数据在内外层之间进行转换，例如用于提供服务的接口，网关等等</li>
+<li><strong>最外圈：</strong>技术实现，把业务逻辑和技术细节连接起来的胶水和实现技术具体的内容部分</li>
+</ul>
+<p>那么，这个圈就存在这样一个核心规则</p>
+<ul>
+<li><strong>内向规则：</strong>外层（技术）可以依赖内层（业务），但<strong>内层绝对不能依赖外层！</strong>
+也就是，业务逻辑只关心做什么，不关心怎么做，你不能换个实现方式就用不了这个东西了</li>
+<li><strong>抽象依赖：</strong>外层通过接口/适配器与内层沟通。内层定义需要什么（接口），外层提供具体实现（适配器）。这让<strong>核心业务与技术实现完全解耦</strong>。</li>
+</ul>
+<figure>
+<img src="/posts/14427/image-20260202010400602.png" alt="image-20260202010400602">
+<figcaption aria-hidden="true">image-20260202010400602</figcaption>
+</figure>
+<p>最后还是一句话，<strong>源码依赖只能向内指向，不能向外。</strong></p>
+<p><strong>内层不知道外层的存在</strong>。外层依赖并实现内层定义的接口。这使得核心业务逻辑完全独立于任何外部框架或数据库。</p>
+<figure>
+<img src="/posts/14427/image-20260202010350573.png" alt="image-20260202010350573">
+<figcaption aria-hidden="true">image-20260202010350573</figcaption>
+</figure>
+<p>它解决了各种各样的代码搅在一起，牵一发而动全身的问题，而且主要解决的是技术绑架业务这样的问题</p>
+<p>但是这样设计架构避免不了带来项目复杂的问题，也就是说，需要长期维护、演进的复杂业务系统，才考虑使用整洁架构，对于简单、生命周期短、技术栈稳定的项目，就用更简单的架构会更合适</p>
+<p>然后，还是以一个例子来说明上述内容</p>
+<figure>
+<img src="/posts/14427/image-20260202010416682.png" alt="image-20260202010416682">
+<figcaption aria-hidden="true">image-20260202010416682</figcaption>
+</figure>
+<ul>
+<li><p>实体层：</p>
+<p>实体层一般封装企业范围内的关键业务规则和数据。它们是系统中最纯粹的部分，不依赖任何外部库</p>
+<p>其中，<code>Product.java</code>: 代表一个商品</p>
+<figure>
+<img src="/posts/14427/image-20260202010652926.png" alt="image-20260202010652926">
+<figcaption aria-hidden="true">image-20260202010652926</figcaption>
+</figure>
+<p><code>Cart.java</code>: 代表购物车中的一项，<code>Order.java</code>:
+代表一个订单，它们都代表了核心的业务规则</p>
+<figure>
+<img src="/posts/14427/image-20260202010727609.png" alt="image-20260202010727609">
+<figcaption aria-hidden="true">image-20260202010727609</figcaption>
+</figure></li>
+<li><p>用例层 (Use Cases) - 代表<strong>应用业务逻辑</strong></p>
+<p>通过编排实体来完成特定的应用场景，它定义了软件要做的具体事情，并协调数据流向实体。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ShoppingCartService</span> &#123;</span><br><span class="line">  <span class="comment">/** Repository for managing product data. */</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> ProductRepository productRepository;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/** Repository for managing cart data. */</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> CartRepository cartRepository;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/** Repository for managing order data. */</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> OrderRepository orderRepository;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * Constructs a ShoppingCartService with the required repositories.</span></span><br><span class="line"><span class="comment">   *</span></span><br><span class="line"><span class="comment">   * <span class="doctag">@param</span> pdtRepository The repository to fetch product details.</span></span><br><span class="line"><span class="comment">   * <span class="doctag">@param</span> repository The repository to manage cart operations.</span></span><br><span class="line"><span class="comment">   * <span class="doctag">@param</span> ordRepository The repository to handle order persistence.</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="keyword">public</span> <span class="title function_">ShoppingCartService</span><span class="params">(</span></span><br><span class="line"><span class="params">      <span class="keyword">final</span> ProductRepository pdtRepository,</span></span><br><span class="line"><span class="params">      <span class="keyword">final</span> CartRepository repository,</span></span><br><span class="line"><span class="params">      <span class="keyword">final</span> OrderRepository ordRepository)</span> &#123;</span><br><span class="line">    <span class="built_in">this</span>.productRepository = pdtRepository;</span><br><span class="line">    <span class="built_in">this</span>.cartRepository = repository;</span><br><span class="line">    <span class="built_in">this</span>.orderRepository = ordRepository;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * Adds an item to the user&#x27;s shopping cart.</span></span><br><span class="line"><span class="comment">   *</span></span><br><span class="line"><span class="comment">   * <span class="doctag">@param</span> userId The ID of the user.</span></span><br><span class="line"><span class="comment">   * <span class="doctag">@param</span> productId The ID of the product to be added.</span></span><br><span class="line"><span class="comment">   * <span class="doctag">@param</span> quantity The quantity of the product.</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">addItemToCart</span><span class="params">(<span class="keyword">final</span> String userId, <span class="keyword">final</span> String productId, <span class="keyword">final</span> <span class="type">int</span> quantity)</span> &#123;</span><br><span class="line">    <span class="type">Product</span> <span class="variable">product</span> <span class="operator">=</span> productRepository.getProductById(productId);</span><br><span class="line">    <span class="keyword">if</span> (product != <span class="literal">null</span>) &#123;</span><br><span class="line">      cartRepository.addItemToCart(userId, product, quantity);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * Removes an item from the user&#x27;s shopping cart.</span></span><br><span class="line"><span class="comment">   *</span></span><br><span class="line"><span class="comment">   * <span class="doctag">@param</span> userId The ID of the user.</span></span><br><span class="line"><span class="comment">   * <span class="doctag">@param</span> productId The ID of the product to be removed.</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">removeItemFromCart</span><span class="params">(<span class="keyword">final</span> String userId, <span class="keyword">final</span> String productId)</span> &#123;</span><br><span class="line">    cartRepository.removeItemFromCart(userId, productId);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * Calculates the total cost of items in the user&#x27;s shopping cart.</span></span><br><span class="line"><span class="comment">   *</span></span><br><span class="line"><span class="comment">   * <span class="doctag">@param</span> userId The ID of the user.</span></span><br><span class="line"><span class="comment">   * <span class="doctag">@return</span> The total price of all items in the cart.</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="keyword">public</span> <span class="type">double</span> <span class="title function_">calculateTotal</span><span class="params">(<span class="keyword">final</span> String userId)</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> cartRepository.calculateTotal(userId);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * Checks out the user&#x27;s cart and creates an order.</span></span><br><span class="line"><span class="comment">   *</span></span><br><span class="line"><span class="comment">   * &lt;p&gt;This method retrieves the cart items, generates an order ID, creates a new order, saves it,</span></span><br><span class="line"><span class="comment">   * and clears the cart.</span></span><br><span class="line"><span class="comment">   *</span></span><br><span class="line"><span class="comment">   * <span class="doctag">@param</span> userId The ID of the user.</span></span><br><span class="line"><span class="comment">   * <span class="doctag">@return</span> The created order containing purchased items.</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="comment">// 下单这个完整用例的流程如下</span></span><br><span class="line">  <span class="keyword">public</span> Order <span class="title function_">checkout</span><span class="params">(<span class="keyword">final</span> String userId)</span> &#123;</span><br><span class="line">    List&lt;Cart&gt; items = cartRepository.getItemsInCart(userId);</span><br><span class="line">    <span class="type">String</span> <span class="variable">orderId</span> <span class="operator">=</span> <span class="string">&quot;ORDER-&quot;</span> + System.currentTimeMillis();</span><br><span class="line">    <span class="type">Order</span> <span class="variable">order</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Order</span>(orderId, items);</span><br><span class="line">    orderRepository.saveOrder(order);</span><br><span class="line">    cartRepository.clearCart(userId);</span><br><span class="line">    <span class="keyword">return</span> order;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>就例如 checkout
+下单来说，它的<code>checkout</code>方法定义了“下单”这个完整用例的流程，获取购物车
+-&gt; 生成订单ID -&gt; 创建订单 -&gt; 保存订单 -&gt;
+清空购物车。而且它依赖于<code>ProductRepository</code>,
+<code>CartRepository</code>,
+<code>OrderRepository</code>这三个接口来获取和存储数据，但它完全不知道这些接口的具体实现是什么</li>
+</ul>
+<p>所以说，这一层是业务流程的指挥，它知道需要哪些数据，但不知道数据如何被持久化，只是编排业务需要的具体逻辑。</p></li>
+<li><p>对于接口适配器层 (Interface Adapters)</p>
+<p>数据的交换和存储通常在这层进行，是在外层（如Web、DB）的数据格式和内层（实体、用例）的数据格式之间进行转换。控制器（Controller）、Presenter、Gateway都属于这一层。</p>
+<p>例如，示例中的控制器<code>CartController.java</code></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.iluwatar.cleanarchitecture;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Controller class for handling shopping cart operations.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * &lt;p&gt;This class provides methods to add, remove, and calculate the total price of items in a user&#x27;s</span></span><br><span class="line"><span class="comment"> * shopping cart.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">CartController</span> &#123;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/** Service layer responsible for cart operations. */</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> ShoppingCartService shoppingCartUseCase;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * Constructs a CartController with the specified shopping cart service.</span></span><br><span class="line"><span class="comment">   *</span></span><br><span class="line"><span class="comment">   * <span class="doctag">@param</span> shoppingCart The shopping cart service to handle cart operations.</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="keyword">public</span> <span class="title function_">CartController</span><span class="params">(<span class="keyword">final</span> ShoppingCartService shoppingCart)</span> &#123;</span><br><span class="line">    <span class="built_in">this</span>.shoppingCartUseCase = shoppingCart;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * Adds an item to the user&#x27;s cart.</span></span><br><span class="line"><span class="comment">   *</span></span><br><span class="line"><span class="comment">   * <span class="doctag">@param</span> userId The ID of the user.</span></span><br><span class="line"><span class="comment">   * <span class="doctag">@param</span> productId The ID of the product to be added.</span></span><br><span class="line"><span class="comment">   * <span class="doctag">@param</span> quantity The quantity of the product.</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">addItemToCart</span><span class="params">(<span class="keyword">final</span> String userId, <span class="keyword">final</span> String productId, <span class="keyword">final</span> <span class="type">int</span> quantity)</span> &#123;</span><br><span class="line">    shoppingCartUseCase.addItemToCart(userId, productId, quantity);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * Removes an item from the user&#x27;s cart.</span></span><br><span class="line"><span class="comment">   *</span></span><br><span class="line"><span class="comment">   * <span class="doctag">@param</span> userId The ID of the user.</span></span><br><span class="line"><span class="comment">   * <span class="doctag">@param</span> productId The ID of the product to be removed.</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">removeItemFromCart</span><span class="params">(<span class="keyword">final</span> String userId, <span class="keyword">final</span> String productId)</span> &#123;</span><br><span class="line">    shoppingCartUseCase.removeItemFromCart(userId, productId);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * Calculates the total cost of items in the user&#x27;s cart.</span></span><br><span class="line"><span class="comment">   *</span></span><br><span class="line"><span class="comment">   * <span class="doctag">@param</span> userId The ID of the user.</span></span><br><span class="line"><span class="comment">   * <span class="doctag">@return</span> The total price of all items in the cart.</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="keyword">public</span> <span class="type">double</span> <span class="title function_">calculateTotal</span><span class="params">(<span class="keyword">final</span> String userId)</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> shoppingCartUseCase.calculateTotal(userId);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>可以看到，他接受指令，然后调用<code>ShoppingCartService</code>来执行业务逻辑。它是外部数据与内部数据交换的桥梁。</p>
+<p>那么，Repository 仓库接口一般是做 CURD，所以也属于这一层</p>
+<p>这一层的关键在于，用例层只依赖接口，而具体的实现在外层</p></li>
+<li><p>框架与驱动层在例子中没有特殊体现，只是以
+<code>App.java</code>来模拟</p>
+<p>这一层是最容易发生变化的，按照规则，这种变化不会也不能影响到内层的核心业务逻辑。</p>
+<figure>
+<img src="/posts/14427/image-20260202012925525.png" alt="image-20260202012925525">
+<figcaption aria-hidden="true">image-20260202012925525</figcaption>
+</figure></li>
+</ul>
+<p>最后完整的分析一个业务在整个整洁架构中的流转，组件之间的交流特点</p>
+<ol type="1">
+<li><p><strong><code>App.main</code></strong> (框架层)
+创建了所有依赖对象，并将它们正确地连接起来。</p></li>
+<li><p><strong><code>OrderController.checkout("user123")</code></strong>
+(接口适配器层) 被调用。</p></li>
+<li><p><strong><code>OrderController</code></strong> 调用
+<strong><code>ShoppingCartService.checkout("user123")</code></strong>
+(用例层)。</p></li>
+<li><p><code>ShoppingCartService</code></p>
+<p>开始执行“下单”用例：</p>
+<ul>
+<li>调用
+<strong><code>cartRepository.getItemsInCart("user123")</code></strong>。这里的<code>cartRepository</code>是一个<code>CartRepository</code><strong>接口</strong>。</li>
+<li>实际执行的是
+<strong><code>InMemoryCartRepository.getItemsInCart</code></strong>
+(框架/驱动层)，它从内存中取出<code>List&lt;Cart&gt;</code>。</li>
+<li><code>ShoppingCartService</code>
+使用这些<code>Cart</code>实体创建一个新的<code>Order</code>实体。</li>
+<li>调用
+<strong><code>orderRepository.saveOrder(order)</code></strong>。这里的<code>orderRepository</code>是一个<code>OrderRepository</code><strong>接口</strong>。</li>
+<li>实际执行的是
+<strong><code>InMemoryOrderRepository.saveOrder</code></strong>
+(框架/驱动层)，它把订单存入内存。</li>
+<li>调用
+<strong><code>cartRepository.clearCart("user123")</code></strong>
+清空购物车。</li>
+</ul></li>
+<li><p>最终，<code>Order</code>实体被返回给<code>OrderController</code>，再返回给调用者。</p></li>
+</ol>
+<p>在整个流程中，<strong>核心的<code>Order</code>、<code>Cart</code>、<code>ShoppingCartService</code>对“数据存在内存里”这件事一无所知</strong>。它们只和抽象的接口打交道。</p>
+<p>所以说，整洁架构的核心就是，用什么和做什么无关，业务逻辑不依赖于任何特定的框架，框架只是工具</p>
+<p>每一层都有清晰的职责，层与层之间通过接口松耦合。</p>
+<h3 id="微服务架构模式">微服务架构模式</h3>
+<p>这个不多说了，估计懂得都懂</p>
+<h3 id="cqrs">CQRS</h3>
+<p>CQRS 是 <strong>Command Query Responsibility Segregation</strong>
+的缩写，也就是<strong>命令查询责任分离</strong>架构，它是一种基于微服务的设计模式，很多人说它是一个伟大的微服务模式</p>
+<p>CQRS 是一种与领域驱动设计(DDD) 和事件溯源相关的架构模式。Greg Young
+在 2010 年创造了这个术语，CQRS 的内容基于 Bertrand Meyer 的
+CQS设计模式。<strong>但它的背后是什么？</strong></p>
+<p><strong>CQS</strong>
+（命令查询分离）设计模式建议将对象的方法映射到两类</p>
+<ol type="1">
+<li>方法要么改变对象的内部状态，但不返回任何内容，要么只返回元数据。这种方法称为<strong>Command</strong>。</li>
+<li>方法只是返回信息但不改变内部状态。这种方法称为<strong>Query</strong>。</li>
+</ol>
+<p>根据
+CQS，一个方法永远不应该同时存在上述的两种情况，所以说，它的核心思想非常简单，就是<strong>将系统中的操作明确拆分为上述两大独立的部分</strong></p>
+<p>在 CQS 模式的基础上，Greg Young 在 2010 年创造了
+CQRS，它也将写入和读取分开，但在 API 方面。因此，它提出了单独的
+API，一个专用于更改应用程序状态的命令路由，另一个专用于返回有关应用程序状态信息的查询路由。</p>
+<p>传统开发中，我们通常用 统一的模型 处理读写，比如一个 UserService
+既包含 createUser、updateUser，也包含
+getUserById、listUsers，这种方式在简单场景下没问题，但在高并发、复杂业务场景下会暴露问题，因为它读写不隔离，互相影响，难以针对读写做差异化优化，而
+CQRS 读写分离，就可以分别独立扩展</p>
+<p>因此，请注意，CQRS 要求无副作用，Query 操作绝对不能修改数据，Command
+操作只修改数据，这样在编写的时候别忘了细分</p>
+<p>按照 Spring Boot 我们编写代码的思路，架构就可以这么拆分了</p>
+<pre><code class="highlight mermaid">graph TD
+    A[客户端请求] --&gt; B&#123;请求类型&#125;
+    B --&gt;|Command（增删改）| C[Command 层]
+    B --&gt;|Query（查询）| D[Query 层]
+    
+    C --&gt; C1[Command 模型（入参）]
+    C1 --&gt; C2[Command Handler（命令处理器）]
+    C2 --&gt; C3[写模型/领域服务（修改数据）]
+    C3 --&gt; C4[写数据源（主库）]
+    
+    D --&gt; D1[Query 模型（入参）]
+    D1 --&gt; D2[Query Handler（查询处理器）]
+    D2 --&gt; D3[读模型（专用查询模型）]
+    D3 --&gt; D4[读数据源（从库/缓存）]
+    
+    C4 --&gt; E[事件通知（可选，如CQRS+事件溯源）]
+    E --&gt; D3[更新读模型]</code></pre>
+<p>如上图，很多人在使用 CQRS
+的时候，会把读写分开成两个数据库，一个应该针对写入进行优化，另一个针对读取进行优化，这样在写入时可以确保良好的完整性和一致性，同时在读取时实现高效率和高性能。</p>
+<p>但是这他喵的代价也太大了，所以我就没用过，感觉很复杂了要是进行了这样的分离开发，所以我也就是了解一下其实）））</p>
+<p>而 CQRS 常和 事件溯源（ES） 结合使用</p>
+<p>因为发送到基于 CQRS 的应用程序的命令 API 的命令也可以在 DDD
+意义上解释<strong>为聚合的命令</strong>。然后聚合按顺序<strong>生成一个或多个域事件，这些事件可以使用事件溯源存储在事件存储</strong>中，并用于聚合的稍后重放。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a target="_blank" rel="noopener" href="https://github.com/ergou10086">ErgouTree</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://ergou10086.github.io/posts/14427.html">https://ergou10086.github.io/posts/14427.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://ergou10086.github.io" target="_blank">ErgouTree's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E5%AD%A6%E4%B9%A0/">学习</a><a class="post-meta__tags" href="/tags/%E5%AE%9E%E7%94%A8%E7%9F%A5%E8%AF%86/">实用知识</a><a class="post-meta__tags" href="/tags/Java%E5%AD%A6%E4%B9%A0/">Java学习</a><a class="post-meta__tags" href="/tags/%E5%90%8E%E7%AB%AF/">后端</a><a class="post-meta__tags" href="/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/">设计模式</a><a class="post-meta__tags" href="/tags/%E9%A1%B9%E7%9B%AE%E8%AE%BE%E8%AE%A1/">项目设计</a><a class="post-meta__tags" href="/tags/%E5%BC%80%E5%8F%91%E5%8E%9F%E5%88%99/">开发原则</a><a class="post-meta__tags" href="/tags/%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1/">面向对象</a></div><div class="post-share"><div class="addtoany"><div class="a2a_kit a2a_kit_size_32 a2a_default_style"><a class="a2a_button_facebook"></a><a class="a2a_button_twitter"></a><a class="a2a_button_wechat"></a><a class="a2a_button_sina_weibo"></a><a class="a2a_button_facebook_messenger"></a><a class="a2a_button_email"></a><a class="a2a_button_copy_link"></a><a class="a2a_dd" target="_blank" rel="noopener" href="https://www.addtoany.com/share"></a></div></div><script async="async" src="https://static.addtoany.com/menu/page.js"></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/posts/15447.html" title="LeetCode第490场周赛AK"><img class="cover" src="/images/posts/cover_js1.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">LeetCode第490场周赛AK</div></div><div class="info-2"><div class="info-item-1">记录一下 几乎是压线 AK，就剩下六分钟   image-20260222115357193  最终排名   image-20260222120055900  Q1   image-20260222115741279  给你一个整数数组 nums，其中 nums[i] 表示在第 i 场比赛中获得的分数。 恰好 有两位玩家。初始时，第一位玩家为 主动玩家，第二位玩家为 被动玩家。 按顺序 将下述规则应用于每场比赛 i：  如果 nums[i] 是奇数，主动玩家和被动玩家互换角色。 在每第 6 场比赛（即比赛索引为 5, 11, 17, … 的比赛中），主动玩家和被动玩家互换角色。 主动玩家参与第 i 场比赛，并获得 nums[i] 分。  返回 分数差，即第一位玩家的 总分 减去第二位玩家的 总分 。  示例 1： 输入： nums = [1,2,3] 输出： 0 解释： 第 0 场比赛：分数为奇数，第二位玩家成为主动玩家，获得 nums[0] = 1 分。 第 1 场比赛：没有交换角色。第二位玩家获得...</div></div></div></a><a class="pagination-related" href="/posts/49652.html" title="Spring Cloud part29—分布式ID的几种设计方案与实践落地"><img class="cover" src="/images/posts/cover_springcloud3.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Spring Cloud part29—分布式ID的几种设计方案与实践落地</div></div><div class="info-2"><div class="info-item-1">分布式ID 分布式 ID 介绍 我们都知道 ID 是什么内容，也知道需要使用 ID 做什么。 无非就是对系统中的各种数据使用一个唯一编号 ID 来进行唯一标识，这样就能在系统中对数据进行操作。而且 ID 具有独立性，就是说你产生了一条数据需要被持久化，就应该给它一个ID，比如用户 ID 对应且仅对应一个人，商品 ID 对应且仅对应一件商品，订单 ID 对应且仅对应一个订单。 我们现实生活中也有各种 ID，比如身份证 ID 对应且仅对应一个人、地址 ID 对应且仅对应一个地址。 简单来说，ID 就是数据的唯一标识。 那么，单机情况下，我们使用的 ID...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/posts/21748.html" title="面向对象编程的设计模式之详解创建型模式"><img class="cover" src="/images/posts/cover_springcloud4.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-01-27</div><div class="info-item-2">面向对象编程的设计模式之详解创建型模式</div></div><div class="info-2"><div class="info-item-1">设计模式介绍 设计模式是一套被广泛接受和验证的软件设计解决方案，它描述了在特定情境下的解决问题的方法。设计模式提供了一套通用的设计原则和模式，用于解决软件设计和开发过程中的常见问题，例如对象创建、行为管理和结构组织等。 一般来说，设计模式解决的最经典的问题就是结构清晰，提高复用性  提高代码的可重用性：设计模式提供了经过验证的解决方案，可以在不同的项目和场景中重复使用。 提高代码的可维护性：设计模式使得代码结构更加清晰，易于理解和维护。 提高代码的可扩展性：设计模式使得系统更容易进行功能扩展和修改，同时降低了对现有代码的影响。 提高开发效率：设计模式提供了一种标准化的设计方法，可以加快开发过程，并减少出错的可能性。 提高代码的质量：设计模式经过多次验证和实践，可以帮助开发者编写更加优雅和高效的代码。  一些面向对象设计原则 单一职责原则  一个类应该只有一个引起它变化的原因。  每个类/模块/函数只负责一项功能。 这样很好的降低了耦合度，提高可读性和可维护性。  反例：一个...</div></div></div></a><a class="pagination-related" href="/posts/59606.html" title="面向对象编程的设计模式之行为型模式"><img class="cover" src="/images/posts/cover_math4.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-01-31</div><div class="info-item-2">面向对象编程的设计模式之行为型模式</div></div><div class="info-2"><div class="info-item-1">行为型设计模式 行为型模式关注对象之间的职责分配和通信方式。  责任链模式（Chain...</div></div></div></a><a class="pagination-related" href="/posts/20991.html" title="面向对象编程的设计模式之详解结构型模式"><img class="cover" src="/images/posts/cover_docker2.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-01-29</div><div class="info-item-2">面向对象编程的设计模式之详解结构型模式</div></div><div class="info-2"><div class="info-item-1">结构型设计模式 结构型设计模式关注处理类或对象的组合，形成更大的结构。  适配器模式（Adapter）：将一个类的接口转换成客户期望的另一个接口，使原本不兼容的类能一起工作。 桥接模式（Bridge）：将抽象部分与实现部分分离，使它们可以独立变化。 组合模式（Composite）：将对象组合成树形结构以表示“部分-整体”的层次关系，统一处理单个对象和组合对象。 装饰器模式（Decorator）：动态地给对象添加额外职责，比继承更灵活。 外观模式（Facade）：为子系统提供一个统一的高层接口，简化客户端使用。 享元模式（Flyweight）：通过共享技术有效支持大量细粒度对象的复用。 代理模式（Proxy）：为其他对象提供一种代理以控制对这个对象的访问。  适配器模式 对象适配器模式 适配器模式（Adapter...</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="gitalk-container"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/arp.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">ErgouTree</div><div class="author-info-description">I start a brand-new life with you.</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">308</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">188</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">103</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/ergou10086"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/ergou10086" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="/zjm88822201@126.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a><a class="social-icon" href="https://space.bilibili.com/142045656?spm_id_from=333.1007.0.0" target="_blank" title="bilibili"><i class="fas fa-brands fa-bilibili" style="color: #4a72be;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">作者长期陷入galgame和osu!maina4k中 祝他好运吧 对了 如果图片加载过慢 建议科学上网进行使用</div></div><div class="card-widget card-weather"><div class="item-headline"><i class="fas fa-cloud-sun"></i><span>aside.card_weather</span></div><div class="weather-content"><div class="weather-loading"><i class="fas fa-spinner fa-spin"></i><span>加载中...</span></div><div class="weather-main" style="display: none;"><div class="weather-location"><i class="fas fa-map-marker-alt"></i><span id="weather-location">获取中...</span></div><div class="weather-info"><div class="weather-temp"><span id="weather-temp">--</span><span class="unit">°C</span></div><div class="weather-desc"><span id="weather-weather">--</span></div><div class="weather-details"><div class="weather-item"><i class="fas fa-wind"></i><span id="weather-windpower">--</span></div><div class="weather-item"><i class="fas fa-tint"></i><span id="weather-humidity">--</span></div><div class="weather-item"><i class="fas fa-eye"></i><span id="weather-winddir">--</span></div></div></div><div class="weather-update-time"><i class="fas fa-clock"></i><span id="weather-update-time">更新中...</span></div></div></div></div><div class="sticky_layout"></div><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%89%8D%E8%A8%80%E8%BF%99%E4%BA%9B%E6%98%AF%E4%BB%80%E4%B9%88%E6%A0%B7%E7%9A%84%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F"><span class="toc-number">1.</span> <span class="toc-text">前言：这些是什么样的设计模式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F"><span class="toc-number">1.1.</span> <span class="toc-text">架构设计模式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BC%81%E4%B8%9A%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F"><span class="toc-number">1.2.</span> <span class="toc-text">企业设计模式</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B8%B8%E8%A7%81%E5%B8%B8%E7%94%A8%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E8%AF%A6%E8%A7%A3"><span class="toc-number">2.</span> <span class="toc-text">常见常用架构设计模式详解</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#mvc%E6%A8%A1%E5%BC%8F"><span class="toc-number">2.1.</span> <span class="toc-text">MVC模式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#mvvm%E6%A8%A1%E5%BC%8F"><span class="toc-number">2.2.</span> <span class="toc-text">MVVM模式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%89%E5%B1%82%E6%9E%B6%E6%9E%84"><span class="toc-number">2.3.</span> <span class="toc-text">三层架构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AE%A1%E9%81%93-%E8%BF%87%E6%BB%A4%E5%99%A8%E6%A8%A1%E5%BC%8F"><span class="toc-number">2.4.</span> <span class="toc-text">管道-过滤器模式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8B%E4%BB%B6%E9%A9%B1%E5%8A%A8%E6%A8%A1%E5%BC%8F"><span class="toc-number">2.5.</span> <span class="toc-text">事件驱动模式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B4%E6%B4%81%E6%9E%B6%E6%9E%84%E6%A8%A1%E5%BC%8F"><span class="toc-number">2.6.</span> <span class="toc-text">整洁架构模式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BE%AE%E6%9C%8D%E5%8A%A1%E6%9E%B6%E6%9E%84%E6%A8%A1%E5%BC%8F"><span class="toc-number">2.7.</span> <span class="toc-text">微服务架构模式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#cqrs"><span class="toc-number">2.8.</span> <span class="toc-text">CQRS</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/27941.html" title="基于Redis的分布式锁详解"><img src="/images/posts/cover_6x.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="基于Redis的分布式锁详解"/></a><div class="content"><a class="title" href="/posts/27941.html" title="基于Redis的分布式锁详解">基于Redis的分布式锁详解</a><time datetime="2026-02-23T08:52:08.000Z" title="发表于 2026-02-23 16:52:08">2026-02-23</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/50326.html" title="几种分布式ID的设计方案详解与真实业务选型"><img src="/images/posts/cover_vue2.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="几种分布式ID的设计方案详解与真实业务选型"/></a><div class="content"><a class="title" href="/posts/50326.html" title="几种分布式ID的设计方案详解与真实业务选型">几种分布式ID的设计方案详解与真实业务选型</a><time datetime="2026-02-23T08:49:51.000Z" title="发表于 2026-02-23 16:49:51">2026-02-23</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/49652.html" title="Spring Cloud part29—分布式ID的几种设计方案与实践落地"><img src="/images/posts/cover_springcloud3.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Spring Cloud part29—分布式ID的几种设计方案与实践落地"/></a><div class="content"><a class="title" href="/posts/49652.html" title="Spring Cloud part29—分布式ID的几种设计方案与实践落地">Spring Cloud part29—分布式ID的几种设计方案与实践落地</a><time datetime="2026-02-23T08:47:15.000Z" title="发表于 2026-02-23 16:47:15">2026-02-23</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/14427.html" title="面向对象编程的设计模式之架构设计模式"><img src="/images/posts/cover_other4.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="面向对象编程的设计模式之架构设计模式"/></a><div class="content"><a class="title" href="/posts/14427.html" title="面向对象编程的设计模式之架构设计模式">面向对象编程的设计模式之架构设计模式</a><time datetime="2026-02-22T18:26:49.000Z" title="发表于 2026-02-23 02:26:49">2026-02-23</time></div></div></div></div></div></main><div class="fps-display"><span id="fps">FPS: 60</span></div><footer id="footer" style="background-image: url(/images/posts/cover_other4.jpg);"><div id="footer-wrap"><div class="copyright">&copy;2024 - 2026 By ErgouTree</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">忘れたくない思い、ありますか？ <br>,<span id="realtime_duration" style="font-family: monospace;"></span>,<br><a href="https://icp.gov.moe/?keyword=20257009" target="_blank">萌ICP备20257009号</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><a class="icon-V hidden" onclick="switchNightMode()" title="日间和夜间模式切换"><svg width="25" height="25" viewBox="0 0 1024 1024"><use id="modeicon" xlink:href="#icon-moon"></use></svg></a><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="chat-btn" type="button" title="聊天" style="display:none"><i class="fas fa-comment"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (true) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script><script>(() => {
+  const applyThemeDefaultsConfig = theme => {
+    if (theme === 'dark-mode') {
+      Chart.defaults.color = "rgba(255, 255, 255, 0.8)"
+      Chart.defaults.borderColor = "rgba(255, 255, 255, 0.2)"
+      Chart.defaults.scale.ticks.backdropColor = "transparent"
+    } else {
+      Chart.defaults.color = "rgba(0, 0, 0, 0.8)"
+      Chart.defaults.borderColor = "rgba(0, 0, 0, 0.1)"
+      Chart.defaults.scale.ticks.backdropColor = "transparent"
+    }
+  }
+
+  // Recursively traverse the config object and automatically apply theme-specific color schemes
+  const applyThemeConfig = (obj, theme) => {
+    if (typeof obj !== 'object' || obj === null) return
+
+    Object.keys(obj).forEach(key => {
+      const value = obj[key]
+      // If the property is an object and has theme-specific options, apply them
+      if (typeof value === 'object' && value !== null) {
+        if (value[theme]) {
+          obj[key] = value[theme] // Apply the value for the current theme
+        } else {
+          // Recursively process child objects
+          applyThemeConfig(value, theme)
+        }
+      }
+    })
+  }
+
+  const runChartJS = ele => {
+    window.loadChartJS = true
+
+    Array.from(ele).forEach((item, index) => {
+      const chartSrc = item.firstElementChild
+      const chartID = item.getAttribute('data-chartjs-id') || ('chartjs-' + index) // Use custom ID or default ID
+      const width = item.getAttribute('data-width')
+      const existingCanvas = document.getElementById(chartID)
+
+      // If a canvas already exists, remove it to avoid rendering duplicates
+      if (existingCanvas) {
+          existingCanvas.parentNode.remove()
+      }
+
+      const chartDefinition = chartSrc.textContent
+      const canvas = document.createElement('canvas')
+      canvas.id = chartID
+
+      const div = document.createElement('div')
+      div.className = 'chartjs-wrap'
+
+      if (width) {
+        div.style.width = width
+      }
+
+      div.appendChild(canvas)
+      chartSrc.insertAdjacentElement('afterend', div)
+
+      const ctx = document.getElementById(chartID).getContext('2d')
+
+      const config = JSON.parse(chartDefinition)
+
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark-mode' : 'light-mode'
+
+      // Set default styles (initial setup)
+      applyThemeDefaultsConfig(theme)
+
+      // Automatically traverse the config and apply dual-mode color schemes
+      applyThemeConfig(config, theme)
+
+      new Chart(ctx, config)
+    })
+  }
+
+  const loadChartJS = () => {
+    const chartJSEle = document.querySelectorAll('#article-container .chartjs-container')
+    if (chartJSEle.length === 0) return
+
+    window.loadChartJS ? runChartJS(chartJSEle) : btf.getScript('https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.min.js').then(() => runChartJS(chartJSEle))
+  }
+
+  // Listen for theme change events
+  btf.addGlobalFn('themeChange', loadChartJS, 'chartjs')
+  btf.addGlobalFn('encrypt', loadChartJS, 'chartjs')
+
+  window.pjax ? loadChartJS() : document.addEventListener('DOMContentLoaded', loadChartJS)
+})()</script><script>(function() {
+  const abcjsInit = function() {
+    const abcjsFn = function() {
+      setTimeout(function() {
+        const sheets = document.querySelectorAll(".abc-music-sheet")
+        for (let i = 0; i < sheets.length; i++) {
+          const ele = sheets[i]
+          if (ele.children.length > 0) continue
+
+          // Parse parameters from data-params attribute
+          let params = {}
+          const dp = ele.getAttribute("data-params")
+          if (dp) {
+            try {
+              params = JSON.parse(dp)
+            } catch (e) {
+              console.error("Failed to parse data-params:", e)
+            }
+          }
+
+          // Merge parsed parameters with the responsive option
+          // Ensures params content appears before responsive
+          const options = { ...params, responsive: "resize" }
+
+          // Render the music score using ABCJS.renderAbc
+          ABCJS.renderAbc(ele, ele.innerHTML, options)
+        }
+      }, 100)
+    }
+
+    if (typeof ABCJS === "object") {
+      abcjsFn()
+    } else {
+      btf.getScript("https://cdn.jsdelivr.net/npm/abcjs/dist/abcjs-basic-min.min.js").then(abcjsFn)
+    }
+  }
+
+  if (window.pjax) {
+    abcjsInit()
+  } else {
+    window.addEventListener("load", abcjsInit)
+  }
+
+  btf.addGlobalFn("encrypt", abcjsInit, "abcjs")
+})()</script><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = {"labels":["Gitalk","Comment"],"createIssueManually":false,"distractionFreeMode":false}
+
+  const commentCount = n => {
+    const isCommentCount = document.querySelector('#post-meta .gitalk-comment-count')
+    if (isCommentCount) {
+      isCommentCount.textContent= n
+    }
+  }
+
+  const initGitalk = (el, path) => {
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGitalk = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+
+    const gitalk = new Gitalk({
+      clientID: 'Ov23li3vDQANiUddL4XB',
+      clientSecret: '5c9a56d02995340fca117809cd414662aadce6ff',
+      repo: 'HexoComment',
+      owner: 'ergou10086',
+      admin: ['ergou10086'],
+      updateCountCallback: commentCount,
+      ...option,
+      id: isShuoshuo ? path : (option && option.id) || '9386c9edd70e33e090be40b682deaa4f'
+    })
+
+    gitalk.render('gitalk-container')
+  }
+
+  const loadGitalk = async(el, path) => {
+    if (typeof Gitalk === 'function') initGitalk(el, path)
+    else {
+      await btf.getCSS('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.css')
+      await btf.getScript('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.js')
+      initGitalk(el, path)
+    }
+  }
+
+  if (isShuoshuo) {
+    'Gitalk' === 'Gitalk'
+      ? window.shuoshuoComment = { loadComment: loadGitalk }
+      : window.loadOtherComment = loadGitalk
+    return
+  }
+
+  if ('Gitalk' === 'Gitalk' || !false) {
+    if (false) btf.loadComment(document.getElementById('gitalk-container'), loadGitalk)
+    else loadGitalk()
+  } else {
+    window.loadOtherComment = loadGitalk
+  }
+})()</script></div><div class="aplayer no-destroy" data-id="13587761608" data-server="netease" data-type="playlist" data-fixed="true" data-autoplay="false" data-lrcType="-1"> </div><script src="https://cdn.jsdelivr.net/npm/abcjs@7.1.2/dist/abcjs-basic-min.js"></script><script src="/js/sun_moon.js" async></script><script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.7/dayjs.min.js"></script><script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.7/plugin/duration.min.js"></script><script src="/scripts/realtime.js"></script><script src="/scripts/random.js"></script><script src="/scripts/weather.js"></script><script>if(window.location.pathname.includes('/viewpoint/')){function loadViewpointScripts(){var loadScript=function(src,callback){var s=document.createElement('script');s.src=src;s.async=false;s.defer=false;s.onload=function(){console.log('脚本加载成功:',src);setTimeout(function(){if(callback)callback();},100);};s.onerror=function(){console.error('脚本加载失败:',src);setTimeout(function(){if(callback)callback();},100);};document.body.appendChild(s);};loadScript('/scripts/viewpoint/math.js',function(){console.log('math.js 加载完成, math:',typeof math);loadScript('/scripts/viewpoint/katex.min.js',function(){console.log('katex.min.js 加载完成, katex:',typeof katex);loadScript('/scripts/viewpoint/sweetalert2@11.js',function(){console.log('sweetalert2@11.js 加载完成, Swal:',typeof Swal,'Sweetalert2:',typeof Sweetalert2);if(typeof Swal==='undefined'&&typeof Sweetalert2!=='undefined'){window.Swal=window.Sweetalert2;console.log('已设置 Swal 别名');}loadScript('/scripts/viewpoint/main.js',function(){console.log('Viewpoint 页面所有脚本加载完成');});});});});}if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',loadViewpointScripts);}else{loadViewpointScripts();}}</script><script>if(window.location.pathname.includes('/littleGame/')){function loadLittleGameScripts(){var load=function(src,cb){var s=document.createElement('script');s.src=src;s.async=false;s.defer=false;s.onload=function(){if(cb)cb();};document.body.appendChild(s);};load('/scripts/littleGame/2048.js',function(){load('/scripts/littleGame/extra-games.js');});}if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',loadLittleGameScripts);}else{loadLittleGameScripts();}}</script><script defer="defer" id="ribbon" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-ribbon.min.js" size="150" alpha="0.6" zIndex="-1" mobile="null" data-click="true"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = false;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><script id="click-heart" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/click-heart.min.js" async="async" mobile="false"></script><script>(() => {
+  window.ChatraID = '4bzb546NSBoJcrNyu'
+  window.Chatra = window.Chatra || function() {
+    (window.Chatra.q = window.Chatra.q || []).push(arguments)
+  }
+
+  btf.getScript('https://call.chatra.io/chatra.js').then(() => {
+    const isChatBtn = true
+    const isChatHideShow = true
+
+    if (isChatBtn) {
+      const close = () => {
+        Chatra('minimizeWidget')
+        Chatra('hide')
+      }
+
+      const open = () => {
+        Chatra('openChat', true)
+        Chatra('show')
+      }
+
+      window.ChatraSetup = { startHidden: true }
+    
+      window.chatBtnFn = () => document.getElementById('chatra').classList.contains('chatra--expanded') ? close() : open()
+
+      document.getElementById('chat-btn').style.display = 'block'
+    } else if (isChatHideShow) {
+      window.chatBtn = {
+        hide: () => Chatra('hide'),
+        show: () => Chatra('show')
+      }
+    }
+  })
+})()</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/metingjs/dist/Meting.min.js"></script><script>(() => {
+  const destroyAplayer = () => {
+    if (window.aplayers) {
+      for (let i = 0; i < window.aplayers.length; i++) {
+        if (!window.aplayers[i].options.fixed) {
+          window.aplayers[i].destroy()
+        }
+      }
+    }
+  }
+
+  const runMetingJS = () => {
+    typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+  }
+
+  btf.addGlobalFn('pjaxSend', destroyAplayer, 'destroyAplayer')
+  btf.addGlobalFn('pjaxComplete', loadMeting, 'runMetingJS')
+})()</script><script src="https://cdn.jsdelivr.net/npm/pjax/pjax.min.js"></script><script>(() => {
+  const pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+  window.pjax = new Pjax({
+    elements: 'a:not([target="_blank"]):not([href="/music/"]):not([href="/viewpoint/"])',
+    selectors: pjaxSelectors,
+    cacheBust: false,
+    analytics: false,
+    scrollRestoration: false
+  })
+
+  const triggerPjaxFn = (val) => {
+    if (!val) return
+    Object.values(val).forEach(fn => fn())
+  }
+
+  document.addEventListener('pjax:send', () => {
+    // removeEventListener
+    btf.removeGlobalFnEvent('pjaxSendOnce')
+    btf.removeGlobalFnEvent('themeChange')
+
+    // reset readmode
+    const $bodyClassList = document.body.classList
+    if ($bodyClassList.contains('read-mode')) $bodyClassList.remove('read-mode')
+
+    triggerPjaxFn(window.globalFn.pjaxSend)
+  })
+
+  document.addEventListener('pjax:complete', () => {
+    btf.removeGlobalFnEvent('pjaxCompleteOnce')
+    document.querySelectorAll('script[data-pjax]').forEach(item => {
+      const newScript = document.createElement('script')
+      const content = item.text || item.textContent || item.innerHTML || ""
+      Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+      newScript.appendChild(document.createTextNode(content))
+      item.parentNode.replaceChild(newScript, item)
+    })
+
+    triggerPjaxFn(window.globalFn.pjaxComplete)
+  })
+
+  document.addEventListener('pjax:error', e => {
+    if (e.request.status === 404) {
+      const usePjax = true
+      true 
+        ? (usePjax ? pjax.loadUrl('/404.html') : window.location.href = '/404.html')
+        : window.location.href = e.request.responseURL
+    }
+  })
+})()</script><script src="/js/fps-display.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><!-- hexo injector body_end start --><script data-pjax>
+  function butterfly_swiper_injector_config(){
+    var parent_div_git = document.getElementById('recent-posts');
+    var item_html = '<div class="recent-post-item" style="height: auto;width: 100%"><div class="blog-slider swiper-container-fade swiper-container-horizontal" id="swiper_container"><div class="blog-slider__wrp swiper-wrapper" style="transition-duration: 0ms;"><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_database.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-14</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt="">结构化查询语言SQL</a><div class="blog-slider__text">SQL基本很常用的语句都在这里了，本质上是当初为了应付数据库考试整理的，后来发现还蛮有用的很方便查常用的语句</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java4.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-22</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt="">SpringBoot part0?INF-SpringBoot这个框架都需要学习什么</a><div class="blog-slider__text">主要围绕Spring Boot中重要知识来简洁或详细的说明，其中部分不够完全，持续更新</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java11.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-15</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt="">关于Lombok在高版本IDEA中注解处理不生效的问题解决</a><div class="blog-slider__text">基本上是彻底的解决了用 IDEA 新建 Spring Boot 项目时候会产生的 Lombok 注解处理失效的各种问题</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_实用.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-05</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt="">个人向galgame原声带或相关音乐整理及其资源</a><div class="blog-slider__text">整理了我喜欢的galgame ost或者衍生的音乐专辑，部分资源是自己扒盘扒下来的，部分来自鸟白岛放映厅</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_math.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-17</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt="">对书上证明样本方差是总体方差的无偏估计量的解析</a><div class="blog-slider__text">对书上证明样本方差是总体方差的无偏估计量的解析，高等教育出版社-华科大版本</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_alog.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-04-24</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt="">第十五届蓝桥杯Java国赛B组D题-园丁题解</a><div class="blog-slider__text">第十五届蓝桥杯Java国赛B组D题-园丁题解，该题解已经发布到洛谷社区中并且被全站推荐</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java4.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-04-29</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt="">操作系统之处理机的死锁部分概述</a><div class="blog-slider__text">对操作系统之处理机的死锁部分知识的总结，包括代码复现</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_lb.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-09</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt="">Little Busters!EX游戏攻略</a><div class="blog-slider__text">整理了一份详细清晰的Little Busters！EX的游戏攻略，因为我自己也在推，就顺手整理了一份方便查阅的md文档</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java9.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-16</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt="">Spring Boot中使用Hibernate框架</a><div class="blog-slider__text">对学习完Hibernate的应用部分，主要围绕Spring Boot中使用Hibernate框架，建议学习完 Hibernate 框架再看</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div></div><div class="blog-slider__pagination swiper-pagination-clickable swiper-pagination-bullets"></div></div></div>';
+    console.log('已挂载butterfly_swiper')
+    parent_div_git.insertAdjacentHTML("afterbegin",item_html)
+    }
+  var elist = 'undefined'.split(',');
+  var cpage = location.pathname;
+  var epage = '/';
+  var flag = 0;
+
+  for (var i=0;i<elist.length;i++){
+    if (cpage.includes(elist[i])){
+      flag++;
+    }
+  }
+
+  if ((epage ==='all')&&(flag == 0)){
+    butterfly_swiper_injector_config();
+  }
+  else if (epage === cpage){
+    butterfly_swiper_injector_config();
+  }
+  </script><script defer src="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper.min.js"></script><script defer data-pjax src="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper_init.js"></script><!-- hexo injector body_end end --></body></html>

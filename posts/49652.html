@@ -1,0 +1,1159 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Spring Cloud part29—分布式ID的几种设计方案与实践落地 | ErgouTree's Blog</title><meta name="author" content="ErgouTree"><meta name="copyright" content="ErgouTree"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="分布式ID 分布式 ID 介绍 我们都知道 ID 是什么内容，也知道需要使用 ID 做什么。 无非就是对系统中的各种数据使用一个唯一编号 ID 来进行唯一标识，这样就能在系统中对数据进行操作。而且 ID 具有独立性，就是说你产生了一条数据需要被持久化，就应该给它一个ID，比如用户 ID 对应且仅对应一个人，商品 ID 对应且仅对应一件商品，订单 ID 对应且仅对应一个订单。 我们现">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spring Cloud part29—分布式ID的几种设计方案与实践落地">
+<meta property="og:url" content="https://ergou10086.github.io/posts/49652.html">
+<meta property="og:site_name" content="ErgouTree&#39;s Blog">
+<meta property="og:description" content="分布式ID 分布式 ID 介绍 我们都知道 ID 是什么内容，也知道需要使用 ID 做什么。 无非就是对系统中的各种数据使用一个唯一编号 ID 来进行唯一标识，这样就能在系统中对数据进行操作。而且 ID 具有独立性，就是说你产生了一条数据需要被持久化，就应该给它一个ID，比如用户 ID 对应且仅对应一个人，商品 ID 对应且仅对应一件商品，订单 ID 对应且仅对应一个订单。 我们现">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://ergou10086.github.io/images/posts/cover_springcloud3.jpg">
+<meta property="article:published_time" content="2026-02-23T08:47:15.000Z">
+<meta property="article:modified_time" content="2026-02-23T08:49:14.734Z">
+<meta property="article:author" content="ErgouTree">
+<meta property="article:tag" content="微服务">
+<meta property="article:tag" content="Spring Cloud">
+<meta property="article:tag" content="学习">
+<meta property="article:tag" content="分布式">
+<meta property="article:tag" content="Java技术">
+<meta property="article:tag" content="框架知识">
+<meta property="article:tag" content="数据库">
+<meta property="article:tag" content="中间件">
+<meta property="article:tag" content="实用知识">
+<meta property="article:tag" content="JavaWeb">
+<meta property="article:tag" content="Spring系列">
+<meta property="article:tag" content="计算机理论">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ergou10086.github.io/images/posts/cover_springcloud3.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Spring Cloud part29—分布式ID的几种设计方案与实践落地",
+  "url": "https://ergou10086.github.io/posts/49652.html",
+  "image": "https://ergou10086.github.io/images/posts/cover_springcloud3.jpg",
+  "datePublished": "2026-02-23T08:47:15.000Z",
+  "dateModified": "2026-02-23T08:49:14.734Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "ErgouTree",
+      "url": "https://github.com/ergou10086"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/pi.ico"><link rel="canonical" href="https://ergou10086.github.io/posts/49652.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//hm.baidu.com"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!true && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?https://hm.baidu.com/hm.js?a6ab1b78e2c6320b664f31e8b9bf0e36";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+btf.addGlobalFn('pjaxComplete', () => {
+  _hmt.push(['_trackPageview',window.location.pathname])
+}, 'baidu_analytics')
+</script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.json","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":true},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: {"chs_to_cht":"已切换为繁体中文","cht_to_chs":"已切换为简体中文","day_to_night":"已切换为深色模式","night_to_day":"已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#1f1f1f","position":"bottom-left"},
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Spring Cloud part29—分布式ID的几种设计方案与实践落地',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css"><link rel="stylesheet" href="/css/littleGame.css"><svg aria-hidden="true" style="position:absolute; overflow:hidden; width:0; height:0"><symbol id="icon-sun" viewBox="0 0 1024 1024"><path d="M960 512l-128 128v192h-192l-128 128-128-128H192v-192l-128-128 128-128V192h192l128-128 128 128h192v192z" fill="#FFD878" p-id="8420"></path><path d="M736 512a224 224 0 1 0-448 0 224 224 0 1 0 448 0z" fill="#FFE4A9" p-id="8421"></path><path d="M512 109.248L626.752 224H800v173.248L914.752 512 800 626.752V800h-173.248L512 914.752 397.248 800H224v-173.248L109.248 512 224 397.248V224h173.248L512 109.248M512 64l-128 128H192v192l-128 128 128 128v192h192l128 128 128-128h192v-192l128-128-128-128V192h-192l-128-128z" fill="#4D5152" p-id="8422"></path><path d="M512 320c105.888 0 192 86.112 192 192s-86.112 192-192 192-192-86.112-192-192 86.112-192 192-192m0-32a224 224 0 1 0 0 448 224 224 0 0 0 0-448z" fill="#4D5152" p-id="8423"></path></symbol><symbol id="icon-moon" viewBox="0 0 1024 1024"><path d="M611.370667 167.082667a445.013333 445.013333 0 0 1-38.4 161.834666 477.824 477.824 0 0 1-244.736 244.394667 445.141333 445.141333 0 0 1-161.109334 38.058667 85.077333 85.077333 0 0 0-65.066666 135.722666A462.08 462.08 0 1 0 747.093333 102.058667a85.077333 85.077333 0 0 0-135.722666 65.024z" fill="#FFB531" p-id="11345"></path><path d="M329.728 274.133333l35.157333-35.157333a21.333333 21.333333 0 1 0-30.165333-30.165333l-35.157333 35.157333-35.114667-35.157333a21.333333 21.333333 0 0 0-30.165333 30.165333l35.114666 35.157333-35.114666 35.157334a21.333333 21.333333 0 1 0 30.165333 30.165333l35.114667-35.157333 35.157333 35.157333a21.333333 21.333333 0 1 0 30.165333-30.165333z" fill="#030835" p-id="11346"></path></symbol></svg><link rel="stylesheet" href="/css/custom.css"><!-- hexo injector head_end start --><link rel="stylesheet" href="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiperstyle.css" media="print" onload="this.media='all'"><!-- hexo injector head_end end --><meta name="generator" content="Hexo 7.3.0"></head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js/pace.min.js"></script><div id="web_bg" style="background: linear-gradient(20deg, #0062be, #925696, #cc426e, #fb0347);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/arp.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">308</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">188</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">103</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-images"></i><span> Gallery</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/games/"><i class="fa-fw fas fa-trophy"></i><span> GalGame</span></a></li><li><a class="site-page child" href="/video/"><i class="fa-fw fas fa-video"></i><span> Video</span></a></li><li><a class="site-page child" href="/viewpoint/"><i class="fa-fw fas fa-calculator"></i><span> ViewPoint</span></a></li><li><a class="site-page child" href="/littleGame/"><i class="fa-fw fas fa-thumbs-up"></i><span> littleGame</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div><div class="menus_item"><a class="site-page" href="javascript:randomPost();"><span> Random</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/images/posts/cover_springcloud3.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">ErgouTree's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">Spring Cloud part29—分布式ID的几种设计方案与实践落地</span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-images"></i><span> Gallery</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/games/"><i class="fa-fw fas fa-trophy"></i><span> GalGame</span></a></li><li><a class="site-page child" href="/video/"><i class="fa-fw fas fa-video"></i><span> Video</span></a></li><li><a class="site-page child" href="/viewpoint/"><i class="fa-fw fas fa-calculator"></i><span> ViewPoint</span></a></li><li><a class="site-page child" href="/littleGame/"><i class="fa-fw fas fa-thumbs-up"></i><span> littleGame</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div><div class="menus_item"><a class="site-page" href="javascript:randomPost();"><span> Random</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div><div id="randomPost"><a class="site-page social-icon search" href="javascript:;" onclick="randomPost()" title="随机访问一篇文章"><i class="fas fa-circle-notch fa-fw"></i></a></div></nav><div id="post-info"><h1 class="post-title">Spring Cloud part29—分布式ID的几种设计方案与实践落地<a class="post-edit-link" href="https://github.com/ergou10086/ergou10086.github.io/edit/main/source/_posts/_posts/SpringCloudpart29—设计并使用分布式ID.md" title="编辑" target="_blank"><i class="fas fa-pencil-alt"></i></a></h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-02-23T08:47:15.000Z" title="发表于 2026-02-23 16:47:15">2026-02-23</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-02-23T08:49:14.734Z" title="更新于 2026-02-23 16:49:14">2026-02-23</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Java%E5%AD%A6%E4%B9%A0/">Java学习</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Java%E5%AD%A6%E4%B9%A0/Spring%E7%B3%BB%E5%88%97/">Spring系列</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Java%E5%AD%A6%E4%B9%A0/Spring%E7%B3%BB%E5%88%97/Spring-Cloud/">Spring Cloud</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">9.5k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>30分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span><span class="post-meta-separator">|</span><span class="post-meta-commentcount"><i class="far fa-comments fa-fw post-meta-icon"></i><span class="post-meta-label">评论数:</span><a href="/posts/49652.html#post-comment"><span class="gitalk-comment-count"><i class="fa-solid fa-spinner fa-spin"></i></span></a></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="分布式id">分布式ID</h2>
+<h3 id="分布式-id-介绍">分布式 ID 介绍</h3>
+<p>我们都知道 ID 是什么内容，也知道需要使用 ID 做什么。</p>
+<p>无非就是对系统中的各种数据使用一个唯一编号 ID
+来进行唯一标识，这样就能在系统中对数据进行操作。而且 ID
+具有独立性，就是说你产生了一条数据需要被持久化，就应该给它一个ID，比如用户
+ID 对应且仅对应一个人，商品 ID 对应且仅对应一件商品，订单 ID
+对应且仅对应一个订单。</p>
+<p>我们现实生活中也有各种 ID，比如身份证 ID 对应且仅对应一个人、地址 ID
+对应且仅对应一个地址。</p>
+<p>简单来说，<strong>ID 就是数据的唯一标识</strong>。</p>
+<p>那么，单机情况下，我们使用的 ID 为什么和分布式下的情况不一样呢？</p>
+<p>平时写单体应用、本地程序、单库单表时，用的一般是数据库自增
+ID，经过处理的时间戳，UUID
+这种，为什么只需要保持唯一性就可以直接使用？</p>
+<p>因为<strong>只有一个人在发号</strong>，只有一台机器，只有一个数据库，只有一个进程在生成ID，不会出现<strong>两个多个人同时生成同一个ID</strong>的情况，所以说，这种情况下保持简单，自增，唯一就可以</p>
+<p>分布式环境下的ID就不能这样思考了，一旦变成分布式，就会有多台机器，多个服务，多个数据库，多个进程同时生成
+ID，自增啊计数器啊都会失去唯一性，所以说，分布式 ID 必须满足</p>
+<ul>
+<li>全集群全局唯一</li>
+<li>高可用，高并发</li>
+<li>尽量短的情况下趋势递增</li>
+</ul>
+<p>所以才会出现 UUID，Snowflake 雪花算法，百度 uid-generator，美团
+Leaf，数据库号段模式，Redis 自增 等等给分布式下用的 ID</p>
+<h3 id="什么是分布式-id">什么是分布式 ID？</h3>
+<blockquote>
+<p>https://javaguide.cn/distributed-system/distributed-id.html</p>
+</blockquote>
+<p>分布式 ID 是分布式系统下的 ID。</p>
+<p>我司的一个项目，使用的是单机 MySQL
+。但是，没想到的是，项目上线一个月之后，随着使用人数越来越多，整个系统的数据量将越来越大。单机
+MySQL 已经没办法支撑了，需要进行分库分表</p>
+<p>在分库之后，
+数据遍布在不同服务器上的数据库，例如数据库的自增主键已经没办法满足生成的主键唯一了。<strong>我们如何为不同的数据节点生成全局的唯一主键呢？</strong></p>
+<p>这个时候就需要生成<strong>分布式 ID</strong>了。</p>
+<figure>
+<img src="/posts/49652/image-20260223123047309.png" alt="image-20260223123047309">
+<figcaption aria-hidden="true">image-20260223123047309</figcaption>
+</figure>
+<p>分布式 ID
+最基本除了上面提到的，全局唯一，高性能，高可用，尽可能短且方便使用，一个比较好的分布式
+ID 还应保证，安全，递增，有具体的业务含义，独立部署</p>
+<figure>
+<img src="/posts/49652/v2-cf4a377c81d706020dc9152bc2ae033b_r.jpg" alt="img">
+<figcaption aria-hidden="true">img</figcaption>
+</figure>
+<h2 id="数据库层次下的分布式id解决方案">数据库层次下的分布式ID解决方案</h2>
+<blockquote>
+<p>很少有人使用这些思路解决</p>
+</blockquote>
+<h3 id="数据库自增主键">数据库自增主键</h3>
+<p>这种方式就比较简单直白了，就是通过关系型数据库的自增主键产生来唯一的
+ID。</p>
+<p>但是，明明分布式下不可靠的方案，是如何改造适配分布式的情况下的</p>
+<p>那么，就是变成了单库单点发号，放弃让业务库自增，专门搭建一个独立的 ID
+服务库，所有业务节点都向这个库请求自增 ID。</p>
+<ul>
+<li><p>建立一张专门生成 ID 的表</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE TABLE</span> `id_generator` (</span><br><span class="line">  `id` <span class="type">bigint</span>(<span class="number">20</span>) <span class="keyword">NOT NULL</span> AUTO_INCREMENT COMMENT <span class="string">&#x27;全局唯一ID&#x27;</span>,</span><br><span class="line">  `biz_type` <span class="type">varchar</span>(<span class="number">32</span>) <span class="keyword">NOT NULL</span> COMMENT <span class="string">&#x27;业务类型（区分不同业务的ID）&#x27;</span>,</span><br><span class="line">  `create_time` datetime <span class="keyword">DEFAULT</span> <span class="built_in">CURRENT_TIMESTAMP</span>,</span><br><span class="line">  <span class="keyword">PRIMARY KEY</span> (`id`),</span><br><span class="line">  <span class="keyword">UNIQUE</span> KEY `uk_biz_type` (`biz_type`)</span><br><span class="line">) ENGINE<span class="operator">=</span>InnoDB <span class="keyword">DEFAULT</span> CHARSET<span class="operator">=</span>utf8;</span><br></pre></td></tr></table></figure></li>
+<li><p>业务侧获取 ID 的逻辑：</p>
+<ol type="1">
+<li>向这个库插入一条对应 <code>biz_type</code>
+的空记录（或更新），拿到自增的 <code>id</code>；</li>
+<li>把这个 <code>id</code> 作为业务表的主键使用。</li>
+</ol></li>
+</ul>
+<p>很明显，这种思路简单但是违背分布式的初衷，ID 库挂了，整个系统无法生成
+ID，直接报废，那你还做分布式干什么，而且所有请求都走这一个库，并发高了扛不住，根本就是假的分布式</p>
+<h3 id="数据库号段模式">数据库号段模式</h3>
+<p>数据库主键自增这种模式，每次获取 ID 都要访问一次数据库，ID
+需求比较大的时候，肯定是不行的。</p>
+<p>如果我们可以批量获取，然后存在在内存里面，需要用到的时候，直接从内存里面拿就可以了，这也就是我们说的
+<strong>基于数据库的号段模式来生成分布式 ID。</strong></p>
+<p>也叫分段自增，它们是对 单点自增 进行再一步的优化，也是美团 Leaf、百度
+UID-generator 等框架的核心思路之一，解决了单点性能瓶颈问题。</p>
+<p>因此这样不再每次生成 ID
+都请求数据库，而是从数据库中批量获取一个号段，业务节点本地用完这个号段后，再去数据库取下一个号段，请求次数少了很多</p>
+<p>也即是说，之前是一个个拿，这次一下拿一批，用完了再去拿，然后加一个乐观锁，保证同一时刻只有一个节点能更新号段</p>
+<p>数据库的号段模式也是目前比较主流的一种分布式 ID
+生成方式。像滴滴开源的<a target="_blank" rel="noopener" href="https://github.com/didi/tinyid/wiki/tinyid原理介绍">Tinyid</a>
+就是基于这种方式来做的。不过，TinyId 使用了双号段缓存、增加多 db
+支持等方式来进一步优化。</p>
+<ol type="1">
+<li><p>创建一个数据库表，用于管理 ID 号段</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE TABLE</span> `sequence_id_generator` (</span><br><span class="line">  `id` <span class="type">int</span>(<span class="number">10</span>) <span class="keyword">NOT NULL</span>,</span><br><span class="line">  `current_max_id` <span class="type">bigint</span>(<span class="number">20</span>) <span class="keyword">NOT NULL</span> COMMENT <span class="string">&#x27;当前最大id&#x27;</span>,</span><br><span class="line">  `step` <span class="type">int</span>(<span class="number">10</span>) <span class="keyword">NOT NULL</span> COMMENT <span class="string">&#x27;号段的长度&#x27;</span>,</span><br><span class="line">  `version` <span class="type">int</span>(<span class="number">20</span>) <span class="keyword">NOT NULL</span> COMMENT <span class="string">&#x27;版本号&#x27;</span>,</span><br><span class="line">  `biz_type`    <span class="type">int</span>(<span class="number">20</span>) <span class="keyword">NOT NULL</span> COMMENT <span class="string">&#x27;业务类型&#x27;</span>,</span><br><span class="line">   <span class="keyword">PRIMARY KEY</span> (`id`)</span><br><span class="line">) ENGINE<span class="operator">=</span>InnoDB <span class="keyword">DEFAULT</span> CHARSET<span class="operator">=</span>utf8mb4;</span><br></pre></td></tr></table></figure>
+<p><code>current_max_id</code>
+字段和<code>step</code>字段主要用于获取批量 ID，获取的批量 id
+为：<code>current_max_id ~ current_max_id+step</code>。</p>
+<figure>
+<img src="/posts/49652/image-20260223124431960.png" alt="image-20260223124431960">
+<figcaption aria-hidden="true">image-20260223124431960</figcaption>
+</figure>
+<p><code>version</code>
+字段主要用于解决并发问题（乐观锁）,<code>biz_type</code>
+主要用于表示业务类型。</p></li>
+<li><p>那么，我们是如何使用的呢？</p>
+<ol type="1">
+<li><p>初始化，业务节点 A 向数据库请求 <code>biz_tag=order</code>
+的号段，数据库返回
+<code>current_max_id=1000</code>、<code>step=100</code></p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> current_max_id, step, version </span><br><span class="line"><span class="keyword">FROM</span> sequence_id_generator </span><br><span class="line"><span class="keyword">WHERE</span> biz_type <span class="operator">=</span> <span class="number">1</span>; <span class="comment">-- 查订单业务的号段</span></span><br><span class="line"><span class="comment">-- 返回结果：current_max_id=1000, step=100, version=1</span></span><br></pre></td></tr></table></figure>
+<p>并把库中的 <code>current_max_id</code> 更新为
+1100；（注意这里有个乐观锁，只有当 <code>version</code>
+与查询时一致时，才更新 <code>current_max_id</code>（加 step），并把
+<code>version</code> 加 1）</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">UPDATE</span> sequence_id_generator </span><br><span class="line"><span class="keyword">SET</span> </span><br><span class="line">  current_max_id <span class="operator">=</span> current_max_id <span class="operator">+</span> step, <span class="comment">-- 1000+100=1100</span></span><br><span class="line">  version <span class="operator">=</span> version <span class="operator">+</span> <span class="number">1</span> <span class="comment">-- 版本号从1→2，防止其他节点重复更新</span></span><br><span class="line"><span class="keyword">WHERE</span> </span><br><span class="line">  biz_type <span class="operator">=</span> <span class="number">1</span> </span><br><span class="line">  <span class="keyword">AND</span> version <span class="operator">=</span> <span class="number">1</span>; <span class="comment">-- 乐观锁：只有版本号匹配才更新</span></span><br></pre></td></tr></table></figure></li>
+<li><p>节点 A 本地生成 1001~1100 的 ID，全程不用再请求数据库；</p></li>
+<li><p>节点 A 发现 1001~1100 用完了，再去数据库取 1101~1200 的号段</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">UPDATE</span> sequence_id_generator </span><br><span class="line"><span class="keyword">SET</span> </span><br><span class="line">  current_max_id <span class="operator">=</span> current_max_id <span class="operator">+</span> step, <span class="comment">-- 1100+100=1200</span></span><br><span class="line">  version <span class="operator">=</span> version <span class="operator">+</span> <span class="number">1</span> <span class="comment">-- 版本号从2→3</span></span><br><span class="line"><span class="keyword">WHERE</span> </span><br><span class="line">  biz_type <span class="operator">=</span> <span class="number">1</span> </span><br><span class="line">  <span class="keyword">AND</span> version <span class="operator">=</span> <span class="number">2</span>; <span class="comment">-- 匹配最新版本号</span></span><br></pre></td></tr></table></figure></li>
+<li><p>假如节点 B 也需要使用，节点 B 同时请求时，如果 A
+还没取，数据库会返回 1101~1200，天然不重复。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">UPDATE</span> sequence_id_generator </span><br><span class="line"><span class="keyword">SET</span> </span><br><span class="line">  current_max_id <span class="operator">=</span> <span class="number">1200</span>,</span><br><span class="line">  version <span class="operator">=</span> <span class="number">3</span></span><br><span class="line"><span class="keyword">WHERE</span> </span><br><span class="line">  biz_type <span class="operator">=</span> <span class="number">1</span> </span><br><span class="line">  <span class="keyword">AND</span> version <span class="operator">=</span> <span class="number">2</span>;</span><br></pre></td></tr></table></figure></li>
+</ol></li>
+</ol>
+<p>为了避免 号段用完时请求数据库
+的这个延迟，我们采取双号段缓存的策略，本地缓存<strong>两个号段</strong>，用第一个号段时，异步去取第二个号段，这样就能做到无缝切换。</p>
+<p>但是很明显，这样的话 ID
+可能就不是连续的，因为号段之间有间隔，而且不太好配置，step
+太小频繁请求库，太大浪费多，最后如果节点宕机，该节点未用完的号段会浪费</p>
+<h3 id="自增偏移的简单分布式-id">自增偏移的简单分布式 ID</h3>
+<p>如果你的业务已经做了分库分表，可直接基于分表规则生成 ID，避免独立的
+ID 服务。</p>
+<p>核心思路就是给每个分表设置<strong>不同的自增起始值和步长</strong>，比如：</p>
+<ul>
+<li>分表 1（table_0）：ID 自增步长 4，起始值 1 → 生成 1,5,9,13…</li>
+<li>分表 2（table_1）：ID 自增步长 4，起始值 2 → 生成 2,6,10,14…</li>
+<li>分表 3（table_2）：ID 自增步长 4，起始值 3 → 生成 3,7,11,15…</li>
+<li>分表 4（table_3）：ID 自增步长 4，起始值 4 → 生成 4,8,12,16…</li>
+</ul>
+<p>这样所有分表的 ID 全局唯一，且趋势递增。</p>
+<p>但是，仅供参考，因为步长固定等于分表数，后续扩容分表会很麻烦，而且 ID
+分布不均匀；</p>
+<h3 id="redis方案">Redis方案</h3>
+<p>一般情况下，NoSQL 方案使用 Redis 多一些。我们通过 Redis 的
+<code>incr</code> 命令即可实现对 id 原子顺序递增</p>
+<figure>
+<img src="/posts/49652/image-20260223125735785.png" alt="image-20260223125735785">
+<figcaption aria-hidden="true">image-20260223125735785</figcaption>
+</figure>
+<p>利用 Redis 的<strong>单线程特性</strong>和原子操作，生成全局唯一
+ID，性能比数据库方案更高</p>
+<p>Redis 的 <code>INCR</code>/<code>INCRBY</code>
+命令是原子的，可直接作为全局自增计数器：</p>
+<ol type="1">
+<li><p>首先为不同的业务设置独立的 key，比如
+<code>order_id_counter</code>，<code>user_id_counter</code></p></li>
+<li><p>每次生成 ID 时，执行
+<code>INCR order_id_counter</code>，返回的结果就是唯一 ID；</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; <span class="built_in">set</span> sequence_id_biz_type 1</span><br><span class="line">OK</span><br><span class="line">127.0.0.1:6379&gt; incr sequence_id_biz_type</span><br><span class="line">(<span class="built_in">integer</span>) 2</span><br><span class="line">127.0.0.1:6379&gt; get sequence_id_biz_type</span><br><span class="line"><span class="string">&quot;2&quot;</span></span><br></pre></td></tr></table></figure></li>
+</ol>
+<p>当然，Redis 也可以做到批量生成来实现类似数据库号段模式的情况，例如用
+<code>INCRBY order_id_counter 100</code> 一次性获取 100 个
+ID，本地使用</p>
+<p>只不过，别忘了开启 Redis 持久化，建议是混合持久化，保证计数器的值在
+Redis 出了点啥问题之后不丢失，</p>
+<p>为了提高可用性和并发，我们可以使用 Redis Cluster。Redis Cluster 是
+Redis 官方提供的 Redis 集群解决方案（3.0+版本）。而且除了 Redis Cluster
+之外，你也可以使用开源的 Redis 集群方案<a target="_blank" rel="noopener" href="https://github.com/CodisLabs/codis">Codis</a></p>
+<p>除了 Redis 之外，MongoDB ObjectId 经常也会被拿来当做分布式 ID
+的解决方案。</p>
+<p><a target="_blank" rel="noopener" href="https://docs.mongodb.com/manual/reference/method/ObjectId/#description">MongoDB官方文档
+ObjectID</a>可以算作是和snowflake类似方法，通过“时间+机器码+pid+inc”共12个字节，通过4+3+2+3的方式最终标识成一个24长度的十六进制字符。</p>
+<figure>
+<img src="/posts/49652/image-20260223130635418.png" alt="image-20260223130635418">
+<figcaption aria-hidden="true">image-20260223130635418</figcaption>
+</figure>
+<p>MongoDB ObjectId 一共需要 12 个字节存储：</p>
+<ul>
+<li>0~3：时间戳</li>
+<li>3~6：代表机器 ID</li>
+<li>7~8：机器进程 ID</li>
+<li>9~11：自增值</li>
+</ul>
+<h2 id="算法角度下的分布式id解决方案">算法角度下的分布式ID解决方案</h2>
+<h3 id="uuid">UUID</h3>
+<p>在Java的世界里，想要得到一个具有唯一性的ID，首先被想到可能就是UUID，毕竟它有着全球唯一的特性。‘</p>
+<p>UUID按照标准方法生成时，在实际应用中具有唯一性，且不依赖中央机构的注册和分配。</p>
+<p>UUID 是 Universally Unique Identifier（通用唯一标识符） 的缩写。UUID
+包含 32 个 16 进制数字（8-4-4-4-12）。</p>
+<p>那么UUID可以做分布式ID吗？答案是可以的，但是并不推荐，它更适合做单机情况下的
+ID</p>
+<p>JDK 就提供了现成的生成 UUID 的方法，一行代码就行了。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123; </span><br><span class="line">       <span class="type">String</span> <span class="variable">uuid</span> <span class="operator">=</span> UUID.randomUUID().toString().replaceAll(<span class="string">&quot;-&quot;</span>,<span class="string">&quot;&quot;</span>);</span><br><span class="line">       System.out.println(uuid);</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+<p>虽然 UUID 使用起来很简单，而且生成速度极快，几乎不耗时，但 UUID
+却并不适用于实际的业务需求，例如订单号用 UUID
+这样的字符串就毫无意义，而对于数据库来说用作业务主键ID，它不仅是太长还是字符串，存储性能差查询也很耗时，所以不推荐用作分布式ID。</p>
+<p>比较重要的还有，UUID 是无顺序的，InnoDB
+引擎下，数据库主键的无序性会严重影响数据库性能。</p>
+<p>UUID 的生成有八种版本</p>
+<ol type="1">
+<li>版本1：日期时间和MAC地址，基于时间戳和设备的MAC地址生成。当包含 MAC
+地址时，可以保证全球唯一性，但也因此存在隐私泄露的风险。</li>
+<li>版本2：日期时间和MAC地址，DCE安全版本，与版本 1
+类似，但额外包含了本地标识符</li>
+<li>版本3：基于命名空间和名称的 MD5
+哈希，通过哈希命名空间标识符和名称生成，版本3使用 MD5
+作为散列算法，版本5则使用
+SHA1，将命名空间标识符和名称字符串组合计算得到。他能做到相同的命名空间和名称总是生成相同的
+UUID</li>
+<li>版本4：基于随机数，几乎完全基于随机数生成，通常使用伪随机数生成器（PRNG）或加密安全随机数生成器（CSPRNG）来生成。
+虽然理论上存在碰撞的可能性，但理论上碰撞概率极低</li>
+<li>版本5：基于命名空间和名称的 SHA-1 哈希，只是对版本3改了一个 SHA-1
+哈希算法。</li>
+<li>版本6：基于时间戳、计数器和节点 ID，改进了版本
+1，将时间戳放在最高有效位，使得 UUID 可以直接按时间排序。</li>
+<li>版本7：基于时间戳和随机数据，基于 Unix 时间戳和随机数据生成。
+由于时间戳位于最高有效位，因此支持按时间排序。并且，不依赖 MAC
+地址或节点 ID，避免了隐私问题。</li>
+<li>版本8：自定义，允许用户根据自己的需求定义 UUID
+的生成方式。其结构和内容由用户决定，提供更大的灵活性。</li>
+</ol>
+<p>JDK 中通过 <code>UUID</code> 的 <code>randomUUID()</code> 方法生成的
+UUID 的版本默认为 4。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">UUID</span> <span class="variable">uuid</span> <span class="operator">=</span> UUID.randomUUID();</span><br><span class="line"><span class="type">int</span> <span class="variable">version</span> <span class="operator">=</span> uuid.version();<span class="comment">// 4</span></span><br></pre></td></tr></table></figure>
+<h3 id="snowflake">Snowflake</h3>
+<p>大名鼎鼎的雪花算法</p>
+<p>Snowflake 是 Twitter 开源的分布式 ID 生成算法。Snowflake 由 64 bit
+的二进制数字组成，这 64bit
+的二进制被分成了几部分，每一部分存储的数据都有特定的含义：</p>
+<figure>
+<img src="/posts/49652/image-20260223131651265.png" alt="image-20260223131651265">
+<figcaption aria-hidden="true">image-20260223131651265</figcaption>
+</figure>
+<ul>
+<li>sign：占1bit，符号位，始终为 0，代表生成的 ID 为正数。</li>
+<li>timestamp：占41位，用来表示时间戳，单位是毫秒，可以支撑 2 ^41
+毫秒，大约70年不到</li>
+<li>datacenter id + worker id：每个分别占5位，一般来说，前 5 位表示机房
+ID，后 5 位表示机器 ID。这样就可以区分不同集群和机房的节点。</li>
+<li>sequence：占12位，序列号，为自增值，代表单台机器每毫秒能够产生的最大
+ID 数，也就是说单台机器每毫秒最多可以生成 4096 个 唯一 ID。</li>
+</ul>
+<p>在实际项目中，我们一般也会对 Snowflake 算法进行改造，最常见的就是在
+Snowflake 算法生成的 ID 中加入业务类型信息，或者砍短雪花 ID 来无损前端
+JS 传输</p>
+<p>我们再来看看 Snowflake 算法的优缺点</p>
+<ul>
+<li><strong>优点</strong>：生成速度比较快、生成的 ID
+有序递增、比较灵活，因为易于改造</li>
+<li><strong>缺点</strong>：需要解决重复 ID 问题（ID
+生成依赖时间，在获取时间的时候，可能会出现时间回拨的问题，也就是服务器上的时间突然倒退到之前的时间，进而导致会产生重复
+ID）、依赖机器 ID
+对分布式环境不友好（当需要自动启停或增减机器时，固定的机器 ID
+可能不够灵活）。</li>
+</ul>
+<p>如果你想要使用 Snowflake
+算法的话，一般不需要你自己再造轮子。有很多基于 Snowflake
+算法的开源实现比如美团 的 Leaf、百度的
+UidGenerator，并且这些开源实现对原有的 Snowflake
+算法进行了优化，性能更优秀，还解决了 Snowflake
+算法的时间回拨问题和依赖机器 ID 的问题。</p>
+<p>并且，Seata
+还提出了改良版雪花算法，针对原版雪花算法进行了一定的优化改良，解决了时间回拨问题，大幅提高的
+QPS。</p>
+<h2 id="开源框架下的分布式id解决方案">开源框架下的分布式ID解决方案</h2>
+<h3 id="百度uidgenerator">百度UidGenerator</h3>
+<p><a target="_blank" rel="noopener" href="https://github.com/baidu/uid-generator">UidGenerator</a>
+是百度开源的一款基于 Snowflake(雪花算法)的唯一 ID 生成器。</p>
+<p><code>uid-generator</code>是基于<code>Snowflake</code>算法实现的，与原始的<code>snowflake</code>算法不同在于，<code>uid-generator</code>支持自定义时间戳、工作机器ID和
+序列号等各部分的位数，而且<code>uid-generator</code>中采用用户自定义<code>workId</code>的生成策略。</p>
+<p>不过，UidGenerator 对 Snowflake 进行了改进，生成的唯一 ID
+组成如下：</p>
+<figure>
+<img src="/posts/49652/image-20260223132031625.png" alt="image-20260223132031625">
+<figcaption aria-hidden="true">image-20260223132031625</figcaption>
+</figure>
+<ul>
+<li><strong>sign(1bit)</strong>：符号位（标识正负），始终为
+0，代表生成的 ID 为正数。</li>
+<li><strong>delta seconds (28
+bits)</strong>：当前时间，相对于时间基点”2016-05-20”的增量值，单位：秒，最多可支持约
+8.7 年</li>
+<li><strong>worker id (22 bits)</strong>：机器 id，最多可支持约 420w
+次机器启动。内置实现为在启动时由数据库分配，默认分配策略为用后即弃，后续可提供复用策略。</li>
+<li><strong>sequence (13 bits)</strong>：每秒下的并发序列，13 bits
+可支持每秒 8192 个并发。</li>
+</ul>
+<p>而且<code>uid-generator</code>需要与数据库配合使用，需要新增一个<code>WORKER_NODE</code>表。当应用启动时会向数据库表中去插入一条数据，插入成功后返回的自增ID就是该机器的<code>workId</code>数据，由host，port组成。</p>
+<p>自 18 年后，UidGenerator
+就基本没有再维护了，也不知道百度是不是彻底不要它了</p>
+<h3 id="美团leaf">美团Leaf</h3>
+<p><a target="_blank" rel="noopener" href="https://github.com/Meituan-Dianping/Leaf">Leaf</a>
+是美团开源的一个分布式 ID 解决方案 。这个项目的名字 Leaf
+树叶，起源于德国哲学家、数学家莱布尼茨的一句话：“There are no two
+identical leaves in the world”（世界上没有两片相同的树叶）</p>
+<p><code>Leaf</code>同时支持号段模式和<code>snowflake</code>算法模式，可以切换使用。</p>
+<p>并且，它支持双号段，还解决了雪花 ID
+系统时钟回拨问题。对于双号段，还是提前获取下一个号段，避免请求号段时候的延迟，和我上面提到的一样。对于雪花
+ID 的时钟问题，它的解决需要弱依赖于 Zookeeper（它使用了 Zookeeper
+作为注册中心，通过在特定路径下读取和创建子节点来管理 workId）</p>
+<p>Leaf 的诞生主要是为了解决美团各个业务线生成分布式 ID
+的方法多种多样以及不可靠的问题。</p>
+<p>官方文章：<a target="_blank" rel="noopener" href="https://tech.meituan.com/2017/04/21/mt-leaf.html">《Leaf——美团点评分布式
+ID 生成系统》</a>）。</p>
+<h3 id="滴滴tinyid">滴滴Tinyid</h3>
+<p><a target="_blank" rel="noopener" href="https://github.com/didi/tinyid">Tinyid</a>
+是滴滴开源的一款基于数据库号段模式的唯一 ID 生成器。</p>
+<p>数据库号段模式的原理我们在上面已经介绍过了。<strong>Tinyid
+有哪些亮点呢？</strong></p>
+<p>可以看到，基础的底层逻辑是一样的，Tinyid
+完全使用了数据库号段的底层逻辑</p>
+<figure>
+<img src="/posts/49652/image-20260223133255683.png" alt="image-20260223133255683">
+<figcaption aria-hidden="true">image-20260223133255683</figcaption>
+</figure>
+<p>如上我们已经完成了号段生成逻辑，那么我们的id生成服务架构可能是这样的</p>
+<figure>
+<img src="/posts/49652/image-20260223133345992.png" alt="image-20260223133345992">
+<figcaption aria-hidden="true">image-20260223133345992</figcaption>
+</figure>
+<p>ID生成系统向外提供服务，请求经过我们的负载均衡 router，到达其中一台
+tinyid-server，从事先加载好的号段中获取一个
+ID，如果号段还没有加载，或者已经用完，则向db再申请一个新的可用号段，多台server之间因为号段生成算法的原子性，而保证每台server上的可用号段不重，从而使id生成不重。</p>
+<p>可以看到如果 tinyid-server
+如果重启了，那么机器手上的号段不管用了还是没用，就都作废了，会浪费一部分id</p>
+<p>同时 id 也不会连续，由于负载均衡 Router
+的存在，每次请求可能会打到不同的机器上，所以说 id
+也不是单调递增的，而是趋势递增的，不过这对于大部分业务都是可接受的。</p>
+<p>这种方案有什么问题呢？</p>
+<ul>
+<li>获取新号段的情况下，db更新也可能存在 version 冲突，此时程序获取唯一
+ID 的速度比较慢。</li>
+<li>ID 的 DB 是一个单点，而且需要保证 DB
+高可用，这个是比较麻烦且耗费资源的。</li>
+<li>HTTP 调用存在网络开销。</li>
+</ul>
+<p>Tinyid 方案主要做了下面这些优化</p>
+<ul>
+<li>双号段缓存：还是一样，异步加载下一个号段，保证内存中始终有可用号段。</li>
+<li>增加多 db 支持：支持多个 DB，并且，每个 DB 都能生成唯一
+ID，提高了可用性</li>
+<li>增加 tinyid-client：纯本地操作，无 HTTP
+请求消耗，性能和可用性都有很大提升。</li>
+</ul>
+<figure>
+<img src="/posts/49652/image-20260223133822133.png" alt="image-20260223133822133">
+<figcaption aria-hidden="true">image-20260223133822133</figcaption>
+</figure>
+<h3 id="idgenerator">IdGenerator</h3>
+<p><a target="_blank" rel="noopener" href="https://github.com/yitter/IdGenerator">IdGenerator</a>
+也是一款基于 Snowflake 的唯一 ID
+生成器。它是我朋友推荐给我使用的一个好用的雪花 ID 生成器</p>
+<p>IdGenerator 有如下特点：</p>
+<ul>
+<li><p>生成的唯一 ID 更短</p>
+<figure>
+<img src="/posts/49652/image-20260223134318234.png" alt="image-20260223134318234">
+<figcaption aria-hidden="true">image-20260223134318234</figcaption>
+</figure></li>
+<li><p>兼容所有雪花算法</p></li>
+<li><p>原生支持多语言，并提供多线程安全调用动态库</p></li>
+<li><p>不依赖外部存储系统</p></li>
+<li><p>而且解决了时间回拨问题，支持手工插入新 ID</p></li>
+</ul>
+<p>IdGenerator 生成的唯一 ID 组成如下：</p>
+<figure>
+<img src="/posts/49652/image-20260223134017401.png" alt="image-20260223134017401">
+<figcaption aria-hidden="true">image-20260223134017401</figcaption>
+</figure>
+<ul>
+<li><strong>timestamp (位数不固定)</strong>：时间差，是生成 ID
+时的系统时间减去
+BaseTime(基础时间，也称基点时间、原点时间、纪元时间，默认值为 2020 年)
+的总时间差（毫秒单位）。初始为
+5bits，随着运行时间而增加。如果觉得默认值太老，你可以重新设置，不过要注意，这个值以后最好不变。</li>
+<li><strong>worker id (默认 6 bits)</strong>：机器
+id，机器码，最重要参数，是区分不同机器或不同应用的唯一 ID，最大值由
+<code>WorkerIdBitLength</code>（默认
+6）限定。如果一台服务器部署多个独立服务，需要为每个服务指定不同的
+WorkerId。</li>
+<li><strong>sequence (默认 6
+bits)</strong>：序列数，是每毫秒下的序列数，由参数中的
+<code>SeqBitLength</code>（默认 6）限定。增加 <code>SeqBitLength</code>
+会让性能更高，但生成的 ID 也会更长。</li>
+</ul>
+<p>使用起来很简单</p>
+<ul>
+<li><p>依赖</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.github.yitter<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>yitter-idgenerator<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">version</span>&gt;</span>1.0.6<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure></li>
+<li><p>初始化</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 创建 IdGeneratorOptions 对象，可在构造函数中输入 WorkerId：</span></span><br><span class="line"><span class="type">IdGeneratorOptions</span> <span class="variable">options</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">IdGeneratorOptions</span>(Your_Unique_Worker_Id);</span><br><span class="line"></span><br><span class="line"><span class="comment">// options.WorkerIdBitLength = 10;   // 默认值6，限定 WorkerId 最大值为2^6-1，即默认最多支持64个节点。</span></span><br><span class="line"><span class="comment">// options.SeqBitLength = 6;   // 默认值6，限制每毫秒生成的ID个数。若生成速度超过5万个/秒，建议加大 SeqBitLength 到 10。</span></span><br><span class="line"><span class="comment">// options.BaseTime = Your_Base_Time;   // 如果要兼容老系统的雪花算法，此处应设置为老系统的BaseTime。</span></span><br><span class="line"><span class="comment">// ...... 其它参数参考 IdGeneratorOptions 定义。https://github.com/yitter/IdGenerator/blob/master/README.md</span></span><br></pre></td></tr></table></figure></li>
+<li><p>使用</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 初始化后，在任何需要生成ID的地方，调用以下方法：</span></span><br><span class="line"><span class="type">long</span> <span class="variable">newId</span> <span class="operator">=</span> YitIdHelper.nextId();</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="如何根据你的业务设计分布式id">如何根据你的业务设计分布式ID</h2>
+<p>这部分主要是来探讨业务场景中对 ID 在不同的情况，有哪些具体的要求</p>
+<p>一般考虑的事情就这些</p>
+<ul>
+<li>这个业务对 ID 的<strong>唯一性</strong>要求是 绝对唯一 还是
+业务内唯一？</li>
+<li>生成 ID 能接受多高的延迟和 QPS</li>
+<li>ID 的格式需要反映出业务吗</li>
+</ul>
+<p>深耕业务还会有区分通用券和单独券的情况，分别具备以下特点，技术实现需要因地制宜地思考。</p>
+<ol type="1">
+<li>通用券：多个玩家都可以输入兑换，然后有总量限制，期限限制。</li>
+<li>单独券：运营同学可以在后台设置兑换码的奖励物品、期限、个数，然后由后台生成兑换码的列表，兑换之后核销</li>
+</ol>
+<h3 id="订单系统">订单系统</h3>
+<blockquote>
+<p>https://javaguide.cn/distributed-system/distributed-id-design.html</p>
+</blockquote>
+<p>我们在商场买东西一码付二维码，下单生成的订单号，使用到的优惠券码，联合商品兑换券码，这些是在网上购物经常使用到的单号，那么为什么有些单号那么长，有些只有几位数？有些单号一看就知道年月日的信息，有些却看不出任何意义？</p>
+<h4 id="订单号">订单号</h4>
+<p>订单号在实际的业务过程中作为一个订单的唯一标识码存在，一般实现以下业务场景</p>
+<ol type="1">
+<li>用户订单遇到问题，需要找客服进行协助；</li>
+<li>对订单进行操作，如线下收款，订单核销；</li>
+<li>下单，改单，成单，退单，售后等系统内部的订单流程处理和跟进。</li>
+</ol>
+<p>很多时候搜索订单相关信息的时候都是以订单 ID
+作为唯一标识符，这是由于订单号的生成规则的唯一性决定的。从技术角度看，除了
+ID 服务必要的特性之外，在订单号的设计上需要体现几个特性：</p>
+<ol type="1">
+<li><p>信息安全</p>
+<p>订单号要安全，比如不能用纯自增数字，因为它不能透露公司的运营情况，比如日销、公司流水号等信息，以及商业信息和用户手机号，身份证等隐私信息。所以，参与生成订单号
+ID 不能使用这些信息来操作。</p>
+<p>所以说，订单号 ID
+不能有明显的整体规律，任意修改一个字符就能查询到另一个订单信息，这也是不允许的。</p>
+<p>类比于我们高考时候的考生编号的生成规则，一定不能是连号的，否则只需要根据顺序往下查询就能搜索到别的考生的成绩，这是绝对不允许的。</p></li>
+<li><p>部分可读</p>
+<p>部分可读要求能够从订单号中简单的读取到一些业务相关的信息，而且对于订单号位数要便于操作，因此要求订单号的位数适中，且局部有规律。</p>
+<p>过长的订单号或易读性差的订单号会导致客服输入困难且易错率较高，影响用户体验的售后体验。因此在实际的业务场景中，订单号的设计通常都会适当携带一些允许公开的对使用场景有帮助的信息，如时间，星期，类型等等，这个主要根据所涉及的编号对应的使用场景来。</p>
+<p>而且像时间、星期这些自增长的属于作为订单号的设计的一部分元素，不会泄露过度信息，而且有助于解决业务累积而导致的订单号重复的问题。</p></li>
+<li><p>查询效率</p>
+<p>也就是高性能，因为订单通常涉及到秒杀，而且订单表通常分库分表，所以 ID
+需全局唯一趋势递增即可，允许少量浪费，因为要保持高并发</p>
+<p>订单号通常涉及到比较多的查询，要求不能太长且最好是纯数字，int
+类型相对 varchar 类型的查询效率更高，对在线业务更加友好。</p></li>
+</ol>
+<p>很多情况下，我们在这种场景下使用美团 Leaf</p>
+<h4 id="支付号">支付号</h4>
+<p>这种业务的特点是涉及资金、对账、审计，ID
+必须可追溯、无断层、无重复；</p>
+<p>虽然它没那么大的并发量，你要是一秒卖几千笔还是挺好的了，但是它对数据的一致性要求极高，不仅要全局绝对唯一，而且通常需要严格递增、连续无间隔（这种ID千万不能公开），而且为了安全性，要求
+ID
+不能泄露业务量，比如不能用纯自增数字，而且必须高可靠，因为你不能因为生成
+ID 失败就付不了钱</p>
+<p>这种情况下，我们可以使用数据库号段，或者干脆单独给支付服务分配一个数据库单库自增的服务，这种情况下我们通常要假如业务中需要处理的内容，包含业务日期等等</p>
+<p>不要用 UUID、不要用纯 Redis 自增</p>
+<h4 id="券码">券码</h4>
+<p>优惠券、兑换券是运营推广最常用的促销工具之一，合理使用它们，可以让买家得到实惠，商家提升商品销量。常见场景有：</p>
+<ol type="1">
+<li>在平台购买会员兑换卡这种产品。支付成功后会得到平台会员的兑换码</li>
+<li>部分平台发放的消费券；</li>
+<li>瓶装饮料经常会出现输入优惠编码兑换奖品。</li>
+</ol>
+<h5 id="即时生成">即时生成</h5>
+<p>从技术角度看，有些场景适合 ID
+即时生成，比如电商平台购物领取的优惠券，只需要在用户领取时或者下单时分配优惠券信息即可。</p>
+<p>它的要求就是生成快、全局唯一、不可预测，无需提前存储。</p>
+<p>所以它最重要的要求就是低延迟，领取时即时生成，用户无感知，而且不能是连续数字
+/
+字母这种可以被预测的场景，所以说，这种情况下，结合随机数加业务前缀的分布式ID
+比较常见，可以针对 UUID
+的版本4进行再一步的改造，我同学貌似使用的是雪花算法 + 字符编码</p>
+<blockquote>
+<p>对于雪花算法 + 字符编码，我认为这个方式很好</p>
+<ol type="1">
+<li>先用雪花算法生成 64 位整数 ID</li>
+<li>然后将雪花 ID 转为 Base62 编码，再拼接业务前缀</li>
+</ol>
+<p>最后生成的就是这样的东西，雪花 ID <code>17568923456789</code> →
+Base62 编码 <code>8A7B9C</code> → 拼接前缀
+<code>TMALL2602118A7B9C</code></p>
+</blockquote>
+<p>对于不用提前存储，因为它生成后直接绑定用户、有效期、使用规则，用户领到了就入库，用户用完了或者到期了就删，根本不用提前存储起来</p>
+<h5 id="预先生成">预先生成</h5>
+<p>而有些线上线下结合的场景，比如疫情优惠券，瓶盖开奖，京东卡，超市卡这种，则需要提前批量生成</p>
+<p>那么它对于唯一性，不可预测的要求性更高，而且要求可存储可核验，这样才能支持线下分发。</p>
+<p>对于唯一性没啥好说的，但是对于不可预测性，这里一般是采用纯随机字符组合，而且生成后需存储到数据库
+/ 缓存，支持快速校验券码是否有效</p>
+<p>设计思路上，需要设计一种有效的兑换码生成策略，支持预先生成，支持校验，内容简洁，生成的兑换码都具有唯一性，那么这种策略就是一种特殊的编解码策略，按照约定的编解码规则支撑上述需求。</p>
+<p>既然是一种编解码规则，那么需要约定编码空间，也就是用户看到的组成兑换码的字符，编码空间由字符
+a-z,A-Z，数字 0-9 组成，为了增强兑换码的可识别度，剔除大写字母 O 以及
+I,可用字符如下所示，共 60 个字符：</p>
+<p>abcdefghijklmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXZY0123456789</p>
+<p>之前说过，兑换码要求尽可能简洁，那么设计时就需要考虑兑换码的字符数，假设上限为
+12 位，而字符空间有 60 位，那么可以表示的空间范围为
+60^12=130606940160000000000000，也就是可以 12
+位的兑换码可以生成天量，应该够运营同学挥霍了，转换成 2 进制：</p>
+<p>1001000100000000101110011001101101110011000000000000000000000(61
+位)</p>
+<p>兑换码可以预先生成，并且不需要额外的存储空间保存这些信息，每一个优惠方案都有独立的一组兑换码(指运营同学组织的每一场运营活动都有不同的兑换码,不能混合使用,
+例如双 11 兑换码不能使用在双 12
+活动上)，每个兑换码有自己的编号，防止重复，为了保证兑换码的有效性，对兑换码的数据需要进行校验，那么当前兑换码的数据组成就如下所示了：</p>
+<p>优惠方案 ID + 兑换码序列号 i + 校验码</p>
+<ul>
+<li>优惠方案 ID，代表当前优惠方案的 ID
+号，优惠方案的空间范围决定了可以组织的优惠活动次数</li>
+<li>兑换码序列号 i，代表当前兑换码是当前活动中第 i
+个兑换码，兑换码序列号的空间范围决定了优惠活动可以发行的兑换码数目</li>
+<li>校验码，校验兑换码是否有效，主要为了快捷的校验兑换码信息的是否正确，其次可以起到填充数据的目的，增强数据的散列性</li>
+</ul>
+<h2 id="可追踪的系统">可追踪的系统</h2>
+<h3 id="日志追踪">日志追踪</h3>
+<p>在分布式服务架构下，一个 Web
+请求从网关流入，有可能会调用多个服务对请求进行处理，拿到最终结果。这个过程中每个服务之间的通信又是单独的网络请求，无论请求经过的哪个服务出了故障或者处理过慢都会对前端造成影响。</p>
+<p>处理一个 Web
+请求要调用的多个服务，为了能更方便的查询哪个环节的服务出现了问题，现在常用的解决方案是为整个系统引入分布式链路跟踪。</p>
+<figure>
+<img src="/posts/49652/image-20260223164214905.png" alt="image-20260223164214905">
+<figcaption aria-hidden="true">image-20260223164214905</figcaption>
+</figure>
+<p>在分布式链路跟踪中有两个重要的概念：跟踪（trace）和 跨度（
+span)。trace 是请求在分布式系统中的整个链路视图，span
+则代表整个链路中对于每个不同服务的内部的视图，span 组合在一起就是整个
+trace 的视图。</p>
+<p>在整个请求的调用链中，请求会一直携带 traceid
+往下游服务传递，每个服务内部也会生成自己的 spanid
+用于生成自己的内部调用视图，并和 traceid 一起传递给下游服务</p>
+<h3 id="traceid">TraceId</h3>
+<p>TraceId是全局唯一的链路根
+ID，他肯定是全局唯一的，标识一次完整的用户请求，而且它的格式需要简洁，通常情况下，它要求本地生成，而且一般包含时间戳</p>
+<p>因为如果每个 trace 中的 ID 都需要请求公共的 ID
+服务生成，纯纯的浪费网络带宽资源，所以说 TraceId
+需要具备接入层的服务器实例自主生成的能力，且会阻塞用户请求向下游传递，响应耗时上升，增加了没必要的风险</p>
+<p>所以需要服务器实例最好可以自行计算
+tracid，spanid，避免依赖外部服务。</p>
+<p>所以，我们可以使用版本4下的 UUID 和缩短位数的雪花算法</p>
+<p>而且这种场景下，生成的 ID
+除了要求唯一之外，还要求生成的效率高、吞吐量大。</p>
+<p>可以指定这样的一个产生规则：服务器 IP + ID 产生的时间 + 自增序列 +
+当前进程号</p>
+<p>例如，0ad1348f1403169275002100356696</p>
+<p>前 8 位 0ad1348f 即产生 TraceId 的机器的
+IP，这是一个十六进制的数字，每两位代表 IP
+中的一段，我们把这个数字，按每两位转成 10 进制即可得到常见的 IP
+地址表示方式
+10.209.52.143，您也可以根据这个规律来查找到请求经过的第一个服务器。</p>
+<p>后面的 13 位 1403169275002 是产生 TraceId 的时间。之后的 4 位 1003
+是一个自增的序列，从 1000 涨到 9000，到达 9000 后回到 1000
+再开始往上涨。最后的 5 位 56696 是当前的进程 ID，为了防止单机多进程出现
+TraceId 冲突的情况，所以在 TraceId 末尾添加了当前的进程 ID</p>
+<h3 id="spanid">SpanId</h3>
+<p>SpanId 应该就是层级可追溯，它随调用链路动态生成</p>
+<p>span 是层的意思，比如在第一个实例算是第一层，
+请求代理或者分流到下一个实例处理，就是第二层，以此类推。通过层，SpanId
+代表本次调用在整个调用链路树中的位置。</p>
+<p>假设一个 服务器实例 A
+接收了一次用户请求，代表是整个调用的根节点，那么 A
+层处理这次请求产生的非服务调用日志记录 spanid 的值都是 0，A 层需要通过
+RPC 依次调用 B、C、D 三个服务器实例，那么在 A 的日志中，SpanId 分别是
+0.1，0.2 和 0.3，在 B、C、D 中，SpanId 也分别是 0.1，0.2 和 0.3；如果 C
+系统在处理请求的时候又调用了 E，F 两个服务器实例，那么 C 系统中对应的
+spanid 是 0.2.1 和 0.2.2，E、F 两个系统对应的日志也是 0.2.1 和
+0.2.2。</p>
+<p>根据上面的描述可以知道，如果把一次调用中所有的 SpanId
+收集起来，可以组成一棵完整的链路树。</p>
+<p><strong>spanid
+的生成本质：在跨层传递透传的同时，控制大小版本号的自增来实现的</strong></p>
+<h2 id="短网址">短网址</h2>
+<p>短网址主要功能包括网址缩短与还原两大功能。相对于长网址，短网址可以更方便地在电子邮件，社交网络，微博和手机上传播，例如原来很长的网址通过短网址服务即可生成相应的短网址，避免折行或超出字符限制。</p>
+<p>例如，我现在使用的 Hexo
+博客，就可以假如一个插件，来给文章生成一共短的唯一的
+ID，用于分享和更好的访问</p>
+<p>短网址服务把客户的长网址转换成短网址，常用的 ID 生成服务比如：MySQL
+ID 自增、 Redis 键自增、号段模式，生成的 ID
+都是一串数字，然后，我们还可以进行进一步的压缩，例如转换成更高的进制的方式压缩长度。</p>
+<p>它的重点比较清晰，就是，短，唯一就可以了，这个短要求六到八位，所以说，一般情况下只使用数字其实要考虑一下够不够，通常要加入字符</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a target="_blank" rel="noopener" href="https://github.com/ergou10086">ErgouTree</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://ergou10086.github.io/posts/49652.html">https://ergou10086.github.io/posts/49652.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://ergou10086.github.io" target="_blank">ErgouTree's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E5%BE%AE%E6%9C%8D%E5%8A%A1/">微服务</a><a class="post-meta__tags" href="/tags/Spring-Cloud/">Spring Cloud</a><a class="post-meta__tags" href="/tags/%E5%AD%A6%E4%B9%A0/">学习</a><a class="post-meta__tags" href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F/">分布式</a><a class="post-meta__tags" href="/tags/Java%E6%8A%80%E6%9C%AF/">Java技术</a><a class="post-meta__tags" href="/tags/%E6%A1%86%E6%9E%B6%E7%9F%A5%E8%AF%86/">框架知识</a><a class="post-meta__tags" href="/tags/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a><a class="post-meta__tags" href="/tags/%E4%B8%AD%E9%97%B4%E4%BB%B6/">中间件</a><a class="post-meta__tags" href="/tags/%E5%AE%9E%E7%94%A8%E7%9F%A5%E8%AF%86/">实用知识</a><a class="post-meta__tags" href="/tags/JavaWeb/">JavaWeb</a><a class="post-meta__tags" href="/tags/Spring%E7%B3%BB%E5%88%97/">Spring系列</a><a class="post-meta__tags" href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%90%86%E8%AE%BA/">计算机理论</a></div><div class="post-share"><div class="addtoany"><div class="a2a_kit a2a_kit_size_32 a2a_default_style"><a class="a2a_button_facebook"></a><a class="a2a_button_twitter"></a><a class="a2a_button_wechat"></a><a class="a2a_button_sina_weibo"></a><a class="a2a_button_facebook_messenger"></a><a class="a2a_button_email"></a><a class="a2a_button_copy_link"></a><a class="a2a_dd" target="_blank" rel="noopener" href="https://www.addtoany.com/share"></a></div></div><script async="async" src="https://static.addtoany.com/menu/page.js"></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/posts/14427.html" title="面向对象编程的设计模式之架构设计模式"><img class="cover" src="/images/posts/cover_other4.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">面向对象编程的设计模式之架构设计模式</div></div><div class="info-2"><div class="info-item-1">前言：这些是什么样的设计模式 之前，我们学习的是GoF（Gang of Four）提出的 23 种经典设计模式（5 创建型 + 7 结构型 + 11 行为型） 接下来，我提到的这些设计模式，他们属于更高层次的 架构模式（Architectural Patterns） 或 企业级设计模式（Enterprise Design Patterns），而不是 GoF 的微观设计模式。它们关注的是整个系统的组织结构、职责划分和控制流，而非单个类或对象之间的交互。 从经典设计模式迈向现代软件架构的关键节点就在这里。掌握这些高层次模式，将帮助你设计出可维护、可扩展、高内聚、低耦合的企业级系统。 他们有很多经典的实现，我只讲解最常使用的和看到的 架构设计模式 关注整个系统的高层结构，决定组件如何组织、通信和部署。 它的选择影响全局、难以后期修改、而且通常决定技术选型。 常见的架构模式如下  MVC 模式 MVVM 模式 三层架构（表现层-业务层-数据层）模式 管道-过滤器模式 微服务架构 事件驱动架构 CQRS（Command Query...</div></div></div></a><a class="pagination-related" href="/posts/50326.html" title="几种分布式ID的设计方案详解与真实业务选型"><img class="cover" src="/images/posts/cover_vue2.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">几种分布式ID的设计方案详解与真实业务选型</div></div><div class="info-2"><div class="info-item-1"> 想了一下，有必要单独拎出来作为一篇文章  分布式ID 分布式 ID 介绍 我们都知道 ID 是什么内容，也知道需要使用 ID 做什么。 无非就是对系统中的各种数据使用一个唯一编号 ID 来进行唯一标识，这样就能在系统中对数据进行操作。而且 ID 具有独立性，就是说你产生了一条数据需要被持久化，就应该给它一个ID，比如用户 ID 对应且仅对应一个人，商品 ID 对应且仅对应一件商品，订单 ID 对应且仅对应一个订单。 我们现实生活中也有各种 ID，比如身份证 ID 对应且仅对应一个人、地址 ID 对应且仅对应一个地址。 简单来说，ID 就是数据的唯一标识。 那么，单机情况下，我们使用的 ID...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/posts/50326.html" title="几种分布式ID的设计方案详解与真实业务选型"><img class="cover" src="/images/posts/cover_vue2.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-02-23</div><div class="info-item-2">几种分布式ID的设计方案详解与真实业务选型</div></div><div class="info-2"><div class="info-item-1"> 想了一下，有必要单独拎出来作为一篇文章  分布式ID 分布式 ID 介绍 我们都知道 ID 是什么内容，也知道需要使用 ID 做什么。 无非就是对系统中的各种数据使用一个唯一编号 ID 来进行唯一标识，这样就能在系统中对数据进行操作。而且 ID 具有独立性，就是说你产生了一条数据需要被持久化，就应该给它一个ID，比如用户 ID 对应且仅对应一个人，商品 ID 对应且仅对应一件商品，订单 ID 对应且仅对应一个订单。 我们现实生活中也有各种 ID，比如身份证 ID 对应且仅对应一个人、地址 ID 对应且仅对应一个地址。 简单来说，ID 就是数据的唯一标识。 那么，单机情况下，我们使用的 ID...</div></div></div></a><a class="pagination-related" href="/posts/56262.html" title="Spring Cloud part31—Spring Cloud微服务场景下集成Seata分布式事务的四种实现"><img class="cover" src="/images/posts/cover_springcloud5.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-01-10</div><div class="info-item-2">Spring Cloud part31—Spring Cloud微服务场景下集成Seata分布式事务的四种实现</div></div><div class="info-2"><div class="info-item-1">开始演示前的准备工作 搭建项目 其实设计三个子模块足矣    服务名 功能 数据库     order-service 创建订单（主业务入口） order_db   account-service 扣减用户余额 account_db   storage-service 扣减库存 storage_db    这是 Seata 官方示例的经典三服务模型，非常适合演练 集成 Seata Server 到你的项目中 下载 Seata Server（如 1.7.0），https://github.com/seata/seata/releases，然后把依赖添加到每个子项目中，这个就不说了，关于 Seata 如何安装配置，就不讲了 那么在项目开始编写之前，需要进入 seata-server/bin/ 目录运行seata-server.bat然后启动seata，如果你配置了 Nacos...</div></div></div></a><a class="pagination-related" href="/posts/1793.html" title="Spring Cloud part24—在微服务项目中实际使用Kafka的基本内容"><img class="cover" src="/images/posts/cover_jwt.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-11-02</div><div class="info-item-2">Spring Cloud part24—在微服务项目中实际使用Kafka的基本内容</div></div><div class="info-2"><div class="info-item-1">微服务项目内如何集成 Kafka 和其他组件要考虑的事情一样，还是涉及到在哪用，用给谁，如何配置的这三个问题 在 Spring Cloud 微服务项目中集成 Kafka，主要涉及生产者（发送消息）和消费者（接收消息）的实现，以及与 Spring Cloud 生态的适配（如服务发现、配置中心等） Spring创建了一个项目Spring-kafka，封装了Apache 的Kafka-client，用于在Spring项目里快速集成kafka。 依赖如下 1234567891011&lt;!-- Spring Kafka核心依赖 --&gt;&lt;dependency&gt;    &lt;groupId&gt;org.springframework.kafka&lt;/groupId&gt;    &lt;artifactId&gt;spring-kafka&lt;/artifactId&gt;&lt;/dependency&gt;&lt;!-- 可选：Spring Cloud Stream（如需通过Stream简化集成）...</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="gitalk-container"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/arp.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">ErgouTree</div><div class="author-info-description">I start a brand-new life with you.</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">308</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">188</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">103</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/ergou10086"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/ergou10086" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="/zjm88822201@126.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a><a class="social-icon" href="https://space.bilibili.com/142045656?spm_id_from=333.1007.0.0" target="_blank" title="bilibili"><i class="fas fa-brands fa-bilibili" style="color: #4a72be;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">作者长期陷入galgame和osu!maina4k中 祝他好运吧 对了 如果图片加载过慢 建议科学上网进行使用</div></div><div class="card-widget card-weather"><div class="item-headline"><i class="fas fa-cloud-sun"></i><span>aside.card_weather</span></div><div class="weather-content"><div class="weather-loading"><i class="fas fa-spinner fa-spin"></i><span>加载中...</span></div><div class="weather-main" style="display: none;"><div class="weather-location"><i class="fas fa-map-marker-alt"></i><span id="weather-location">获取中...</span></div><div class="weather-info"><div class="weather-temp"><span id="weather-temp">--</span><span class="unit">°C</span></div><div class="weather-desc"><span id="weather-weather">--</span></div><div class="weather-details"><div class="weather-item"><i class="fas fa-wind"></i><span id="weather-windpower">--</span></div><div class="weather-item"><i class="fas fa-tint"></i><span id="weather-humidity">--</span></div><div class="weather-item"><i class="fas fa-eye"></i><span id="weather-winddir">--</span></div></div></div><div class="weather-update-time"><i class="fas fa-clock"></i><span id="weather-update-time">更新中...</span></div></div></div></div><div class="sticky_layout"></div><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%86%E5%B8%83%E5%BC%8Fid"><span class="toc-number">1.</span> <span class="toc-text">分布式ID</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F-id-%E4%BB%8B%E7%BB%8D"><span class="toc-number">1.1.</span> <span class="toc-text">分布式 ID 介绍</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E5%88%86%E5%B8%83%E5%BC%8F-id"><span class="toc-number">1.2.</span> <span class="toc-text">什么是分布式 ID？</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E5%BA%93%E5%B1%82%E6%AC%A1%E4%B8%8B%E7%9A%84%E5%88%86%E5%B8%83%E5%BC%8Fid%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88"><span class="toc-number">2.</span> <span class="toc-text">数据库层次下的分布式ID解决方案</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E5%BA%93%E8%87%AA%E5%A2%9E%E4%B8%BB%E9%94%AE"><span class="toc-number">2.1.</span> <span class="toc-text">数据库自增主键</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E5%BA%93%E5%8F%B7%E6%AE%B5%E6%A8%A1%E5%BC%8F"><span class="toc-number">2.2.</span> <span class="toc-text">数据库号段模式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%87%AA%E5%A2%9E%E5%81%8F%E7%A7%BB%E7%9A%84%E7%AE%80%E5%8D%95%E5%88%86%E5%B8%83%E5%BC%8F-id"><span class="toc-number">2.3.</span> <span class="toc-text">自增偏移的简单分布式 ID</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#redis%E6%96%B9%E6%A1%88"><span class="toc-number">2.4.</span> <span class="toc-text">Redis方案</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AE%97%E6%B3%95%E8%A7%92%E5%BA%A6%E4%B8%8B%E7%9A%84%E5%88%86%E5%B8%83%E5%BC%8Fid%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88"><span class="toc-number">3.</span> <span class="toc-text">算法角度下的分布式ID解决方案</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#uuid"><span class="toc-number">3.1.</span> <span class="toc-text">UUID</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#snowflake"><span class="toc-number">3.2.</span> <span class="toc-text">Snowflake</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BC%80%E6%BA%90%E6%A1%86%E6%9E%B6%E4%B8%8B%E7%9A%84%E5%88%86%E5%B8%83%E5%BC%8Fid%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88"><span class="toc-number">4.</span> <span class="toc-text">开源框架下的分布式ID解决方案</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%99%BE%E5%BA%A6uidgenerator"><span class="toc-number">4.1.</span> <span class="toc-text">百度UidGenerator</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BE%8E%E5%9B%A2leaf"><span class="toc-number">4.2.</span> <span class="toc-text">美团Leaf</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%BB%B4%E6%BB%B4tinyid"><span class="toc-number">4.3.</span> <span class="toc-text">滴滴Tinyid</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#idgenerator"><span class="toc-number">4.4.</span> <span class="toc-text">IdGenerator</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A6%82%E4%BD%95%E6%A0%B9%E6%8D%AE%E4%BD%A0%E7%9A%84%E4%B8%9A%E5%8A%A1%E8%AE%BE%E8%AE%A1%E5%88%86%E5%B8%83%E5%BC%8Fid"><span class="toc-number">5.</span> <span class="toc-text">如何根据你的业务设计分布式ID</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AE%A2%E5%8D%95%E7%B3%BB%E7%BB%9F"><span class="toc-number">5.1.</span> <span class="toc-text">订单系统</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%AE%A2%E5%8D%95%E5%8F%B7"><span class="toc-number">5.1.1.</span> <span class="toc-text">订单号</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%94%AF%E4%BB%98%E5%8F%B7"><span class="toc-number">5.1.2.</span> <span class="toc-text">支付号</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%B8%E7%A0%81"><span class="toc-number">5.1.3.</span> <span class="toc-text">券码</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%8D%B3%E6%97%B6%E7%94%9F%E6%88%90"><span class="toc-number">5.1.3.1.</span> <span class="toc-text">即时生成</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E9%A2%84%E5%85%88%E7%94%9F%E6%88%90"><span class="toc-number">5.1.3.2.</span> <span class="toc-text">预先生成</span></a></li></ol></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%AF%E8%BF%BD%E8%B8%AA%E7%9A%84%E7%B3%BB%E7%BB%9F"><span class="toc-number">6.</span> <span class="toc-text">可追踪的系统</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%97%A5%E5%BF%97%E8%BF%BD%E8%B8%AA"><span class="toc-number">6.1.</span> <span class="toc-text">日志追踪</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#traceid"><span class="toc-number">6.2.</span> <span class="toc-text">TraceId</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#spanid"><span class="toc-number">6.3.</span> <span class="toc-text">SpanId</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%9F%AD%E7%BD%91%E5%9D%80"><span class="toc-number">7.</span> <span class="toc-text">短网址</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/27941.html" title="基于Redis的分布式锁详解"><img src="/images/posts/cover_6x.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="基于Redis的分布式锁详解"/></a><div class="content"><a class="title" href="/posts/27941.html" title="基于Redis的分布式锁详解">基于Redis的分布式锁详解</a><time datetime="2026-02-23T08:52:08.000Z" title="发表于 2026-02-23 16:52:08">2026-02-23</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/50326.html" title="几种分布式ID的设计方案详解与真实业务选型"><img src="/images/posts/cover_vue2.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="几种分布式ID的设计方案详解与真实业务选型"/></a><div class="content"><a class="title" href="/posts/50326.html" title="几种分布式ID的设计方案详解与真实业务选型">几种分布式ID的设计方案详解与真实业务选型</a><time datetime="2026-02-23T08:49:51.000Z" title="发表于 2026-02-23 16:49:51">2026-02-23</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/49652.html" title="Spring Cloud part29—分布式ID的几种设计方案与实践落地"><img src="/images/posts/cover_springcloud3.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Spring Cloud part29—分布式ID的几种设计方案与实践落地"/></a><div class="content"><a class="title" href="/posts/49652.html" title="Spring Cloud part29—分布式ID的几种设计方案与实践落地">Spring Cloud part29—分布式ID的几种设计方案与实践落地</a><time datetime="2026-02-23T08:47:15.000Z" title="发表于 2026-02-23 16:47:15">2026-02-23</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/14427.html" title="面向对象编程的设计模式之架构设计模式"><img src="/images/posts/cover_other4.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="面向对象编程的设计模式之架构设计模式"/></a><div class="content"><a class="title" href="/posts/14427.html" title="面向对象编程的设计模式之架构设计模式">面向对象编程的设计模式之架构设计模式</a><time datetime="2026-02-22T18:26:49.000Z" title="发表于 2026-02-23 02:26:49">2026-02-23</time></div></div></div></div></div></main><div class="fps-display"><span id="fps">FPS: 60</span></div><footer id="footer" style="background-image: url(/images/posts/cover_springcloud3.jpg);"><div id="footer-wrap"><div class="copyright">&copy;2024 - 2026 By ErgouTree</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">忘れたくない思い、ありますか？ <br>,<span id="realtime_duration" style="font-family: monospace;"></span>,<br><a href="https://icp.gov.moe/?keyword=20257009" target="_blank">萌ICP备20257009号</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><a class="icon-V hidden" onclick="switchNightMode()" title="日间和夜间模式切换"><svg width="25" height="25" viewBox="0 0 1024 1024"><use id="modeicon" xlink:href="#icon-moon"></use></svg></a><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="chat-btn" type="button" title="聊天" style="display:none"><i class="fas fa-comment"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (true) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script><script>(() => {
+  const applyThemeDefaultsConfig = theme => {
+    if (theme === 'dark-mode') {
+      Chart.defaults.color = "rgba(255, 255, 255, 0.8)"
+      Chart.defaults.borderColor = "rgba(255, 255, 255, 0.2)"
+      Chart.defaults.scale.ticks.backdropColor = "transparent"
+    } else {
+      Chart.defaults.color = "rgba(0, 0, 0, 0.8)"
+      Chart.defaults.borderColor = "rgba(0, 0, 0, 0.1)"
+      Chart.defaults.scale.ticks.backdropColor = "transparent"
+    }
+  }
+
+  // Recursively traverse the config object and automatically apply theme-specific color schemes
+  const applyThemeConfig = (obj, theme) => {
+    if (typeof obj !== 'object' || obj === null) return
+
+    Object.keys(obj).forEach(key => {
+      const value = obj[key]
+      // If the property is an object and has theme-specific options, apply them
+      if (typeof value === 'object' && value !== null) {
+        if (value[theme]) {
+          obj[key] = value[theme] // Apply the value for the current theme
+        } else {
+          // Recursively process child objects
+          applyThemeConfig(value, theme)
+        }
+      }
+    })
+  }
+
+  const runChartJS = ele => {
+    window.loadChartJS = true
+
+    Array.from(ele).forEach((item, index) => {
+      const chartSrc = item.firstElementChild
+      const chartID = item.getAttribute('data-chartjs-id') || ('chartjs-' + index) // Use custom ID or default ID
+      const width = item.getAttribute('data-width')
+      const existingCanvas = document.getElementById(chartID)
+
+      // If a canvas already exists, remove it to avoid rendering duplicates
+      if (existingCanvas) {
+          existingCanvas.parentNode.remove()
+      }
+
+      const chartDefinition = chartSrc.textContent
+      const canvas = document.createElement('canvas')
+      canvas.id = chartID
+
+      const div = document.createElement('div')
+      div.className = 'chartjs-wrap'
+
+      if (width) {
+        div.style.width = width
+      }
+
+      div.appendChild(canvas)
+      chartSrc.insertAdjacentElement('afterend', div)
+
+      const ctx = document.getElementById(chartID).getContext('2d')
+
+      const config = JSON.parse(chartDefinition)
+
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark-mode' : 'light-mode'
+
+      // Set default styles (initial setup)
+      applyThemeDefaultsConfig(theme)
+
+      // Automatically traverse the config and apply dual-mode color schemes
+      applyThemeConfig(config, theme)
+
+      new Chart(ctx, config)
+    })
+  }
+
+  const loadChartJS = () => {
+    const chartJSEle = document.querySelectorAll('#article-container .chartjs-container')
+    if (chartJSEle.length === 0) return
+
+    window.loadChartJS ? runChartJS(chartJSEle) : btf.getScript('https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.min.js').then(() => runChartJS(chartJSEle))
+  }
+
+  // Listen for theme change events
+  btf.addGlobalFn('themeChange', loadChartJS, 'chartjs')
+  btf.addGlobalFn('encrypt', loadChartJS, 'chartjs')
+
+  window.pjax ? loadChartJS() : document.addEventListener('DOMContentLoaded', loadChartJS)
+})()</script><script>(function() {
+  const abcjsInit = function() {
+    const abcjsFn = function() {
+      setTimeout(function() {
+        const sheets = document.querySelectorAll(".abc-music-sheet")
+        for (let i = 0; i < sheets.length; i++) {
+          const ele = sheets[i]
+          if (ele.children.length > 0) continue
+
+          // Parse parameters from data-params attribute
+          let params = {}
+          const dp = ele.getAttribute("data-params")
+          if (dp) {
+            try {
+              params = JSON.parse(dp)
+            } catch (e) {
+              console.error("Failed to parse data-params:", e)
+            }
+          }
+
+          // Merge parsed parameters with the responsive option
+          // Ensures params content appears before responsive
+          const options = { ...params, responsive: "resize" }
+
+          // Render the music score using ABCJS.renderAbc
+          ABCJS.renderAbc(ele, ele.innerHTML, options)
+        }
+      }, 100)
+    }
+
+    if (typeof ABCJS === "object") {
+      abcjsFn()
+    } else {
+      btf.getScript("https://cdn.jsdelivr.net/npm/abcjs/dist/abcjs-basic-min.min.js").then(abcjsFn)
+    }
+  }
+
+  if (window.pjax) {
+    abcjsInit()
+  } else {
+    window.addEventListener("load", abcjsInit)
+  }
+
+  btf.addGlobalFn("encrypt", abcjsInit, "abcjs")
+})()</script><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = {"labels":["Gitalk","Comment"],"createIssueManually":false,"distractionFreeMode":false}
+
+  const commentCount = n => {
+    const isCommentCount = document.querySelector('#post-meta .gitalk-comment-count')
+    if (isCommentCount) {
+      isCommentCount.textContent= n
+    }
+  }
+
+  const initGitalk = (el, path) => {
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGitalk = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+
+    const gitalk = new Gitalk({
+      clientID: 'Ov23li3vDQANiUddL4XB',
+      clientSecret: '5c9a56d02995340fca117809cd414662aadce6ff',
+      repo: 'HexoComment',
+      owner: 'ergou10086',
+      admin: ['ergou10086'],
+      updateCountCallback: commentCount,
+      ...option,
+      id: isShuoshuo ? path : (option && option.id) || 'fe77774408947961a5be2c45292e2110'
+    })
+
+    gitalk.render('gitalk-container')
+  }
+
+  const loadGitalk = async(el, path) => {
+    if (typeof Gitalk === 'function') initGitalk(el, path)
+    else {
+      await btf.getCSS('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.css')
+      await btf.getScript('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.js')
+      initGitalk(el, path)
+    }
+  }
+
+  if (isShuoshuo) {
+    'Gitalk' === 'Gitalk'
+      ? window.shuoshuoComment = { loadComment: loadGitalk }
+      : window.loadOtherComment = loadGitalk
+    return
+  }
+
+  if ('Gitalk' === 'Gitalk' || !false) {
+    if (false) btf.loadComment(document.getElementById('gitalk-container'), loadGitalk)
+    else loadGitalk()
+  } else {
+    window.loadOtherComment = loadGitalk
+  }
+})()</script></div><div class="aplayer no-destroy" data-id="13587761608" data-server="netease" data-type="playlist" data-fixed="true" data-autoplay="false" data-lrcType="-1"> </div><script src="https://cdn.jsdelivr.net/npm/abcjs@7.1.2/dist/abcjs-basic-min.js"></script><script src="/js/sun_moon.js" async></script><script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.7/dayjs.min.js"></script><script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.7/plugin/duration.min.js"></script><script src="/scripts/realtime.js"></script><script src="/scripts/random.js"></script><script src="/scripts/weather.js"></script><script>if(window.location.pathname.includes('/viewpoint/')){function loadViewpointScripts(){var loadScript=function(src,callback){var s=document.createElement('script');s.src=src;s.async=false;s.defer=false;s.onload=function(){console.log('脚本加载成功:',src);setTimeout(function(){if(callback)callback();},100);};s.onerror=function(){console.error('脚本加载失败:',src);setTimeout(function(){if(callback)callback();},100);};document.body.appendChild(s);};loadScript('/scripts/viewpoint/math.js',function(){console.log('math.js 加载完成, math:',typeof math);loadScript('/scripts/viewpoint/katex.min.js',function(){console.log('katex.min.js 加载完成, katex:',typeof katex);loadScript('/scripts/viewpoint/sweetalert2@11.js',function(){console.log('sweetalert2@11.js 加载完成, Swal:',typeof Swal,'Sweetalert2:',typeof Sweetalert2);if(typeof Swal==='undefined'&&typeof Sweetalert2!=='undefined'){window.Swal=window.Sweetalert2;console.log('已设置 Swal 别名');}loadScript('/scripts/viewpoint/main.js',function(){console.log('Viewpoint 页面所有脚本加载完成');});});});});}if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',loadViewpointScripts);}else{loadViewpointScripts();}}</script><script>if(window.location.pathname.includes('/littleGame/')){function loadLittleGameScripts(){var load=function(src,cb){var s=document.createElement('script');s.src=src;s.async=false;s.defer=false;s.onload=function(){if(cb)cb();};document.body.appendChild(s);};load('/scripts/littleGame/2048.js',function(){load('/scripts/littleGame/extra-games.js');});}if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',loadLittleGameScripts);}else{loadLittleGameScripts();}}</script><script defer="defer" id="ribbon" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-ribbon.min.js" size="150" alpha="0.6" zIndex="-1" mobile="null" data-click="true"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = false;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><script id="click-heart" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/click-heart.min.js" async="async" mobile="false"></script><script>(() => {
+  window.ChatraID = '4bzb546NSBoJcrNyu'
+  window.Chatra = window.Chatra || function() {
+    (window.Chatra.q = window.Chatra.q || []).push(arguments)
+  }
+
+  btf.getScript('https://call.chatra.io/chatra.js').then(() => {
+    const isChatBtn = true
+    const isChatHideShow = true
+
+    if (isChatBtn) {
+      const close = () => {
+        Chatra('minimizeWidget')
+        Chatra('hide')
+      }
+
+      const open = () => {
+        Chatra('openChat', true)
+        Chatra('show')
+      }
+
+      window.ChatraSetup = { startHidden: true }
+    
+      window.chatBtnFn = () => document.getElementById('chatra').classList.contains('chatra--expanded') ? close() : open()
+
+      document.getElementById('chat-btn').style.display = 'block'
+    } else if (isChatHideShow) {
+      window.chatBtn = {
+        hide: () => Chatra('hide'),
+        show: () => Chatra('show')
+      }
+    }
+  })
+})()</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/metingjs/dist/Meting.min.js"></script><script>(() => {
+  const destroyAplayer = () => {
+    if (window.aplayers) {
+      for (let i = 0; i < window.aplayers.length; i++) {
+        if (!window.aplayers[i].options.fixed) {
+          window.aplayers[i].destroy()
+        }
+      }
+    }
+  }
+
+  const runMetingJS = () => {
+    typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+  }
+
+  btf.addGlobalFn('pjaxSend', destroyAplayer, 'destroyAplayer')
+  btf.addGlobalFn('pjaxComplete', loadMeting, 'runMetingJS')
+})()</script><script src="https://cdn.jsdelivr.net/npm/pjax/pjax.min.js"></script><script>(() => {
+  const pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+  window.pjax = new Pjax({
+    elements: 'a:not([target="_blank"]):not([href="/music/"]):not([href="/viewpoint/"])',
+    selectors: pjaxSelectors,
+    cacheBust: false,
+    analytics: false,
+    scrollRestoration: false
+  })
+
+  const triggerPjaxFn = (val) => {
+    if (!val) return
+    Object.values(val).forEach(fn => fn())
+  }
+
+  document.addEventListener('pjax:send', () => {
+    // removeEventListener
+    btf.removeGlobalFnEvent('pjaxSendOnce')
+    btf.removeGlobalFnEvent('themeChange')
+
+    // reset readmode
+    const $bodyClassList = document.body.classList
+    if ($bodyClassList.contains('read-mode')) $bodyClassList.remove('read-mode')
+
+    triggerPjaxFn(window.globalFn.pjaxSend)
+  })
+
+  document.addEventListener('pjax:complete', () => {
+    btf.removeGlobalFnEvent('pjaxCompleteOnce')
+    document.querySelectorAll('script[data-pjax]').forEach(item => {
+      const newScript = document.createElement('script')
+      const content = item.text || item.textContent || item.innerHTML || ""
+      Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+      newScript.appendChild(document.createTextNode(content))
+      item.parentNode.replaceChild(newScript, item)
+    })
+
+    triggerPjaxFn(window.globalFn.pjaxComplete)
+  })
+
+  document.addEventListener('pjax:error', e => {
+    if (e.request.status === 404) {
+      const usePjax = true
+      true 
+        ? (usePjax ? pjax.loadUrl('/404.html') : window.location.href = '/404.html')
+        : window.location.href = e.request.responseURL
+    }
+  })
+})()</script><script src="/js/fps-display.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><!-- hexo injector body_end start --><script data-pjax>
+  function butterfly_swiper_injector_config(){
+    var parent_div_git = document.getElementById('recent-posts');
+    var item_html = '<div class="recent-post-item" style="height: auto;width: 100%"><div class="blog-slider swiper-container-fade swiper-container-horizontal" id="swiper_container"><div class="blog-slider__wrp swiper-wrapper" style="transition-duration: 0ms;"><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_database.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-14</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt="">结构化查询语言SQL</a><div class="blog-slider__text">SQL基本很常用的语句都在这里了，本质上是当初为了应付数据库考试整理的，后来发现还蛮有用的很方便查常用的语句</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java4.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-22</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt="">SpringBoot part0?INF-SpringBoot这个框架都需要学习什么</a><div class="blog-slider__text">主要围绕Spring Boot中重要知识来简洁或详细的说明，其中部分不够完全，持续更新</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java11.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-15</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt="">关于Lombok在高版本IDEA中注解处理不生效的问题解决</a><div class="blog-slider__text">基本上是彻底的解决了用 IDEA 新建 Spring Boot 项目时候会产生的 Lombok 注解处理失效的各种问题</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_实用.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-05</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt="">个人向galgame原声带或相关音乐整理及其资源</a><div class="blog-slider__text">整理了我喜欢的galgame ost或者衍生的音乐专辑，部分资源是自己扒盘扒下来的，部分来自鸟白岛放映厅</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_math.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-17</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt="">对书上证明样本方差是总体方差的无偏估计量的解析</a><div class="blog-slider__text">对书上证明样本方差是总体方差的无偏估计量的解析，高等教育出版社-华科大版本</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_alog.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-04-24</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt="">第十五届蓝桥杯Java国赛B组D题-园丁题解</a><div class="blog-slider__text">第十五届蓝桥杯Java国赛B组D题-园丁题解，该题解已经发布到洛谷社区中并且被全站推荐</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java4.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-04-29</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt="">操作系统之处理机的死锁部分概述</a><div class="blog-slider__text">对操作系统之处理机的死锁部分知识的总结，包括代码复现</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_lb.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-09</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt="">Little Busters!EX游戏攻略</a><div class="blog-slider__text">整理了一份详细清晰的Little Busters！EX的游戏攻略，因为我自己也在推，就顺手整理了一份方便查阅的md文档</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java9.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-16</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt="">Spring Boot中使用Hibernate框架</a><div class="blog-slider__text">对学习完Hibernate的应用部分，主要围绕Spring Boot中使用Hibernate框架，建议学习完 Hibernate 框架再看</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div></div><div class="blog-slider__pagination swiper-pagination-clickable swiper-pagination-bullets"></div></div></div>';
+    console.log('已挂载butterfly_swiper')
+    parent_div_git.insertAdjacentHTML("afterbegin",item_html)
+    }
+  var elist = 'undefined'.split(',');
+  var cpage = location.pathname;
+  var epage = '/';
+  var flag = 0;
+
+  for (var i=0;i<elist.length;i++){
+    if (cpage.includes(elist[i])){
+      flag++;
+    }
+  }
+
+  if ((epage ==='all')&&(flag == 0)){
+    butterfly_swiper_injector_config();
+  }
+  else if (epage === cpage){
+    butterfly_swiper_injector_config();
+  }
+  </script><script defer src="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper.min.js"></script><script defer data-pjax src="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper_init.js"></script><!-- hexo injector body_end end --></body></html>
