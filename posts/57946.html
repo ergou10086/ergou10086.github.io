@@ -1,0 +1,1135 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Neo4j part1—了解Neo4j和知识图谱等相关内容 | ErgouTree's Blog</title><meta name="author" content="ErgouTree"><meta name="copyright" content="ErgouTree"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="前置知识 知识图谱 认识知识图谱 知识图谱就是用「图结构」来表示世界上的事物、事物的属性、以及事物之间的关系。 简单说，知识图谱就是通过不同知识的关联性形成一个网状的知识结构，而这个知识结构，恰好就是人工智能AI的基石。当前 AI 领域热门的计算机图像、语音识别、NLP，离不开 AI 的感知能力，真正 AI 的认知能力，就要靠知识图谱。 关系型数据库中，我们都知道它使用字段和关联来表">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Neo4j part1—了解Neo4j和知识图谱等相关内容">
+<meta property="og:url" content="https://ergou10086.github.io/posts/57946.html">
+<meta property="og:site_name" content="ErgouTree&#39;s Blog">
+<meta property="og:description" content="前置知识 知识图谱 认识知识图谱 知识图谱就是用「图结构」来表示世界上的事物、事物的属性、以及事物之间的关系。 简单说，知识图谱就是通过不同知识的关联性形成一个网状的知识结构，而这个知识结构，恰好就是人工智能AI的基石。当前 AI 领域热门的计算机图像、语音识别、NLP，离不开 AI 的感知能力，真正 AI 的认知能力，就要靠知识图谱。 关系型数据库中，我们都知道它使用字段和关联来表">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://ergou10086.github.io/images/posts/cover_neo4j1.jpg">
+<meta property="article:published_time" content="2026-04-17T09:45:28.000Z">
+<meta property="article:modified_time" content="2026-04-19T11:11:10.895Z">
+<meta property="article:author" content="ErgouTree">
+<meta property="article:tag" content="教程">
+<meta property="article:tag" content="常用知识">
+<meta property="article:tag" content="数据库">
+<meta property="article:tag" content="学习">
+<meta property="article:tag" content="NoSQL">
+<meta property="article:tag" content="Neo4j">
+<meta property="article:tag" content="图数据库">
+<meta property="article:tag" content="知识图谱">
+<meta property="article:tag" content="AI">
+<meta property="article:tag" content="图论">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ergou10086.github.io/images/posts/cover_neo4j1.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Neo4j part1—了解Neo4j和知识图谱等相关内容",
+  "url": "https://ergou10086.github.io/posts/57946.html",
+  "image": "https://ergou10086.github.io/images/posts/cover_neo4j1.jpg",
+  "datePublished": "2026-04-17T09:45:28.000Z",
+  "dateModified": "2026-04-19T11:11:10.895Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "ErgouTree",
+      "url": "https://github.com/ergou10086"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/pi.ico"><link rel="canonical" href="https://ergou10086.github.io/posts/57946.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//hm.baidu.com"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!true && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?https://hm.baidu.com/hm.js?a6ab1b78e2c6320b664f31e8b9bf0e36";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+btf.addGlobalFn('pjaxComplete', () => {
+  _hmt.push(['_trackPageview',window.location.pathname])
+}, 'baidu_analytics')
+</script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.json","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":true},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: {"chs_to_cht":"已切换为繁体中文","cht_to_chs":"已切换为简体中文","day_to_night":"已切换为深色模式","night_to_day":"已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#1f1f1f","position":"bottom-left"},
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Neo4j part1—了解Neo4j和知识图谱等相关内容',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css"><link rel="stylesheet" href="/css/littleGame.css"><svg aria-hidden="true" style="position:absolute; overflow:hidden; width:0; height:0"><symbol id="icon-sun" viewBox="0 0 1024 1024"><path d="M960 512l-128 128v192h-192l-128 128-128-128H192v-192l-128-128 128-128V192h192l128-128 128 128h192v192z" fill="#FFD878" p-id="8420"></path><path d="M736 512a224 224 0 1 0-448 0 224 224 0 1 0 448 0z" fill="#FFE4A9" p-id="8421"></path><path d="M512 109.248L626.752 224H800v173.248L914.752 512 800 626.752V800h-173.248L512 914.752 397.248 800H224v-173.248L109.248 512 224 397.248V224h173.248L512 109.248M512 64l-128 128H192v192l-128 128 128 128v192h192l128 128 128-128h192v-192l128-128-128-128V192h-192l-128-128z" fill="#4D5152" p-id="8422"></path><path d="M512 320c105.888 0 192 86.112 192 192s-86.112 192-192 192-192-86.112-192-192 86.112-192 192-192m0-32a224 224 0 1 0 0 448 224 224 0 0 0 0-448z" fill="#4D5152" p-id="8423"></path></symbol><symbol id="icon-moon" viewBox="0 0 1024 1024"><path d="M611.370667 167.082667a445.013333 445.013333 0 0 1-38.4 161.834666 477.824 477.824 0 0 1-244.736 244.394667 445.141333 445.141333 0 0 1-161.109334 38.058667 85.077333 85.077333 0 0 0-65.066666 135.722666A462.08 462.08 0 1 0 747.093333 102.058667a85.077333 85.077333 0 0 0-135.722666 65.024z" fill="#FFB531" p-id="11345"></path><path d="M329.728 274.133333l35.157333-35.157333a21.333333 21.333333 0 1 0-30.165333-30.165333l-35.157333 35.157333-35.114667-35.157333a21.333333 21.333333 0 0 0-30.165333 30.165333l35.114666 35.157333-35.114666 35.157334a21.333333 21.333333 0 1 0 30.165333 30.165333l35.114667-35.157333 35.157333 35.157333a21.333333 21.333333 0 1 0 30.165333-30.165333z" fill="#030835" p-id="11346"></path></symbol></svg><link rel="stylesheet" href="/css/custom.css"><!-- hexo injector head_end start --><link rel="stylesheet" href="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiperstyle.css" media="print" onload="this.media='all'"><!-- hexo injector head_end end --><meta name="generator" content="Hexo 7.3.0"></head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js/pace.min.js"></script><div id="web_bg" style="background: linear-gradient(20deg, #0062be, #925696, #cc426e, #fb0347);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/arp.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">332</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">206</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">110</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-images"></i><span> Gallery</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/games/"><i class="fa-fw fas fa-trophy"></i><span> GalGame</span></a></li><li><a class="site-page child" href="/video/"><i class="fa-fw fas fa-video"></i><span> Video</span></a></li><li><a class="site-page child" href="/viewpoint/"><i class="fa-fw fas fa-calculator"></i><span> ViewPoint</span></a></li><li><a class="site-page child" href="/littleGame/"><i class="fa-fw fas fa-thumbs-up"></i><span> littleGame</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div><div class="menus_item"><a class="site-page" href="javascript:randomPost();"><span> Random</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/images/posts/cover_neo4j1.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">ErgouTree's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">Neo4j part1—了解Neo4j和知识图谱等相关内容</span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-images"></i><span> Gallery</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/games/"><i class="fa-fw fas fa-trophy"></i><span> GalGame</span></a></li><li><a class="site-page child" href="/video/"><i class="fa-fw fas fa-video"></i><span> Video</span></a></li><li><a class="site-page child" href="/viewpoint/"><i class="fa-fw fas fa-calculator"></i><span> ViewPoint</span></a></li><li><a class="site-page child" href="/littleGame/"><i class="fa-fw fas fa-thumbs-up"></i><span> littleGame</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div><div class="menus_item"><a class="site-page" href="javascript:randomPost();"><span> Random</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div><div id="randomPost"><a class="site-page social-icon search" href="javascript:;" onclick="randomPost()" title="随机访问一篇文章"><i class="fas fa-circle-notch fa-fw"></i></a></div></nav><div id="post-info"><h1 class="post-title">Neo4j part1—了解Neo4j和知识图谱等相关内容<a class="post-edit-link" href="https://github.com/ergou10086/ergou10086.github.io/edit/main/source/_posts/_posts/Neo4j-part1—了解Neo4j和知识图谱等相关内容.md" title="编辑" target="_blank"><i class="fas fa-pencil-alt"></i></a></h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-04-17T09:45:28.000Z" title="发表于 2026-04-17 17:45:28">2026-04-17</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-04-19T11:11:10.895Z" title="更新于 2026-04-19 19:11:10">2026-04-19</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%AD%A6%E4%B9%A0%E7%B1%BB/">学习类</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%AD%A6%E4%B9%A0%E7%B1%BB/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%AD%A6%E4%B9%A0%E7%B1%BB/%E6%95%B0%E6%8D%AE%E5%BA%93/NoSQL/">NoSQL</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%AD%A6%E4%B9%A0%E7%B1%BB/%E6%95%B0%E6%8D%AE%E5%BA%93/NoSQL/Neo4j/">Neo4j</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">7.6k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>23分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span><span class="post-meta-separator">|</span><span class="post-meta-commentcount"><i class="far fa-comments fa-fw post-meta-icon"></i><span class="post-meta-label">评论数:</span><a href="/posts/57946.html#post-comment"><span class="gitalk-comment-count"><i class="fa-solid fa-spinner fa-spin"></i></span></a></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="前置知识">前置知识</h2>
+<h3 id="知识图谱">知识图谱</h3>
+<h4 id="认识知识图谱">认识知识图谱</h4>
+<p>知识图谱就是用「图结构」来表示世界上的事物、事物的属性、以及事物之间的关系。</p>
+<p>简单说，知识图谱就是通过不同知识的关联性形成一个网状的知识结构，而这个知识结构，恰好就是人工智能AI的基石。当前
+AI 领域热门的计算机图像、语音识别、NLP，离不开 AI 的感知能力，真正 AI
+的认知能力，就要靠知识图谱。</p>
+<p>关系型数据库中，我们都知道它使用字段和关联来表示数据，但是它并不擅长去做关系。</p>
+<p>知识图谱，Knowledge Graphs, KG，它由三部分组成：</p>
+<ul>
+<li>实体：现实中的对象
+<ul>
+<li>人、公司、设备、地点………..</li>
+</ul></li>
+<li>属性：实体的特征
+<ul>
+<li>年龄、身高、价格、生产日期、性别………..</li>
+</ul></li>
+<li>关系：实体之间的连接
+<ul>
+<li>朋友、出演、属于、治疗、包含、购买、位于………..</li>
+</ul></li>
+</ul>
+<p>那么，知识图谱中，一条数据的标准表示方式如下</p>
+<ul>
+<li>(实体) —[关系]→ (实体)</li>
+</ul>
+<p>这种关系可以被这样的理解</p>
+<ul>
+<li><strong>主语 (Subject) —[谓语 (Predicate)]—&gt; 宾语
+(Object)</strong></li>
+</ul>
+<figure>
+<img src="/posts/57946/sample-cypher.svg+xml" alt="sample cypher">
+<figcaption aria-hidden="true">sample cypher</figcaption>
+</figure>
+<p>这叫<strong>三元组
+(Triple)</strong>，是知识图谱的最小单元，而知识图谱的底层逻辑非常简单，就是由无数个三元组
+(Triples)构成的网络，每一个三元组都对应知识图谱中的一段信息</p>
+<p>它将零散的信息结构化。在 AI 看来，RDBMS
+里的数据是死板的数字和字符串，而知识图谱里的数据是具有<strong>语义联系</strong>的实体。</p>
+<p>把生活中的例子转换为上述关系非常简单且清晰</p>
+<ul>
+<li>肺癌 —[可由]→ 吸烟 [导致]</li>
+<li>小明 —[购买]→ 手机</li>
+<li>华为 —[总部位于]→ 深圳</li>
+</ul>
+<p>那么，有了这种数据，我们其实就可以得到各种各样的信息，以 二狗—[购买]→
+手机 为例子</p>
+<ul>
+<li>数据层上，直接看，具体的点和边，结合出来有一个很明显的语义内容</li>
+<li>模式上，有这个关系可以了解到，手机 可能是需要 购买 的，人 可能有
+需要手机的
+需求，从三元组中定义的规则、类别、约束，很容易能得到一些逻辑信息，然后，在这个基础上，结合别的信息，用逻辑规则还可以去自动推理出更多内容。知识智能的雏形得到初现。</li>
+</ul>
+<p>知识图谱的三大能力决定它为什么是 AI 基础设施</p>
+<ul>
+<li>关联能力：
+<ul>
+<li>它能把分散在不同系统、不同表的数据<strong>关联成一张网</strong>。一次交易可能涉及到
+客户 → 订单 → 商品 → 仓库 → 物流 → 供应商
+这样的信息流转。传统数据库要多次
+JOIN，图数据库就能通过天然的关联关系一步到位。</li>
+</ul></li>
+<li>推理能力
+<ul>
+<li>知识图谱可以做逻辑推理，例如对于这样的关系，药物 A 治疗疾病 B，疾病
+B 由病毒 C 引起 → 药物 A 可能抑制病毒
+C，这完全是合理的推理。大模型最需要这种能力</li>
+</ul></li>
+<li>解释能力
+<ul>
+<li>AI可信的关键在于此，因为大模型回答问题其实算个黑盒。但是知识图谱可以告诉你答案来自哪条知识，经过了哪些关系路径</li>
+</ul></li>
+</ul>
+<p>总之，知识图谱就是把信息变成<strong>可计算、可推理的知识</strong>。</p>
+<p>最后了解一下知识图谱是如何构建的：</p>
+<ol type="1">
+<li>数据抽取：首先你得有数据来源，然后从中提取实体与关系</li>
+<li>实体对齐 /
+融合：这部分是把同类型但说法不同的实体进行对齐，对存在歧义的实体进行校正</li>
+<li>质量清洗：去重、纠错</li>
+<li>本体建模：定义模式</li>
+<li>存储</li>
+<li>查询与推理</li>
+</ol>
+<p>Neo4j
+本质就是<strong>知识图谱的工程实现</strong>。上述第5，6两步我们都会使用到
+Neo4j</p>
+<h4 id="理解知识图谱的应用">理解知识图谱的应用</h4>
+<p>很多人以为知识图谱就是画个图，这是浅层理解。实际上，知识图谱最重要的是把抽象的知识给结构化表示</p>
+<p>传统数据库是<strong>表格</strong>，适合记录事实，虽然能表达关系，但是语义性很弱。因为他们都说数据，数据虽然能结构化，但它们通常是离散的。而知识图谱本身就是一个<strong>语义网络</strong>，把生活中的知识和实体之间的关系转换成知识图谱来表示非常简单，它让机器：</p>
+<ul>
+<li>知道 “谁是谁”</li>
+<li>知道 “什么和什么有关”</li>
+<li>知道 “什么导致什么”</li>
+<li>能做<strong>推理</strong></li>
+</ul>
+<p>AI
+大模型最擅长的其实是统计、生成等，但不擅长事实、逻辑、可解释性。而这些内容正好是生成式AI最需要具备的。知识图谱正好弥补了上述内容，使得知识内容事实准确，关系清晰，可推理，可追溯，可解释</p>
+<p>而且我们都知道，AI
+目前面临的最大问题是幻觉，因为大模型（LLM）本质是<strong>概率模型</strong>，不是事实模型。</p>
+<p>所以说，我们通过将非结构化文本转化为 Neo4j 里的结构化知识图谱，可以为
+AI 提供一个事实来源。这样 LLM
+不能瞎编，因为答案必须来自图谱里真实存在的路径。</p>
+<blockquote>
+<p>那么上述情况的最直接应用就是图谱增强提示词</p>
+<ol type="1">
+<li><strong>查询阶段：</strong> 用户提问“张三的导师是谁？”</li>
+<li><strong>提取实体：</strong> 系统利用
+NER（命名实体识别）提取出“张三”。</li>
+<li><strong>图谱检索：</strong> 在 Neo4j 执行
+<code>MATCH (p:Person &#123;name:'张三'&#125;)-[:ADVISED_BY]-&gt;(m) RETURN m.name</code>。</li>
+<li><strong>注入 Context：</strong>
+将查询结果“李四”和原本的文本片段一起喂给 LLM。
+<ul>
+<li><em>Prompt 示例：</em>
+“已知确切事实：张三的导师是李四。请结合以下参考文档回答用户问题…”</li>
+</ul></li>
+<li><strong>逻辑兜底：</strong>
+如果图谱中没有这个关系，系统可以直接告知用户“数据库中暂无该逻辑关联”，而不是让
+LLM 去猜。</li>
+</ol>
+</blockquote>
+<p>那么有人就会问，这个向量数据库不是也能做吗？</p>
+<p>其实也可以，因为向量数据库是存在消除歧义的能力的，但在 实体对齐
+上几乎无能为力。</p>
+<p>向量数据库的强项是通过上下文嵌入（Embedding），可以区分“苹果”是水果还是公司。因为它捕捉的是概率分布：在“好吃、多汁”附近的“苹果”与在“芯片、手机”附近的“苹果”在空间向量上距离很远。</p>
+<p>但是面对实体对齐，向量数据库就难以处理</p>
+<p>例如。
+你的公司有两个“二狗”，一个是财务部经理，一个是保洁员。搜索“二狗的工资”时，向量数据库可能会把两人的文档都召回，因为它无法通过简单的语义向量区分“张三(ID:001)”和“张三(ID:999)”。
+KG 通过 唯一标识符（IRI/ID，当主键想就可以）
+将实体锁定。每个节点都是唯一的，从而意义上不同的两个实体<code>(:Staff &#123;id:001, name:'张三'&#125;)</code>
+和 <code>(:Staff &#123;id:999, name:'张三'&#125;)</code>
+是物理隔离的，尽管他们名字相同。</p>
+<p>而且，传统的 RAG 依赖向量相似度，它能找到 语义相近 的内容，但是
+逻辑关联 相关的处理，最后大部分时候还是要落到知识图谱这边来的。</p>
+<p>就好像有人问了一句：谁是张三的导师？在向量数据库中可能召回一大堆包含张三和导师字样的文档片段。而知识图谱可以直接沿着<code>(张三)-[:导师]-&gt;(李四)</code>
+的路径精准定位。</p>
+<p>而且 AI 可以利用图谱进行简单推理。比如图中存在
+<code>A 是 B 的主管</code>，<code>B 是 C 的主管</code>，AI
+即使没有被直接告知，也能通过路径分析推断出
+<code>A 是 C 的间接领导</code>。这种推理是合理的，有逻辑的，因为有图数据库的支撑。</p>
+<p>所以说，擅长感性关联和模糊匹配的向量数据库和擅长严密逻辑和精确定义的知识图谱，在现代
+AI 应用中，他们负责的是两个内容。</p>
+<ul>
+<li>向量数据库负责全局召回，对于那些非结构化索引，他们通常难以其提取三元组的信息。一般是当用户提问比较模糊时，向量数据库能快速锁定相关的文本片段。在长轮对话和长上下文中，向量数据库负责为
+LLM 提供大背景素材。</li>
+<li>知识图谱负责知识的锚定和推理，当 LLM 生成一个结论后，系统去 Neo4j
+里查询是否存在对应的路径，来验证AI生成内容的准确度。而且像这种跳跃性关系非常强的查询上，这种问题只靠向量检索难以处理。</li>
+</ul>
+<h4 id="graphrag">GraphRAG</h4>
+<p>最后，Neo4j 现在原生支持<strong>向量索引</strong>。</p>
+<p>这意味着你可以把实体描述的向量和实体间的关系存在同一个地方，实现
+向量搜索 + 图遍历 的混合检索。也就是说，可以用 Neo4j
+的向量能力去一定程度上去做向量数据库的事情，而保持其为图数据库的根本特征。</p>
+<ul>
+<li><p><strong>向量搜索</strong>是解决语义相似的问题的。它理解的是含义，而不是死板的词语。</p>
+<p>就好像，搜索“性价比高的相机”。传统的关键词匹配可能只会找包含“性价比”、“相机”这些词的商品。向量搜索会将“性价比高的相机”这句话转换成一个高维空间中的向量然后，它会去寻找那些在语义上最接近的商品，即使它们的描述里没有“性价比”这个词，但可能是“价格实惠、耐用、适合新手”的相机。</p></li>
+<li><p><strong>图遍历</strong>是解决关系连接的问题的。将 Neo4j 作为 LLM
+的 外部事实库，LLM 负责理解问题，Neo4j
+负责提供多跳（Multi-hop）的逻辑链条， 向量搜索 + 图遍历
+的混合检索能大幅降低 AI 乱造事实的概率。</p></li>
+</ul>
+<p>举个例子：找到我朋友买过的、和《三体》风格类似的科幻小说</p>
+<ul>
+<li>图遍历：Neo4j 先在图中找到 你 这个节点，然后沿着 朋友
+关系，找到您所有朋友的节点。</li>
+<li>向量搜索：接着，Neo4j
+找到《三体》这本书的向量表示，然后在您朋友们买过的所有书中，进行向量相似度搜索，找出那些在
+风格 上最接近《三体》的书。</li>
+</ul>
+<p>这个过程在一个数据库内一气呵成，既利用了图的 关系路径，又利用了向量的
+语义理解。</p>
+<p>上述内容一定程度就是 GraphRAG 的体现。 GraphRAG =
+知识图谱的结构化能力 + 大模型的语义理解能力 + 检索增强架构。GraphRAG
+先给无数的向量或者知识建立一个知识图谱，然后再让 AI
+沿着地图去寻找答案。</p>
+<p>微软（Microsoft）在 2024
+年开源了同名项目，正式确立了这个概念。它主要解决了传统 RAG
+的一个致命缺陷：<strong>无法回答 全局性 或 跨文档 的问题。</strong></p>
+<p>GraphRAG
+的实现通常分为两个阶段：<strong>索引阶段（Indexing）</strong> 和
+<strong>查询阶段（Querying）</strong>。</p>
+<ol type="1">
+<li><p>索引阶段</p>
+<p><strong>实体和关系提取：</strong> 利用 LLM
+扫描非结构化文本，提取出所有的节点和边。</p>
+<p><strong>Community Detection</strong>：先翻译成社区分层发现吧， 这是
+GraphRAG 的灵魂。利用算法（如 Louvain 或 Leiden 算法）将图谱划分为不同的
+社区。比如，所有的 Java相关 节点组成一个社区， 微服务相关
+组成另一个。</p>
+<p><strong>社区摘要</strong>：让 LLM 为每个社区生成摘要。</p></li>
+<li><p>查询阶段</p>
+<p>根据用户问题的不同，通常情况下 GraphRAG 是提供两种检索模式的</p>
+<ul>
+<li>局部检索：</li>
+<li>全局检索</li>
+</ul></li>
+</ol>
+<p>所以说，传统 RAG 去做向量检索的时候，数组组织是孤立的文本块
+Chunks，靠的是文本块的向量相似度来匹配的，复杂推理能力就比较弱，但是直接把知识内容直接向量化就能使用，比较轻松。而
+GraphRAG
+一般需要结合知识图谱，把数据用相互关联的语义网络组织起来，检索范围是局部关系和全局拓扑都考虑的，复杂推理能力就比较强，但是需要将抽象知识内容进行
+ETL 过程提取三元组，而且数据提取的成本太高，让 LLM 扫描 100
+万字并提取三元组，Token
+消耗是恐怖的。很多情况下，核心业务实体手动建模，普通信息走向量检索。</p>
+<p>如果尝试在 Java 生态下实现 GraphRAG，工具栈大概是：Neo4j
+存储图，Elasticsearch或者Milvus存储向量。或者 Neo4j
+把图和向量都存储起来。编排AI使用老面孔 LangChain4j</p>
+<h3 id="一些图论基础">一些图论基础</h3>
+<p>Neo4j 属于<strong>属性图（Property
+Graph）</strong>模型。为了驾驭它，需要详细了解以下五个维度的图论基础：</p>
+<h4 id="图的构成要素">图的构成要素</h4>
+<p>图论最基本的定义是：图 <span class="math inline"><em>G</em> = (<em>V</em>, <em>E</em>)</span>，其中
+<span class="math inline"><em>V</em></span> 是顶点的集合，<span class="math inline"><em>E</em></span> 是边的集合。</p>
+<ul>
+<li>顶点：代表现实世界中的实体。Neo4j
+中称为节点。在知识图谱中，每个节点通常有一个或多个标签（Label）</li>
+<li>边：连接两个顶点的线，代表实体间的关联。Neo4j 中称为关系。在 Neo4j
+中，关系是<strong>一等公民</strong>，这意味着关系可以像节点一样拥有属性</li>
+</ul>
+<h4 id="图的分类与方向">图的分类与方向</h4>
+<p><strong>有向图 vs. 无向图</strong></p>
+<ul>
+<li><strong>有向图：</strong> 边是有方向的。例如
+<code>(A)-[:主管]-&gt;(B)</code>，A 是 B 的上级，反之则不成立。</li>
+<li><strong>无向图：</strong> 边没有方向。例如
+<code>(A)-[:同事]-(B)</code>，关系是双向平等的。</li>
+<li><strong>Neo4j 实践：</strong> Neo4j
+在物理存储上<strong>必须指定方向</strong>，但在查询时（Cypher）可以忽略方向
+<code>(a)--(b)</code>。</li>
+</ul>
+<p><strong>度 (Degree)</strong></p>
+<ul>
+<li><strong>入度 (In-degree)：</strong> 指向该节点的边数。</li>
+<li><strong>出度 (Out-degree)：</strong> 从该节点出发的边数。</li>
+<li><strong>超级节点问题：</strong>
+当一个节点的度数极高（如“周杰伦”拥有千万级粉丝节点），在图计算中会引发性能瓶颈。这是后端优化时必须考虑的。</li>
+</ul>
+<h4 id="路径与连通性">路径与连通性</h4>
+<p>这是图数据库最核心的优势，也是 <strong>GraphRAG</strong>
+进行逻辑推理的基础。</p>
+<p><strong>路径 (Path)</strong></p>
+<ul>
+<li><strong>定义：</strong> 顶点和边的交替序列。</li>
+<li><strong>步长 (Hop)：</strong> 路径中边的数量。</li>
+<li><strong>多跳查询 (Multi-hop)：</strong>
+比如“朋友的朋友的朋友”，这就是一个 3-hop 查询。Neo4j 擅长处理这种在
+RDBMS 中需要多次 Join 才能做到的这种多关系操作。</li>
+</ul>
+<p><strong>环 (Cycle)</strong></p>
+<ul>
+<li><strong>定义：</strong> 起点和终点是同一个节点的路径。</li>
+<li><strong>有向无环图 (DAG)：</strong> 这是一个极其重要的概念。在 AI
+工作流（如 Dify 的编排）或任务调度中，通常要求图是
+DAG，以避免死循环。</li>
+</ul>
+<p><strong>连通性 (Connectivity)</strong></p>
+<ul>
+<li><strong>连通分量：</strong> 图中彼此相连的节点子集。在做 AI
+社群发现或洗钱风控时，我们通过识别孤立的连通分量来划分不同的团伙。</li>
+</ul>
+<p><strong>遍历算法</strong></p>
+<ul>
+<li><p><strong>深度优先搜索 (DFS)：</strong></p>
+<ul>
+<li><p><strong>逻辑：</strong> 沿着一条路走到底，再回溯。</p></li>
+<li><p><strong>场景：</strong>
+寻找两个实体之间是否存在某种深层的、长路径的关联。</p></li>
+</ul></li>
+<li><p><strong>广度优先搜索 (BFS)：</strong></p>
+<ul>
+<li><p><strong>逻辑：</strong>
+先访问所有邻居，再访问邻居的邻居。</p></li>
+<li><p><strong>场景：</strong>
+寻找<strong>最短路径</strong>。比如在社交推荐中，找“你可能认识的人”。</p></li>
+</ul></li>
+</ul>
+<p><strong>属性图模型</strong></p>
+<p>这是 Neo4j 特有的图论实现方式</p>
+<ul>
+<li><strong>标签 (Labels)：</strong> 用于对节点分类（类似于 Java
+中的类名）。</li>
+<li><strong>属性 (Properties)：</strong>
+节点和关系都可以存储键值对（类似于 Map）。
+<ul>
+<li><em>例子：</em> 节点 <code>(张三)</code> 有属性
+<code>&#123;age: 25&#125;</code>；关系 <code>[:导师]</code> 有属性
+<code>&#123;since: '2023'&#125;</code>。</li>
+</ul></li>
+<li><strong>权重 (Weight)：</strong>
+边上的属性通常作为“权重”，用于计算加权最短路径（如导航算法或推荐算法）。</li>
+</ul>
+<h3 id="图数据库与传统-rdbms">图数据库与传统 RDBMS</h3>
+<p>对于 Java 开发者来说，理解 Neo4j 最快的方式是将其与 MySQL
+进行对比。</p>
+<p>RDBMS
+对数据的处理其实是一种可关系化的表格思维，一条条数据存储在扁平的表中。当需要表达复杂关系时，通常情况下我们依赖外键
+(Foreign Key) 和 多表关联 (Join)来处理数据的关系</p>
+<p>但是，我们想想，平常两张表以上的关联查询，都很容易涉及到子查询，而且他们之间如果还要外键关系，那么查询语句会非常复杂，所以说，关系型数据库它并不擅长去做数据之间的关系。当关联层级达到
+3 层以上时，SQL 语句会变得极其复杂，且多表 Join
+会产生巨大的笛卡尔积，导致性能指数级下降。</p>
+<p>Neo4j
+是对象思维，它是原生的图数据库。数据存储方式与我们在白板上画的逻辑图一致。这种图数据库在存储数据的时候，关系就是物理存储的，自己组织起来的。</p>
+<p>关系（Relationship）在物理存储上就是指针。无论你的数据量有多大，就好像去查询朋友的朋友的朋友这种深层关系时，其响应速度是常数级的。</p>
+<p>总体来说对比一下</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th><strong>关系型数据库 (MySQL)</strong></th>
+<th><strong>图数据库 (Neo4j)</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>数据单元</strong></td>
+<td>行 (Row)</td>
+<td>节点 (Node)</td>
+</tr>
+<tr>
+<td><strong>分类</strong></td>
+<td>表 (Table)</td>
+<td>标签 (Label)</td>
+</tr>
+<tr>
+<td><strong>联系</strong></td>
+<td>外键 / 连接表</td>
+<td>关系 (Relationship)</td>
+</tr>
+<tr>
+<td><strong>属性</strong></td>
+<td>列 (Column)</td>
+<td>属性 (Property)</td>
+</tr>
+<tr>
+<td><strong>查询语言</strong></td>
+<td>SQL</td>
+<td>Cypher (图形化声明语言)</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>关系型数据库使用 SQL 查询语言，而 Neo4j 这种图数据库使用 Cypher
+图形化声明语言</p>
+</blockquote>
+<h3 id="一些简单的图数据科学知识">一些简单的图数据科学知识</h3>
+<p>图数据科学（Graph Data Science,
+GDS）正是利用图算法从你存储的关系数据中挖掘出隐藏的模式、洞见和预测性特征。</p>
+<p>图算法是图数据科学的基石。Neo4j 的 GDS
+库内置了丰富的算法，主要可以分为以下五大类。</p>
+<ul>
+<li><p><strong>中心性算法</strong></p>
+<p>这类算法用来识别图中最重要的节点。重要性可以自己根据情况去做不同的定义，比如谁是人脉最广的，谁是信息传递的关键枢纽。</p>
+<ul>
+<li><strong>度中心性 (Degree
+Centrality)</strong>：最简单直接，计算一个节点拥有多少条关系。在社交网络中，这代表一个人的“朋友数量”，朋友越多，度中心性越高。</li>
+<li><strong>中介中心性 (Betweenness
+Centrality)</strong>：衡量一个节点在多大程度上位于其他节点对之间的最短路径上。这类节点是网络中的“桥梁”或“把关人”，控制着信息的流动。在物流网络中，这可以用来识别关键的转运中心。</li>
+<li><strong>PageRank
+算法</strong>：最初由谷歌用于网页排名。它不仅看一个节点有多少连接，还要看连接它的那些节点本身是否重要。一个被很多重要人物关注的人，其
+PageRank 值会更高。</li>
+</ul></li>
+<li><p><strong>社群检测算法 (Community Detection
+Algorithms)</strong></p>
+<p>这类算法的目标是将图中的节点划分成不同的“社群”或“簇”，使得社群内部的节点连接紧密，而社群之间的连接稀疏。</p>
+<ul>
+<li><strong>Louvain
+算法</strong>：一种非常流行的高效算法，它通过优化模块度来发现社群。例如，在社交网络中，它可以自动发现“大学同学圈”、“同事圈”、“家庭圈”等。</li>
+<li><strong>标签传播算法 (Label
+Propagation)</strong>：一种快速的社群发现算法。它的基本思想是，一个节点应该与其大多数邻居节点属于同一个社群。</li>
+</ul></li>
+<li><p><strong>节点相似性算法 (Node Similarity Algorithms)</strong></p>
+<p>这类算法用于衡量图中两个节点之间的相似程度。</p>
+<ul>
+<li><strong>Jaccard
+相似性</strong>：通过比较两个节点的邻居集合的重叠程度来计算相似性。例如，如果两个用户关注了大部分相同的博主，那么他们的
+Jaccard 相似性就很高。</li>
+<li><strong>余弦相似性 (Cosine
+Similarity)</strong>：在将节点表示为向量（例如，通过图嵌入算法）后，计算两个向量之间的夹角余弦值，以此衡量相似性。</li>
+</ul></li>
+<li><p><strong>路径查找算法 (Pathfinding Algorithms)</strong></p>
+<p>这类算法用于在图中寻找两个或多个节点之间的路径，是导航和路由问题的基础。</p>
+<ul>
+<li><strong>最短路径 (Shortest
+Path)</strong>：寻找两个节点之间经过边数最少或权重总和最小的路径。例如，地图导航中的“最快路线”规划。</li>
+<li><strong>A
+算法</strong>：一种启发式搜索算法，在寻找最短路径时加入了目标方向的启发信息，通常比
+Dijkstra 算法更快。</li>
+</ul></li>
+<li><p><strong>链接预测算法 (Link Prediction Algorithms)</strong></p>
+<p>这类算法用于预测图中未来可能出现的新关系，或者发现图中缺失的关系。</p>
+<ul>
+<li><strong>共同邻居 (Common
+Neighbors)</strong>：一个非常直观的指标，认为两个节点之间如果有很多共同的邻居，那么它们之间形成新连接的可能性就很大。这就是社交软件中“你可能认识的人”功能背后的核心思想之一。</li>
+<li><strong>基于图的嵌入 (Graph
+Embedding)</strong>：将图中的节点映射成低维向量，这些向量保留了图的结构信息。然后，可以使用这些向量来训练机器学习模型，预测两个节点之间是否存在链接。</li>
+</ul></li>
+</ul>
+<p>在 Neo4j 中使用图数据科学库（GDS）进行分析，通常的流程是这样的</p>
+<ol type="1">
+<li><strong>读取图数据</strong>：从你的 Neo4j 数据库中，通过 Cypher
+查询语句选择需要分析的节点和关系。</li>
+<li><strong>创建图投影</strong>：将上一步选中的数据加载到 GDS
+的内存中，创建一个图投影（Graph Projection），就有点类似于 MySQL
+的视图。图算法是在这个内存图上运行的，速度非常快。</li>
+<li><strong>运行图算法</strong>：在创建好的图投影上，调用你想要使用的图算法（如
+PageRank, Louvain 等）。</li>
+<li><strong>写回结果</strong>：将算法运行的结果（例如，每个节点的社群ID、中心性分数）写回到
+Neo4j 数据库中，作为节点的新属性，以便后续查询或可视化。</li>
+</ol>
+<p>Neo4j 官方提供了 GDS Python
+客户端的库，好像是<code>graphdatascience</code> 库</p>
+<h2 id="neo4j">Neo4j</h2>
+<h3 id="非-ai-场景的应用">非 AI 场景的应用</h3>
+<blockquote>
+<p>Neo4j
+是一款原生图数据库，这意味着它在存储层实现了真正的图模型。数据并不是在其他技术之上使用“图抽象”，而是以您在白板上构思想法的相同方式存储在
+Neo4j 中。</p>
+<p>Neo4j 使用 Java 和 Scala 编写。您可以在 <a target="_blank" rel="noopener" href="https://github.com/neo4j/neo4j">GitHub</a> 上查看源代码。</p>
+</blockquote>
+<p>它将数据之间的“关系”提升到与数据本身同等重要的地位，并将其作为一等公民进行物理存储和优化。这与传统关系型数据库通过外键和
+JOIN 操作在查询时去模拟这种关系有着本质区别。</p>
+<p>上面提到了一些 Neo4j 在 AI 场景的应用</p>
+<p>在关系型数据库中，我们追求范式；在图数据库中，我们追求<strong>业务语义</strong>。</p>
+<p>一个好的知识图谱能够直接映射业务逻辑。我之前做过的 科研项目管理平台
+中的项目、人员、论文、资金流动建立成图模型，你会发现：</p>
+<ul>
+<li><strong>MySQL：</strong> 需要 5
+张表关联才能查出的“跨学科合作链条”。</li>
+<li><strong>Neo4j：</strong> 只需要一个
+<code>(p1:Expert)-[:COLLABORATED_WITH*1..3]-(p2:Expert)</code>
+就能搞定。</li>
+</ul>
+<p>传统查询中，最让人头疼的基本就是多表关联查询，一旦涉及到子查询就更难以绷得住，这种情况我们可以试着用
+Cypher 来重构它。使其语义化，简单化。</p>
+<p>那么，在图数据库中追求业务语义，就是想想，那些数据和业务能够天然的被组织成图结构关系</p>
+<p>例如，社交网络中的关注、好友等行为天然就是图结构。你想想，就例如b站的共同关注，关注了他的谁是你的好友，你的好友中的谁你可能认识，就这种很明显的，关系
+是主要数据组织的，数据之前强关系的，就可以考虑组织成图的形式，存储到
+Neo4j 里，分析简单，而且比关联查询什么的速度快很多</p>
+<p>而且，这种图数据库能够找出隐藏的关系，例如在公安风控和金融安全领域，欺诈和风控行为往往不是孤立的，而是以团伙形式出现。Neo4j
+擅长通过关联分析，发现这些隐藏在网络中的异常模式。</p>
+<p>使用 Neo4j
+就可以快速构建用户、设备、银行卡、手机号之间的复杂关系网络，通过图算法或模式匹配来识别风险。个常见的反欺诈场景是，检查一个设备是否被过多的用户登录过，这可能是“刷单”或“账号农场”的迹象。</p>
+<p>再说 Neo4j
+在推荐上也比较广泛，推荐算法本质上就是组织和分析高关系密度的数据，现在虽然说推荐系统常与
+AI
+结合，但其基础功能完全可以通过图数据库高效实现，无需复杂的模型训练。</p>
+<p>和社交有一定类似，就例如“购买了此商品的用户也购买了…”、“根据你的浏览历史推荐商品”。相比大家都能理解，使用
+Neo4j
+但是用户-购买-商品”的关系链，可以快速找到商品之间的共现关系，实现实时、可解释的推荐</p>
+<h2 id="使用neo4j">使用Neo4j</h2>
+<h3 id="neo4j-可视化">Neo4j 可视化</h3>
+<p>具体的安装，启动，注册为服务的相关内容我就不说了</p>
+<p>https://blog.csdn.net/weixin_51998255/article/details/141559877，推荐看这个</p>
+<p>Neo4j 服务具有一个集成的浏览器客户端，在启动 Neo4j 服务之后，可以使用
+Neo4j 集成的浏览器管理图数据库。</p>
+<p>默认的端口是7474，http://localhost:7474/，打开后基本就是这样的场景</p>
+<figure>
+<img src="/posts/57946/image-20260417171057392.png" alt="image-20260417171057392">
+<figcaption aria-hidden="true">image-20260417171057392</figcaption>
+</figure>
+<ul>
+<li>一上来就是数据库的信息，左边是节点，关系和属性键的信息展示，右边是控制台，最上方的输入框（<code>neo4j$</code>）是你输入代码（Cypher
+查询语言）的地方。</li>
+</ul>
+<p>我们使用创建一些内容然后去操作他们，感受一下</p>
+<ul>
+<li><strong>Cypher</strong> 的语法非常像 ASCII
+艺术画，、我感觉非常直观。</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">// 创建两个人物节点，以及他们之间的“认识”关系</span><br><span class="line">CREATE (alice:Person &#123;name: &quot;Alice&quot;, age: 30&#125;)-[:KNOWS]-&gt;(bob:Person &#123;name: &quot;Bob&quot;, age: 35&#125;)</span><br></pre></td></tr></table></figure>
+<figure>
+<img src="/posts/57946/image-20260417171445241.png" alt="image-20260417171445241">
+<figcaption aria-hidden="true">image-20260417171445241</figcaption>
+</figure>
+<figure>
+<img src="/posts/57946/image-20260417171516649.png" alt="image-20260417171516649">
+<figcaption aria-hidden="true">image-20260417171516649</figcaption>
+</figure>
+<p>然后，你也可以下载一个<img src="/posts/57946/image-20260417170526675.png" alt="image-20260417170526675">来使用，我倒是感觉这个是很好用的</p>
+<p>继续，对于上面的关系，我们在桌面端这个进行查找，打开后</p>
+<figure>
+<img src="/posts/57946/image-20260417172529690.png" alt="image-20260417172529690">
+<figcaption aria-hidden="true">image-20260417172529690</figcaption>
+</figure>
+<p>首先会让你本地实例的配置，正常配置即可，你可以把“Instance”（实例）理解为一个<strong>独立的数据库服务容器</strong>。每一个实例都拥有自己独立的存储空间、配置文件（比如内存大小设置）、数据库用户密码以及里面的数据。在
+Neo4j Desktop
+中，你可以创建多个本地实例。这些内容和很多关系型数据库的设计是类似的，很好理解</p>
+<figure>
+<img src="/posts/57946/image-20260417172833327.png" alt="image-20260417172833327">
+<figcaption aria-hidden="true">image-20260417172833327</figcaption>
+</figure>
+<p>然后，继续我们的使用体验</p>
+<p><strong>查找所有人</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">MATCH (p:Person)</span><br><span class="line">RETURN p</span><br><span class="line"></span><br><span class="line">// 如果你想找名字是 &quot;Alice&quot; 的人：</span><br><span class="line">MATCH (p:Person &#123;name: &quot;Alice&quot;&#125;)</span><br><span class="line">RETURN p</span><br></pre></td></tr></table></figure>
+<figure>
+<img src="/posts/57946/image-20260417172918775.png" alt="image-20260417172918775">
+<figcaption aria-hidden="true">image-20260417172918775</figcaption>
+</figure>
+<p><strong>遍历关系</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">// 匹配 Alice 节点，沿着 KNOWS 关系，找到 Bob 节点</span><br><span class="line">MATCH (alice:Person &#123;name: &quot;Alice&quot;&#125;)-[:KNOWS]-&gt;(friend)</span><br><span class="line">RETURN alice, friend</span><br></pre></td></tr></table></figure>
+<ul>
+<li>这行代码就像在图上画了一条线：从 Alice 出发，沿着 <code>KNOWS</code>
+箭头，指向 <code>friend</code>。结果会把 Alice 和她的朋友都画出来。</li>
+</ul>
+<p><strong>修改数据</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">// 假设 Alice 和 Bob 现在不仅仅是认识，Alice 还在工作中指导了 Bob。我们要给这条关系增加一个属性，或者给 Bob 加个属性</span><br><span class="line">MATCH (p:Person &#123;name: &quot;Bob&quot;&#125;)</span><br><span class="line">SET p.job = &quot;Engineer&quot;</span><br><span class="line">RETURN p</span><br></pre></td></tr></table></figure>
+<figure>
+<img src="/posts/57946/image-20260417174055435.png" alt="image-20260417174055435">
+<figcaption aria-hidden="true">image-20260417174055435</figcaption>
+</figure>
+<p><strong>删除数据</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">// 删除特定关系</span><br><span class="line">MATCH (a:Person &#123;name: &quot;Alice&quot;&#125;)-[r:KNOWS]-&gt;(b:Person &#123;name: &quot;Bob&quot;&#125;)</span><br><span class="line">DELETE r</span><br><span class="line"></span><br><span class="line">// 级连删除</span><br><span class="line">MATCH (a:Person &#123;name: &quot;Alice&quot;&#125;)</span><br><span class="line">DETACH DELETE a</span><br><span class="line">                                                        </span><br><span class="line">// 在 Neo4j 中，不能直接删除还有连线的节点,必须先删除关系</span><br><span class="line">// 1. 先匹配并删除关系</span><br><span class="line">MATCH ()-[r]-&gt;() DELETE r;</span><br><span class="line">// 2. 再删除所有节点</span><br><span class="line">MATCH (n) DELETE n;                                                       </span><br></pre></td></tr></table></figure>
+<p>刚才我们自己写的太简单了？Neo4j
+自带了一个非常经典的“电影图谱”脚本，可以让你立刻看到复杂数据的样子。</p>
+<p>在控制台输入以下命令并执行：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">:play movie-graph</span><br></pre></td></tr></table></figure>
+<p>界面会变成一个教学指南。你可以点击指南中的代码块直接运行。它会帮你创建导演、演员、电影以及他们之间复杂的“出演”、“导演”关系。</p>
+<h3 id="与-neo4j-进行简单的交互">与 Neo4j 进行简单的交互</h3>
+<p>Neo4j 使用 <a target="_blank" rel="noopener" href="https://neo4j.ac.cn/docs/getting-started/cypher/">Cypher®</a>，这是一种声明式查询语言，类似于
+SQL，但针对图进行了优化。其他数据库（如 SAP HANA Graph）也通过 <a target="_blank" rel="noopener" href="http://www.opencypher.org/">openCypher
+项目</a>使用同一种语言。</p>
+<p>另一种选择是使用<a target="_blank" rel="noopener" href="https://neo4j.ac.cn/docs/create-applications">库</a>。Neo4j
+目前支持 Java、JavaScript、.NET、Python、Go、GraphQL、Spring 等。</p>
+<p>在 Java 项目中集成 Neo4j，主要有两种方式：</p>
+<ul>
+<li><p>Neo4j Java Driver：</p>
+<p>这是 Neo4j 官方提供的底层驱动，直接使用 Cypher
+语句与数据库交互，一般情况下是在需要完全控制查询逻辑，或在不使用 Spring
+框架的项目中直接使用它</p></li>
+<li><p>Spring Data Neo4j</p>
+<p>基于 Java Driver 的上层封装，提供了类似 JPA
+的对象-图映射（OGM）功能，能极大简化开发。它通过简单的注解就能将 Java
+对象与图结构对应起来，并提供了接口，让你能像使用 JPA
+一样操作图数据库，而且用起来你并不会感受到跟其他数据库那种割裂的感觉</p></li>
+</ul>
+<p>相关内容，之后在讲解</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a target="_blank" rel="noopener" href="https://github.com/ergou10086">ErgouTree</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://ergou10086.github.io/posts/57946.html">https://ergou10086.github.io/posts/57946.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://ergou10086.github.io" target="_blank">ErgouTree's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E6%95%99%E7%A8%8B/">教程</a><a class="post-meta__tags" href="/tags/%E5%B8%B8%E7%94%A8%E7%9F%A5%E8%AF%86/">常用知识</a><a class="post-meta__tags" href="/tags/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a><a class="post-meta__tags" href="/tags/%E5%AD%A6%E4%B9%A0/">学习</a><a class="post-meta__tags" href="/tags/NoSQL/">NoSQL</a><a class="post-meta__tags" href="/tags/Neo4j/">Neo4j</a><a class="post-meta__tags" href="/tags/%E5%9B%BE%E6%95%B0%E6%8D%AE%E5%BA%93/">图数据库</a><a class="post-meta__tags" href="/tags/%E7%9F%A5%E8%AF%86%E5%9B%BE%E8%B0%B1/">知识图谱</a><a class="post-meta__tags" href="/tags/AI/">AI</a><a class="post-meta__tags" href="/tags/%E5%9B%BE%E8%AE%BA/">图论</a></div><div class="post-share"><div class="addtoany"><div class="a2a_kit a2a_kit_size_32 a2a_default_style"><a class="a2a_button_facebook"></a><a class="a2a_button_twitter"></a><a class="a2a_button_wechat"></a><a class="a2a_button_sina_weibo"></a><a class="a2a_button_facebook_messenger"></a><a class="a2a_button_email"></a><a class="a2a_button_copy_link"></a><a class="a2a_dd" target="_blank" rel="noopener" href="https://www.addtoany.com/share"></a></div></div><script async="async" src="https://static.addtoany.com/menu/page.js"></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/posts/48988.html" title="MyBatis part6—了解MyBatis Plus的更多内容"><img class="cover" src="/images/posts/cover_mybatis4.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">MyBatis part6—了解MyBatis Plus的更多内容</div></div><div class="info-2"><div class="info-item-1">条件构造器 MyBatis-Plus 提供了一套强大的条件构造器（Wrapper），用于构建复杂的数据库查询条件。 Wrapper 类允许开发者以链式调用的方式构造查询条件，无需编写繁琐的 SQL 语句，从而提高开发效率并减少 SQL 注入的风险。 主要的 Wrapper 类及其功能          类名 用途 字段引用方式 核心特点     QueryWrapper 查询 (SELECT) 字符串 ("name") 灵活，但字段名写错编译不报错   UpdateWrapper 更新 (UPDATE) 字符串 ("name") 专门用于构造更新条件和 SET 值   LambdaQueryWrapper 查询 (SELECT) Lambda (User::getName) 类型安全，重构友好，防拼写错误   LambdaUpdateWrapper 更新 (UPDATE) Lambda...</div></div></div></a><a class="pagination-related" href="/posts/33719.html" title="Neo4j part2—使用Cypher语言来进行图查询"><img class="cover" src="/images/posts/cover_dubbo.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Neo4j part2—使用Cypher语言来进行图查询</div></div><div class="info-2"><div class="info-item-1">图的思维 理解 LPG 模型 LPG是带标签属性图，也就是Labeled Property Graph，它由四个核心要素组成：节点 (Node)、关系 (Relationship)、标签 (Label) 和 属性 (Property)。 LPG 模型之所以直观，是因为它完美契合人类对现实世界的认知方式。  节点 —— 实体  定义：节点代表现实世界中的对象或实体，比如一个人、一辆车、一笔订单。 特点：节点是独立的，拥有唯一的内部 ID。 示例：:Person（一个人）、:Movie（一部电影）。  关系 —— 连接  定义：关系连接两个节点，表示它们之间的关联。 特点：  有向性：关系总是有方向的（从起始节点指向终止节点），例如 (:Person)-[:ACTED_IN]-&gt;(:Movie)。 类型化：关系必须有类型（如 ACTED_IN, FRIEND_OF），这相当于关系型数据库中的外键，但更具语义。 可携带属性：这是...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/posts/33719.html" title="Neo4j part2—使用Cypher语言来进行图查询"><img class="cover" src="/images/posts/cover_dubbo.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-04-19</div><div class="info-item-2">Neo4j part2—使用Cypher语言来进行图查询</div></div><div class="info-2"><div class="info-item-1">图的思维 理解 LPG 模型 LPG是带标签属性图，也就是Labeled Property Graph，它由四个核心要素组成：节点 (Node)、关系 (Relationship)、标签 (Label) 和 属性 (Property)。 LPG 模型之所以直观，是因为它完美契合人类对现实世界的认知方式。  节点 —— 实体  定义：节点代表现实世界中的对象或实体，比如一个人、一辆车、一笔订单。 特点：节点是独立的，拥有唯一的内部 ID。 示例：:Person（一个人）、:Movie（一部电影）。  关系 —— 连接  定义：关系连接两个节点，表示它们之间的关联。 特点：  有向性：关系总是有方向的（从起始节点指向终止节点），例如 (:Person)-[:ACTED_IN]-&gt;(:Movie)。 类型化：关系必须有类型（如 ACTED_IN, FRIEND_OF），这相当于关系型数据库中的外键，但更具语义。 可携带属性：这是...</div></div></div></a><a class="pagination-related" href="/posts/43528.html" title="MongoDB part1—了解MongoDB及其存储结构和数据类型"><img class="cover" src="/images/posts/cover_mongodb1.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-10-21</div><div class="info-item-2">MongoDB part1—了解MongoDB及其存储结构和数据类型</div></div><div class="info-2"><div class="info-item-1">MongoDB介绍 什么是MongoDB，主要是做什么的 NoSQL的内容在这里就不展开说了，我相信看到这个的大家都知道什么是 NoSQL MongoDB 是一款开源的分布式文档型 NoSQL 数据库，由 MongoDB Inc. 开发维护，由C++语言编写，核心是存储 “文档” 而非传统关系型数据库的 “行 - 列” 数据，旨在解决海量数据存储、高并发读写、灵活 schema 等传统数据库难以高效应对的问题。 作为基于分布式文件存储的数据库，它天生为处理大规模数据设计，目前是 NoSQL 数据库中市场份额最高、生态最完善的产品之一。 MongoDB是一个介于关系数据库和非关系数据库之间的产品，是非关系数据库当中功能最丰富，最像关系数据库的。 它支持的数据结构非常松散，是类似 Json的...</div></div></div></a><a class="pagination-related" href="/posts/43887.html" title="MongoDB part2—MongoDB的基本操作和mongosh命令"><img class="cover" src="/images/posts/cover_mongodb1.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-10-25</div><div class="info-item-2">MongoDB part2—MongoDB的基本操作和mongosh命令</div></div><div class="info-2"><div class="info-item-1">MongoDB Shell MongoDB Shell（简称简称 mongo 或 mongosh）是 MongoDB 官方提供的交互式命令行工具，用于连接 MongoDB 数据库并执行各种操作（如查询、插入、更新数据，管理数据库 / 集合等）。它是开发者与 MongoDB 交互的最直接方式之一，其使用的命令是 MongoDB 操作的 “原生语法” 它的本质实际上是一个基于 JavaScript 的交互式环境，支持 JavaScript 语法和 MongoDB 扩展命令。你可以在其中输入命令，实时执行并获取结果，类似 MySQL 的 mysql 命令行工具。  从 MongoDB 5.0 开始，官方推荐使用新一代 Shell 工具 mongosh（功能更完善，支持语法高亮、自动补全、更好的错误提示等），旧的 mongo 工具已逐步废弃。  也就是说，你可以使用 js 操作 MongoDB 12345678910111213141516// 在 mongosh 中执行 JS 逻辑const userList = [  &#123; name:...</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="gitalk-container"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/arp.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">ErgouTree</div><div class="author-info-description">I start a brand-new life with you.</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">332</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">206</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">110</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/ergou10086"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/ergou10086" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="/zjm88822201@126.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a><a class="social-icon" href="https://space.bilibili.com/142045656?spm_id_from=333.1007.0.0" target="_blank" title="bilibili"><i class="fas fa-brands fa-bilibili" style="color: #4a72be;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">作者长期陷入galgame和osu!maina4k中 祝他好运吧 对了 如果图片加载过慢 建议科学上网进行使用</div></div><div class="card-widget card-weather"><div class="item-headline"><i class="fas fa-cloud-sun"></i><span>aside.card_weather</span></div><div class="weather-content"><div class="weather-loading"><i class="fas fa-spinner fa-spin"></i><span>加载中...</span></div><div class="weather-main" style="display: none;"><div class="weather-location"><i class="fas fa-map-marker-alt"></i><span id="weather-location">获取中...</span></div><div class="weather-info"><div class="weather-temp"><span id="weather-temp">--</span><span class="unit">°C</span></div><div class="weather-desc"><span id="weather-weather">--</span></div><div class="weather-details"><div class="weather-item"><i class="fas fa-wind"></i><span id="weather-windpower">--</span></div><div class="weather-item"><i class="fas fa-tint"></i><span id="weather-humidity">--</span></div><div class="weather-item"><i class="fas fa-eye"></i><span id="weather-winddir">--</span></div></div></div><div class="weather-update-time"><i class="fas fa-clock"></i><span id="weather-update-time">更新中...</span></div></div></div></div><div class="sticky_layout"></div><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%89%8D%E7%BD%AE%E7%9F%A5%E8%AF%86"><span class="toc-number">1.</span> <span class="toc-text">前置知识</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%9F%A5%E8%AF%86%E5%9B%BE%E8%B0%B1"><span class="toc-number">1.1.</span> <span class="toc-text">知识图谱</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%AE%A4%E8%AF%86%E7%9F%A5%E8%AF%86%E5%9B%BE%E8%B0%B1"><span class="toc-number">1.1.1.</span> <span class="toc-text">认识知识图谱</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%90%86%E8%A7%A3%E7%9F%A5%E8%AF%86%E5%9B%BE%E8%B0%B1%E7%9A%84%E5%BA%94%E7%94%A8"><span class="toc-number">1.1.2.</span> <span class="toc-text">理解知识图谱的应用</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#graphrag"><span class="toc-number">1.1.3.</span> <span class="toc-text">GraphRAG</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80%E4%BA%9B%E5%9B%BE%E8%AE%BA%E5%9F%BA%E7%A1%80"><span class="toc-number">1.2.</span> <span class="toc-text">一些图论基础</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%9B%BE%E7%9A%84%E6%9E%84%E6%88%90%E8%A6%81%E7%B4%A0"><span class="toc-number">1.2.1.</span> <span class="toc-text">图的构成要素</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%9B%BE%E7%9A%84%E5%88%86%E7%B1%BB%E4%B8%8E%E6%96%B9%E5%90%91"><span class="toc-number">1.2.2.</span> <span class="toc-text">图的分类与方向</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%B7%AF%E5%BE%84%E4%B8%8E%E8%BF%9E%E9%80%9A%E6%80%A7"><span class="toc-number">1.2.3.</span> <span class="toc-text">路径与连通性</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9B%BE%E6%95%B0%E6%8D%AE%E5%BA%93%E4%B8%8E%E4%BC%A0%E7%BB%9F-rdbms"><span class="toc-number">1.3.</span> <span class="toc-text">图数据库与传统 RDBMS</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80%E4%BA%9B%E7%AE%80%E5%8D%95%E7%9A%84%E5%9B%BE%E6%95%B0%E6%8D%AE%E7%A7%91%E5%AD%A6%E7%9F%A5%E8%AF%86"><span class="toc-number">1.4.</span> <span class="toc-text">一些简单的图数据科学知识</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#neo4j"><span class="toc-number">2.</span> <span class="toc-text">Neo4j</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%9D%9E-ai-%E5%9C%BA%E6%99%AF%E7%9A%84%E5%BA%94%E7%94%A8"><span class="toc-number">2.1.</span> <span class="toc-text">非 AI 场景的应用</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8neo4j"><span class="toc-number">3.</span> <span class="toc-text">使用Neo4j</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#neo4j-%E5%8F%AF%E8%A7%86%E5%8C%96"><span class="toc-number">3.1.</span> <span class="toc-text">Neo4j 可视化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%8E-neo4j-%E8%BF%9B%E8%A1%8C%E7%AE%80%E5%8D%95%E7%9A%84%E4%BA%A4%E4%BA%92"><span class="toc-number">3.2.</span> <span class="toc-text">与 Neo4j 进行简单的交互</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/33719.html" title="Neo4j part2—使用Cypher语言来进行图查询"><img src="/images/posts/cover_dubbo.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Neo4j part2—使用Cypher语言来进行图查询"/></a><div class="content"><a class="title" href="/posts/33719.html" title="Neo4j part2—使用Cypher语言来进行图查询">Neo4j part2—使用Cypher语言来进行图查询</a><time datetime="2026-04-19T10:26:21.000Z" title="发表于 2026-04-19 18:26:21">2026-04-19</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/57946.html" title="Neo4j part1—了解Neo4j和知识图谱等相关内容"><img src="/images/posts/cover_neo4j1.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Neo4j part1—了解Neo4j和知识图谱等相关内容"/></a><div class="content"><a class="title" href="/posts/57946.html" title="Neo4j part1—了解Neo4j和知识图谱等相关内容">Neo4j part1—了解Neo4j和知识图谱等相关内容</a><time datetime="2026-04-17T09:45:28.000Z" title="发表于 2026-04-17 17:45:28">2026-04-17</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/48988.html" title="MyBatis part6—了解MyBatis Plus的更多内容"><img src="/images/posts/cover_mybatis4.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="MyBatis part6—了解MyBatis Plus的更多内容"/></a><div class="content"><a class="title" href="/posts/48988.html" title="MyBatis part6—了解MyBatis Plus的更多内容">MyBatis part6—了解MyBatis Plus的更多内容</a><time datetime="2026-04-12T08:42:18.000Z" title="发表于 2026-04-12 16:42:18">2026-04-12</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/12916.html" title="天鹅湖"><img src="/images/posts/cover_nothing.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="天鹅湖"/></a><div class="content"><a class="title" href="/posts/12916.html" title="天鹅湖">天鹅湖</a><time datetime="2026-04-11T15:51:48.000Z" title="发表于 2026-04-11 23:51:48">2026-04-11</time></div></div></div></div></div></main><div class="fps-display"><span id="fps">FPS: 60</span></div><footer id="footer" style="background-image: url(/images/posts/cover_neo4j1.jpg);"><div id="footer-wrap"><div class="copyright">&copy;2024 - 2026 By ErgouTree</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">忘れたくない思い、ありますか？ <br>,<span id="realtime_duration" style="font-family: monospace;"></span>,<br><a href="https://icp.gov.moe/?keyword=20257009" target="_blank">萌ICP备20257009号</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><a class="icon-V hidden" onclick="switchNightMode()" title="日间和夜间模式切换"><svg width="25" height="25" viewBox="0 0 1024 1024"><use id="modeicon" xlink:href="#icon-moon"></use></svg></a><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="chat-btn" type="button" title="聊天" style="display:none"><i class="fas fa-comment"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (true) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script><script>(() => {
+  const applyThemeDefaultsConfig = theme => {
+    if (theme === 'dark-mode') {
+      Chart.defaults.color = "rgba(255, 255, 255, 0.8)"
+      Chart.defaults.borderColor = "rgba(255, 255, 255, 0.2)"
+      Chart.defaults.scale.ticks.backdropColor = "transparent"
+    } else {
+      Chart.defaults.color = "rgba(0, 0, 0, 0.8)"
+      Chart.defaults.borderColor = "rgba(0, 0, 0, 0.1)"
+      Chart.defaults.scale.ticks.backdropColor = "transparent"
+    }
+  }
+
+  // Recursively traverse the config object and automatically apply theme-specific color schemes
+  const applyThemeConfig = (obj, theme) => {
+    if (typeof obj !== 'object' || obj === null) return
+
+    Object.keys(obj).forEach(key => {
+      const value = obj[key]
+      // If the property is an object and has theme-specific options, apply them
+      if (typeof value === 'object' && value !== null) {
+        if (value[theme]) {
+          obj[key] = value[theme] // Apply the value for the current theme
+        } else {
+          // Recursively process child objects
+          applyThemeConfig(value, theme)
+        }
+      }
+    })
+  }
+
+  const runChartJS = ele => {
+    window.loadChartJS = true
+
+    Array.from(ele).forEach((item, index) => {
+      const chartSrc = item.firstElementChild
+      const chartID = item.getAttribute('data-chartjs-id') || ('chartjs-' + index) // Use custom ID or default ID
+      const width = item.getAttribute('data-width')
+      const existingCanvas = document.getElementById(chartID)
+
+      // If a canvas already exists, remove it to avoid rendering duplicates
+      if (existingCanvas) {
+          existingCanvas.parentNode.remove()
+      }
+
+      const chartDefinition = chartSrc.textContent
+      const canvas = document.createElement('canvas')
+      canvas.id = chartID
+
+      const div = document.createElement('div')
+      div.className = 'chartjs-wrap'
+
+      if (width) {
+        div.style.width = width
+      }
+
+      div.appendChild(canvas)
+      chartSrc.insertAdjacentElement('afterend', div)
+
+      const ctx = document.getElementById(chartID).getContext('2d')
+
+      const config = JSON.parse(chartDefinition)
+
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark-mode' : 'light-mode'
+
+      // Set default styles (initial setup)
+      applyThemeDefaultsConfig(theme)
+
+      // Automatically traverse the config and apply dual-mode color schemes
+      applyThemeConfig(config, theme)
+
+      new Chart(ctx, config)
+    })
+  }
+
+  const loadChartJS = () => {
+    const chartJSEle = document.querySelectorAll('#article-container .chartjs-container')
+    if (chartJSEle.length === 0) return
+
+    window.loadChartJS ? runChartJS(chartJSEle) : btf.getScript('https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.min.js').then(() => runChartJS(chartJSEle))
+  }
+
+  // Listen for theme change events
+  btf.addGlobalFn('themeChange', loadChartJS, 'chartjs')
+  btf.addGlobalFn('encrypt', loadChartJS, 'chartjs')
+
+  window.pjax ? loadChartJS() : document.addEventListener('DOMContentLoaded', loadChartJS)
+})()</script><script>(function() {
+  const abcjsInit = function() {
+    const abcjsFn = function() {
+      setTimeout(function() {
+        const sheets = document.querySelectorAll(".abc-music-sheet")
+        for (let i = 0; i < sheets.length; i++) {
+          const ele = sheets[i]
+          if (ele.children.length > 0) continue
+
+          // Parse parameters from data-params attribute
+          let params = {}
+          const dp = ele.getAttribute("data-params")
+          if (dp) {
+            try {
+              params = JSON.parse(dp)
+            } catch (e) {
+              console.error("Failed to parse data-params:", e)
+            }
+          }
+
+          // Merge parsed parameters with the responsive option
+          // Ensures params content appears before responsive
+          const options = { ...params, responsive: "resize" }
+
+          // Render the music score using ABCJS.renderAbc
+          ABCJS.renderAbc(ele, ele.innerHTML, options)
+        }
+      }, 100)
+    }
+
+    if (typeof ABCJS === "object") {
+      abcjsFn()
+    } else {
+      btf.getScript("https://cdn.jsdelivr.net/npm/abcjs/dist/abcjs-basic-min.min.js").then(abcjsFn)
+    }
+  }
+
+  if (window.pjax) {
+    abcjsInit()
+  } else {
+    window.addEventListener("load", abcjsInit)
+  }
+
+  btf.addGlobalFn("encrypt", abcjsInit, "abcjs")
+})()</script><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = {"labels":["Gitalk","Comment"],"createIssueManually":false,"distractionFreeMode":false}
+
+  const commentCount = n => {
+    const isCommentCount = document.querySelector('#post-meta .gitalk-comment-count')
+    if (isCommentCount) {
+      isCommentCount.textContent= n
+    }
+  }
+
+  const initGitalk = (el, path) => {
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGitalk = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+
+    const gitalk = new Gitalk({
+      clientID: 'Ov23li3vDQANiUddL4XB',
+      clientSecret: '5c9a56d02995340fca117809cd414662aadce6ff',
+      repo: 'HexoComment',
+      owner: 'ergou10086',
+      admin: ['ergou10086'],
+      updateCountCallback: commentCount,
+      ...option,
+      id: isShuoshuo ? path : (option && option.id) || '0cad86212b57ec9d8aac167de4dc5a1c'
+    })
+
+    gitalk.render('gitalk-container')
+  }
+
+  const loadGitalk = async(el, path) => {
+    if (typeof Gitalk === 'function') initGitalk(el, path)
+    else {
+      await btf.getCSS('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.css')
+      await btf.getScript('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.js')
+      initGitalk(el, path)
+    }
+  }
+
+  if (isShuoshuo) {
+    'Gitalk' === 'Gitalk'
+      ? window.shuoshuoComment = { loadComment: loadGitalk }
+      : window.loadOtherComment = loadGitalk
+    return
+  }
+
+  if ('Gitalk' === 'Gitalk' || !false) {
+    if (false) btf.loadComment(document.getElementById('gitalk-container'), loadGitalk)
+    else loadGitalk()
+  } else {
+    window.loadOtherComment = loadGitalk
+  }
+})()</script></div><div class="aplayer no-destroy" data-id="13587761608" data-server="netease" data-type="playlist" data-fixed="true" data-autoplay="false" data-lrcType="-1"> </div><script src="https://cdn.jsdelivr.net/npm/abcjs@7.1.2/dist/abcjs-basic-min.js"></script><script src="/js/sun_moon.js" async></script><script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.7/dayjs.min.js"></script><script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.7/plugin/duration.min.js"></script><script src="/scripts/realtime.js"></script><script src="/scripts/random.js"></script><script src="/scripts/weather.js"></script><script>if(window.location.pathname.includes('/viewpoint/')){function loadViewpointScripts(){var loadScript=function(src,callback){var s=document.createElement('script');s.src=src;s.async=false;s.defer=false;s.onload=function(){console.log('脚本加载成功:',src);setTimeout(function(){if(callback)callback();},100);};s.onerror=function(){console.error('脚本加载失败:',src);setTimeout(function(){if(callback)callback();},100);};document.body.appendChild(s);};loadScript('/scripts/viewpoint/math.js',function(){console.log('math.js 加载完成, math:',typeof math);loadScript('/scripts/viewpoint/katex.min.js',function(){console.log('katex.min.js 加载完成, katex:',typeof katex);loadScript('/scripts/viewpoint/sweetalert2@11.js',function(){console.log('sweetalert2@11.js 加载完成, Swal:',typeof Swal,'Sweetalert2:',typeof Sweetalert2);if(typeof Swal==='undefined'&&typeof Sweetalert2!=='undefined'){window.Swal=window.Sweetalert2;console.log('已设置 Swal 别名');}loadScript('/scripts/viewpoint/main.js',function(){console.log('Viewpoint 页面所有脚本加载完成');});});});});}if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',loadViewpointScripts);}else{loadViewpointScripts();}}</script><script>if(window.location.pathname.includes('/littleGame/')){function loadLittleGameScripts(){var load=function(src,cb){var s=document.createElement('script');s.src=src;s.async=false;s.defer=false;s.onload=function(){if(cb)cb();};document.body.appendChild(s);};load('/scripts/littleGame/2048.js',function(){load('/scripts/littleGame/extra-games.js');});}if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',loadLittleGameScripts);}else{loadLittleGameScripts();}}</script><script defer="defer" id="ribbon" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-ribbon.min.js" size="150" alpha="0.6" zIndex="-1" mobile="null" data-click="true"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = false;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><script id="click-heart" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/click-heart.min.js" async="async" mobile="false"></script><script>(() => {
+  window.ChatraID = '4bzb546NSBoJcrNyu'
+  window.Chatra = window.Chatra || function() {
+    (window.Chatra.q = window.Chatra.q || []).push(arguments)
+  }
+
+  btf.getScript('https://call.chatra.io/chatra.js').then(() => {
+    const isChatBtn = true
+    const isChatHideShow = true
+
+    if (isChatBtn) {
+      const close = () => {
+        Chatra('minimizeWidget')
+        Chatra('hide')
+      }
+
+      const open = () => {
+        Chatra('openChat', true)
+        Chatra('show')
+      }
+
+      window.ChatraSetup = { startHidden: true }
+    
+      window.chatBtnFn = () => document.getElementById('chatra').classList.contains('chatra--expanded') ? close() : open()
+
+      document.getElementById('chat-btn').style.display = 'block'
+    } else if (isChatHideShow) {
+      window.chatBtn = {
+        hide: () => Chatra('hide'),
+        show: () => Chatra('show')
+      }
+    }
+  })
+})()</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/metingjs/dist/Meting.min.js"></script><script>(() => {
+  const destroyAplayer = () => {
+    if (window.aplayers) {
+      for (let i = 0; i < window.aplayers.length; i++) {
+        if (!window.aplayers[i].options.fixed) {
+          window.aplayers[i].destroy()
+        }
+      }
+    }
+  }
+
+  const runMetingJS = () => {
+    typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+  }
+
+  btf.addGlobalFn('pjaxSend', destroyAplayer, 'destroyAplayer')
+  btf.addGlobalFn('pjaxComplete', loadMeting, 'runMetingJS')
+})()</script><script src="https://cdn.jsdelivr.net/npm/pjax/pjax.min.js"></script><script>(() => {
+  const pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+  window.pjax = new Pjax({
+    elements: 'a:not([target="_blank"]):not([href="/music/"]):not([href="/viewpoint/"])',
+    selectors: pjaxSelectors,
+    cacheBust: false,
+    analytics: false,
+    scrollRestoration: false
+  })
+
+  const triggerPjaxFn = (val) => {
+    if (!val) return
+    Object.values(val).forEach(fn => fn())
+  }
+
+  document.addEventListener('pjax:send', () => {
+    // removeEventListener
+    btf.removeGlobalFnEvent('pjaxSendOnce')
+    btf.removeGlobalFnEvent('themeChange')
+
+    // reset readmode
+    const $bodyClassList = document.body.classList
+    if ($bodyClassList.contains('read-mode')) $bodyClassList.remove('read-mode')
+
+    triggerPjaxFn(window.globalFn.pjaxSend)
+  })
+
+  document.addEventListener('pjax:complete', () => {
+    btf.removeGlobalFnEvent('pjaxCompleteOnce')
+    document.querySelectorAll('script[data-pjax]').forEach(item => {
+      const newScript = document.createElement('script')
+      const content = item.text || item.textContent || item.innerHTML || ""
+      Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+      newScript.appendChild(document.createTextNode(content))
+      item.parentNode.replaceChild(newScript, item)
+    })
+
+    triggerPjaxFn(window.globalFn.pjaxComplete)
+  })
+
+  document.addEventListener('pjax:error', e => {
+    if (e.request.status === 404) {
+      const usePjax = true
+      true 
+        ? (usePjax ? pjax.loadUrl('/404.html') : window.location.href = '/404.html')
+        : window.location.href = e.request.responseURL
+    }
+  })
+})()</script><script src="/js/fps-display.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><!-- hexo injector body_end start --><script data-pjax>
+  function butterfly_swiper_injector_config(){
+    var parent_div_git = document.getElementById('recent-posts');
+    var item_html = '<div class="recent-post-item" style="height: auto;width: 100%"><div class="blog-slider swiper-container-fade swiper-container-horizontal" id="swiper_container"><div class="blog-slider__wrp swiper-wrapper" style="transition-duration: 0ms;"><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_database.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-14</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt="">MySQL part2——结构化查询语言SQL</a><div class="blog-slider__text">SQL基本很常用的语句都在这里了，本质上是当初为了应付数据库考试整理的，后来发现还蛮有用的很方便查常用的语句</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java4.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-22</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt="">SpringBoot part0?INF-SpringBoot这个框架都需要学习什么</a><div class="blog-slider__text">主要围绕Spring Boot中重要知识来简洁或详细的说明，其中部分不够完全，持续更新</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java11.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-15</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt="">关于Lombok在高版本IDEA中注解处理不生效的问题解决</a><div class="blog-slider__text">基本上是彻底的解决了用 IDEA 新建 Spring Boot 项目时候会产生的 Lombok 注解处理失效的各种问题</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_实用.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-05</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt="">个人向galgame原声带或相关音乐整理及其资源</a><div class="blog-slider__text">整理了我喜欢的galgame ost或者衍生的音乐专辑，部分资源是自己扒盘扒下来的，部分来自鸟白岛放映厅</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_math.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-17</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt="">对书上证明样本方差是总体方差的无偏估计量的解析</a><div class="blog-slider__text">对书上证明样本方差是总体方差的无偏估计量的解析，高等教育出版社-华科大版本</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_alog.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-04-24</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt="">第十五届蓝桥杯Java国赛B组D题-园丁题解</a><div class="blog-slider__text">第十五届蓝桥杯Java国赛B组D题-园丁题解，该题解已经发布到洛谷社区中并且被全站推荐</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java4.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-04-29</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt="">操作系统之处理机的死锁部分概述</a><div class="blog-slider__text">对操作系统之处理机的死锁部分知识的总结，包括代码复现</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_lb.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-09</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt="">Little Busters!EX游戏攻略</a><div class="blog-slider__text">整理了一份详细清晰的Little Busters！EX的游戏攻略，因为我自己也在推，就顺手整理了一份方便查阅的md文档</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java9.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-16</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt="">Spring Boot中使用Hibernate框架</a><div class="blog-slider__text">对学习完Hibernate的应用部分，主要围绕Spring Boot中使用Hibernate框架，建议学习完 Hibernate 框架再看</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div></div><div class="blog-slider__pagination swiper-pagination-clickable swiper-pagination-bullets"></div></div></div>';
+    console.log('已挂载butterfly_swiper')
+    parent_div_git.insertAdjacentHTML("afterbegin",item_html)
+    }
+  var elist = 'undefined'.split(',');
+  var cpage = location.pathname;
+  var epage = '/';
+  var flag = 0;
+
+  for (var i=0;i<elist.length;i++){
+    if (cpage.includes(elist[i])){
+      flag++;
+    }
+  }
+
+  if ((epage ==='all')&&(flag == 0)){
+    butterfly_swiper_injector_config();
+  }
+  else if (epage === cpage){
+    butterfly_swiper_injector_config();
+  }
+  </script><script defer src="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper.min.js"></script><script defer data-pjax src="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper_init.js"></script><!-- hexo injector body_end end --></body></html>
