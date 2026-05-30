@@ -1,0 +1,906 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>LangChain4j part1—认识LangChain4j和实现AI基础对话 | ErgouTree's Blog</title><meta name="author" content="ErgouTree"><meta name="copyright" content="ErgouTree"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="LangChain4j 简介 介绍 LangChain4j 是一个专为 Java 开发者设计的开源框架，旨在简化大语言模型（LLM）在 Java 应用中的集成。它的目标类似于 Python 生态中的 LangChain ，但针对Java生态进行了优化，提供统一的API抽象、上下文管理（Memory）、提示模板、文档检索（RAG）等功能。  统一的 API：LLM 提供商（如 Open">
+<meta property="og:type" content="article">
+<meta property="og:title" content="LangChain4j part1—认识LangChain4j和实现AI基础对话">
+<meta property="og:url" content="https://ergou10086.github.io/posts/24209.html">
+<meta property="og:site_name" content="ErgouTree&#39;s Blog">
+<meta property="og:description" content="LangChain4j 简介 介绍 LangChain4j 是一个专为 Java 开发者设计的开源框架，旨在简化大语言模型（LLM）在 Java 应用中的集成。它的目标类似于 Python 生态中的 LangChain ，但针对Java生态进行了优化，提供统一的API抽象、上下文管理（Memory）、提示模板、文档检索（RAG）等功能。  统一的 API：LLM 提供商（如 Open">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://ergou10086.github.io/images/posts/cover_langchain1.jpg">
+<meta property="article:published_time" content="2026-05-30T03:25:45.000Z">
+<meta property="article:modified_time" content="2026-05-30T03:36:47.005Z">
+<meta property="article:author" content="ErgouTree">
+<meta property="article:tag" content="框架知识">
+<meta property="article:tag" content="实用知识">
+<meta property="article:tag" content="Java框架">
+<meta property="article:tag" content="LangChain4j">
+<meta property="article:tag" content="AI">
+<meta property="article:tag" content="LLM">
+<meta property="article:tag" content="后端">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ergou10086.github.io/images/posts/cover_langchain1.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "LangChain4j part1—认识LangChain4j和实现AI基础对话",
+  "url": "https://ergou10086.github.io/posts/24209.html",
+  "image": "https://ergou10086.github.io/images/posts/cover_langchain1.jpg",
+  "datePublished": "2026-05-30T03:25:45.000Z",
+  "dateModified": "2026-05-30T03:36:47.005Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "ErgouTree",
+      "url": "https://github.com/ergou10086"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/pi.ico"><link rel="canonical" href="https://ergou10086.github.io/posts/24209.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//hm.baidu.com"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!true && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?https://hm.baidu.com/hm.js?a6ab1b78e2c6320b664f31e8b9bf0e36";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+btf.addGlobalFn('pjaxComplete', () => {
+  _hmt.push(['_trackPageview',window.location.pathname])
+}, 'baidu_analytics')
+</script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.json","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":true},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: {"chs_to_cht":"已切换为繁体中文","cht_to_chs":"已切换为简体中文","day_to_night":"已切换为深色模式","night_to_day":"已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#1f1f1f","position":"bottom-left"},
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'LangChain4j part1—认识LangChain4j和实现AI基础对话',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css"><link rel="stylesheet" href="/css/littleGame.css"><svg aria-hidden="true" style="position:absolute; overflow:hidden; width:0; height:0"><symbol id="icon-sun" viewBox="0 0 1024 1024"><path d="M960 512l-128 128v192h-192l-128 128-128-128H192v-192l-128-128 128-128V192h192l128-128 128 128h192v192z" fill="#FFD878" p-id="8420"></path><path d="M736 512a224 224 0 1 0-448 0 224 224 0 1 0 448 0z" fill="#FFE4A9" p-id="8421"></path><path d="M512 109.248L626.752 224H800v173.248L914.752 512 800 626.752V800h-173.248L512 914.752 397.248 800H224v-173.248L109.248 512 224 397.248V224h173.248L512 109.248M512 64l-128 128H192v192l-128 128 128 128v192h192l128 128 128-128h192v-192l128-128-128-128V192h-192l-128-128z" fill="#4D5152" p-id="8422"></path><path d="M512 320c105.888 0 192 86.112 192 192s-86.112 192-192 192-192-86.112-192-192 86.112-192 192-192m0-32a224 224 0 1 0 0 448 224 224 0 0 0 0-448z" fill="#4D5152" p-id="8423"></path></symbol><symbol id="icon-moon" viewBox="0 0 1024 1024"><path d="M611.370667 167.082667a445.013333 445.013333 0 0 1-38.4 161.834666 477.824 477.824 0 0 1-244.736 244.394667 445.141333 445.141333 0 0 1-161.109334 38.058667 85.077333 85.077333 0 0 0-65.066666 135.722666A462.08 462.08 0 1 0 747.093333 102.058667a85.077333 85.077333 0 0 0-135.722666 65.024z" fill="#FFB531" p-id="11345"></path><path d="M329.728 274.133333l35.157333-35.157333a21.333333 21.333333 0 1 0-30.165333-30.165333l-35.157333 35.157333-35.114667-35.157333a21.333333 21.333333 0 0 0-30.165333 30.165333l35.114666 35.157333-35.114666 35.157334a21.333333 21.333333 0 1 0 30.165333 30.165333l35.114667-35.157333 35.157333 35.157333a21.333333 21.333333 0 1 0 30.165333-30.165333z" fill="#030835" p-id="11346"></path></symbol></svg><link rel="stylesheet" href="/css/custom.css"><!-- hexo injector head_end start --><link rel="stylesheet" href="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiperstyle.css" media="print" onload="this.media='all'"><!-- hexo injector head_end end --><meta name="generator" content="Hexo 7.3.0"></head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js/pace.min.js"></script><div id="web_bg" style="background: linear-gradient(20deg, #0062be, #925696, #cc426e, #fb0347);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/arp.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">337</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">209</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">112</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-images"></i><span> Gallery</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/games/"><i class="fa-fw fas fa-trophy"></i><span> GalGame</span></a></li><li><a class="site-page child" href="/video/"><i class="fa-fw fas fa-video"></i><span> Video</span></a></li><li><a class="site-page child" href="/viewpoint/"><i class="fa-fw fas fa-calculator"></i><span> ViewPoint</span></a></li><li><a class="site-page child" href="/littleGame/"><i class="fa-fw fas fa-thumbs-up"></i><span> littleGame</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div><div class="menus_item"><a class="site-page" href="javascript:randomPost();"><span> Random</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/images/posts/cover_langchain1.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">ErgouTree's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">LangChain4j part1—认识LangChain4j和实现AI基础对话</span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-images"></i><span> Gallery</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/games/"><i class="fa-fw fas fa-trophy"></i><span> GalGame</span></a></li><li><a class="site-page child" href="/video/"><i class="fa-fw fas fa-video"></i><span> Video</span></a></li><li><a class="site-page child" href="/viewpoint/"><i class="fa-fw fas fa-calculator"></i><span> ViewPoint</span></a></li><li><a class="site-page child" href="/littleGame/"><i class="fa-fw fas fa-thumbs-up"></i><span> littleGame</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div><div class="menus_item"><a class="site-page" href="javascript:randomPost();"><span> Random</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div><div id="randomPost"><a class="site-page social-icon search" href="javascript:;" onclick="randomPost()" title="随机访问一篇文章"><i class="fas fa-circle-notch fa-fw"></i></a></div></nav><div id="post-info"><h1 class="post-title">LangChain4j part1—认识LangChain4j和实现AI基础对话<a class="post-edit-link" href="https://github.com/ergou10086/ergou10086.github.io/edit/main/source/_posts/_posts/LangChain4j-part1—认识LangChain4j和实现AI基础对话.md" title="编辑" target="_blank"><i class="fas fa-pencil-alt"></i></a></h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-05-30T03:25:45.000Z" title="发表于 2026-05-30 11:25:45">2026-05-30</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-05-30T03:36:47.005Z" title="更新于 2026-05-30 11:36:47">2026-05-30</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%AD%A6%E4%B9%A0%E7%B1%BB/">学习类</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%AD%A6%E4%B9%A0%E7%B1%BB/AI/">AI</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%AD%A6%E4%B9%A0%E7%B1%BB/AI/LangChain4j/">LangChain4j</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">6.8k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>26分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span><span class="post-meta-separator">|</span><span class="post-meta-commentcount"><i class="far fa-comments fa-fw post-meta-icon"></i><span class="post-meta-label">评论数:</span><a href="/posts/24209.html#post-comment"><span class="gitalk-comment-count"><i class="fa-solid fa-spinner fa-spin"></i></span></a></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="langchain4j-简介">LangChain4j 简介</h2>
+<h3 id="介绍">介绍</h3>
+<p>LangChain4j 是一个专为 Java
+开发者设计的开源框架，旨在简化大语言模型（LLM）在 Java
+应用中的集成。它的目标类似于 Python 生态中的 LangChain
+，但针对Java生态进行了优化，提供统一的API抽象、上下文管理（Memory）、提示模板、文档检索（RAG）等功能。</p>
+<blockquote>
+<p><strong>统一的 API：</strong>LLM 提供商（如 OpenAI 或 Google Vertex
+AI）和嵌入向量存储（如 Pinecone 或 Milvus）使用专有的 API。LangChain4j
+提供统一的 API，以避免学习和实现每个 API 的特定 API 的需要。要试验不同的
+LLM 或嵌入存储，您可以轻松地在它们之间切换，而无需重写代码。</p>
+<p><strong>全面的工具箱：</strong>自 2023 年初以来，社区一直在构建许多由
+LLM 驱动的应用程序，识别常见的抽象、模式和技术。LangChain4j
+已将这些提炼成一个现成的包。我们的工具箱包括从低级别的提示模板、聊天记忆管理和函数调用到高级模式（如代理和
+RAG）的工具。对于每个抽象，我们都提供一个接口以及基于常用技术的多个现成的实现。无论您是构建聊天机器人还是开发具有完整流程（从数据摄取到检索）的
+RAG，LangChain4j 都能提供各种选项。</p>
+</blockquote>
+<p>LangChain4j 旨在让 Java
+开发者无需学习不同LLM提供商的专有API，快速构建智能应用（如聊天机器人、智能助手）。</p>
+<p>目前主流的 Java AI 开发框架有 <a target="_blank" rel="noopener" href="https://spring.io/projects/spring-ai">Spring AI</a> 和 <a target="_blank" rel="noopener" href="https://docs.langchain4j.dev/intro">LangChain4j</a>，它们都提供了很多
+<strong>开箱即用的 API</strong> 来帮你调用大模型、实现 AI
+开发常用的功能，比如，对话记忆，结构化输出，RAG
+知识库，工具调用，MCP，SSE 流式输出 等等内容</p>
+<p>这两个框架的很多概念和用法都是类似的，毕竟它们的服务对象和目标都是一致的，而且也都提供了很多插件扩展，都支持和
+Spring Boot 项目集成。就我个人而言，我更喜欢使用 LangChain4j</p>
+<h3 id="两个抽象级别">两个抽象级别</h3>
+<p>LangChain4j
+在两个抽象级别上运行，与众多框架一样，这是为了兼顾不同开发者的需求，提供了封装和相对底层的两个级别用于快速构建和定制开发</p>
+<figure>
+<img src="/posts/null/image-20260521094158917.png" alt="image-20260521094158917">
+<figcaption aria-hidden="true">image-20260521094158917</figcaption>
+</figure>
+<ul>
+<li><p>低级别抽象为开发者提供了与 LLM（大语言模型）交互的 原语
+或基础构件。在这个层级，你可以获得最大的自由度和控制权。</p>
+<p>你可以完全控制 LLM
+应用的各个组件，手动组合消息流程、向量存储、嵌入生成等细节。但相对的，你需要编写较多的粘合代码，例如这样手动构建消息列表并调用模型</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 实例化模型</span></span><br><span class="line"><span class="type">ChatLanguageModel</span> <span class="variable">model</span> <span class="operator">=</span> OpenAIChatModel.withApiKey(<span class="string">&quot;your-api-key&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 手动构建消息列表</span></span><br><span class="line">List&lt;Message&gt; messages = List.of(</span><br><span class="line">    <span class="keyword">new</span> <span class="title class_">SystemMessage</span>(<span class="string">&quot;你是一个乐于助人的助手。&quot;</span>),</span><br><span class="line">    <span class="keyword">new</span> <span class="title class_">UserMessage</span>(<span class="string">&quot;请给我讲一个笑话。&quot;</span>)</span><br><span class="line">);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 调用模型并获取响应</span></span><br><span class="line"><span class="type">AiMessage</span> <span class="variable">response</span> <span class="operator">=</span> model.generate(messages).content();</span><br></pre></td></tr></table></figure></li>
+<li><p>高级别抽象通过封装复杂的底层逻辑，提供了更加简洁、声明式的开发体验。框架会自动处理细节。例如在高级别中，发送消息你只需要定义一个接口即可</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 定义一个 AI 服务接口</span></span><br><span class="line"><span class="meta">@AiService</span></span><br><span class="line"><span class="keyword">interface</span> <span class="title class_">Assistant</span> &#123;</span><br><span class="line">    String <span class="title function_">chat</span><span class="params">(String userMessage)</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 创建并使用该服务</span></span><br><span class="line"><span class="type">Assistant</span> <span class="variable">assistant</span> <span class="operator">=</span> AiServices.create(Assistant.class, model);</span><br><span class="line"><span class="type">String</span> <span class="variable">response</span> <span class="operator">=</span> assistant.chat(<span class="string">&quot;请给我讲一个笑话。&quot;</span>);</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h3 id="区分并简单介绍它们的依赖">区分并简单介绍它们的依赖</h3>
+<p>LangChain4j的依赖有很多，而且各个之间作用区分很明显，配置不好甚至容易导致冲突，所以这里简单提及一下这些依赖它们的作用，负责的内容，之前的兼容性等等内容</p>
+<p>首先，<strong>LangChain4j 遵守版本对齐原则</strong>，LangChain4j
+的核心模块（<code>langchain4j-core</code>、<code>langchain4j</code>）和主流集成模块（如
+<code>langchain4j-anthropic</code>、<code>langchain4j-open-ai</code>）通常需要并且也会保持版本同步（比如都是
+1.15.0）。<strong>这些必须保持版本号完全一致</strong>。</p>
+<p>所以我们最好<strong>使用 BOM</strong>来管理依赖，你只需要在 Maven 的
+<code>&lt;dependencyManagement&gt;</code> 中引入 BOM，之后引入任何
+langchain4j 相关的依赖就<strong>不需要再写 <code>&lt;version&gt;</code>
+标签了</strong>，它会自动帮你匹配最兼容的版本。</p>
+<p>langchain4j模块化的特性非常明显，有时候一个完备的 AI Agent
+应用可能会引入二三十个 LangChain4j
+的依赖，图上没说的太多了，所有依赖的所有文档在这里</p>
+<p>https://docs.langchain4j.dev/apidocs/index.html</p>
+<h4 id="langchain4j">langchain4j</h4>
+<p>这是框架的<strong>主模块</strong>。它依赖于
+<code>langchain4j-core</code>，并提供了核心接口的具体实现和高级功能。比如大家常用的
+<strong>AI Services</strong>（声明式 AI
+接口）、文档加载与分割（<code>DocumentLoader</code>、<code>TextSplitter</code>）、内存管理实现以及
+RAG（检索增强生成）的核心逻辑都在这里。</p>
+<p>它位于中间层，承上启下。实际开发中，通常引入这个模块，引入它，你就拥有了编排
+AI 业务流程的能力，但依然需要配合具体的 模型集成模块
+才能真正调用大模型。</p>
+<figure>
+<img src="/posts/null/image-20260521095013183.png" alt="image-20260521095013183">
+<figcaption aria-hidden="true">image-20260521095013183</figcaption>
+</figure>
+<p>这是其依赖，截至文章编写的最新版本为1.15.0</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>dev.langchain4j<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>langchain4j<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.15.0<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">scope</span>&gt;</span>compile<span class="tag">&lt;/<span class="name">scope</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h4 id="langchain4j-core">langchain4j-core</h4>
+<p><code>langchain4j-core</code>是整个 LangChain4j
+框架的<strong>地基</strong>。它只定义了最基础的接口和抽象类，比如
+<code>ChatModel</code>（聊天模型接口）、<code>EmbeddingStore</code>（向量存储接口）、<code>ChatMemory</code>（对话记忆接口）以及各种核心数据类型（如
+<code>Document</code>、<code>ChatMessage</code>）。</p>
+<p>它处于依赖的最底层，几乎没有任何外部依赖。它<strong>不包含任何具体的模型实现</strong>，不能单独用来调用
+AI。</p>
+<p>正常情况下，我们几乎不直接引入它或者只引入它，但如果你只是想基于
+LangChain4j
+的标准开发自己的扩展插件，或者做一个非常轻量级的适配，可以只引入它。</p>
+<p>在实际业务开发中，它通常作为其他模块的传递依赖被自动引入。</p>
+<figure>
+<img src="/posts/null/image-20260521095142646.png" alt="image-20260521095142646">
+<figcaption aria-hidden="true">image-20260521095142646</figcaption>
+</figure>
+<p>这是其依赖，截至文章编写的最新版本为1.15.0</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>dev.langchain4j<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>langchain4j-core<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.15.0<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">scope</span>&gt;</span>compile<span class="tag">&lt;/<span class="name">scope</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h4 id="langchain4j-mcp">langchain4j-mcp</h4>
+<p>这是一个扩展模块。MCP 全称是 Model Context
+Protocol（模型上下文协议），旨在标准化 AI
+模型与外部数据/工具的连接方式。</p>
+<p>引入它可以让你的 LangChain4j 应用支持 MCP
+协议，从而更规范地获取上下文或连接外部系统。</p>
+<p>这属于进阶玩法，基础的对话或 RAG 应用通常不需要引入。</p>
+<figure>
+<img src="/posts/null/image-20260521095603598.png" alt="image-20260521095603598">
+<figcaption aria-hidden="true">image-20260521095603598</figcaption>
+</figure>
+<p>这是其依赖，截至文章编写的最新版本为1.15.0-beta25</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>dev.langchain4j<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>langchain4j-mcp<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.15.0-beta25<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">scope</span>&gt;</span>compile<span class="tag">&lt;/<span class="name">scope</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h4 id="langchain4j-embeddings">langchain4j-embeddings</h4>
+<p>嵌入模型工具层，这个依赖是专门用于<strong>文本向量化（Embedding）</strong>的，它相当于一个本地
+Embedding 模型运行引擎。</p>
+<p>它的核心作用是提供在 Java 进程内通过 ONNX Runtime 加载和运行本地 AI
+模型的基础设施，所以说，使用它，你需要自己去找向量化模型，并自定义加载逻辑，你就需要并且只需要依赖这个包就可以。</p>
+<p><code>langchain4j-embeddings</code>是一个基础工具包，提供了在 Java
+进程中本地运行 Embedding 模型的基础设施和抽象。</p>
+<p>如果你不想调用 OpenAI 等收费的在线 Embedding
+API，而是想在本地（内存中）直接把一段文字转化成向量，就可以引入这个具体的模型包。它通常用于本地开发测试，或者对数据隐私要求极高、不能出网的
+RAG 场景。</p>
+<figure>
+<img src="/posts/null/image-20260521095848234.png" alt="image-20260521095848234">
+<figcaption aria-hidden="true">image-20260521095848234</figcaption>
+</figure>
+<p>这是其依赖，截至文章编写的最新版本为1.15.0-beta25</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&lt;dependency&gt;</span><br><span class="line">    &lt;groupId&gt;dev.langchain4j&lt;/groupId&gt;</span><br><span class="line">    &lt;artifactId&gt;langchain4j-embeddings&lt;/artifactId&gt;</span><br><span class="line">    &lt;version&gt;<span class="number">1.15</span><span class="number">.0</span>-beta25&lt;/version&gt;</span><br><span class="line">    &lt;scope&gt;compile&lt;/scope&gt;</span><br><span class="line">&lt;/dependency&gt;</span><br></pre></td></tr></table></figure>
+<p>而 <code>langchain4j-embeddings-all-minilm-l6-v2-q</code>是我们本地化
+Embedding 用的最多的一个了，它不仅依赖了上面的“运行引擎”，还直接内置了
+<code>all-MiniLM-L6-v2</code> 这个特定模型的权重文件（<code>.onnx</code>
+文件）和对应的配置文件。</p>
+<p>引入它，你不需要自己去网上找模型文件，直接实例化对应的 Java 类（如
+<code>AllMiniLmL6V2QuantizedEmbeddingModel</code>）就能立刻开始把文本转成向量。</p>
+<figure>
+<img src="/posts/null/image-20260521095356783.png" alt="image-20260521095356783">
+<figcaption aria-hidden="true">image-20260521095356783</figcaption>
+</figure>
+<p>这是其依赖，截至文章编写的最新版本为1.15.0-beta25</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>dev.langchain4j<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>langchain4j-embeddings-all-minilm-l6-v2-q<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.15.0-beta25<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">scope</span>&gt;</span>test<span class="tag">&lt;/<span class="name">scope</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h4 id="langchain4j-ai厂商或者模型名">langchain4j-{ai厂商或者模型名}</h4>
+<p>以 langchain4j-anthropic
+举例子，这一类属于<strong>集成层</strong>，负责对接具体的 LLM
+提供商或向量数据库。比如 <code>langchain4j-anthropic</code> 就是用来对接
+Anthropic 的模型。同理还有
+<code>langchain4j-open-ai</code>、<code>langchain4j-ollama</code>（本地模型）、<code>langchain4j-milvus</code>（向量数据库）等。</p>
+<p>它们依赖 <code>langchain4j-core</code>（有时也依赖主模块），实现了
+core 中定义的接口（如
+<code>ChatModel</code>）。引入它，你的应用才能真实地 连接 到某个具体的
+AI
+模型或数据库。你可以根据业务需要，只引入你使用的那一两个厂商模块，保持项目轻量。</p>
+<figure>
+<img src="/posts/null/image-20260521095255539.png" alt="image-20260521095255539">
+<figcaption aria-hidden="true">image-20260521095255539</figcaption>
+</figure>
+<p>这是其依赖，截至文章编写的最新版本为1.15.0</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>dev.langchain4j<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>langchain4j-anthropic<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.15.0<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">scope</span>&gt;</span>compile<span class="tag">&lt;/<span class="name">scope</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h4 id="langchain4j-spring-boot-starter">langchain4j-spring-boot-starter</h4>
+<p>该依赖是 Spring
+框架的通用集成，是核心的自动配置中心，它本身<strong>不包含</strong>具体的模型实现，它主要负责搭建
+Spring 环境下的环境。它提供了 Spring Boot 的自动配置能力，定义了 Spring
+环境下最基础的接口抽象。</p>
+<figure>
+<img src="/posts/null/image-20260522150643428.png" alt="image-20260522150643428">
+<figcaption aria-hidden="true">image-20260522150643428</figcaption>
+</figure>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>dev.langchain4j<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>langchain4j-spring-boot-starter<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.15.0-beta25<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">scope</span>&gt;</span>compile<span class="tag">&lt;/<span class="name">scope</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h4 id="langchain4j-模型名-spring-boot-starter">langchain4j-{模型名}-spring-boot-starter</h4>
+<p>这里以 open-ai 为例子，这是 组合依赖，内部已经包含了</p>
+<ul>
+<li><code>langchain4j</code></li>
+<li><code>langchain4j-open-ai</code></li>
+<li><code>langchain4j-spring-boot-starter</code></li>
+</ul>
+<p>它负责把 OpenAI 的 API 包装成 LangChain4j 标准的
+<code>ChatModel</code>
+接口，并且提供对应的配置项和自动配置的相关内容，让 Spring
+容器能识别，而且直接拥有对接对应模型的能力</p>
+<figure>
+<img src="/posts/null/image-20260522150739633.png" alt="image-20260522150739633">
+<figcaption aria-hidden="true">image-20260522150739633</figcaption>
+</figure>
+<p>这是其依赖，截至文章编写的最新版本为1.15.0-beta25</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>dev.langchain4j<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>langchain4j-open-ai-spring-boot-starter<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.15.0-beta25<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">scope</span>&gt;</span>test<span class="tag">&lt;/<span class="name">scope</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h4 id="langchain4j-http-client">langchain4j-http-client</h4>
+<p>这一组是比较底层的依赖，通常被隐藏在上述 Starter 内部</p>
+<p><strong>langchain4j-http-client</strong>是一个<strong>标准协议（SPI）</strong>。LangChain4j
+定义了一套“如何发送 HTTP 请求”的规范，但它自己不写具体的发送代码。这让
+LangChain4j 变得很轻量，因为它不强制绑定任何特定的 HTTP 框架</p>
+<figure>
+<img src="/posts/null/image-20260522145704895.png" alt="image-20260522145704895">
+<figcaption aria-hidden="true">image-20260522145704895</figcaption>
+</figure>
+<p>这是其依赖，截至文章编写的最新版本为1.15.0</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>dev.langchain4j<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>langchain4j-http-client<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.15.0<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">scope</span>&gt;</span>compile<span class="tag">&lt;/<span class="name">scope</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>它相关的还有个这个内容，是上述规范的<strong>默认实现</strong>。它使用了
+Java 11+ 自带的 <code>java.net.http.HttpClient</code>
+来发送请求，叫<code>langchain4j-http-client-jdk</code></p>
+<p>这意味着，如果你用的是 JDK 17+（LangChain4j
+的门槛），你<strong>不需要引入任何第三方 HTTP 包（如 OkHttp 或 Apache
+HttpClient）</strong>，LangChain4j
+就能直接工作，依赖自己少引一个是一个我说</p>
+<figure>
+<img src="/posts/null/image-20260522145622661.png" alt="image-20260522145622661">
+<figcaption aria-hidden="true">image-20260522145622661</figcaption>
+</figure>
+<p>这是其依赖，截至文章编写的最新版本为1.15.0</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>dev.langchain4j<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>langchain4j-http-client-jdk<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.15.0<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">scope</span>&gt;</span>runtime<span class="tag">&lt;/<span class="name">scope</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h4 id="langchain4j-document-parser-apache-tika">langchain4j-document-parser-apache-tika</h4>
+<p>这是一个很好用的文件解析器，用于处理各种文档。</p>
+<p>在 Java 中处理文件非常麻烦。读 PDF 需要 PDFBox，读 Word 需要 POI，读
+Excel 又要 EasyExcel 什么的。如果还要处理编码问题，会非常头大。</p>
+<p>它是对 Apache Tika 的封装。也是老牌 Java 内容分析工具了</p>
+<p>无论你给它 PDF、Word、Excel、HTML
+还是纯文本，它都能把它们扒下来，变成 LangChain4j
+能理解的纯文本，一般是<code>Document</code>
+对象。而且亲测它不仅能提取文字，还能顺便提取文件的元数据（如作者、创建时间、文件类型），这对于后续做元数据过滤非常有用。</p>
+<figure>
+<img src="/posts/null/image-20260522150038977.png" alt="image-20260522150038977">
+<figcaption aria-hidden="true">image-20260522150038977</figcaption>
+</figure>
+<p>这是其依赖，截至文章编写的最新版本为1.15.0-beta25</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>dev.langchain4j<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>langchain4j-document-parser-apache-tika<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.15.0-beta25<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">scope</span>&gt;</span>compile<span class="tag">&lt;/<span class="name">scope</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h4 id="langchain4j-agentic">langchain4j-agentic</h4>
+<p>这是 LangChain4j 的智能体（Agent）核心框架。</p>
+<p>如果说基础的语言模型是只会回答问题，那么加上这个模块，它就能帮你干活了。它提供了让
+AI 能够<strong>自主规划、调用工具、循环思考</strong>的 Agent 能力。支持
+<code>Human-in-the-loop</code>（人机协作，AI
+做事前询问人类意见）、多智能体协作、以及复杂的任务拆解逻辑，这些都是 AI
+Agent 中比较常见而且实用的内容</p>
+<p>当你需要 AI 不仅仅是聊天，而是要执行查询天气 -&gt; 预定机票 -&gt;
+发送邮件这种复杂流程时，有必要进行使用。</p>
+<figure>
+<img src="/posts/null/image-20260522150328612.png" alt="image-20260522150328612">
+<figcaption aria-hidden="true">image-20260522150328612</figcaption>
+</figure>
+<p>这是其依赖，截至文章编写的最新版本为1.15.0-beta25</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>dev.langchain4j<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>langchain4j-agentic<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.15.0-beta25<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">scope</span>&gt;</span>compile<span class="tag">&lt;/<span class="name">scope</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h4 id="langchain4j-easy-rag">langchain4j-easy-rag</h4>
+<p>这是一个 RAG 快速工具包，标准的 RAG
+流程非常复杂，而且涉及到各种组件，如果你只是需要一个轻量的 RAG
+功能，或者说就是自己本地研究一个 RAG，
+使用这个会很简单，而且应该是开箱即用的</p>
+<p>它把上述复杂的流程封装成了一个简单的工具类，你只需要告诉它文件夹路径和
+Embedding
+模型，它会自动帮你完成文件的加载、分块、向量化和存储，而且默认配置能完全本地的进行，不需要配置复杂的向量数据库</p>
+<p>我说，预制 RAG 嗯造</p>
+<figure>
+<img src="/posts/null/image-20260522150554774.png" alt="image-20260522150554774">
+<figcaption aria-hidden="true">image-20260522150554774</figcaption>
+</figure>
+<p>这是其依赖，截至文章编写的最新版本为1.15.0-beta25</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>dev.langchain4j<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>langchain4j-easy-rag<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.15.0-beta25<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">scope</span>&gt;</span>compile<span class="tag">&lt;/<span class="name">scope</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h2 id="搭建一个langchain4j聊天项目">搭建一个LangChain4j聊天项目</h2>
+<p>本项目会使用 SSE 流式的方式来进行请求和接受 AI
+的回复，这样更符合现代大模型相关业务的需求，SSE 比阻塞好太多了））</p>
+<p>我们就简单的建立一个能够进行基础流式对话，并且能够有记忆的就可以了，因为我用的
+deepseek
+模型它怎么弄也不支持多模态，按道理来说应该是支持的，我也不知道什么情况）））</p>
+<h3 id="项目依赖与配置">项目依赖与配置</h3>
+<p>对于依赖，有了上面我的区分讲解，想必大家肯定都知道引入什么依赖了</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">properties</span>&gt;</span></span><br><span class="line">       <span class="tag">&lt;<span class="name">java.version</span>&gt;</span>21<span class="tag">&lt;/<span class="name">java.version</span>&gt;</span></span><br><span class="line">       <span class="comment">&lt;!-- LangChain4j 最新版本 --&gt;</span></span><br><span class="line">       <span class="tag">&lt;<span class="name">langchain4j.version</span>&gt;</span>1.15.0<span class="tag">&lt;/<span class="name">langchain4j.version</span>&gt;</span></span><br><span class="line">   <span class="tag">&lt;/<span class="name">properties</span>&gt;</span></span><br><span class="line"></span><br><span class="line">   <span class="tag">&lt;<span class="name">dependencyManagement</span>&gt;</span></span><br><span class="line">       <span class="tag">&lt;<span class="name">dependencies</span>&gt;</span></span><br><span class="line">           <span class="comment">&lt;!-- LangChain4j BOM：统一管理所有 langchain4j 模块版本 --&gt;</span></span><br><span class="line">           <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">               <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>dev.langchain4j<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">               <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>langchain4j-bom<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">               <span class="tag">&lt;<span class="name">version</span>&gt;</span>$&#123;langchain4j.version&#125;<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">               <span class="tag">&lt;<span class="name">type</span>&gt;</span>pom<span class="tag">&lt;/<span class="name">type</span>&gt;</span></span><br><span class="line">               <span class="tag">&lt;<span class="name">scope</span>&gt;</span>import<span class="tag">&lt;/<span class="name">scope</span>&gt;</span></span><br><span class="line">           <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">       <span class="tag">&lt;/<span class="name">dependencies</span>&gt;</span></span><br><span class="line">   <span class="tag">&lt;/<span class="name">dependencyManagement</span>&gt;</span></span><br><span class="line"></span><br><span class="line">   <span class="tag">&lt;<span class="name">dependencies</span>&gt;</span></span><br><span class="line">      </span><br><span class="line">       <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">           <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">           <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-web<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">       <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"></span><br><span class="line">       <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">           <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">           <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-webflux<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">       <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"></span><br><span class="line">       <span class="comment">&lt;!-- LangChain4j 核心框架 --&gt;</span></span><br><span class="line">       <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">           <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>dev.langchain4j<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">           <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>langchain4j<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">       <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"></span><br><span class="line">       <span class="comment">&lt;!-- 本文使用deepseek模型，所以就用open ai兼容的格式来了 --&gt;</span></span><br><span class="line">       <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">           <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>dev.langchain4j<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">           <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>langchain4j-open-ai<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">       <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"></span><br><span class="line">       <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">           <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.projectlombok<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">           <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>lombok<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">           <span class="tag">&lt;<span class="name">optional</span>&gt;</span>true<span class="tag">&lt;/<span class="name">optional</span>&gt;</span></span><br><span class="line">       <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"></span><br><span class="line">       <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">           <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">           <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-test<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">           <span class="tag">&lt;<span class="name">scope</span>&gt;</span>test<span class="tag">&lt;/<span class="name">scope</span>&gt;</span></span><br><span class="line">       <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">   <span class="tag">&lt;/<span class="name">dependencies</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>然后对于配置</p>
+<figure class="highlight properties"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">spring.application.name</span>=<span class="string">LangChain4jDemo</span></span><br><span class="line"><span class="attr">server.port</span>=<span class="string">8594</span></span><br><span class="line"></span><br><span class="line"><span class="attr">app.ai.deepseek.api-key</span>=<span class="string">sk-1xxxx</span></span><br><span class="line"><span class="attr">app.ai.deepseek.base-url</span>=<span class="string">https://api.deepseek.com/v1</span></span><br><span class="line"></span><br><span class="line"><span class="attr">app.ai.deepseek.model-name</span>=<span class="string">deepseek-v4-pro</span></span><br><span class="line"><span class="attr">app.ai.deepseek.temperature</span>=<span class="string">0.7</span></span><br><span class="line"><span class="attr">app.ai.deepseek.max-tokens</span>=<span class="string">4096</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment"># 聊天记忆每个会话最大保留消息数</span></span><br><span class="line"><span class="attr">app.ai.memory.max-messages</span>=<span class="string">20</span></span><br></pre></td></tr></table></figure>
+<h3 id="实体">实体</h3>
+<p>对于我们在 LangChain4j 中与 LLM 进行沟通，可以这样构建请求体</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 通用聊天请求 DTO。</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * &lt;p&gt;sessionId 用于标识一个独立会话，相同 sessionId 的请求共享同一份聊天记忆，</span></span><br><span class="line"><span class="comment"> * 不同 sessionId 之间的记忆完全隔离，这是实现多用户/多会话记忆管理的关键。</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@Data</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ChatRequest</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 会话唯一标识。</span></span><br><span class="line"><span class="comment">     * 客户端应在同一轮对话中始终传入相同的 sessionId，</span></span><br><span class="line"><span class="comment">     * 若不传则视为无状态单次对话（由 Controller 层处理默认值）。</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> String sessionId;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 用户输入的消息内容（纯文本）。</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> String message;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>那么 AI 的响应也就可以是这样，但是因为 SSE
+不涉及到这个，所以这个就是给同步的请求演示的</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 通用聊天响应 DTO（用于同步接口）。</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@Data</span></span><br><span class="line"><span class="meta">@NoArgsConstructor</span></span><br><span class="line"><span class="meta">@AllArgsConstructor</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ChatResponse</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * AI 回复的文本内容。</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> String content;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 本次对话的会话 ID，方便客户端在后续请求中复用。</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> String sessionId;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> ChatResponse <span class="title function_">of</span><span class="params">(String content, String sessionId)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">ChatResponse</span>(content, sessionId);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>很明显我们能发现，<strong><code>sessionId</code>是实现多用户/多会话记忆的核心</strong></p>
+<ul>
+<li><strong>ChatLanguageModel 本身是无状态的</strong>：每次调用
+<code>generate()</code> 方法都是独立的，不知道之前的对话内容</li>
+<li>所以说，我们需要 LangChain4j 的 <code>ChatMemory</code> 组件通过
+<code>sessionId</code> 来区分不同会话</li>
+</ul>
+<p>这些内容在服务层部分会有进一步的体现</p>
+<h3 id="服务层">服务层</h3>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> dev.langchain4j.data.message.*;</span><br><span class="line"><span class="keyword">import</span> dev.langchain4j.memory.ChatMemory;</span><br><span class="line"><span class="keyword">import</span> dev.langchain4j.model.chat.ChatModel;</span><br><span class="line"><span class="keyword">import</span> dev.langchain4j.model.chat.StreamingChatModel;</span><br><span class="line"><span class="keyword">import</span> dev.langchain4j.model.chat.response.ChatResponse;</span><br><span class="line"><span class="keyword">import</span> dev.langchain4j.model.chat.response.StreamingChatResponseHandler;</span><br><span class="line"><span class="keyword">import</span> hbnu.project.langchain4jdemo.config.AiConfig;</span><br><span class="line"><span class="keyword">import</span> org.springframework.stereotype.Service;</span><br><span class="line"><span class="keyword">import</span> org.springframework.web.servlet.mvc.method.annotation.SseEmitter;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.io.IOException;</span><br><span class="line"><span class="keyword">import</span> java.util.Set;</span><br><span class="line"><span class="keyword">import</span> java.util.concurrent.ConcurrentHashMap;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * AI 聊天核心服务类。</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * &lt;p&gt;本类演示了以下 LangChain4j 低级 API 的核心用法：</span></span><br><span class="line"><span class="comment"> * &lt;ul&gt;</span></span><br><span class="line"><span class="comment"> *   &lt;li&gt;手动管理 &#123;<span class="doctag">@link</span> ChatMemory&#125;，实现多会话隔离的对话记忆&lt;/li&gt;</span></span><br><span class="line"><span class="comment"> *   &lt;li&gt;使用 &#123;<span class="doctag">@link</span> ChatModel&#125; 进行同步阻塞式对话&lt;/li&gt;</span></span><br><span class="line"><span class="comment"> *   &lt;li&gt;构建包含 &#123;<span class="doctag">@link</span> TextContent&#125; 和 &#123;<span class="doctag">@link</span> ImageContent&#125; 的多模态 &#123;<span class="doctag">@link</span> UserMessage&#125;&lt;/li&gt;</span></span><br><span class="line"><span class="comment"> *   &lt;li&gt;通过 &#123;<span class="doctag">@link</span> SystemMessage&#125; 设置 AI 角色人格&lt;/li&gt;</span></span><br><span class="line"><span class="comment"> * &lt;/ul&gt;</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * &lt;p&gt;记忆管理策略：</span></span><br><span class="line"><span class="comment"> * 使用 &#123;<span class="doctag">@link</span> ConcurrentHashMap&#125; 以 sessionId 为 key 缓存每个会话的 &#123;<span class="doctag">@link</span> ChatMemory&#125;，</span></span><br><span class="line"><span class="comment"> * 保证线程安全且每个会话完全独立。</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@Service</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ChatService</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 系统基础提示词</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">String</span> <span class="variable">SYSTEM_PROMPT</span> <span class="operator">=</span></span><br><span class="line">            <span class="string">&quot;你是一个友好、专业的 AI 助手。&quot;</span> +</span><br><span class="line">                    <span class="string">&quot;你的目标是为用户提供准确、有帮助的回答。&quot;</span> +</span><br><span class="line">                    <span class="string">&quot;在回答问题时，请保持简洁清晰，并在必要时提供示例。&quot;</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> ChatModel chatModel;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> StreamingChatModel streamingChatModel;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> AiConfig aiConfig;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 以 sessionId 为 key 缓存每个会话独立的 ChatMemory。</span></span><br><span class="line"><span class="comment">     * 生产环境中建议替换为带 TTL 的缓存（如 Caffeine 或 Redis）。</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> ConcurrentHashMap&lt;String, ChatMemory&gt; memoryMap = <span class="keyword">new</span> <span class="title class_">ConcurrentHashMap</span>&lt;&gt;();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">ChatService</span><span class="params">(ChatModel chatModel, StreamingChatModel streamingChatModel, AiConfig aiConfig)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.chatModel = chatModel;</span><br><span class="line">        <span class="built_in">this</span>.streamingChatModel = streamingChatModel;</span><br><span class="line">        <span class="built_in">this</span>.aiConfig = aiConfig;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 获取或创建指定 sessionId 对应的 ChatMemory。</span></span><br><span class="line"><span class="comment">     * 首次访问时会自动注入系统提示，设置 AI 角色。</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> ChatMemory <span class="title function_">getOrCreateMemory</span><span class="params">(String sessionId)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> memoryMap.computeIfAbsent(sessionId, id -&gt; &#123;</span><br><span class="line">            <span class="type">ChatMemory</span> <span class="variable">memory</span> <span class="operator">=</span> aiConfig.buildChatMemory(id);</span><br><span class="line">            <span class="comment">// 初始化系统提示，告知 AI 它的角色定位</span></span><br><span class="line">            memory.add(SystemMessage.from(SYSTEM_PROMPT));</span><br><span class="line">            <span class="keyword">return</span> memory;</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 清除指定会话的聊天记忆。</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">clearMemory</span><span class="params">(String sessionId)</span> &#123;</span><br><span class="line">        <span class="type">ChatMemory</span> <span class="variable">memory</span> <span class="operator">=</span> memoryMap.remove(sessionId);</span><br><span class="line">        <span class="keyword">if</span> (memory != <span class="literal">null</span>) &#123;</span><br><span class="line">            memory.clear();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 同步阻塞式文本对话（带记忆）。</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * &lt;p&gt;核心步骤：</span></span><br><span class="line"><span class="comment">     * &lt;ol&gt;</span></span><br><span class="line"><span class="comment">     *   &lt;li&gt;将用户消息加入记忆&lt;/li&gt;</span></span><br><span class="line"><span class="comment">     *   &lt;li&gt;将记忆中的所有消息（含历史）传给 ChatModel&lt;/li&gt;</span></span><br><span class="line"><span class="comment">     *   &lt;li&gt;将 AI 回复加入记忆&lt;/li&gt;</span></span><br><span class="line"><span class="comment">     *   &lt;li&gt;返回 AI 回复文本&lt;/li&gt;</span></span><br><span class="line"><span class="comment">     * &lt;/ol&gt;</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> sessionId 会话标识</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> userInput 用户输入文本</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> AI 回复文本</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">chat</span><span class="params">(String sessionId, String userInput)</span> &#123;</span><br><span class="line">        <span class="type">ChatMemory</span> <span class="variable">memory</span> <span class="operator">=</span> getOrCreateMemory(sessionId);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 将用户消息加入记忆</span></span><br><span class="line">        <span class="type">UserMessage</span> <span class="variable">userMessage</span> <span class="operator">=</span> UserMessage.from(userInput);</span><br><span class="line">        memory.add(userMessage);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 传入全部历史消息，让模型感知上下文</span></span><br><span class="line">        <span class="type">AiMessage</span> <span class="variable">aiMessage</span> <span class="operator">=</span> chatModel.chat(memory.messages()).aiMessage();</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 将 AI 回复也加入记忆，供下轮对话使用</span></span><br><span class="line">        memory.add(aiMessage);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> aiMessage.text();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * SSE 流式文本对话（带记忆）。</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * &lt;p&gt;通过 &#123;<span class="doctag">@link</span> StreamingChatModel&#125; 逐 token 推送内容到 &#123;<span class="doctag">@link</span> SseEmitter&#125;，</span></span><br><span class="line"><span class="comment">     * 实现类似 ChatGPT 的打字机效果。</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * &lt;p&gt;核心步骤：</span></span><br><span class="line"><span class="comment">     * &lt;ol&gt;</span></span><br><span class="line"><span class="comment">     *   &lt;li&gt;将用户消息加入记忆&lt;/li&gt;</span></span><br><span class="line"><span class="comment">     *   &lt;li&gt;调用 streamingChatModel.chat()，注册 StreamingResponseHandler 回调&lt;/li&gt;</span></span><br><span class="line"><span class="comment">     *   &lt;li&gt;在 onNext 回调中，通过 SseEmitter 逐 token 推送给客户端&lt;/li&gt;</span></span><br><span class="line"><span class="comment">     *   &lt;li&gt;在 onComplete 回调中，将完整 AI 回复加入记忆，并关闭 SseEmitter&lt;/li&gt;</span></span><br><span class="line"><span class="comment">     *   &lt;li&gt;在 onError 回调中，推送错误并关闭 SseEmitter&lt;/li&gt;</span></span><br><span class="line"><span class="comment">     * &lt;/ol&gt;</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> sessionId 会话标识</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> userInput 用户输入文本</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> emitter   SSE 发射器，用于向客户端推送数据</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">streamChat</span><span class="params">(String sessionId, String userInput, SseEmitter emitter)</span> &#123;</span><br><span class="line">        <span class="type">ChatMemory</span> <span class="variable">memory</span> <span class="operator">=</span> getOrCreateMemory(sessionId);</span><br><span class="line"></span><br><span class="line">        <span class="type">UserMessage</span> <span class="variable">userMessage</span> <span class="operator">=</span> UserMessage.from(userInput);</span><br><span class="line">        memory.add(userMessage);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 用 StringBuilder 拼接完整回复，等流结束后存入记忆</span></span><br><span class="line">        <span class="type">StringBuilder</span> <span class="variable">fullResponse</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">StringBuilder</span>();</span><br><span class="line"></span><br><span class="line">        streamingChatModel.chat(memory.messages(), <span class="keyword">new</span> <span class="title class_">StreamingChatResponseHandler</span>() &#123;</span><br><span class="line"></span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">onPartialResponse</span><span class="params">(String token)</span> &#123;</span><br><span class="line">                <span class="comment">// 每收到一个 token 就立刻推送给客户端</span></span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    fullResponse.append(token);</span><br><span class="line">                    emitter.send(SseEmitter.event().data(token));</span><br><span class="line">                &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">                    emitter.completeWithError(e);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">onCompleteResponse</span><span class="params">(ChatResponse response)</span> &#123;</span><br><span class="line">                <span class="comment">// 流结束后，将完整 AI 回复写入记忆</span></span><br><span class="line">                memory.add(response.aiMessage());</span><br><span class="line">                <span class="comment">// 发送结束标记，客户端可据此关闭 EventSource</span></span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    emitter.send(SseEmitter.event().name(<span class="string">&quot;done&quot;</span>).data(<span class="string">&quot;[DONE]&quot;</span>));</span><br><span class="line">                &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">                    <span class="comment">// 忽略关闭时的 IO 异常</span></span><br><span class="line">                &#125;</span><br><span class="line">                emitter.complete();</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">onError</span><span class="params">(Throwable error)</span> &#123;</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    emitter.send(SseEmitter.event().name(<span class="string">&quot;error&quot;</span>).data(error.getMessage()));</span><br><span class="line">                &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">                    <span class="comment">// 忽略</span></span><br><span class="line">                &#125;</span><br><span class="line">                emitter.completeWithError(error);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>很明显，我们使用了两种的 AI 对话形式，包括同步和流式，这两种
+ChatModel 的本质区别我们来看看</p>
+<ul>
+<li><p>对于同步阻塞，使用的就是<code>chatModel</code></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> String <span class="title function_">chat</span><span class="params">(String sessionId, String userInput)</span> &#123;</span><br><span class="line">    <span class="comment">// 1. 构建完整上下文</span></span><br><span class="line">    <span class="type">ChatMemory</span> <span class="variable">memory</span> <span class="operator">=</span> getOrCreateMemory(sessionId);</span><br><span class="line">    memory.add(UserMessage.from(userInput));</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 2. 阻塞等待完整响应（可能 3-10 秒）</span></span><br><span class="line">    <span class="type">AiMessage</span> <span class="variable">aiMessage</span> <span class="operator">=</span> chatModel.chat(memory.messages()).aiMessage();</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 3. 一次性返回</span></span><br><span class="line">    memory.add(aiMessage);</span><br><span class="line">    <span class="keyword">return</span> aiMessage.text();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>不需要实时反馈的场景下，阻塞实现起来还是很简单的，但是消息过长容易导致一些不必要的问题</p></li>
+<li><p>对于流式，使用的就是<code>streamingChatModel</code>，我们发现，创建streamingChatModel对象后重写它的这三个方法，就能够正确使用流式对话了</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">streamingChatModel.chat(memory.messages(), <span class="keyword">new</span> <span class="title class_">StreamingChatResponseHandler</span>() &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">onPartialResponse</span><span class="params">(String token)</span> &#123;</span><br><span class="line">        <span class="comment">// 每次收到 token（通常几个字符）就立即发送</span></span><br><span class="line">        emitter.send(token);  <span class="comment">// 用户几乎实时看到 AI &quot;打字&quot;</span></span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">onCompleteResponse</span><span class="params">(ChatResponse response)</span> &#123;</span><br><span class="line">        <span class="comment">// 流结束后，将完整回复存入记忆</span></span><br><span class="line">        memory.add(response.aiMessage());</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">onError</span><span class="params">(Throwable error)</span> &#123;</span><br><span class="line">        <span class="comment">// 错误处理</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>流式不需要在服务端缓存完整响应，所以说会有那种一块一块的流式感，而且可以提前中断</p></li>
+</ul>
+<p>至于这两个接口的详细内容，下面会提到</p>
+<p>对于记忆，就是涉及到了 <code>ChatMemory</code> 的内容，而
+<code>ChatMemory</code> 内部维护着一个消息列表，在与 AI
+对话的时候，会发送上下文记忆，所以说，要限制好上下文的大小，防止成本太高</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// ChatMemory 内部维护的消息列表</span></span><br><span class="line">memory.add(SystemMessage.from(<span class="string">&quot;你是一个专业助手&quot;</span>));</span><br><span class="line">memory.add(UserMessage.from(<span class="string">&quot;我叫张三&quot;</span>));</span><br><span class="line">memory.add(AiMessage.from(<span class="string">&quot;你好张三！&quot;</span>));</span><br><span class="line">memory.add(UserMessage.from(<span class="string">&quot;我叫什么？&quot;</span>));</span><br><span class="line"></span><br><span class="line"><span class="comment">// chatModel.chat(memory.messages()) 实际发送的消息结构</span></span><br><span class="line"><span class="comment">// 这几种消息类型下面会提到</span></span><br><span class="line">[</span><br><span class="line">  SystemMessage(<span class="string">&quot;你是一个专业助手&quot;</span>),</span><br><span class="line">  UserMessage(<span class="string">&quot;我叫张三&quot;</span>),</span><br><span class="line">  AiMessage(<span class="string">&quot;你好张三！&quot;</span>),</span><br><span class="line">  UserMessage(<span class="string">&quot;我叫什么？&quot;</span>)</span><br><span class="line">]</span><br></pre></td></tr></table></figure>
+<h3 id="控制器">控制器</h3>
+<p>接口这边其实就没啥好说的了，正常调用就可以了，只不过对于 SSE
+部分，要正确处理好</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RestController</span></span><br><span class="line"><span class="meta">@RequestMapping(&quot;/api/chat&quot;)</span></span><br><span class="line"><span class="meta">@CrossOrigin(origins = &quot;*&quot;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ChatController</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> ChatService chatService;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">ChatController</span><span class="params">(ChatService chatService)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.chatService = chatService;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * SSE 流式文本对话接口（带记忆）</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@PostMapping(value = &quot;/stream&quot;, produces = MediaType.TEXT_EVENT_STREAM_VALUE)</span></span><br><span class="line">    <span class="keyword">public</span> SseEmitter <span class="title function_">streamChat</span><span class="params">(<span class="meta">@RequestBody</span> ChatRequest request)</span> &#123;</span><br><span class="line">        <span class="comment">// 若客户端未传 sessionId，则自动生成一个，保证每次都是新会话</span></span><br><span class="line">        <span class="keyword">if</span> (request.getSessionId() == <span class="literal">null</span> || request.getSessionId().isBlank()) &#123;</span><br><span class="line">            request.setSessionId(UUID.randomUUID().toString());</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// SseEmitter 超时时间设为 3 分钟，防止长对话超时断连</span></span><br><span class="line">        <span class="type">SseEmitter</span> <span class="variable">emitter</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">SseEmitter</span>(<span class="number">3</span> * <span class="number">60</span> * <span class="number">1000L</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 在新线程中执行流式请求，避免阻塞 HTTP 请求线程</span></span><br><span class="line">        Thread.ofVirtual().start(() -&gt;</span><br><span class="line">                chatService.streamChat(request.getSessionId(), request.getMessage(), emitter)</span><br><span class="line">        );</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> emitter;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 同步阻塞式文本对话接口（带记忆）。</span></span><br><span class="line"><span class="comment">     * 等待模型生成完整回复后一次性返回，适合简单测试。</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@PostMapping(&quot;/sync&quot;)</span></span><br><span class="line">    <span class="keyword">public</span> ResponseEntity&lt;ChatResponse&gt; <span class="title function_">syncChat</span><span class="params">(<span class="meta">@RequestBody</span> ChatRequest request)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (request.getSessionId() == <span class="literal">null</span> || request.getSessionId().isBlank()) &#123;</span><br><span class="line">            request.setSessionId(UUID.randomUUID().toString());</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="type">String</span> <span class="variable">reply</span> <span class="operator">=</span> chatService.chat(request.getSessionId(), request.getMessage());</span><br><span class="line">        <span class="keyword">return</span> ResponseEntity.ok(ChatResponse.of(reply, request.getSessionId()));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 记忆管理</span></span><br><span class="line"><span class="comment">     * 清除指定会话的聊天记忆。</span></span><br><span class="line"><span class="comment">     * 适用于用户主动开启新话题，或退出对话时清理资源。</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@DeleteMapping(&quot;/memory/&#123;sessionId&#125;&quot;)</span></span><br><span class="line">    <span class="keyword">public</span> ResponseEntity&lt;String&gt; <span class="title function_">clearMemory</span><span class="params">(<span class="meta">@PathVariable</span> String sessionId)</span> &#123;</span><br><span class="line">        chatService.clearMemory(sessionId);</span><br><span class="line">        <span class="keyword">return</span> ResponseEntity.ok(<span class="string">&quot;会话 [&quot;</span> + sessionId + <span class="string">&quot;] 的记忆已清除&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="测试">测试</h3>
+<p>首先我们测试一下同步对话，可以发现我们能够正常的与 LLM 进行对话了</p>
+<figure>
+<img src="/posts/null/image-20260529112136263.png" alt="image-20260529112136263">
+<figcaption aria-hidden="true">image-20260529112136263</figcaption>
+</figure>
+<p>之后我们来测试一下同步对话请求的接口，可以发现阻塞式的体验是远远不如
+SSE 的，等待时间也更长</p>
+<figure>
+<img src="/posts/null/image-20260527092040926.png" alt="image-20260527092040926">
+<figcaption aria-hidden="true">image-20260527092040926</figcaption>
+</figure>
+<p>然后，我们一直使用的都是my-session-001，我们验证一下记忆的相关内容</p>
+<p>首先问一下模型是否还保持记忆</p>
+<figure>
+<img src="/posts/null/image-20260529112506798.png" alt="image-20260529112506798">
+<figcaption aria-hidden="true">image-20260529112506798</figcaption>
+</figure>
+<p>通过简单的诱导，虽然 deepseek
+说自己不支持跨实例记忆这个那个的，但是还是能够回答最近我都问了什么，说明我们的
+LangChain4j 是参与了相关的记忆的处理</p>
+<p>我们使用我们项目中的接口来处理一下一轮对话的记忆，我们使用相同的sessionId，发现LLM怎么诱导也想不起来自己最近说过什么内容了，说明这个是真清理了</p>
+<figure>
+<img src="/posts/null/image-20260529112817548.png" alt="image-20260529112817548">
+<figcaption aria-hidden="true">image-20260529112817548</figcaption>
+</figure>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a target="_blank" rel="noopener" href="https://github.com/ergou10086">ErgouTree</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://ergou10086.github.io/posts/24209.html">https://ergou10086.github.io/posts/24209.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://ergou10086.github.io" target="_blank">ErgouTree's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E6%A1%86%E6%9E%B6%E7%9F%A5%E8%AF%86/">框架知识</a><a class="post-meta__tags" href="/tags/%E5%AE%9E%E7%94%A8%E7%9F%A5%E8%AF%86/">实用知识</a><a class="post-meta__tags" href="/tags/Java%E6%A1%86%E6%9E%B6/">Java框架</a><a class="post-meta__tags" href="/tags/LangChain4j/">LangChain4j</a><a class="post-meta__tags" href="/tags/AI/">AI</a><a class="post-meta__tags" href="/tags/LLM/">LLM</a><a class="post-meta__tags" href="/tags/%E5%90%8E%E7%AB%AF/">后端</a></div><div class="post-share"><div class="addtoany"><div class="a2a_kit a2a_kit_size_32 a2a_default_style"><a class="a2a_button_facebook"></a><a class="a2a_button_twitter"></a><a class="a2a_button_wechat"></a><a class="a2a_button_sina_weibo"></a><a class="a2a_button_facebook_messenger"></a><a class="a2a_button_email"></a><a class="a2a_button_copy_link"></a><a class="a2a_dd" target="_blank" rel="noopener" href="https://www.addtoany.com/share"></a></div></div><script async="async" src="https://static.addtoany.com/menu/page.js"></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/posts/56455.html" title="Neo4j part4—结合生成式AI体验Neo4j吧"><img class="cover" src="/images/posts/cover_alogrithm3.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">Neo4j part4—结合生成式AI体验Neo4j吧</div></div><div class="info-2"><div class="info-item-1">LLM基础 之前的 LLM 基础过于浅薄，我打算在这里再重述如下三个比较重要，示例的项目中广泛涉及到的内容，进行一个相对广泛的讲解 Embedding 为什么 Embedding 是 Neo4j + AI 的核心 因为现在基本的一些功能下：  RAG GraphRAG AI 知识库 Agent Memory Neo4j Vector Index Semantic Search 多模态检索  Embedding 依旧是它们的底层基础，在自然语言处理 (NLP) 任务中，LLM 本身不擅长知识检索，处理文本需要将每个单词转换成对应的数字表示。大多数 Embedding 方法都归结为将单词或标记转换为向量。各种嵌入技术之间的区别在于它们如何处理这种“单词→向量”的转换。 在 Neo4j 的实践下，Neo4j 负责知识的关系结构，Embedding 负责语义空间，两者结合，才形成现代 AI...</div></div></div></a><a class="pagination-related" href="/posts/26618.html" title="LangChain4j part2—LangChain4j实现对话，记忆管理的相关知识"><img class="cover" src="/images/posts/cover_langchain2.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">LangChain4j part2—LangChain4j实现对话，记忆管理的相关知识</div></div><div class="info-2"><div class="info-item-1">前期项目涉及到的内容 LangChain4j 聊天与语言模型 一般来说，LangChain4j 认为 LLM 目前提供两种 API 类型：  LanguageModel：它们的 API 非常简单，接收一个 String 作为输入，并返回一个 String 作为输出。 这种 API 现在逐渐被聊天 API（第二种 API 类型）取代。已不再扩展，逐渐被淘汰。 ChatModel：它们接收多个 ChatMessage 作为输入，并返回一个单一的 AiMessage 作为输出。使用它能够支持多模态、工具调用、参数控制、上下文对话。 而ChatMessage 通常包含在包含文本的基础上，但一些 LLM 还支持其他模态，例如图像、音频等  官方表示，对 LanguageModel 的支持在 LangChain4j 中将不再扩展，因此在之后我演示所有的功能中，我们将使用 ChatModel 的API。而且LanguageModel只会在这篇中得到演示和简单的讲解。 ChatModel 现在，让我们更深入地看看 ChatModel...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/posts/26618.html" title="LangChain4j part2—LangChain4j实现对话，记忆管理的相关知识"><img class="cover" src="/images/posts/cover_langchain2.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-05-30</div><div class="info-item-2">LangChain4j part2—LangChain4j实现对话，记忆管理的相关知识</div></div><div class="info-2"><div class="info-item-1">前期项目涉及到的内容 LangChain4j 聊天与语言模型 一般来说，LangChain4j 认为 LLM 目前提供两种 API 类型：  LanguageModel：它们的 API 非常简单，接收一个 String 作为输入，并返回一个 String 作为输出。 这种 API 现在逐渐被聊天 API（第二种 API 类型）取代。已不再扩展，逐渐被淘汰。 ChatModel：它们接收多个 ChatMessage 作为输入，并返回一个单一的 AiMessage 作为输出。使用它能够支持多模态、工具调用、参数控制、上下文对话。 而ChatMessage 通常包含在包含文本的基础上，但一些 LLM 还支持其他模态，例如图像、音频等  官方表示，对 LanguageModel 的支持在 LangChain4j 中将不再扩展，因此在之后我演示所有的功能中，我们将使用 ChatModel 的API。而且LanguageModel只会在这篇中得到演示和简单的讲解。 ChatModel 现在，让我们更深入地看看 ChatModel...</div></div></div></a><a class="pagination-related" href="/posts/40851.html" title="Spring Security part12—了解OAuth2及其相关原理"><img class="cover" src="/images/posts/cover_springcloud6.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-12-21</div><div class="info-item-2">Spring Security part12—了解OAuth2及其相关原理</div></div><div class="info-2"><div class="info-item-1">OAuth2 协议 为什么需要 OAuth 协议 第三方应用需要用户在其他平台的资源，但用户不愿、也不应暴露核心账号密码，怎么办？ OAuth2.0 协议的核心价值是解决「第三方应用访问用户在另一平台的资源」时的安全与信任问题，避免账号密码泄露和权限滥用。 我们假设这样的一个场景 在 A 需访问用户在 B 的相片资源的场景中，直接用账号密码验证的方案存在致命问题：  用户信任危机：用户需向 A 暴露 B 的账号密码，无法确认 A 是否会窃取、滥用这些核心凭证。 平台信任危机：B 无法保证 A 仅将账号密码用于即时访问，可能被 A 存储、批量收集，导致用户信息泄露风险。 权限无边界：账号密码是最高权限凭证，一旦泄露，攻击者或恶意 A 可对用户在 B 的资源执行任意操作（如删改相片、篡改信息）。 凭证无法管控：账号密码一旦提供给 A，用户无法单方面收回权限，只能通过修改密码，操作繁琐且影响自身使用。  这种情况就是，直接提供凭证的方案的不可解决的安全与信任漏洞   image-20251115134720814  OAuth2.0...</div></div></div></a><a class="pagination-related" href="/posts/36724.html" title="Spring Security part10—CSRF及其防御"><img class="cover" src="/images/posts/cover_java22.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-12-21</div><div class="info-item-2">Spring Security part10—CSRF及其防御</div></div><div class="info-2"><div class="info-item-1">认识CSRF攻击 小明的悲惨遭遇  例子来自美团的https://tech.meituan.com/2018/10/11/fe-security-csrf.html  这一天，小明同学百无聊赖地刷着Gmail邮件。大部分都是没营养的通知、验证码、聊天记录之类。但有一封邮件引起了小明的注意：  甩卖比特币，一个只要998！！  聪明的小明当然知道这种肯定是骗子，但还是抱着好奇的态度点了进去（请勿模仿）。果然，这只是一个什么都没有的空白页面，小明失望的关闭了页面。一切似乎什么都没有发生…… 在这平静的外表之下，黑客的攻击已然得手。小明的Gmail中，被偷偷设置了一个过滤规则，这个规则使得所有的邮件都会被自动转发到hacker@hackermail.com。小明还在继续刷着邮件，殊不知他的邮件正在一封封地，如脱缰的野马一般地，持续不断地向着黑客的邮箱转发而去。 不久之后的一天，小明发现自己的域名已经被转让了。懵懂的小明以为是域名到期自己忘了续费，直到有一天，对方开出了 $650...</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="gitalk-container"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/arp.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">ErgouTree</div><div class="author-info-description">I start a brand-new life with you.</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">337</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">209</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">112</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/ergou10086"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/ergou10086" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="/zjm88822201@126.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a><a class="social-icon" href="https://space.bilibili.com/142045656?spm_id_from=333.1007.0.0" target="_blank" title="bilibili"><i class="fas fa-brands fa-bilibili" style="color: #4a72be;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">作者长期陷入galgame和osu!maina4k中 祝他好运吧 对了 如果图片加载过慢 建议科学上网进行使用</div></div><div class="card-widget card-weather"><div class="item-headline"><i class="fas fa-cloud-sun"></i><span>aside.card_weather</span></div><div class="weather-content"><div class="weather-loading"><i class="fas fa-spinner fa-spin"></i><span>加载中...</span></div><div class="weather-main" style="display: none;"><div class="weather-location"><i class="fas fa-map-marker-alt"></i><span id="weather-location">获取中...</span></div><div class="weather-info"><div class="weather-temp"><span id="weather-temp">--</span><span class="unit">°C</span></div><div class="weather-desc"><span id="weather-weather">--</span></div><div class="weather-details"><div class="weather-item"><i class="fas fa-wind"></i><span id="weather-windpower">--</span></div><div class="weather-item"><i class="fas fa-tint"></i><span id="weather-humidity">--</span></div><div class="weather-item"><i class="fas fa-eye"></i><span id="weather-winddir">--</span></div></div></div><div class="weather-update-time"><i class="fas fa-clock"></i><span id="weather-update-time">更新中...</span></div></div></div></div><div class="sticky_layout"></div><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#langchain4j-%E7%AE%80%E4%BB%8B"><span class="toc-number">1.</span> <span class="toc-text">LangChain4j 简介</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%8B%E7%BB%8D"><span class="toc-number">1.1.</span> <span class="toc-text">介绍</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%A4%E4%B8%AA%E6%8A%BD%E8%B1%A1%E7%BA%A7%E5%88%AB"><span class="toc-number">1.2.</span> <span class="toc-text">两个抽象级别</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8C%BA%E5%88%86%E5%B9%B6%E7%AE%80%E5%8D%95%E4%BB%8B%E7%BB%8D%E5%AE%83%E4%BB%AC%E7%9A%84%E4%BE%9D%E8%B5%96"><span class="toc-number">1.3.</span> <span class="toc-text">区分并简单介绍它们的依赖</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#langchain4j"><span class="toc-number">1.3.1.</span> <span class="toc-text">langchain4j</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#langchain4j-core"><span class="toc-number">1.3.2.</span> <span class="toc-text">langchain4j-core</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#langchain4j-mcp"><span class="toc-number">1.3.3.</span> <span class="toc-text">langchain4j-mcp</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#langchain4j-embeddings"><span class="toc-number">1.3.4.</span> <span class="toc-text">langchain4j-embeddings</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#langchain4j-ai%E5%8E%82%E5%95%86%E6%88%96%E8%80%85%E6%A8%A1%E5%9E%8B%E5%90%8D"><span class="toc-number">1.3.5.</span> <span class="toc-text">langchain4j-{ai厂商或者模型名}</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#langchain4j-spring-boot-starter"><span class="toc-number">1.3.6.</span> <span class="toc-text">langchain4j-spring-boot-starter</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#langchain4j-%E6%A8%A1%E5%9E%8B%E5%90%8D-spring-boot-starter"><span class="toc-number">1.3.7.</span> <span class="toc-text">langchain4j-{模型名}-spring-boot-starter</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#langchain4j-http-client"><span class="toc-number">1.3.8.</span> <span class="toc-text">langchain4j-http-client</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#langchain4j-document-parser-apache-tika"><span class="toc-number">1.3.9.</span> <span class="toc-text">langchain4j-document-parser-apache-tika</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#langchain4j-agentic"><span class="toc-number">1.3.10.</span> <span class="toc-text">langchain4j-agentic</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#langchain4j-easy-rag"><span class="toc-number">1.3.11.</span> <span class="toc-text">langchain4j-easy-rag</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%90%AD%E5%BB%BA%E4%B8%80%E4%B8%AAlangchain4j%E8%81%8A%E5%A4%A9%E9%A1%B9%E7%9B%AE"><span class="toc-number">2.</span> <span class="toc-text">搭建一个LangChain4j聊天项目</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%A1%B9%E7%9B%AE%E4%BE%9D%E8%B5%96%E4%B8%8E%E9%85%8D%E7%BD%AE"><span class="toc-number">2.1.</span> <span class="toc-text">项目依赖与配置</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9E%E4%BD%93"><span class="toc-number">2.2.</span> <span class="toc-text">实体</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9C%8D%E5%8A%A1%E5%B1%82"><span class="toc-number">2.3.</span> <span class="toc-text">服务层</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8E%A7%E5%88%B6%E5%99%A8"><span class="toc-number">2.4.</span> <span class="toc-text">控制器</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B5%8B%E8%AF%95"><span class="toc-number">2.5.</span> <span class="toc-text">测试</span></a></li></ol></li></ol></div></div><div class="card-widget card-post-series"><div class="item-headline"><i class="fa-solid fa-layer-group"></i><span>LangChain4j 系列学习内容</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/26618.html" title="LangChain4j part2—LangChain4j实现对话，记忆管理的相关知识"><img src="/images/posts/cover_langchain2.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="LangChain4j part2—LangChain4j实现对话，记忆管理的相关知识"></a><div class="content"><a class="title" href="/posts/26618.html" title="LangChain4j part2—LangChain4j实现对话，记忆管理的相关知识">LangChain4j part2—LangChain4j实现对话，记忆管理的相关知识</a><time datetime="2026-05-30T03:35:30.000Z" title="发表于 2026-05-30 11:35:30">2026-05-30</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/24209.html" title="LangChain4j part1—认识LangChain4j和实现AI基础对话"><img src="/images/posts/cover_langchain1.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="LangChain4j part1—认识LangChain4j和实现AI基础对话"></a><div class="content"><a class="title" href="/posts/24209.html" title="LangChain4j part1—认识LangChain4j和实现AI基础对话">LangChain4j part1—认识LangChain4j和实现AI基础对话</a><time datetime="2026-05-30T03:25:45.000Z" title="发表于 2026-05-30 11:25:45">2026-05-30</time></div></div></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/26618.html" title="LangChain4j part2—LangChain4j实现对话，记忆管理的相关知识"><img src="/images/posts/cover_langchain2.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="LangChain4j part2—LangChain4j实现对话，记忆管理的相关知识"/></a><div class="content"><a class="title" href="/posts/26618.html" title="LangChain4j part2—LangChain4j实现对话，记忆管理的相关知识">LangChain4j part2—LangChain4j实现对话，记忆管理的相关知识</a><time datetime="2026-05-30T03:35:30.000Z" title="发表于 2026-05-30 11:35:30">2026-05-30</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/24209.html" title="LangChain4j part1—认识LangChain4j和实现AI基础对话"><img src="/images/posts/cover_langchain1.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="LangChain4j part1—认识LangChain4j和实现AI基础对话"/></a><div class="content"><a class="title" href="/posts/24209.html" title="LangChain4j part1—认识LangChain4j和实现AI基础对话">LangChain4j part1—认识LangChain4j和实现AI基础对话</a><time datetime="2026-05-30T03:25:45.000Z" title="发表于 2026-05-30 11:25:45">2026-05-30</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/56455.html" title="Neo4j part4—结合生成式AI体验Neo4j吧"><img src="/images/posts/cover_alogrithm3.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Neo4j part4—结合生成式AI体验Neo4j吧"/></a><div class="content"><a class="title" href="/posts/56455.html" title="Neo4j part4—结合生成式AI体验Neo4j吧">Neo4j part4—结合生成式AI体验Neo4j吧</a><time datetime="2026-05-20T06:31:06.000Z" title="发表于 2026-05-20 14:31:06">2026-05-20</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/34593.html" title="Neo4j part3—把Neo4j引入我们的Spring项目中去实际使用"><img src="/images/posts/cover_es1.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Neo4j part3—把Neo4j引入我们的Spring项目中去实际使用"/></a><div class="content"><a class="title" href="/posts/34593.html" title="Neo4j part3—把Neo4j引入我们的Spring项目中去实际使用">Neo4j part3—把Neo4j引入我们的Spring项目中去实际使用</a><time datetime="2026-05-15T01:12:35.000Z" title="发表于 2026-05-15 09:12:35">2026-05-15</time></div></div></div></div></div></main><div class="fps-display"><span id="fps">FPS: 60</span></div><footer id="footer" style="background-image: url(/images/posts/cover_langchain1.jpg);"><div id="footer-wrap"><div class="copyright">&copy;2024 - 2026 By ErgouTree</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">忘れたくない思い、ありますか？ <br>,<span id="realtime_duration" style="font-family: monospace;"></span>,<br><a href="https://icp.gov.moe/?keyword=20257009" target="_blank">萌ICP备20257009号</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><a class="icon-V hidden" onclick="switchNightMode()" title="日间和夜间模式切换"><svg width="25" height="25" viewBox="0 0 1024 1024"><use id="modeicon" xlink:href="#icon-moon"></use></svg></a><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="chat-btn" type="button" title="聊天" style="display:none"><i class="fas fa-comment"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (true) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script><script>(() => {
+  const applyThemeDefaultsConfig = theme => {
+    if (theme === 'dark-mode') {
+      Chart.defaults.color = "rgba(255, 255, 255, 0.8)"
+      Chart.defaults.borderColor = "rgba(255, 255, 255, 0.2)"
+      Chart.defaults.scale.ticks.backdropColor = "transparent"
+    } else {
+      Chart.defaults.color = "rgba(0, 0, 0, 0.8)"
+      Chart.defaults.borderColor = "rgba(0, 0, 0, 0.1)"
+      Chart.defaults.scale.ticks.backdropColor = "transparent"
+    }
+  }
+
+  // Recursively traverse the config object and automatically apply theme-specific color schemes
+  const applyThemeConfig = (obj, theme) => {
+    if (typeof obj !== 'object' || obj === null) return
+
+    Object.keys(obj).forEach(key => {
+      const value = obj[key]
+      // If the property is an object and has theme-specific options, apply them
+      if (typeof value === 'object' && value !== null) {
+        if (value[theme]) {
+          obj[key] = value[theme] // Apply the value for the current theme
+        } else {
+          // Recursively process child objects
+          applyThemeConfig(value, theme)
+        }
+      }
+    })
+  }
+
+  const runChartJS = ele => {
+    window.loadChartJS = true
+
+    Array.from(ele).forEach((item, index) => {
+      const chartSrc = item.firstElementChild
+      const chartID = item.getAttribute('data-chartjs-id') || ('chartjs-' + index) // Use custom ID or default ID
+      const width = item.getAttribute('data-width')
+      const existingCanvas = document.getElementById(chartID)
+
+      // If a canvas already exists, remove it to avoid rendering duplicates
+      if (existingCanvas) {
+          existingCanvas.parentNode.remove()
+      }
+
+      const chartDefinition = chartSrc.textContent
+      const canvas = document.createElement('canvas')
+      canvas.id = chartID
+
+      const div = document.createElement('div')
+      div.className = 'chartjs-wrap'
+
+      if (width) {
+        div.style.width = width
+      }
+
+      div.appendChild(canvas)
+      chartSrc.insertAdjacentElement('afterend', div)
+
+      const ctx = document.getElementById(chartID).getContext('2d')
+
+      const config = JSON.parse(chartDefinition)
+
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark-mode' : 'light-mode'
+
+      // Set default styles (initial setup)
+      applyThemeDefaultsConfig(theme)
+
+      // Automatically traverse the config and apply dual-mode color schemes
+      applyThemeConfig(config, theme)
+
+      new Chart(ctx, config)
+    })
+  }
+
+  const loadChartJS = () => {
+    const chartJSEle = document.querySelectorAll('#article-container .chartjs-container')
+    if (chartJSEle.length === 0) return
+
+    window.loadChartJS ? runChartJS(chartJSEle) : btf.getScript('https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.min.js').then(() => runChartJS(chartJSEle))
+  }
+
+  // Listen for theme change events
+  btf.addGlobalFn('themeChange', loadChartJS, 'chartjs')
+  btf.addGlobalFn('encrypt', loadChartJS, 'chartjs')
+
+  window.pjax ? loadChartJS() : document.addEventListener('DOMContentLoaded', loadChartJS)
+})()</script><script>(function() {
+  const abcjsInit = function() {
+    const abcjsFn = function() {
+      setTimeout(function() {
+        const sheets = document.querySelectorAll(".abc-music-sheet")
+        for (let i = 0; i < sheets.length; i++) {
+          const ele = sheets[i]
+          if (ele.children.length > 0) continue
+
+          // Parse parameters from data-params attribute
+          let params = {}
+          const dp = ele.getAttribute("data-params")
+          if (dp) {
+            try {
+              params = JSON.parse(dp)
+            } catch (e) {
+              console.error("Failed to parse data-params:", e)
+            }
+          }
+
+          // Merge parsed parameters with the responsive option
+          // Ensures params content appears before responsive
+          const options = { ...params, responsive: "resize" }
+
+          // Render the music score using ABCJS.renderAbc
+          ABCJS.renderAbc(ele, ele.innerHTML, options)
+        }
+      }, 100)
+    }
+
+    if (typeof ABCJS === "object") {
+      abcjsFn()
+    } else {
+      btf.getScript("https://cdn.jsdelivr.net/npm/abcjs/dist/abcjs-basic-min.min.js").then(abcjsFn)
+    }
+  }
+
+  if (window.pjax) {
+    abcjsInit()
+  } else {
+    window.addEventListener("load", abcjsInit)
+  }
+
+  btf.addGlobalFn("encrypt", abcjsInit, "abcjs")
+})()</script><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = {"labels":["Gitalk","Comment"],"createIssueManually":false,"distractionFreeMode":false}
+
+  const commentCount = n => {
+    const isCommentCount = document.querySelector('#post-meta .gitalk-comment-count')
+    if (isCommentCount) {
+      isCommentCount.textContent= n
+    }
+  }
+
+  const initGitalk = (el, path) => {
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGitalk = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+
+    const gitalk = new Gitalk({
+      clientID: 'Ov23li3vDQANiUddL4XB',
+      clientSecret: '5c9a56d02995340fca117809cd414662aadce6ff',
+      repo: 'HexoComment',
+      owner: 'ergou10086',
+      admin: ['ergou10086'],
+      updateCountCallback: commentCount,
+      ...option,
+      id: isShuoshuo ? path : (option && option.id) || '81570f4acf37ff3d244985def510c70a'
+    })
+
+    gitalk.render('gitalk-container')
+  }
+
+  const loadGitalk = async(el, path) => {
+    if (typeof Gitalk === 'function') initGitalk(el, path)
+    else {
+      await btf.getCSS('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.css')
+      await btf.getScript('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.js')
+      initGitalk(el, path)
+    }
+  }
+
+  if (isShuoshuo) {
+    'Gitalk' === 'Gitalk'
+      ? window.shuoshuoComment = { loadComment: loadGitalk }
+      : window.loadOtherComment = loadGitalk
+    return
+  }
+
+  if ('Gitalk' === 'Gitalk' || !false) {
+    if (false) btf.loadComment(document.getElementById('gitalk-container'), loadGitalk)
+    else loadGitalk()
+  } else {
+    window.loadOtherComment = loadGitalk
+  }
+})()</script></div><div class="aplayer no-destroy" data-id="13587761608" data-server="netease" data-type="playlist" data-fixed="true" data-autoplay="false" data-lrcType="-1"> </div><script src="https://cdn.jsdelivr.net/npm/abcjs@7.1.2/dist/abcjs-basic-min.js"></script><script src="/js/sun_moon.js" async></script><script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.7/dayjs.min.js"></script><script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.7/plugin/duration.min.js"></script><script src="/scripts/realtime.js"></script><script src="/scripts/random.js"></script><script src="/scripts/weather.js"></script><script>if(window.location.pathname.includes('/viewpoint/')){function loadViewpointScripts(){var loadScript=function(src,callback){var s=document.createElement('script');s.src=src;s.async=false;s.defer=false;s.onload=function(){console.log('脚本加载成功:',src);setTimeout(function(){if(callback)callback();},100);};s.onerror=function(){console.error('脚本加载失败:',src);setTimeout(function(){if(callback)callback();},100);};document.body.appendChild(s);};loadScript('/scripts/viewpoint/math.js',function(){console.log('math.js 加载完成, math:',typeof math);loadScript('/scripts/viewpoint/katex.min.js',function(){console.log('katex.min.js 加载完成, katex:',typeof katex);loadScript('/scripts/viewpoint/sweetalert2@11.js',function(){console.log('sweetalert2@11.js 加载完成, Swal:',typeof Swal,'Sweetalert2:',typeof Sweetalert2);if(typeof Swal==='undefined'&&typeof Sweetalert2!=='undefined'){window.Swal=window.Sweetalert2;console.log('已设置 Swal 别名');}loadScript('/scripts/viewpoint/main.js',function(){console.log('Viewpoint 页面所有脚本加载完成');});});});});}if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',loadViewpointScripts);}else{loadViewpointScripts();}}</script><script>if(window.location.pathname.includes('/littleGame/')){function loadLittleGameScripts(){var load=function(src,cb){var s=document.createElement('script');s.src=src;s.async=false;s.defer=false;s.onload=function(){if(cb)cb();};document.body.appendChild(s);};load('/scripts/littleGame/2048.js',function(){load('/scripts/littleGame/extra-games.js');});}if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',loadLittleGameScripts);}else{loadLittleGameScripts();}}</script><script defer="defer" id="ribbon" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-ribbon.min.js" size="150" alpha="0.6" zIndex="-1" mobile="null" data-click="true"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = false;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><script id="click-heart" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/click-heart.min.js" async="async" mobile="false"></script><script>(() => {
+  window.ChatraID = '4bzb546NSBoJcrNyu'
+  window.Chatra = window.Chatra || function() {
+    (window.Chatra.q = window.Chatra.q || []).push(arguments)
+  }
+
+  btf.getScript('https://call.chatra.io/chatra.js').then(() => {
+    const isChatBtn = true
+    const isChatHideShow = true
+
+    if (isChatBtn) {
+      const close = () => {
+        Chatra('minimizeWidget')
+        Chatra('hide')
+      }
+
+      const open = () => {
+        Chatra('openChat', true)
+        Chatra('show')
+      }
+
+      window.ChatraSetup = { startHidden: true }
+    
+      window.chatBtnFn = () => document.getElementById('chatra').classList.contains('chatra--expanded') ? close() : open()
+
+      document.getElementById('chat-btn').style.display = 'block'
+    } else if (isChatHideShow) {
+      window.chatBtn = {
+        hide: () => Chatra('hide'),
+        show: () => Chatra('show')
+      }
+    }
+  })
+})()</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/metingjs/dist/Meting.min.js"></script><script>(() => {
+  const destroyAplayer = () => {
+    if (window.aplayers) {
+      for (let i = 0; i < window.aplayers.length; i++) {
+        if (!window.aplayers[i].options.fixed) {
+          window.aplayers[i].destroy()
+        }
+      }
+    }
+  }
+
+  const runMetingJS = () => {
+    typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+  }
+
+  btf.addGlobalFn('pjaxSend', destroyAplayer, 'destroyAplayer')
+  btf.addGlobalFn('pjaxComplete', loadMeting, 'runMetingJS')
+})()</script><script src="https://cdn.jsdelivr.net/npm/pjax/pjax.min.js"></script><script>(() => {
+  const pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+  window.pjax = new Pjax({
+    elements: 'a:not([target="_blank"]):not([href="/music/"]):not([href="/viewpoint/"])',
+    selectors: pjaxSelectors,
+    cacheBust: false,
+    analytics: false,
+    scrollRestoration: false
+  })
+
+  const triggerPjaxFn = (val) => {
+    if (!val) return
+    Object.values(val).forEach(fn => fn())
+  }
+
+  document.addEventListener('pjax:send', () => {
+    // removeEventListener
+    btf.removeGlobalFnEvent('pjaxSendOnce')
+    btf.removeGlobalFnEvent('themeChange')
+
+    // reset readmode
+    const $bodyClassList = document.body.classList
+    if ($bodyClassList.contains('read-mode')) $bodyClassList.remove('read-mode')
+
+    triggerPjaxFn(window.globalFn.pjaxSend)
+  })
+
+  document.addEventListener('pjax:complete', () => {
+    btf.removeGlobalFnEvent('pjaxCompleteOnce')
+    document.querySelectorAll('script[data-pjax]').forEach(item => {
+      const newScript = document.createElement('script')
+      const content = item.text || item.textContent || item.innerHTML || ""
+      Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+      newScript.appendChild(document.createTextNode(content))
+      item.parentNode.replaceChild(newScript, item)
+    })
+
+    triggerPjaxFn(window.globalFn.pjaxComplete)
+  })
+
+  document.addEventListener('pjax:error', e => {
+    if (e.request.status === 404) {
+      const usePjax = true
+      true 
+        ? (usePjax ? pjax.loadUrl('/404.html') : window.location.href = '/404.html')
+        : window.location.href = e.request.responseURL
+    }
+  })
+})()</script><script src="/js/fps-display.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><!-- hexo injector body_end start --><script data-pjax>
+  function butterfly_swiper_injector_config(){
+    var parent_div_git = document.getElementById('recent-posts');
+    var item_html = '<div class="recent-post-item" style="height: auto;width: 100%"><div class="blog-slider swiper-container-fade swiper-container-horizontal" id="swiper_container"><div class="blog-slider__wrp swiper-wrapper" style="transition-duration: 0ms;"><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_database.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-14</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt="">MySQL part2——结构化查询语言SQL</a><div class="blog-slider__text">SQL基本很常用的语句都在这里了，本质上是当初为了应付数据库考试整理的，后来发现还蛮有用的很方便查常用的语句</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java4.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-22</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt="">SpringBoot part0?INF-SpringBoot这个框架都需要学习什么</a><div class="blog-slider__text">主要围绕Spring Boot中重要知识来简洁或详细的说明，其中部分不够完全，持续更新</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java11.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-15</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt="">关于Lombok在高版本IDEA中注解处理不生效的问题解决</a><div class="blog-slider__text">基本上是彻底的解决了用 IDEA 新建 Spring Boot 项目时候会产生的 Lombok 注解处理失效的各种问题</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_实用.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-05</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt="">个人向galgame原声带或相关音乐整理及其资源</a><div class="blog-slider__text">整理了我喜欢的galgame ost或者衍生的音乐专辑，部分资源是自己扒盘扒下来的，部分来自鸟白岛放映厅</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_math.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-17</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt="">对书上证明样本方差是总体方差的无偏估计量的解析</a><div class="blog-slider__text">对书上证明样本方差是总体方差的无偏估计量的解析，高等教育出版社-华科大版本</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_alog.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-04-24</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt="">第十五届蓝桥杯Java国赛B组D题-园丁题解</a><div class="blog-slider__text">第十五届蓝桥杯Java国赛B组D题-园丁题解，该题解已经发布到洛谷社区中并且被全站推荐</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java4.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-04-29</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt="">操作系统之处理机的死锁部分概述</a><div class="blog-slider__text">对操作系统之处理机的死锁部分知识的总结，包括代码复现</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_lb.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-09</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt="">Little Busters!EX游戏攻略</a><div class="blog-slider__text">整理了一份详细清晰的Little Busters！EX的游戏攻略，因为我自己也在推，就顺手整理了一份方便查阅的md文档</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java9.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-16</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt="">Spring Boot中使用Hibernate框架</a><div class="blog-slider__text">对学习完Hibernate的应用部分，主要围绕Spring Boot中使用Hibernate框架，建议学习完 Hibernate 框架再看</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div></div><div class="blog-slider__pagination swiper-pagination-clickable swiper-pagination-bullets"></div></div></div>';
+    console.log('已挂载butterfly_swiper')
+    parent_div_git.insertAdjacentHTML("afterbegin",item_html)
+    }
+  var elist = 'undefined'.split(',');
+  var cpage = location.pathname;
+  var epage = '/';
+  var flag = 0;
+
+  for (var i=0;i<elist.length;i++){
+    if (cpage.includes(elist[i])){
+      flag++;
+    }
+  }
+
+  if ((epage ==='all')&&(flag == 0)){
+    butterfly_swiper_injector_config();
+  }
+  else if (epage === cpage){
+    butterfly_swiper_injector_config();
+  }
+  </script><script defer src="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper.min.js"></script><script defer data-pjax src="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper_init.js"></script><!-- hexo injector body_end end --></body></html>
