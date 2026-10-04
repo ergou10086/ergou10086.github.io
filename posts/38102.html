@@ -1,13 +1,13 @@
-<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>数学物理方程波动方程的解法之达朗贝尔方法 | ErgouTree's Blog</title><meta name="author" content="ErgouTree"><meta name="copyright" content="ErgouTree"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="波动方程的求解 波动方程是描述波传播现象的基本偏微分方程，在物理、工程等领域有着广泛应用，例如弦的振动、声波、电磁波的传播等。理解波动方程的解法及其物理意义是数理方程学习的核心内容之一 达朗贝尔公式 达朗贝尔公式解法也叫行波法，旨在一维波动方程求定解问题，主要用于求解无界区域内的一维波动方程定解问题。尽管其适用范围有限，但它在波动问题中具有独特的优点，是数理方程的基本解法之一。 因为行波法">
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>数学物理方程波动方程的解法 | ErgouTree's Blog</title><meta name="author" content="ErgouTree"><meta name="copyright" content="ErgouTree"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="波动方程的求解 波动方程是描述波传播现象的基本偏微分方程，在物理、工程等领域有着广泛应用，例如弦的振动、声波、电磁波的传播等。理解波动方程的解法及其物理意义，是数学物理方程学习的核心内容之一。下面先讨论无限长弦的行波，再讨论有限长弦的驻波、高维柯西问题，以及能量估计。 达朗贝尔公式 达朗贝尔公式解法也叫行波法，直接求解整条实线上的一维波动方程初值问题。它把解写成向左、向右传播的两个波，因此特">
 <meta property="og:type" content="article">
-<meta property="og:title" content="数学物理方程波动方程的解法之达朗贝尔方法">
+<meta property="og:title" content="数学物理方程波动方程的解法">
 <meta property="og:url" content="https://ergou10086.github.io/posts/38102.html">
 <meta property="og:site_name" content="ErgouTree&#39;s Blog">
-<meta property="og:description" content="波动方程的求解 波动方程是描述波传播现象的基本偏微分方程，在物理、工程等领域有着广泛应用，例如弦的振动、声波、电磁波的传播等。理解波动方程的解法及其物理意义是数理方程学习的核心内容之一 达朗贝尔公式 达朗贝尔公式解法也叫行波法，旨在一维波动方程求定解问题，主要用于求解无界区域内的一维波动方程定解问题。尽管其适用范围有限，但它在波动问题中具有独特的优点，是数理方程的基本解法之一。 因为行波法">
+<meta property="og:description" content="波动方程的求解 波动方程是描述波传播现象的基本偏微分方程，在物理、工程等领域有着广泛应用，例如弦的振动、声波、电磁波的传播等。理解波动方程的解法及其物理意义，是数学物理方程学习的核心内容之一。下面先讨论无限长弦的行波，再讨论有限长弦的驻波、高维柯西问题，以及能量估计。 达朗贝尔公式 达朗贝尔公式解法也叫行波法，直接求解整条实线上的一维波动方程初值问题。它把解写成向左、向右传播的两个波，因此特">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://ergou10086.github.io/images/posts/cover_teach5.jpg">
 <meta property="article:published_time" content="2025-07-23T00:51:36.000Z">
-<meta property="article:modified_time" content="2025-07-23T01:02:10.628Z">
+<meta property="article:modified_time" content="2026-10-02T11:03:32.176Z">
 <meta property="article:author" content="ErgouTree">
 <meta property="article:tag" content="数学">
 <meta property="article:tag" content="物理">
@@ -18,11 +18,11 @@
 <meta name="twitter:image" content="https://ergou10086.github.io/images/posts/cover_teach5.jpg"><script type="application/ld+json">{
   "@context": "https://schema.org",
   "@type": "BlogPosting",
-  "headline": "数学物理方程波动方程的解法之达朗贝尔方法",
+  "headline": "数学物理方程波动方程的解法",
   "url": "https://ergou10086.github.io/posts/38102.html",
   "image": "https://ergou10086.github.io/images/posts/cover_teach5.jpg",
   "datePublished": "2025-07-23T00:51:36.000Z",
-  "dateModified": "2025-07-23T01:02:10.628Z",
+  "dateModified": "2026-10-02T11:03:32.176Z",
   "author": [
     {
       "@type": "Person",
@@ -169,7 +169,7 @@ btf.addGlobalFn('pjaxComplete', () => {
   },
   autoDarkmode: false
 }</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
-  title: '数学物理方程波动方程的解法之达朗贝尔方法',
+  title: '数学物理方程波动方程的解法',
   isHighlightShrink: false,
   isToc: true,
   pageType: 'post'
@@ -181,49 +181,42 @@ btf.addGlobalFn('pjaxSend', () => {
   Pace.restart()
 }, 'pace_restart')
 
-</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js/pace.min.js"></script><div id="web_bg" style="background: linear-gradient(20deg, #0062be, #925696, #cc426e, #fb0347);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/arp.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">345</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">214</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">113</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-images"></i><span> Gallery</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/games/"><i class="fa-fw fas fa-trophy"></i><span> GalGame</span></a></li><li><a class="site-page child" href="/video/"><i class="fa-fw fas fa-video"></i><span> Video</span></a></li><li><a class="site-page child" href="/viewpoint/"><i class="fa-fw fas fa-calculator"></i><span> ViewPoint</span></a></li><li><a class="site-page child" href="/littleGame/"><i class="fa-fw fas fa-thumbs-up"></i><span> littleGame</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div><div class="menus_item"><a class="site-page" href="javascript:randomPost();"><span> Random</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/images/posts/cover_teach5.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">ErgouTree's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">数学物理方程波动方程的解法之达朗贝尔方法</span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-images"></i><span> Gallery</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/games/"><i class="fa-fw fas fa-trophy"></i><span> GalGame</span></a></li><li><a class="site-page child" href="/video/"><i class="fa-fw fas fa-video"></i><span> Video</span></a></li><li><a class="site-page child" href="/viewpoint/"><i class="fa-fw fas fa-calculator"></i><span> ViewPoint</span></a></li><li><a class="site-page child" href="/littleGame/"><i class="fa-fw fas fa-thumbs-up"></i><span> littleGame</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div><div class="menus_item"><a class="site-page" href="javascript:randomPost();"><span> Random</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div><div id="randomPost"><a class="site-page social-icon search" href="javascript:;" onclick="randomPost()" title="随机访问一篇文章"><i class="fas fa-circle-notch fa-fw"></i></a></div></nav><div id="post-info"><h1 class="post-title">数学物理方程波动方程的解法之达朗贝尔方法<a class="post-edit-link" href="https://github.com/ergou10086/ergou10086.github.io/edit/main/source/_posts/_posts/数学物理方程波动方程的解法之达朗贝尔方法.md" title="编辑" target="_blank"><i class="fas fa-pencil-alt"></i></a></h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2025-07-23T00:51:36.000Z" title="发表于 2025-07-23 08:51:36">2025-07-23</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2025-07-23T01:02:10.628Z" title="更新于 2025-07-23 09:02:10">2025-07-23</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%95%B0%E5%AD%A6%E7%B1%BB/">数学类</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%95%B0%E5%AD%A6%E7%B1%BB/%E6%95%B0%E5%AD%A6%E7%89%A9%E7%90%86%E6%96%B9%E7%A8%8B/">数学物理方程</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">5.8k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>25分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span><span class="post-meta-separator">|</span><span class="post-meta-commentcount"><i class="far fa-comments fa-fw post-meta-icon"></i><span class="post-meta-label">评论数:</span><a href="/posts/38102.html#post-comment"><span class="gitalk-comment-count"><i class="fa-solid fa-spinner fa-spin"></i></span></a></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="波动方程的求解">波动方程的求解</h2>
-<p>波动方程是描述波传播现象的基本偏微分方程，在物理、工程等领域有着广泛应用，例如弦的振动、声波、电磁波的传播等。理解波动方程的解法及其物理意义是数理方程学习的核心内容之一</p>
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js/pace.min.js"></script><div id="web_bg" style="background: linear-gradient(20deg, #0062be, #925696, #cc426e, #fb0347);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/arp.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">348</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">214</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">114</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-images"></i><span> Gallery</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/games/"><i class="fa-fw fas fa-trophy"></i><span> GalGame</span></a></li><li><a class="site-page child" href="/video/"><i class="fa-fw fas fa-video"></i><span> Video</span></a></li><li><a class="site-page child" href="/viewpoint/"><i class="fa-fw fas fa-calculator"></i><span> ViewPoint</span></a></li><li><a class="site-page child" href="/littleGame/"><i class="fa-fw fas fa-thumbs-up"></i><span> littleGame</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div><div class="menus_item"><a class="site-page" href="javascript:randomPost();"><span> Random</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/images/posts/cover_teach5.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">ErgouTree's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">数学物理方程波动方程的解法</span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-images"></i><span> Gallery</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/games/"><i class="fa-fw fas fa-trophy"></i><span> GalGame</span></a></li><li><a class="site-page child" href="/video/"><i class="fa-fw fas fa-video"></i><span> Video</span></a></li><li><a class="site-page child" href="/viewpoint/"><i class="fa-fw fas fa-calculator"></i><span> ViewPoint</span></a></li><li><a class="site-page child" href="/littleGame/"><i class="fa-fw fas fa-thumbs-up"></i><span> littleGame</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div><div class="menus_item"><a class="site-page" href="javascript:randomPost();"><span> Random</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div><div id="randomPost"><a class="site-page social-icon search" href="javascript:;" onclick="randomPost()" title="随机访问一篇文章"><i class="fas fa-circle-notch fa-fw"></i></a></div></nav><div id="post-info"><h1 class="post-title">数学物理方程波动方程的解法<a class="post-edit-link" href="https://github.com/ergou10086/ergou10086.github.io/edit/main/source/_posts/_posts/数学物理方程波动方程的解法之达朗贝尔方法.md" title="编辑" target="_blank"><i class="fas fa-pencil-alt"></i></a></h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2025-07-23T00:51:36.000Z" title="发表于 2025-07-23 08:51:36">2025-07-23</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-10-02T11:03:32.176Z" title="更新于 2026-10-02 19:03:32">2026-10-02</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%95%B0%E5%AD%A6%E7%B1%BB/">数学类</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%95%B0%E5%AD%A6%E7%B1%BB/%E6%95%B0%E5%AD%A6%E7%89%A9%E7%90%86%E6%96%B9%E7%A8%8B/">数学物理方程</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">13.3k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>54分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span><span class="post-meta-separator">|</span><span class="post-meta-commentcount"><i class="far fa-comments fa-fw post-meta-icon"></i><span class="post-meta-label">评论数:</span><a href="/posts/38102.html#post-comment"><span class="gitalk-comment-count"><i class="fa-solid fa-spinner fa-spin"></i></span></a></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="波动方程的求解">波动方程的求解</h2>
+<p>波动方程是描述波传播现象的基本偏微分方程，在物理、工程等领域有着广泛应用，例如弦的振动、声波、电磁波的传播等。理解波动方程的解法及其物理意义，是数学物理方程学习的核心内容之一。下面先讨论无限长弦的行波，再讨论有限长弦的驻波、高维柯西问题，以及能量估计。</p>
 <h2 id="达朗贝尔公式">达朗贝尔公式</h2>
-<p>达朗贝尔公式解法也叫行波法，旨在一维波动方程求定解问题，主要用于求解<strong>无界区域内</strong>的一维波动方程定解问题。尽管其适用范围有限，但它在波动问题中具有独特的优点，是数理方程的基本解法之一。</p>
-<p>因为行波法只能用于求解无界区域内波动方程的定
-解问题。虽有很大的局限性，但对于波动问题有其特殊的优点，所以该法是数理方程的基本解法之一。</p>
+<p>达朗贝尔公式解法也叫行波法，直接求解<strong>整条实线上的一维波动方程初值问题</strong>。它把解写成向左、向右传播的两个波，因此特别适合看清波速和依赖区域。半无限或有限区间上的一些问题也能结合奇偶延拓、反射等方法处理，但需要把边界条件一并考虑。</p>
 <h3 id="弦振动方程的达朗贝尔解法">弦振动方程的达朗贝尔解法</h3>
 <h4 id="问题和方程的引入">问题和方程的引入</h4>
 <p>如果我们所考察的弦线长度很长，而我们需要知道的又只是在较短时间且离开边界较远的一段范围内的振动情况，那么边界条件的影响就可以忽略，所以不妨把所考察弦线的长度视为无限。</p>
-<p>我们首先考察无限长弦的自由振动问题，其定解问题形式如下： <span class="math display">$$
+<p>我们先写出含外力的一般初值问题，随后利用叠加原理分别处理初值和外力：
+<span class="math display">$$
 \begin{cases}
 u_{tt} = a^2 u_{xx} + f(x, t) &amp; (-\infty &lt; x &lt; +\infty, t &gt;
 0), \quad (1) \\
 u(x, 0) = \varphi(x), \quad u_t(x, 0) = \psi(x) &amp; (2)
 \end{cases}
-$$</span> 对于上述初值问题，由于微分方程及定解条件
-都是线性的，所以叠加原理同样成立。</p>
-<p>即如果 <span class="math inline"><em>u</em><sub>1</sub>(<em>x</em>, <em>t</em>)</span>
-和 <span class="math inline"><em>u</em><sub>2</sub>(<em>x</em>, <em>t</em>)</span>
-分别是下述初值的问题 <span class="math display">$$
-\begin{cases}
-u_{tt} = a^2 u_{xx} &amp; (-\infty &lt; x &lt; +\infty,\ t &gt; 0), \\
-u(x, 0) = \varphi(x),\ u_t(x, 0) = \psi(x)
-\end{cases} \quad \text{(3)}
-$$</span> 和 <span class="math display">$$
-\begin{cases}
-u_{tt} = a^2 u_{xx} + f(x, t) &amp; (-\infty &lt; x &lt; +\infty,\ t
-&gt; 0), \\
-u(x, 0) = 0,\ u_t(x, 0) = 0
-\end{cases} \quad \text{(5)}
-$$</span></p>
-<p>的解，则 <span class="math inline">$\boxed{u = u_1(x, t) + u_2(x,
-t)}$</span> 是原问题 (1)(2) 的解。</p>
+$$</span> 由于方程及初始条件都是线性的，可以把解分成 <span class="math inline"><em>u</em> = <em>u</em><sub>1</sub> + <em>u</em><sub>2</sub></span>。其中
+<span class="math inline"><em>u</em><sub>1</sub></span>
+只由初始位移和速度产生，满足</p>
 <p><span class="math display">$$
 \begin{cases}
-u_{tt} = a^2 u_{xx} &amp; (-\infty &lt; x &lt; +\infty,\ t &gt;
-0),   \text{(3)}\\
-u(x, 0) = \varphi(x),\ u_t(x, 0) = \psi(x)  \quad  \text{(4)}
-\end{cases} \quad
+(u_1)_{tt}=a^2(u_1)_{xx},&amp;x\in\mathbb R,\ t&gt;0,\quad\text{(3)}\\
+u_1(x,0)=\varphi(x),\quad (u_1)_t(x,0)=\psi(x).&amp;\text{(4)}
+\end{cases}
 $$</span></p>
-<p>首先我们考察问题(3)(4)，通过自变量变换求解。</p>
-<p>对于<strong>齐次</strong>的初始值问题（方程 <span class="math inline"><em>u</em><sub><em>t</em></sub><em>t</em> − <em>a</em><sup>2</sup><em>u</em><sub><em>x</em></sub><em>x</em> = 0</span>
-(3) 配合上述初始条件 (4)），开始进行详细的求解</p>
+<p>而 <span class="math inline"><em>u</em><sub>2</sub></span>
+只由外力产生，满足</p>
+<p><span class="math display">$$
+\begin{cases}
+(u_2)_{tt}=a^2(u_2)_{xx}+f(x,t),&amp;x\in\mathbb R,\
+t&gt;0,\quad\text{(5)}\\
+u_2(x,0)=0,\quad (u_2)_t(x,0)=0.&amp;\text{(6)}
+\end{cases}
+$$</span></p>
+<p>两部分分别求出后相加，便得到原问题的解。</p>
+<p>首先考察无外力的齐次方程及给定初值，通过自变量变换求解。</p>
+<p>对于<strong>齐次</strong>的初值问题（方程 <span class="math inline"><em>u</em><sub><em>t</em><em>t</em></sub> − <em>a</em><sup>2</sup><em>u</em><sub><em>x</em><em>x</em></sub> = 0</span>
+配合上述初始条件），开始进行详细的求解</p>
 <h4 id="坐标变换与方程化简">坐标变换与方程化简</h4>
 <p>为了求解问题 (3)(4)，我们引入特征线坐标变换：</p>
 <p><span class="math display">$$
@@ -281,7 +274,7 @@ $$</span></p>
 <h3 id="利用初始条件确定任意函数">利用初始条件确定任意函数</h3>
 <p>我们利用初始条件 (4) 来确定通解 (13) 中的 <span class="math inline"><em>F</em></span> 和 <span class="math inline"><em>G</em></span>。</p>
 <p>将 <span class="math inline"><em>t</em> = 0</span> 代入 (13) 和其对
-<span class="math inline"><em>t</em></span> 的导数： <span class="math display"><em>u</em>(<em>x</em>, 0) = <em>F</em>(<em>x</em>) + <em>G</em>(<em>x</em>) = <em>ϕ</em>(<em>x</em>)  (14)</span></p>
+<span class="math inline"><em>t</em></span> 的导数： <span class="math display"><em>u</em>(<em>x</em>, 0) = <em>F</em>(<em>x</em>) + <em>G</em>(<em>x</em>) = <em>φ</em>(<em>x</em>)  (14)</span></p>
 <p><span class="math display"><em>u</em><sub><em>t</em></sub>(<em>x</em>, <em>t</em>) = <em>a</em><em>F</em><sup>′</sup>(<em>x</em> + <em>a</em><em>t</em>) − <em>a</em><em>G</em><sup>′</sup>(<em>x</em> − <em>a</em><em>t</em>)</span></p>
 <p><span class="math display">$$
 u_t(x,0) = aF'(x) - aG'(x) = \psi(x) \Rightarrow F'(x) - G'(x) =
@@ -293,33 +286,33 @@ F(x) - G(x) = \frac{1}{a}\int_{x_0}^x \psi(\alpha) d\alpha + C \quad
 $$</span></p>
 <p>现在我们有关于 <span class="math inline"><em>F</em>(<em>x</em>)</span> 和 <span class="math inline"><em>G</em>(<em>x</em>)</span> 的线性方程组： <span class="math display">$$
 \begin{cases}
-F(x) + G(x) = \phi(x) \\
+F(x) + G(x) = \varphi(x) \\
 F(x) - G(x) = \frac{1}{a}\int_{x_0}^x \psi(\alpha) d\alpha + C
 \end{cases}
 $$</span></p>
 <p>联立解得： <span class="math display">$$
-F(x) = \frac{1}{2}\phi(x) + \frac{1}{2a}\int_{x_0}^x \psi(\alpha)
+F(x) = \frac{1}{2}\varphi(x) + \frac{1}{2a}\int_{x_0}^x \psi(\alpha)
 d\alpha + \frac{C}{2}
 $$</span></p>
 <p><span class="math display">$$
-G(x) = \frac{1}{2}\phi(x) - \frac{1}{2a}\int_{x_0}^x \psi(\alpha)
+G(x) = \frac{1}{2}\varphi(x) - \frac{1}{2a}\int_{x_0}^x \psi(\alpha)
 d\alpha - \frac{C}{2}
 $$</span></p>
 <p>将 <span class="math inline"><em>x</em> + <em>a</em><em>t</em></span>
 代替 <span class="math inline"><em>x</em></span> 到 <span class="math inline"><em>F</em>(<em>x</em>)</span> 中，将 <span class="math inline"><em>x</em> − <em>a</em><em>t</em></span> 代替 <span class="math inline"><em>x</em></span> 到 <span class="math inline"><em>G</em>(<em>x</em>)</span> 中，再代入通解 (13)：
 <span class="math display">$$
-u(x,t) = \left( \frac{1}{2}\phi(x+at) + \frac{1}{2a}\int_{x_0}^{x+at}
+u(x,t) = \left( \frac{1}{2}\varphi(x+at) + \frac{1}{2a}\int_{x_0}^{x+at}
 \psi(\alpha) d\alpha + \frac{C}{2} \right) + \left(
-\frac{1}{2}\phi(x-at) - \frac{1}{2a}\int_{x_0}^{x-at} \psi(\alpha)
+\frac{1}{2}\varphi(x-at) - \frac{1}{2a}\int_{x_0}^{x-at} \psi(\alpha)
 d\alpha - \frac{C}{2} \right)
 $$</span></p>
 <p><span class="math display">$$
-u(x,t) = \frac{1}{2}[\phi(x+at) + \phi(x-at)] + \frac{1}{2a}\left(
+u(x,t) = \frac{1}{2}[\varphi(x+at) + \varphi(x-at)] + \frac{1}{2a}\left(
 \int_{x_0}^{x+at} \psi(\alpha) d\alpha - \int_{x_0}^{x-at} \psi(\alpha)
 d\alpha \right)
 $$</span></p>
 <p><span class="math display">$$
-u(x,t) = \frac{1}{2}[\phi(x+at) + \phi(x-at)] +
+u(x,t) = \frac{1}{2}[\varphi(x+at) + \varphi(x-at)] +
 \frac{1}{2a}\int_{x-at}^{x+at} \psi(\alpha) d\alpha \quad \text{(18)}
 $$</span></p>
 <p>这就是无限长弦自由振动的达朗贝尔公式，或称达朗贝尔解。</p>
@@ -332,10 +325,11 @@ u(x, 0) = \varphi(x),\ u_t(x, 0) = \psi(x)
 $$</span></p>
 <p><span class="math display"><em>u</em>(<em>x</em>, <em>t</em>) = <em>f</em>(<em>x</em> − <em>a</em><em>t</em>) + <em>g</em>(<em>x</em> + <em>a</em><em>t</em>)  (13)</span></p>
 <h3 id="达朗贝尔解的物理意义">达朗贝尔解的物理意义</h3>
-<p>从通解 (13) 式 <span class="math inline"><em>u</em>(<em>x</em>, <em>t</em>) = <em>F</em>(<em>x</em> + <em>a</em><em>t</em>) + <em>G</em>(<em>x</em> − <em>a</em><em>t</em>)</span>
-可见，自由弦振动方程的解可以表示成两个函数之和，可以表示成形如 $f(x-at)
-$ 和 <span class="math inline"><em>g</em>(<em>x</em> + <em>a</em><em>t</em>)</span>
-的两个函数之和，通过它们可以清楚地看出波动传播的性质。</p>
+<p>从通解 <span class="math inline"><em>u</em>(<em>x</em>, <em>t</em>) = <em>F</em>(<em>x</em> + <em>a</em><em>t</em>) + <em>G</em>(<em>x</em> − <em>a</em><em>t</em>)</span>
+可见，自由弦振动是两个行波的叠加。这里写成 <span class="math inline"><em>f</em>(<em>x</em> − <em>a</em><em>t</em>)</span>、<span class="math inline"><em>g</em>(<em>x</em> + <em>a</em><em>t</em>)</span>
+时，<span class="math inline"><em>f</em>, <em>g</em></span>
+仅表示<strong>波形函数</strong>，与前面表示外力的 <span class="math inline"><em>f</em>(<em>x</em>, <em>t</em>)</span>
+不是同一个对象。</p>
 <ul>
 <li>函数 <span class="math inline"><em>G</em>(<em>x</em> − <em>a</em><em>t</em>)</span>
 描述的振动波形以常速度 <span class="math inline"><em>a</em></span>
@@ -369,8 +363,7 @@ $ 和 <span class="math inline"><em>g</em>(<em>x</em> + <em>a</em><em>t</em>
 赋予不同的值，我们可以看出弦在各个时刻相应的振动状态：</p>
 <ul>
 <li><p>在 <span class="math inline"><em>t</em> = 0</span> 时，我们有
-<span class="math inline"><em>u</em><sub>1</sub>(<em>x</em>, 0) = <em>f</em>(<em>x</em>)</span>。这对应于初始时刻的振动状态（相当于弦在初始时刻各点的位移状态），如图
-3.1 实线所示。</p></li>
+<span class="math inline"><em>u</em><sub>1</sub>(<em>x</em>, 0) = <em>f</em>(<em>x</em>)</span>。这对应于初始时刻的振动状态（相当于弦在初始时刻各点的位移状态），即初始波形。</p></li>
 <li><p>经过时间 <span class="math inline"><em>t</em><sub>0</sub></span>
 后，在 <span class="math inline">(<em>x</em>, <em>t</em><sub>0</sub>)</span>
 处，函数变为 <span class="math inline"><em>u</em><sub>1</sub>(<em>x</em>, <em>t</em><sub>0</sub>) = <em>f</em>(<em>x</em> − <em>a</em><em>t</em><sub>0</sub>)</span>。在
@@ -446,9 +439,9 @@ $$</span></p>
 <li>这个区间就是决定 <span class="math inline"><em>u</em>(<em>x</em>, <em>t</em>)</span>
 值的“过去”的范围，即该点当前状态所“依赖”的初始条件区域。</li>
 </ul>
-<p><strong>几何解释</strong>（结合图3.2）：</p>
+<p><strong>几何解释</strong>（结合下图）：</p>
 <figure>
-<img src="/posts/38102/image-20250722145826372.png" alt="image-20250722145826372">
+<img src="/posts/38102/image-20250722145826372-1790934192700-13.png" alt="image-20250722145826372">
 <figcaption aria-hidden="true">image-20250722145826372</figcaption>
 </figure>
 <ul>
@@ -472,7 +465,7 @@ $$</span></p>
 的依赖区间。</li>
 <li>这形象地展示了波动传播的有限速度性质：在 <span class="math inline"><em>t</em></span> 时刻 <span class="math inline"><em>x</em></span>
 处的波形，其信息来源只能是初始时刻距离其 <span class="math inline"><em>a</em><em>t</em></span>
-范围内的点。超过这个范围的初始扰动，还未到达或已通过点 <span class="math inline"><em>x</em></span>。</li>
+范围内的点。这个区间以外的初值不会改变当前的 <span class="math inline"><em>u</em>(<em>x</em>, <em>t</em>)</span>。</li>
 </ul>
 <h4 id="决定区域-domain-of-determination">决定区域 (Domain of
 Determination)</h4>
@@ -494,7 +487,7 @@ u(x, t) = \frac{\varphi(x-at) + \varphi(x+at)}{2} +
 \frac{1}{2a}\int_{x-at}^{x+at} \psi(\alpha) d\alpha \quad \text{(18)}
 $$</span></p>
 <figure>
-<img src="/posts/38102/image-20250722145921926.png" alt="image-20250722145921926">
+<img src="/posts/38102/image-20250722145921926-1790934192701-14.png" alt="image-20250722145921926">
 <figcaption aria-hidden="true">image-20250722145921926</figcaption>
 </figure>
 <p><strong>详细解释</strong>：</p>
@@ -542,9 +535,9 @@ $$</span></p>
 <span class="math inline">[<em>x</em><sub>1</sub>, <em>x</em><sub>2</sub>]</span>
 内的所有扰动，其影响范围将扩散到更大的区间 <span class="math inline">[<em>x</em><sub>1</sub> − <em>a</em><em>t</em>, <em>x</em><sub>2</sub> + <em>a</em><em>t</em>]</span>。</li>
 </ul>
-<p><strong>几何解释</strong>（结合图3.4）：</p>
+<p><strong>几何解释</strong>（结合下图）：</p>
 <figure>
-<img src="/posts/38102/image-20250722145939508.png" alt="image-20250722145939508">
+<img src="/posts/38102/image-20250722145939508-1790934192701-15.png" alt="image-20250722145939508">
 <figcaption aria-hidden="true">image-20250722145939508</figcaption>
 </figure>
 <ul>
@@ -556,40 +549,24 @@ $$</span></p>
 <span class="math inline">$-\frac{1}{a}$</span> 的直线（方程为 <span class="math inline"><em>x</em> = <em>x</em><sub>1</sub> − <em>a</em><em>t</em></span>）。</li>
 <li>从 <span class="math inline"><em>x</em></span> 轴上的点 <span class="math inline">(<em>x</em><sub>2</sub>, 0)</span> 向上画一条斜率为
 <span class="math inline">$\frac{1}{a}$</span> 的直线（方程为 <span class="math inline"><em>x</em> = <em>x</em><sub>2</sub> + <em>a</em><em>t</em></span>）。</li>
-<li>这两条直线向上展开，与 <span class="math inline"><em>t</em></span>
-轴围成的区域就是影响区域。</li>
-<li>在这个影响区域中，初值问题的解 <span class="math inline"><em>u</em>(<em>x</em>, <em>t</em>)</span>
-的数值是受到区间 <span class="math inline">[<em>x</em><sub>1</sub>, <em>x</em><sub>2</sub>]</span>
-上初值条件的影响的；在此区域外，初值问题的解 <span class="math inline"><em>u</em>(<em>x</em>, <em>t</em>)</span>
-的数值则不受区间 <span class="math inline">[<em>x</em><sub>1</sub>, <em>x</em><sub>2</sub>]</span>
-上初值条件的影响。</li>
-<li>这意味着，一旦初始扰动在某个有限区间之外是零，那么这个零值区域将随着时间以速度
-<span class="math inline"><em>a</em></span>
-向外扩展，并保持为零，因为波速是有限的。</li>
+<li>这两条直线向上展开，与初始区间 <span class="math inline">[<em>x</em><sub>1</sub>, <em>x</em><sub>2</sub>]</span>
+一起围成的区域就是影响区域。</li>
+<li>在影响区域内，<span class="math inline">[<em>x</em><sub>1</sub>, <em>x</em><sub>2</sub>]</span>
+上的初值<strong>可能</strong>影响 <span class="math inline"><em>u</em>(<em>x</em>, <em>t</em>)</span>；区域外的点则完全不受这段初值影响。</li>
+<li>如果初始位移与速度都只在 <span class="math inline">[<em>x</em><sub>1</sub>, <em>x</em><sub>2</sub>]</span>
+内非零，那么在 <span class="math inline">[<em>x</em><sub>1</sub> − <em>a</em><em>t</em>, <em>x</em><sub>2</sub> + <em>a</em><em>t</em>]</span>
+之外解仍为零。这说的是非零扰动的支集至多以速度 <span class="math inline"><em>a</em></span>
+向外扩展；区间内部也可能因为左右行波抵消而出现零值。</li>
 </ul>
-<p><strong>特殊情况</strong>：一点 <span class="math inline"><em>x</em><sub>0</sub></span>
-的影响区域（结合图3.5）</p>
+<p><strong>特殊情况：从一点出发的特征线</strong></p>
 <figure>
-<img src="/posts/38102/image-20250722145957298.png" alt="image-20250722145957298">
-<figcaption aria-hidden="true">image-20250722145957298</figcaption>
+<img src="/posts/38102/image-20250722145957298-1790934192701-16.png" alt="特征线示意">
+<figcaption aria-hidden="true">特征线示意</figcaption>
 </figure>
-<ul>
-<li>将初始扰动区间 <span class="math inline">[<em>x</em><sub>1</sub>, <em>x</em><sub>2</sub>]</span>
-收缩为 <span class="math inline"><em>x</em></span> 轴上的一个点 <span class="math inline"><em>x</em><sub>0</sub></span>，则可得到点 <span class="math inline"><em>x</em><sub>0</sub></span> 的影响区域。它为过此点
-<span class="math inline">(<em>x</em><sub>0</sub>, 0)</span>
-的两条斜率各为 <span class="math inline">$\pm \frac{1}{a}$</span> 的直线
-<span class="math inline"><em>x</em> = <em>x</em><sub>0</sub> ± <em>a</em><em>t</em></span>
-所夹成的角形区域。</li>
-<li>从 <span class="math inline"><em>x</em></span> 轴上的点 <span class="math inline">(<em>x</em><sub>0</sub>, 0)</span>
-向上引出两条特征线：一条斜率为 <span class="math inline">$-\frac{1}{a}$</span> (<span class="math inline"><em>x</em> = <em>x</em><sub>0</sub> − <em>a</em><em>t</em></span>)，另一条斜率为
-<span class="math inline">$\frac{1}{a}$</span> (<span class="math inline"><em>x</em> = <em>x</em><sub>0</sub> + <em>a</em><em>t</em></span>)。</li>
-<li>这两条直线在 <span class="math inline"><em>t</em> &gt; 0</span>
-的区域内形成一个V形区域，被称为影响锥（或特征锥）。</li>
-<li>它表示在初始时刻 <span class="math inline"><em>t</em> = 0</span>
-仅在 <span class="math inline"><em>x</em><sub>0</sub></span>
-处发生的一个瞬时扰动，在未来能够传播并影响到的所有时空点。在影响锥之外的区域，扰动是无法到达的。</li>
-<li>这再次强调了波动方程所描述的物理现象中，扰动的传播速度是有限的，而不是无限快。</li>
-</ul>
+<p>当区间缩到 <span class="math inline"><em>x</em><sub>0</sub></span>
+时，两条边界是 <span class="math inline"><em>x</em> = <em>x</em><sub>0</sub> ± <em>a</em><em>t</em></span>。对于通常要求连续的初始数据，单独“只改变一点的值”并不构成一个有效的局部扰动；把它理解成越来越窄的扰动区间更合适。若允许
+Dirac
+脉冲这样的广义初值，初始<strong>位移</strong>脉冲沿两条特征线传播，而初始<strong>速度</strong>脉冲可以影响两线之间的区域。由此也能看出，依赖区间和影响区域讲的是“可能影响”，并不保证区间内每一点的解都非零。</p>
 <h3 id="齐次化原理">齐次化原理</h3>
 <p><span class="math display">$$
 \begin{cases}
@@ -622,43 +599,22 @@ w_{tt} = a^2 w_{xx} &amp; (t &gt; \tau), \\
 $$</span> 的解（其中 <span class="math inline"><em>τ</em></span>
 为参数），则 <span class="math display"><em>u</em>(<em>x</em>, <em>t</em>) = ∫<sub>0</sub><sup><em>t</em></sup><em>w</em>(<em>x</em>, <em>t</em>; <em>τ</em>)<em>d</em><em>τ</em>  (22)</span>
 就是初值问题 (5)(6) 的解。</p>
-<p><span class="math display">$$
-\begin{cases}
-u_{tt} = a^2 u_{xx} + f(x, t) &amp; (-\infty &lt; x &lt; +\infty,\ t
-&gt; 0), \\
-u(x, 0) = 0,\ u_t(x, 0) = 0
-\end{cases} \quad \text{(5)}
-$$</span></p>
-<p><span class="math display">$$
-\begin{cases}
-w_{tt} = a^2 w_{xx} &amp; (t &gt; \tau), \\
-\left. w \right|_{t=\tau} = 0,\ \left. w_t \right|_{t=\tau} = f(x,\tau)
-\end{cases} \quad \text{(21)}
-$$</span></p>
-<p><span class="math display"><em>u</em>(<em>x</em>, <em>t</em>) = ∫<sub>0</sub><sup><em>t</em></sup><em>w</em>(<em>x</em>, <em>t</em>; <em>τ</em>)<em>d</em><em>τ</em>  (22)</span></p>
 <p>令 <span class="math inline"><em>t</em><sup>′</sup> = <em>t</em> − <em>τ</em></span>，并记
 <span class="math inline">$\overline{w}(x,t';\tau) = w(x,t'+\tau;\tau) =
 w(x,t;\tau)$</span>，则问题 (21) 可化为如下形式： <span class="math display">$$
 \begin{cases}
-\overline{w}_{tt} = a^2 \overline{w}_{xx} &amp; (t' &gt; 0), \\
-\left. \overline{w} \right|_{t'=0} = 0,\ \left. \overline{w}_t
-\right|_{t'=0} = f(x,\tau)
+\partial_{t't'}\overline{w} = a^2 \partial_{xx}\overline{w} &amp; (t'
+&gt; 0), \\
+\left. \overline{w} \right|_{t'=0} = 0,\ \left.
+\partial_{t'}\overline{w} \right|_{t'=0} = f(x,\tau)
 \end{cases} \quad \text{(23)}
 $$</span></p>
-<p><span class="math display"><em>u</em>(<em>x</em>, <em>t</em>) = ∫<sub>0</sub><sup><em>t</em></sup><em>w</em>(<em>x</em>, <em>t</em>; <em>τ</em>)<em>d</em><em>τ</em>  (22)</span></p>
 <p>由达朗贝尔公式 (18) <span class="math display">$$
 u(x,t) = \frac{\varphi(x-at) + \varphi(x+at)}{2} +
 \frac{1}{2a}\int_{x-at}^{x+at} \psi(\alpha) d\alpha \quad \text{(18)}
 $$</span> 知问题 (23) 的解为 <span class="math display">$$
 \overline{w}(x,t';\tau) = \frac{1}{2a}\int_{x-at'}^{x+at'} f(\xi,\tau)
 d\xi
-$$</span></p>
-<p><span class="math display">$$
-\begin{cases}
-u_{tt} = a^2 u_{xx} + f(x, t) &amp; (-\infty &lt; x &lt; +\infty,\ t
-&gt; 0), \\
-u(x, 0) = 0,\ u_t(x, 0) = 0
-\end{cases} \quad \text{(5)}
 $$</span></p>
 <p><span class="math display"><em>u</em>(<em>x</em>, <em>t</em>) = ∫<sub>0</sub><sup><em>t</em></sup><em>w</em>(<em>x</em>, <em>t</em>; <em>τ</em>)<em>d</em><em>τ</em>  (22)</span></p>
 <p><span class="math display">$$
@@ -675,51 +631,28 @@ u(x,t) = \frac{1}{2a}\int_0^t \int_{x-a(t-\tau)}^{x+a(t-\tau)}
 f(\xi,\tau) d\xi d\tau \quad \text{(25)}
 $$</span></p>
 <p><span class="math display">$$
-\begin{cases}
-u_{tt} = a^2 u_{xx} + f(x, t) &amp; (-\infty &lt; x &lt; +\infty,\ t
-&gt; 0), \\
-u(x, 0) = 0,\ u_t(x, 0) = 0
-\end{cases} \quad \text{(5)}
-$$</span></p>
-<p><span class="math display">$$
 u(x, t) = \frac{1}{2a}\int_0^t \int_{x-a(t-\tau)}^{x+a(t-\tau)}
 f(\xi,\tau) d\xi d\tau \quad \text{(25)}
 $$</span></p>
-<p>事实上，由 (25) 确定的函数确是问题 (5) 的解。</p>
-<p>二元函数含参变量积分的求导公式： <span class="math display">$$
-\frac{d}{dx}\left[ \int_{\alpha(x)}^{\beta(x)} f(x,t) dt \right] =
-f[x,\beta(x)]\beta'(x) - f[x,\alpha(x)]\alpha'(x) +
-\int_{\alpha(x)}^{\beta(x)} f_x(x,t) dt
-$$</span></p>
-<p><span class="math display">$$
-\begin{cases}
-u_{tt} = a^2 u_{xx} + f(x, t) &amp; (-\infty &lt; x &lt; +\infty,\ t
-&gt; 0), \\
-u(x, 0) = 0,\ u_t(x, 0) = 0
-\end{cases} \quad \text{(5)}
-$$</span></p>
-<p><span class="math display">$$
-u(x, t) = \frac{1}{2a}\int_0^t \int_{x-a(t-\tau)}^{x+a(t-\tau)}
-f(\xi,\tau) d\xi d\tau \quad \text{(25)}
+<p>验证 (25) 是否满足方程，需要用到含参变量积分的求导公式（Leibniz
+公式）： <span class="math display">$$
+\frac{d}{dx}\int_{\alpha(x)}^{\beta(x)}F(x,s)\,ds=F(x,\beta(x))\beta'(x)-F(x,\alpha(x))\alpha'(x)+\int_{\alpha(x)}^{\beta(x)}F_x(x,s)\,ds
 $$</span></p>
 <p>事实上，由 (25) 确定的函数确是问题 (5) 的解。当 <span class="math inline"><em>f</em></span> 具有一阶连续导数时，由 (25) 式可得
 <span class="math display">$$
 \begin{aligned}
-u_t &amp;= \frac{1}{2a}\int_{x-a(t-\tau)}^{x+a(t-\tau)} f(\xi,t) d\xi +
-\frac{1}{2}\int_0^t f(x+a(t-\tau),\tau) d\tau \\
-&amp;\quad + \frac{1}{2}\int_0^t f(x-a(t-\tau),\tau) d\tau \\
-&amp;= \frac{1}{2}\int_0^t [f(x+a(t-\tau),\tau) + f(x-a(t-\tau),\tau)]
-d\tau
+u_t &amp;= \frac{1}{2}\int_0^t\left[f\bigl(x+a(t-\tau),\tau\bigr)
++f\bigl(x-a(t-\tau),\tau\bigr)\right]d\tau.
 \end{aligned}
 $$</span></p>
 <p><span class="math display">$$
 \begin{aligned}
-u_{tt} &amp;= f(x,t) + \frac{a}{2}\int_0^t [f'(x+a(t-\tau),\tau) -
-f'(x-a(t-\tau),\tau)] d\tau \\
+u_{tt} &amp;= f(x,t) + \frac{a}{2}\int_0^t [f_x(x+a(t-\tau),\tau) -
+f_x(x-a(t-\tau),\tau)] d\tau \\
 u_x &amp;= \frac{1}{2a}\int_0^t [f(x+a(t-\tau),\tau) -
 f(x-a(t-\tau),\tau)] d\tau \\
-u_{xx} &amp;= \frac{1}{2a}\int_0^t [f'(x+a(t-\tau),\tau) -
-f'(x-a(t-\tau),\tau)] d\tau
+u_{xx} &amp;= \frac{1}{2a}\int_0^t [f_x(x+a(t-\tau),\tau) -
+f_x(x-a(t-\tau),\tau)] d\tau
 \end{aligned}
 $$</span></p>
 <p>于是 <span class="math inline"><em>u</em><sub><em>t</em><em>t</em></sub> = <em>a</em><sup>2</sup><em>u</em><sub><em>x</em><em>x</em></sub> + <em>f</em>(<em>x</em>, <em>t</em>)</span>，即
@@ -730,13 +663,8 @@ u_t = \frac{1}{2}\int_0^t [f(x+a(t-\tau),\tau) + f(x-a(t-\tau),\tau)]
 d\tau
 $$</span> 可得 <span class="math display"><em>u</em>|<sub><em>t</em> = 0</sub> = 0, <em>u</em><sub><em>t</em></sub>|<sub><em>t</em> = 0</sub> = 0</span></p>
 <p>以上证明了由 (25) 确定的函数确是初值问题 (5)(6) 的解。</p>
-<p>由叠加原理，可得定解问题 (1)(2) <span class="math display">$$
-\begin{cases}
-u_{tt} = a^2 u_{xx} + f(x, t) &amp; (-\infty &lt; x &lt; +\infty,\ t
-&gt; 0), \\
-u(x, 0) = \varphi(x),\ u_t(x, 0) = \psi(x)
-\end{cases} \quad \text{(1)}
-$$</span> 解可表示为 <span class="math display">$$
+<p>由叠加原理，可得定解问题 (1)(2)</p>
+<p>解可表示为 <span class="math display">$$
 \begin{aligned}
 u(x,t) &amp;= \frac{\varphi(x-at) + \varphi(x+at)}{2} +
 \frac{1}{2a}\int_{x-at}^{x+at} \psi(\alpha) d\alpha \\
@@ -791,12 +719,708 @@ f(\xi,\tau) d\xi d\tau \quad \text{(26)}
 $$</span></p>
 <h4 id="达朗贝尔解的物理意义-1">达朗贝尔解的物理意义</h4>
 <figure>
-<img src="/posts/38102/image-20250723085807029.png" alt="image-20250723085807029">
-<figcaption aria-hidden="true">image-20250723085807029</figcaption>
+<img src="/posts/38102/image-20250722152129514-1790938981403-1.png" alt="image-20250722152129514">
+<figcaption aria-hidden="true">image-20250722152129514</figcaption>
 </figure>
-</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a target="_blank" rel="noopener" href="https://github.com/ergou10086">ErgouTree</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://ergou10086.github.io/posts/38102.html">https://ergou10086.github.io/posts/38102.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://ergou10086.github.io" target="_blank">ErgouTree's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E6%95%B0%E5%AD%A6/">数学</a><a class="post-meta__tags" href="/tags/%E7%89%A9%E7%90%86/">物理</a><a class="post-meta__tags" href="/tags/%E6%95%B0%E5%AD%A6%E5%BB%BA%E6%A8%A1/">数学建模</a><a class="post-meta__tags" href="/tags/%E5%AE%9A%E7%90%86%E8%AF%81%E6%98%8E/">定理证明</a><a class="post-meta__tags" href="/tags/%E6%95%B0%E5%AD%A6%E7%89%A9%E7%90%86%E6%96%B9%E6%B3%95/">数学物理方法</a></div><div class="post-share"><div class="addtoany"><div class="a2a_kit a2a_kit_size_32 a2a_default_style"><a class="a2a_button_facebook"></a><a class="a2a_button_twitter"></a><a class="a2a_button_wechat"></a><a class="a2a_button_sina_weibo"></a><a class="a2a_button_facebook_messenger"></a><a class="a2a_button_email"></a><a class="a2a_button_copy_link"></a><a class="a2a_dd" target="_blank" rel="noopener" href="https://www.addtoany.com/share"></a></div></div><script async="async" src="https://static.addtoany.com/menu/page.js"></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/posts/17776.html" title="ISLAND攻略"><img class="cover" src="/images/posts/cover_island.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">ISLAND攻略</div></div><div class="info-2"><div class="info-item-1">枢都 夏莲 夏篇路线  左边 Rinne Save 01 ……切那 (→有本事说出我的名字啊) (→不要爱上我啊) 我是三千界切那, 请多指教 Save 02 准备[对时间旅行者装备] [(→纱罗是我老婆) (→钟爱夏莲) 我觉得凛音很可爱 Save 03 放弃使命 (→进行时间旅行) 寻找粘合剂 (→按3部构成的节奏讲) 按2小时的节奏讲 (→还是放弃吧) 攻略玖音 Save 04 与夏莲和纱罗一起去游泳 Save 05 在这个岛上找到真正的自己 我是这个时代的人 Save 06 接受现在  夏莲路线 ​ Save 07  (→我错了) (→抱歉) 对不起 Save 08 昨天的事 (→因为迷上你了) (→因为爱你) 因为喜欢你 (→一起离开岛吧) (→去说服你父亲) 和我交往吧 我喜欢夏莲 夏莲 End  End 回收 ◆Load 1 我就是我 End → 轮回的终结 ◆Load 2 ……莫名其妙 End → 第二位时间旅行者 ◆Load 3 执行使命 End...</div></div></div></a><a class="pagination-related" href="/posts/61953.html" title="数学物理方程之弦振动方程模型的建立"><img class="cover" src="/images/posts/cover_front.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">数学物理方程之弦振动方程模型的建立</div></div><div class="info-2"><div class="info-item-1">...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/posts/61953.html" title="数学物理方程之弦振动方程模型的建立"><img class="cover" src="/images/posts/cover_front.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-07-23</div><div class="info-item-2">数学物理方程之弦振动方程模型的建立</div></div><div class="info-2"><div class="info-item-1">...</div></div></div></a><a class="pagination-related" href="/posts/47136.html" title="推导theta&#x3D;0纵剖面上的抽水降落曲线公式"><img class="cover" src="/images/posts/cover_config.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-06-03</div><div class="info-item-2">推导theta&#x3D;0纵剖面上的抽水降落曲线公式</div></div><div class="info-2"><div class="info-item-1">推导 θ = 0 纵剖面上的抽水降落曲线公式 根据辐射井的抽水降落曲面模型论文内容，θ = 0 纵剖面是沿着辐射管方向的剖面。推导分为两个区域：辐射管范围内的垂直渗流区（0 ≤ ρ ≤ l + r）和辐射管范围外的水平渗流区（l + r ≤ ρ ≤ R）。以下是详细推导过程：  1. 垂直渗流区 (0 ≤ ρ ≤ l + r) 基本假设： 在垂直渗流区（辐射管范围内），地下水运动以垂向渗流为主，其核心特征是：  近井处水力坡度平缓（水位变化小） 远离井处水力坡度陡峭（水位变化大） 水位差变化率与当前位置水位差成正比  数学表述为： ΔT(ρ, 0) = ω ⋅ T(ρ, 0) ⋅ ΔρΔT(ρ, 0) = ω ⋅ T(ρ, 0) ⋅ Δρ 其中：  T(ρ, 0) = H(ρ, 0) − Hs（点(ρ, 0)与竖井水位差） ω：垂直渗流区特征参数（常数） Δρ：径向距离增量  在垂直渗流区，水位高度 T(ρ, 0) 的增长率为常数 ω。这意味着单位距离 Δρ 内，T(ρ, 0) 的增量与 T(ρ, 0)...</div></div></div></a><a class="pagination-related" href="/posts/null.html" title="MATLAB part1-入门介绍和基础语法"><img class="cover" src="/images/posts/cover_matlab.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-06-03</div><div class="info-item-2">MATLAB part1-入门介绍和基础语法</div></div><div class="info-2"><div class="info-item-1">MATLAB...</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="gitalk-container"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/arp.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">ErgouTree</div><div class="author-info-description">I start a brand-new life with you.</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">345</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">214</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">113</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/ergou10086"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/ergou10086" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="/zjm88822201@126.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a><a class="social-icon" href="https://space.bilibili.com/142045656?spm_id_from=333.1007.0.0" target="_blank" title="bilibili"><i class="fas fa-brands fa-bilibili" style="color: #4a72be;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">作者长期陷入galgame和osu!maina4k中 祝他好运吧 对了 如果图片加载过慢 建议科学上网进行使用</div></div><div class="card-widget card-weather"><div class="item-headline"><i class="fas fa-cloud-sun"></i><span>aside.card_weather</span></div><div class="weather-content"><div class="weather-loading"><i class="fas fa-spinner fa-spin"></i><span>加载中...</span></div><div class="weather-main" style="display: none;"><div class="weather-location"><i class="fas fa-map-marker-alt"></i><span id="weather-location">获取中...</span></div><div class="weather-info"><div class="weather-temp"><span id="weather-temp">--</span><span class="unit">°C</span></div><div class="weather-desc"><span id="weather-weather">--</span></div><div class="weather-details"><div class="weather-item"><i class="fas fa-wind"></i><span id="weather-windpower">--</span></div><div class="weather-item"><i class="fas fa-tint"></i><span id="weather-humidity">--</span></div><div class="weather-item"><i class="fas fa-eye"></i><span id="weather-winddir">--</span></div></div></div><div class="weather-update-time"><i class="fas fa-clock"></i><span id="weather-update-time">更新中...</span></div></div></div></div><div class="sticky_layout"></div><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B3%A2%E5%8A%A8%E6%96%B9%E7%A8%8B%E7%9A%84%E6%B1%82%E8%A7%A3"><span class="toc-number">1.</span> <span class="toc-text">波动方程的求解</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BE%BE%E6%9C%97%E8%B4%9D%E5%B0%94%E5%85%AC%E5%BC%8F"><span class="toc-number">2.</span> <span class="toc-text">达朗贝尔公式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BC%A6%E6%8C%AF%E5%8A%A8%E6%96%B9%E7%A8%8B%E7%9A%84%E8%BE%BE%E6%9C%97%E8%B4%9D%E5%B0%94%E8%A7%A3%E6%B3%95"><span class="toc-number">2.1.</span> <span class="toc-text">弦振动方程的达朗贝尔解法</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%97%AE%E9%A2%98%E5%92%8C%E6%96%B9%E7%A8%8B%E7%9A%84%E5%BC%95%E5%85%A5"><span class="toc-number">2.1.1.</span> <span class="toc-text">问题和方程的引入</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%9D%90%E6%A0%87%E5%8F%98%E6%8D%A2%E4%B8%8E%E6%96%B9%E7%A8%8B%E5%8C%96%E7%AE%80"><span class="toc-number">2.1.2.</span> <span class="toc-text">坐标变换与方程化简</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%80%9A%E8%A7%A3%E7%9A%84%E6%B1%82%E8%A7%A3"><span class="toc-number">2.1.3.</span> <span class="toc-text">通解的求解</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%A9%E7%94%A8%E5%88%9D%E5%A7%8B%E6%9D%A1%E4%BB%B6%E7%A1%AE%E5%AE%9A%E4%BB%BB%E6%84%8F%E5%87%BD%E6%95%B0"><span class="toc-number">2.2.</span> <span class="toc-text">利用初始条件确定任意函数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BE%BE%E6%9C%97%E8%B4%9D%E5%B0%94%E8%A7%A3%E7%9A%84%E7%89%A9%E7%90%86%E6%84%8F%E4%B9%89"><span class="toc-number">2.3.</span> <span class="toc-text">达朗贝尔解的物理意义</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%80%83%E5%AF%9F-u_1xt-fx-at"><span class="toc-number">2.3.1.</span> <span class="toc-text">考察 u1(x, t) &#x3D; f(x − at)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%80%83%E5%AF%9F-u_2xt-gxat"><span class="toc-number">2.3.2.</span> <span class="toc-text">考察 u2(x, t) &#x3D; g(x + at)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%80%BB%E7%BB%93%E8%BE%BE%E6%9C%97%E8%B4%9D%E5%B0%94%E8%A7%A3%E7%9A%84%E7%89%A9%E7%90%86%E6%84%8F%E4%B9%89"><span class="toc-number">2.3.3.</span> <span class="toc-text">总结达朗贝尔解的物理意义</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BE%9D%E8%B5%96%E5%8C%BA%E9%97%B4%E5%86%B3%E5%AE%9A%E5%8C%BA%E5%9F%9F%E5%92%8C%E5%BD%B1%E5%93%8D%E5%8C%BA%E5%9F%9F"><span class="toc-number">2.4.</span> <span class="toc-text">依赖区间、决定区域和影响区域</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BE%9D%E8%B5%96%E5%8C%BA%E9%97%B4-dependence-domain"><span class="toc-number">2.4.1.</span> <span class="toc-text">依赖区间 (Dependence Domain)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%86%B3%E5%AE%9A%E5%8C%BA%E5%9F%9F-domain-of-determination"><span class="toc-number">2.4.2.</span> <span class="toc-text">决定区域 (Domain of
+<h2 id="初边值问题的分离变量解法">初边值问题的分离变量解法</h2>
+<p>达朗贝尔公式最直接的使用场景是无限长弦。现在换回一根<strong>有限长、两端固定</strong>的弦：从端点传回来的波会发生反射，单纯把整个实线上的行波公式搬过来，不能自动满足端点条件。分离变量法的想法，是先找出“空间形状不变、只让振幅随时间变化”的基本振动，再把这些基本振动叠加起来。</p>
+<h3 id="两端固定弦的定解问题">两端固定弦的定解问题</h3>
+<p>设弦长为 <span class="math inline"><em>l</em></span>，波速为 <span class="math inline"><em>a</em> &gt; 0</span>，外力暂时取零，初始位移和速度分别为
+<span class="math inline"><em>φ</em>(<em>x</em>)</span>、<span class="math inline"><em>ψ</em>(<em>x</em>)</span>：</p>
+<p><span class="math display">$$
+\begin{cases}
+u_{tt}=a^2u_{xx},&amp;0&lt;x&lt;l,\quad t&gt;0,\\
+u(0,t)=u(l,t)=0,&amp;t\ge 0,\\
+u(x,0)=\varphi(x),\quad u_t(x,0)=\psi(x),&amp;0\le x\le l.
+\end{cases}
+$$</span></p>
+<p><strong>问题的关键</strong>：方程和两端固定的边界条件都齐次。因此，只要找到一系列同时满足它们的基本解，就可以利用线性叠加去适配一般的初始数据。但“几个基本解相加还是解”不代表“任意无穷级数都可直接求导”；收敛和正则性还要单独检查。</p>
+<h3 id="第一步把空间和时间分开">第一步：把空间和时间分开</h3>
+<p>先尝试非零的乘积解</p>
+<p><span class="math display"><em>u</em>(<em>x</em>, <em>t</em>) = <em>X</em>(<em>x</em>)<em>T</em>(<em>t</em>).</span></p>
+<p>代入 <span class="math inline"><em>u</em><sub><em>t</em><em>t</em></sub> = <em>a</em><sup>2</sup><em>u</em><sub><em>x</em><em>x</em></sub></span>
+得 <span class="math inline"><em>X</em>(<em>x</em>)<em>T</em><sup>″</sup>(<em>t</em>) = <em>a</em><sup>2</sup><em>X</em><sup>″</sup>(<em>x</em>)<em>T</em>(<em>t</em>)</span>。在
+<span class="math inline"><em>X</em>, <em>T</em></span> 不为零的点上除以
+<span class="math inline"><em>a</em><sup>2</sup><em>X</em><em>T</em></span>，就有</p>
+<p><span class="math display">$$
+\frac{T''(t)}{a^2T(t)}=\frac{X''(x)}{X(x)}.
+$$</span></p>
+<p>左边只依赖 <span class="math inline"><em>t</em></span>，右边只依赖
+<span class="math inline"><em>x</em></span>，而等式对所有允许的 <span class="math inline"><em>x</em>, <em>t</em></span>
+成立，所以两边必须是同一个常数。按照习惯把它写成 <span class="math inline">−<em>λ</em></span>，得到两道常微分方程：</p>
+<p><span class="math display">$$
+\boxed{X''+\lambda X=0},\qquad
+\boxed{T''+a^2\lambda T=0}.
+$$</span></p>
+<p>选择 <span class="math inline">−<em>λ</em></span> 而不直接记作 <span class="math inline"><em>λ</em></span>，是为了以后出现正特征值时能方便地写出正弦函数。端点固定还要求</p>
+<p><span class="math display"><em>X</em>(0)<em>T</em>(<em>t</em>) = <em>X</em>(<em>l</em>)<em>T</em>(<em>t</em>) = 0.</span></p>
+<p>若 <span class="math inline"><em>T</em> ≡ 0</span>，则 <span class="math inline"><em>u</em> ≡ 0</span>，对求一般初值没有帮助；因此寻找非平凡解时必须有</p>
+<p><span class="math display"><em>X</em>(0) = <em>X</em>(<em>l</em>) = 0.</span></p>
+<p>于是空间部分变成一个边值问题：</p>
+<p><span class="math display">$$
+\begin{cases}
+X''(x)+\lambda X(x)=0,&amp;0&lt;x&lt;l,\\
+X(0)=X(l)=0.
+\end{cases}
+$$</span></p>
+<p><strong>这一步为什么重要？</strong>普通的常微分方程可对任意 <span class="math inline"><em>λ</em></span>
+求解，但再加上两端为零，就只有某些离散的 <span class="math inline"><em>λ</em></span>
+允许非零解。这些值叫<strong>特征值</strong>，对应的非零 <span class="math inline"><em>X</em></span>
+叫<strong>特征函数</strong>；这就是这里最简单的 Sturm–Liouville
+问题。</p>
+<h3 id="第二步求特征值与特征函数">第二步：求特征值与特征函数</h3>
+<p>不要一上来就认定 <span class="math inline"><em>λ</em> &gt; 0</span>，我们把三种可能都检查一遍。</p>
+<ol type="1">
+<li><p><strong><span class="math inline"><em>λ</em> &lt; 0</span></strong>：设 <span class="math inline">$\mu=\sqrt{-\lambda}&gt;0$</span>，则 <span class="math inline"><em>X</em><sup>″</sup> − <em>μ</em><sup>2</sup><em>X</em> = 0</span>，通解可以写为
+<span class="math inline"><em>X</em> = <em>A</em>sinh (<em>μ</em><em>x</em>) + <em>B</em>cosh (<em>μ</em><em>x</em>)</span>。由
+<span class="math inline"><em>X</em>(0) = 0</span> 得 <span class="math inline"><em>B</em> = 0</span>；再由 <span class="math inline"><em>X</em>(<em>l</em>) = 0</span> 和 <span class="math inline">sinh (<em>μ</em><em>l</em>) &gt; 0</span> 得 <span class="math inline"><em>A</em> = 0</span>。只有零解。</p></li>
+<li><p><strong><span class="math inline"><em>λ</em> = 0</span></strong>：这时 <span class="math inline"><em>X</em> = <em>A</em><em>x</em> + <em>B</em></span>。端点条件先给
+<span class="math inline"><em>B</em> = 0</span>，再给 <span class="math inline"><em>A</em><em>l</em> = 0</span>，所以仍只有零解。</p></li>
+<li><p><strong><span class="math inline"><em>λ</em> &gt; 0</span></strong>：设 <span class="math inline">$k=\sqrt\lambda$</span>，有 <span class="math inline"><em>X</em> = <em>A</em>cos (<em>k</em><em>x</em>) + <em>B</em>sin (<em>k</em><em>x</em>)</span>。<span class="math inline"><em>X</em>(0) = 0</span> 迫使 <span class="math inline"><em>A</em> = 0</span>；要求 <span class="math inline"><em>X</em></span> 非零，即 <span class="math inline"><em>B</em> ≠ 0</span>，便必须满足 <span class="math inline">sin (<em>k</em><em>l</em>) = 0</span>。</p></li>
+</ol>
+<p>最后一个条件等价于 <span class="math inline"><em>k</em><em>l</em> = <em>n</em><em>π</em></span>，<span class="math inline"><em>n</em> = 1, 2, 3, …</span>。因此</p>
+<p><span class="math display">$$
+\boxed{\lambda_n=\left(\frac{n\pi}{l}\right)^2},\qquad
+\boxed{X_n(x)=\sin\frac{n\pi x}{l}}.
+$$</span></p>
+<p><span class="math inline"><em>n</em> = 0</span> 不能加入：它给出
+<span class="math inline"><em>X</em> ≡ 0</span>，不是一个新的振动模态。可以把
+<span class="math inline"><em>X</em><sub><em>n</em></sub></span>
+理解成“端点被固定时允许存在的第 <span class="math inline"><em>n</em></span> 种空间形状”。</p>
+<h3 id="第三步求每个空间形状如何随时间振动">第三步：求每个空间形状如何随时间振动</h3>
+<p>把 <span class="math inline"><em>λ</em><sub><em>n</em></sub></span>
+代入时间方程：</p>
+<p><span class="math display">$$
+T_n''+\omega_n^2T_n=0,
+\qquad \omega_n=\frac{n\pi a}{l}.
+$$</span></p>
+<p>它的通解为</p>
+<p><span class="math display"><em>T</em><sub><em>n</em></sub>(<em>t</em>) = <em>C</em><sub><em>n</em></sub>cos (<em>ω</em><sub><em>n</em></sub><em>t</em>) + <em>D</em><sub><em>n</em></sub>sin (<em>ω</em><sub><em>n</em></sub><em>t</em>).</span></p>
+<p>相应的第 <span class="math inline"><em>n</em></span> 个基本振动是</p>
+<p><span class="math display">$$
+u_n(x,t)=\bigl(A_n\cos\omega_nt+B_n\sin\omega_nt\bigr)
+\sin\frac{n\pi x}{l}.
+$$</span></p>
+<p>这里把空间函数前的常数吸收到 <span class="math inline"><em>A</em><sub><em>n</em></sub>, <em>B</em><sub><em>n</em></sub></span>
+中。每一项都满足方程，也都自动满足 <span class="math inline"><em>u</em><sub><em>n</em></sub>(0, <em>t</em>) = <em>u</em><sub><em>n</em></sub>(<em>l</em>, <em>t</em>) = 0</span>；只是单独一项通常不能同时匹配任意给定的
+<span class="math inline"><em>φ</em></span> 和 <span class="math inline"><em>ψ</em></span>。</p>
+<h3 id="第四步叠加各个模态利用初始条件求系数">第四步：叠加各个模态，利用初始条件求系数</h3>
+<p>自然地考虑级数</p>
+<p><span class="math display">$$
+\boxed{u(x,t)=\sum_{n=1}^{\infty}
+\bigl(A_n\cos\omega_nt+B_n\sin\omega_nt\bigr)
+\sin\frac{n\pi x}{l}},
+\qquad \omega_n=\frac{n\pi a}{l}.
+$$</span></p>
+<p>把 <span class="math inline"><em>t</em> = 0</span>
+代入，首先得到初始位移的正弦级数：</p>
+<p><span class="math display">$$
+\varphi(x)=\sum_{n=1}^{\infty}A_n\sin\frac{n\pi x}{l}.
+$$</span></p>
+<p>再对级数逐项求时间导数，并令 <span class="math inline"><em>t</em> = 0</span>，得到初始速度的正弦级数：</p>
+<p><span class="math display">$$
+\psi(x)=\sum_{n=1}^{\infty}\omega_n B_n\sin\frac{n\pi x}{l}.
+$$</span></p>
+<p>正弦函数在 <span class="math inline">[0, <em>l</em>]</span>
+上正交：</p>
+<p><span class="math display">$$
+\int_0^l\sin\frac{n\pi x}{l}\sin\frac{m\pi x}{l}\,dx
+=\begin{cases}0,&amp;m\ne n,\\ l/2,&amp;m=n.\end{cases}
+$$</span></p>
+<p>因此，在相应的 Fourier 展开成立时，系数由下面两个积分给出：</p>
+<p><span class="math display">$$
+\boxed{A_n=\frac{2}{l}\int_0^l\varphi(x)\sin\frac{n\pi x}{l}\,dx},
+$$</span></p>
+<p><span class="math display">$$
+\boxed{B_n=\frac{2}{l\omega_n}\int_0^l\psi(x)\sin\frac{n\pi x}{l}\,dx
+=\frac{2}{n\pi a}\int_0^l\psi(x)\sin\frac{n\pi x}{l}\,dx}.
+$$</span></p>
+<p>可以从量纲再检查一次：<span class="math inline"><em>A</em><sub><em>n</em></sub></span>
+是位移的量纲，<span class="math inline"><em>B</em><sub><em>n</em></sub></span>
+也必须是位移的量纲。初始速度积分前应除以角频率 <span class="math inline"><em>ω</em><sub><em>n</em></sub></span>；若漏掉，就无法使
+<span class="math inline"><em>u</em><sub><em>t</em></sub>(<em>x</em>, 0) = <em>ψ</em>(<em>x</em>)</span>。</p>
+<h3 id="关于级数端点相容与解的意义">关于级数、端点相容与解的意义</h3>
+<p>上面的级数首先是一个<strong>形式解</strong>。要把它当成能逐项求二阶导数的古典解，需要保证级数和相关导数级数收敛，并且初值与固定端点相容。最基本的条件是</p>
+<p><span class="math display"><em>φ</em>(0) = <em>φ</em>(<em>l</em>) = 0,   <em>ψ</em>(0) = <em>ψ</em>(<em>l</em>) = 0.</span></p>
+<p>前两个来自 <span class="math inline"><em>u</em>(0, <em>t</em>) = <em>u</em>(<em>l</em>, <em>t</em>) = 0</span>
+在 <span class="math inline"><em>t</em> = 0</span>
+的取值；后两个来自对边界条件求一次时间导数。若解足够光滑，还可以对边界条件求两次时间导数，并利用方程得到
+<span class="math inline"><em>φ</em><sup>″</sup>(0) = <em>φ</em><sup>″</sup>(<em>l</em>) = 0</span>。</p>
+<p>例如取 <span class="math inline"><em>φ</em> ∈ <em>C</em><sup>4</sup>[0, <em>l</em>]</span>、<span class="math inline"><em>ψ</em> ∈ <em>C</em><sup>3</sup>[0, <em>l</em>]</span>，再要求
+<span class="math inline"><em>φ</em>, <em>φ</em><sup>″</sup>, <em>ψ</em></span>
+在两个端点都为零，是一组能够保证上述级数表示古典解的<strong>充分条件</strong>。它不是唯一或最弱的条件。若初始数据没有这么光滑，仍可在适当的能量或弱解意义下讨论级数；这时不能随意逐项求导到二阶。</p>
+<p>所以学习分离变量法时，最好把两个问题分开：<strong>怎样找到候选级数</strong>，以及<strong>什么条件让候选级数成为真正的解</strong>。</p>
+<h3 id="级数解的物理意义驻波">级数解的物理意义：驻波</h3>
+<p>再看一个一般项。只要 <span class="math inline">(<em>A</em><sub><em>n</em></sub>, <em>B</em><sub><em>n</em></sub>) ≠ (0, 0)</span>，就能把时间部分写成单个正弦函数：</p>
+<p><span class="math display">$$
+A_n\cos\omega_nt+B_n\sin\omega_nt
+=R_n\sin(\omega_nt+\theta_n),
+\qquad R_n=\sqrt{A_n^2+B_n^2}.
+$$</span></p>
+<p>这里取 <span class="math inline">sin <em>θ</em><sub><em>n</em></sub> = <em>A</em><sub><em>n</em></sub>/<em>R</em><sub><em>n</em></sub></span>、<span class="math inline">cos <em>θ</em><sub><em>n</em></sub> = <em>B</em><sub><em>n</em></sub>/<em>R</em><sub><em>n</em></sub></span>。使用象限正确的
+<span class="math inline">atan2 (<em>A</em><sub><em>n</em></sub>, <em>B</em><sub><em>n</em></sub>)</span>
+可确定 <span class="math inline"><em>θ</em><sub><em>n</em></sub></span>；仅写 <span class="math inline">arctan (<em>A</em><sub><em>n</em></sub>/<em>B</em><sub><em>n</em></sub>)</span>
+会在 <span class="math inline"><em>B</em><sub><em>n</em></sub> = 0</span>
+时失效，也可能弄错象限。于是</p>
+<p><span class="math display">$$
+u_n(x,t)=R_n\sin(\omega_nt+\theta_n)\sin\frac{n\pi x}{l}.
+$$</span></p>
+<p>固定某个时间 <span class="math inline"><em>t</em><sub>0</sub></span>，空间图形仍是正弦形，只是前面的整体系数在变化；固定弦上的一点
+<span class="math inline"><em>x</em><sub>0</sub></span>，该点做角频率
+<span class="math inline"><em>ω</em><sub><em>n</em></sub></span>
+的简谐振动，其振幅与位置 <span class="math inline"><em>x</em><sub>0</sub></span>
+有关。这种空间形状不向左右整体平移的振动，就是<strong>驻波</strong>。</p>
+<ul>
+<li><strong>节点</strong>是始终不动的位置。第 <span class="math inline"><em>n</em></span> 个模态的节点在 <span class="math inline"><em>x</em> = <em>m</em><em>l</em>/<em>n</em></span>（<span class="math inline"><em>m</em> = 0, 1, …, <em>n</em></span>）；其中两个端点必然是节点。</li>
+<li><strong>腹点</strong>是空间振幅最大的地方，在 <span class="math inline"><em>x</em> = (2<em>m</em> − 1)<em>l</em>/(2<em>n</em>)</span>（<span class="math inline"><em>m</em> = 1, …, <em>n</em></span>）。</li>
+<li><span class="math inline"><em>ω</em><sub><em>n</em></sub> = <em>n</em><em>π</em><em>a</em>/<em>l</em></span>
+是角频率；通常说的频率为 <span class="math inline"><em>ν</em><sub><em>n</em></sub> = <em>ω</em><sub><em>n</em></sub>/(2<em>π</em>) = <em>n</em><em>a</em>/(2<em>l</em>)</span>。<span class="math inline"><em>n</em> = 1</span> 是基频，其余是高阶模态。</li>
+</ul>
+<p>整体解由不同模态的驻波叠加而成，这也是分离变量法被称为<strong>驻波法</strong>的原因。它与前面的行波视角并不矛盾：有限弦上的来回反射，可在适当叠加后形成驻波。</p>
+<h3 id="例一两端固定初始位移是一种模态">例一：两端固定，初始位移是一种模态</h3>
+<p>取 <span class="math inline"><em>l</em> = 1</span>，考虑</p>
+<p><span class="math display">$$
+\begin{cases}
+u_{tt}=a^2u_{xx},&amp;0&lt;x&lt;1,\ t&gt;0,\\
+u(0,t)=u(1,t)=0,\\
+u(x,0)=\sin(2\pi x),\quad u_t(x,0)=x(1-x).
+\end{cases}
+$$</span></p>
+<p>首先由正交性，位移系数非常简单：<span class="math inline"><em>A</em><sub>2</sub> = 1</span>，其余 <span class="math inline"><em>A</em><sub><em>n</em></sub> = 0</span>。所以初始位移本身只激发第
+<span class="math inline">2</span> 个空间模态。但初始速度 <span class="math inline"><em>x</em>(1 − <em>x</em>)</span>
+不是一个单独的正弦模态，必须展开成级数：</p>
+<p><span class="math display">$$
+B_n=\frac{2}{n\pi a}\int_0^1x(1-x)\sin(n\pi x)\,dx.
+$$</span></p>
+<p>分部积分两次可得</p>
+<p><span class="math display">$$
+\int_0^1x(1-x)\sin(n\pi x)\,dx
+=\frac{2\bigl(1-(-1)^n\bigr)}{n^3\pi^3},
+$$</span></p>
+<p>故</p>
+<p><span class="math display">$$
+B_n=\frac{4\bigl(1-(-1)^n\bigr)}{a n^4\pi^4}.
+$$</span></p>
+<p>偶数 <span class="math inline"><em>n</em></span> 时 <span class="math inline"><em>B</em><sub><em>n</em></sub> = 0</span>；奇数
+<span class="math inline"><em>n</em></span> 时 <span class="math inline"><em>B</em><sub><em>n</em></sub> = 8/(<em>a</em><em>n</em><sup>4</sup><em>π</em><sup>4</sup>)</span>。最后的解可以写成</p>
+<p><span class="math display">$$
+\boxed{u(x,t)=\cos(2\pi at)\sin(2\pi x)
++\sum_{\substack{n\ge1\\n\text{ 为奇数}}}
+\frac{8}{a n^4\pi^4}\sin(n\pi at)\sin(n\pi x).}
+$$</span></p>
+<p>这个例子也说明：<strong>初始位移只含一种模态，并不代表后续解只有一种模态</strong>；初始速度同样会决定哪些模态被激发。对答案做快速检查：<span class="math inline"><em>t</em> = 0</span>
+时级数的时间正弦项消失；对时间求导后，第一项在 <span class="math inline"><em>t</em> = 0</span> 消失，级数重新给出 <span class="math inline"><em>x</em>(1 − <em>x</em>)</span> 的正弦展开。</p>
+<h3 id="例二左端固定右端自由">例二：左端固定、右端自由</h3>
+<p>边界条件一变，空间特征值就会改变。现在令左端 <span class="math inline"><em>x</em> = 0</span> 固定，右端 <span class="math inline"><em>x</em> = <em>l</em></span>
+可以沿垂直方向自由移动，因此</p>
+<p><span class="math display"><em>u</em>(0, <em>t</em>) = 0,   <em>u</em><sub><em>x</em></sub>(<em>l</em>, <em>t</em>) = 0.</span></p>
+<p>仍从 <span class="math inline"><em>u</em> = <em>X</em><em>T</em></span>
+出发。时间和空间方程与前面相同，但空间边值问题变成</p>
+<p><span class="math display"><em>X</em><sup>″</sup> + <em>λ</em><em>X</em> = 0,   <em>X</em>(0) = 0,  <em>X</em><sup>′</sup>(<em>l</em>) = 0.</span></p>
+<p>当 <span class="math inline"><em>λ</em> &lt; 0</span> 时，<span class="math inline">$X=A\sinh(\sqrt{-\lambda}\,x)$</span>，右端条件要求
+<span class="math inline">$A\sqrt{-\lambda}\cosh(\sqrt{-\lambda}\,l)=0$</span>，所以只剩零解；<span class="math inline"><em>λ</em> = 0</span> 时 <span class="math inline"><em>X</em> = <em>A</em><em>x</em></span>，<span class="math inline"><em>X</em><sup>′</sup>(<em>l</em>) = <em>A</em> = 0</span>，也只剩零解。</p>
+<p>当 <span class="math inline"><em>λ</em> &gt; 0</span> 时，<span class="math inline">$X=B\sin(\sqrt\lambda\,x)$</span>，而 <span class="math inline">$X'(l)=B\sqrt\lambda\cos(\sqrt\lambda\,l)=0$</span>。要求
+<span class="math inline"><em>B</em> ≠ 0</span>，于是 <span class="math inline">$\cos(\sqrt\lambda\,l)=0$</span>，得到</p>
+<p><span class="math display">$$
+k_n=\frac{(2n-1)\pi}{2l},\qquad
+\lambda_n=k_n^2,\qquad X_n(x)=\sin(k_nx),\qquad
+\omega_n=ak_n,
+\quad n=1,2,\ldots.
+$$</span></p>
+<p>与两端固定的 <span class="math inline"><em>n</em><em>π</em>/<em>l</em></span>
+相比，这里出现的是<strong>半整数倍</strong>；原因就在于右端要求斜率为零，而不是位移为零。若初值为
+<span class="math inline"><em>φ</em>, <em>ψ</em></span>，便有</p>
+<p><span class="math display">$$
+u(x,t)=\sum_{n=1}^{\infty}
+\bigl[A_n\cos(\omega_nt)+B_n\sin(\omega_nt)\bigr]\sin(k_nx),
+$$</span></p>
+<p><span class="math display">$$
+A_n=\frac{2}{l}\int_0^l\varphi(x)\sin(k_nx)\,dx,
+\qquad B_n=\frac{2}{l\omega_n}\int_0^l\psi(x)\sin(k_nx)\,dx.
+$$</span></p>
+<p>这里仍有正交关系 <span class="math inline">∫<sub>0</sub><sup><em>l</em></sup>sin (<em>k</em><sub><em>n</em></sub><em>x</em>)sin (<em>k</em><sub><em>m</em></sub><em>x</em>)<em>d</em><em>x</em> = (<em>l</em>/2)<em>δ</em><sub><em>n</em><em>m</em></sub></span>。端点相容条件也相应变为
+<span class="math inline"><em>φ</em>(0) = 0</span>、<span class="math inline"><em>φ</em><sup>′</sup>(<em>l</em>) = 0</span>，以及更高光滑性下相应的速度条件。</p>
+<p>取一个具体初值来看：</p>
+<p><span class="math display">$$
+\varphi(x)=x^2-2lx,\qquad
+\psi(x)=3\sin\frac{3\pi x}{2l}.
+$$</span></p>
+<p>先算位移系数。由于 <span class="math inline"><em>k</em><sub><em>n</em></sub><em>l</em> = (2<em>n</em> − 1)<em>π</em>/2</span>，有
+<span class="math inline">cos (<em>k</em><sub><em>n</em></sub><em>l</em>) = 0</span>，连续分部积分可得</p>
+<p><span class="math display">$$
+\begin{aligned}
+A_n&amp;=\frac{2}{l}\int_0^l(x^2-2lx)\sin(k_nx)\,dx\\
+&amp;=-\frac{4}{l k_n^3}
+=-\frac{32l^2}{(2n-1)^3\pi^3}.
+\end{aligned}
+$$</span></p>
+<p>初始速度恰是第 <span class="math inline">2</span> 个特征函数的 <span class="math inline">3</span> 倍，所以利用正交性立即得到 <span class="math inline"><em>B</em><sub><em>n</em></sub> = 0</span>（<span class="math inline"><em>n</em> ≠ 2</span>），而</p>
+<p><span class="math display">$$
+B_2=\frac{3}{\omega_2}=\frac{2l}{a\pi}.
+$$</span></p>
+<p>因此</p>
+<p><span class="math display">$$
+\boxed{\begin{aligned}
+u(x,t)={}&amp;-\sum_{n=1}^{\infty}
+\frac{32l^2}{(2n-1)^3\pi^3}
+\cos\frac{(2n-1)\pi at}{2l}
+\sin\frac{(2n-1)\pi x}{2l}\\
+&amp;+\frac{2l}{a\pi}
+\sin\frac{3\pi at}{2l}\sin\frac{3\pi x}{2l}.
+\end{aligned}}
+$$</span></p>
+<p>虽然右端叫“自由端”，它的位移不一定为零；它满足的是 <span class="math inline"><em>u</em><sub><em>x</em></sub>(<em>l</em>, <em>t</em>) = 0</span>。这个区别正是不能把两端固定的系数公式原样套用到此问题的原因。</p>
+<h3 id="分离变量法的步骤再梳理">分离变量法的步骤再梳理</h3>
+<ol type="1">
+<li>根据物理条件写清楚方程、初值和边界条件，先确认边界条件是否齐次。</li>
+<li>令 <span class="math inline"><em>u</em> = <em>X</em><em>T</em></span>，把偏微分方程分成空间和时间两个常微分方程。</li>
+<li><strong>先结合边界条件求空间特征值和特征函数</strong>；这一步决定可用的模态，不能跳过
+<span class="math inline"><em>λ</em> &lt; 0</span>、<span class="math inline"><em>λ</em> = 0</span> 的检查。</li>
+<li>把每个特征值代入时间方程，求对应的时间振动。</li>
+<li>利用线性叠加写级数，再用初始条件和特征函数的正交性求系数。</li>
+<li>最后检查端点相容、级数收敛，以及解是否真的能逐项求导到方程要求的阶数。</li>
+</ol>
+<p>达朗贝尔解法着重展示<strong>波怎样传播</strong>；分离变量法则着重展示<strong>边界允许哪些频率和空间形状</strong>。同一个波动过程可以从这两个角度理解。</p>
+<h2 id="高维波动方程的柯西问题">高维波动方程的柯西问题</h2>
+<p>一维弦的达朗贝尔公式已经把“初值怎样沿特征线传播”说得很清楚。不过薄膜振动、空间中的声波等现象不只有一个空间坐标。下面把未知函数写成
+<span class="math inline"><em>u</em>(<strong>x</strong>, <em>t</em>)</span>，其中
+<span class="math inline"><strong>x</strong> = (<em>x</em><sub>1</sub>, …, <em>x</em><sub><em>n</em></sub>)</span>，空间算子是</p>
+<p><span class="math display">$$
+\Delta u=\sum_{j=1}^{n}\frac{\partial^2u}{\partial x_j^2}.
+$$</span></p>
+<h3 id="先明确高维问题有哪些定解条件">先明确高维问题有哪些定解条件</h3>
+<p>若研究整个 <span class="math inline">ℝ<sup><em>n</em></sup></span>，没有有限的物理边界，给出初始位移和初始速度就得到柯西问题：</p>
+<p><span class="math display">$$
+\begin{cases}
+u_{tt}-a^2\Delta u=f(\boldsymbol{x},t),
+&amp;\boldsymbol{x}\in\mathbb R^n,\ t&gt;0,\\
+u(\boldsymbol{x},0)=\varphi(\boldsymbol{x}),\quad
+u_t(\boldsymbol{x},0)=\psi(\boldsymbol{x}),
+&amp;\boldsymbol{x}\in\mathbb R^n.
+\end{cases}
+$$</span></p>
+<p>若只在有界区域 <span class="math inline"><em>Ω</em></span>
+中研究，则仍要在 <span class="math inline"><em>Γ</em> = ∂<em>Ω</em></span>
+上附加边界条件。常见的三类分别是 <span class="math inline"><em>u</em>|<sub><em>Γ</em></sub> = <em>g</em></span>、<span class="math inline">∂<sub><em>n</em></sub><em>u</em>|<sub><em>Γ</em></sub> = <em>g</em></span>，以及
+<span class="math inline">(∂<sub><em>n</em></sub><em>u</em> + <em>α</em><em>u</em>)|<sub><em>Γ</em></sub> = <em>g</em></span>。此时是<strong>初边值问题</strong>；无界整空间上的初值问题与它不能直接混用。这里先讨论三维空间、没有外力的柯西问题：</p>
+<p><span class="math display">$$
+\begin{cases}
+u_{tt}-a^2\Delta u=0,&amp;\boldsymbol{x}\in\mathbb R^3,\quad t&gt;0,\\
+u(\boldsymbol{x},0)=\varphi(\boldsymbol{x}),\quad
+u_t(\boldsymbol{x},0)=\psi(\boldsymbol{x}).
+\end{cases}
+$$</span></p>
+<p>一维时通过 <span class="math inline"><em>x</em> ± <em>a</em><em>t</em></span>
+把方程化简；三维时我们需要另一种方法，让高维问题也转化为一维波动方程。</p>
+<h3 id="球对称的情形为什么会出现-ru">球对称的情形：为什么会出现 <span class="math inline"><em>r</em><em>u</em></span></h3>
+<p>先假设初始数据只与到原点的距离 <span class="math inline"><em>r</em> = |<strong>x</strong>|</span>
+有关，于是解也取球对称形式 <span class="math inline"><em>u</em>(<strong>x</strong>, <em>t</em>) = <em>U</em>(<em>r</em>, <em>t</em>)</span>。三维拉普拉斯算子作用在径向函数上时，公式是</p>
+<p><span class="math display">$$
+\Delta U=U_{rr}+\frac{2}{r}U_r
+=\frac{1}{r^2}\frac{\partial}{\partial r}(r^2U_r),
+\qquad r&gt;0.
+$$</span></p>
+<p>因此原方程变成</p>
+<p><span class="math display">$$
+U_{tt}=a^2\left(U_{rr}+\frac{2}{r}U_r\right).
+$$</span></p>
+<p>多出来的 <span class="math inline">2<em>U</em><sub><em>r</em></sub>/<em>r</em></span>
+是三维几何带来的，不能直接拿一维的达朗贝尔公式处理。现在设 <span class="math inline"><em>v</em>(<em>r</em>, <em>t</em>) = <em>r</em><em>U</em>(<em>r</em>, <em>t</em>)</span>，直接求导得到</p>
+<p><span class="math display"><em>v</em><sub><em>r</em><em>r</em></sub> = 2<em>U</em><sub><em>r</em></sub> + <em>r</em><em>U</em><sub><em>r</em><em>r</em></sub>,   <em>v</em><sub><em>t</em><em>t</em></sub> = <em>r</em><em>U</em><sub><em>t</em><em>t</em></sub>.</span></p>
+<p>所以</p>
+<p><span class="math display">$$
+\boxed{v_{tt}=a^2v_{rr}},\qquad r&gt;0.
+$$</span></p>
+<p>这已经是一维波动方程！代价是只在半直线 <span class="math inline"><em>r</em> ≥ 0</span> 上讨论，并且若原点处的 <span class="math inline"><em>U</em></span> 有界，就要有 <span class="math inline"><em>v</em>(0, <em>t</em>) = 0</span>。初值也相应地变为</p>
+<p><span class="math display"><em>v</em>(<em>r</em>, 0) = <em>r</em><em>φ</em>(<em>r</em>),   <em>v</em><sub><em>t</em></sub>(<em>r</em>, 0) = <em>r</em><em>ψ</em>(<em>r</em>).</span></p>
+<p>可以把 <span class="math inline"><em>r</em><em>φ</em>(<em>r</em>)</span>、<span class="math inline"><em>r</em><em>ψ</em>(<em>r</em>)</span>
+向负半轴作奇延拓，再对 <span class="math inline"><em>v</em></span>
+使用一维达朗贝尔公式，最后对 <span class="math inline"><em>r</em> &gt; 0</span> 除以 <span class="math inline"><em>r</em></span>，在 <span class="math inline"><em>r</em> = 0</span>
+处取极限。这个小计算说明了下面球面平均法的核心：<strong>把三维的径向部分变成一维波动</strong>。</p>
+<h3 id="一般初值引入球面平均">一般初值：引入球面平均</h3>
+<p>一般的 <span class="math inline"><em>φ</em>(<strong>x</strong>)</span> 与 <span class="math inline"><em>ψ</em>(<strong>x</strong>)</span>
+并不球对称。为此固定一个观察点 <span class="math inline"><strong>x</strong></span>，对以它为球心、半径为
+<span class="math inline"><em>r</em></span> 的球面取平均。对任意函数
+<span class="math inline"><em>h</em></span>，定义</p>
+<p><span class="math display">$$
+M_h(\boldsymbol{x},r)
+=\frac{1}{4\pi r^2}
+\int_{|\boldsymbol{y}-\boldsymbol{x}|=r}h(\boldsymbol{y})\,\mathrm
+dS_{\boldsymbol{y}},
+\qquad r&gt;0.
+$$</span></p>
+<p>把球面写成 <span class="math inline"><strong>y</strong> = <strong>x</strong> + <em>r</em><strong>ω</strong></span>，<span class="math inline">|<strong>ω</strong>| = 1</span>，同一个平均又能写成</p>
+<p><span class="math display">$$
+M_h(\boldsymbol{x},r)
+=\frac{1}{4\pi}\int_{S^2}h(\boldsymbol{x}+r\boldsymbol{\omega})
+\,\mathrm d\omega.
+$$</span></p>
+<p>这里 <span class="math inline">d<em>S</em><sub><strong>y</strong></sub> = <em>r</em><sup>2</sup>d<em>ω</em></span>。两个公式分母不同，是因为前者在<strong>半径为
+<span class="math inline"><em>r</em></span>
+的球面</strong>上积分，后者在<strong>单位球面</strong>上积分；不能把
+<span class="math inline">4<em>π</em><em>r</em><sup>2</sup></span> 与
+<span class="math inline">4<em>π</em></span> 随意互换。</p>
+<p>假设 <span class="math inline"><em>h</em></span> 足够光滑，则当 <span class="math inline"><em>r</em> → 0</span>，球面缩到球心，得到</p>
+<p><span class="math display"><em>M</em><sub><em>h</em></sub>(<strong>x</strong>, 0) = <em>h</em>(<strong>x</strong>).</span></p>
+<p>再对单位球面公式求 <span class="math inline"><em>r</em></span>
+导数：</p>
+<p><span class="math display">$$
+\frac{\partial M_h}{\partial r}
+=\frac{1}{4\pi}\int_{S^2}
+\nabla h(\boldsymbol{x}+r\boldsymbol{\omega})\cdot\boldsymbol{\omega}
+\,\mathrm d\omega.
+$$</span></p>
+<p>相反方向的 <span class="math inline"><strong>ω</strong></span> 在
+<span class="math inline"><em>r</em> = 0</span> 时相互抵消，故 <span class="math inline">∂<sub><em>r</em></sub><em>M</em><sub><em>h</em></sub>(<strong>x</strong>, 0) = 0</span>。这两条初值性质马上会用到。</p>
+<h3 id="球面平均与拉普拉斯算子的关系">球面平均与拉普拉斯算子的关系</h3>
+<p>为了得到 <span class="math inline"><em>M</em><sub><em>u</em></sub></span>
+所满足的方程，需要把球面平均的 <span class="math inline"><em>r</em></span>
+导数同空间拉普拉斯联系起来。由上式和高斯公式，记 <span class="math inline"><em>B</em><sub><em>r</em></sub>(<strong>x</strong>)</span>
+为半径 <span class="math inline"><em>r</em></span> 的球，有</p>
+<p><span class="math display">$$
+\begin{aligned}
+\partial_rM_h(\boldsymbol{x},r)
+&amp;=\frac{1}{4\pi r^2}
+\int_{|\boldsymbol{y}-\boldsymbol{x}|=r}
+\partial_nh(\boldsymbol{y})\,\mathrm dS_{\boldsymbol{y}}\\
+&amp;=\frac{1}{4\pi r^2}
+\int_{B_r(\boldsymbol{x})}\Delta h(\boldsymbol{y})\,\mathrm
+d\boldsymbol{y}.
+\end{aligned}
+$$</span></p>
+<p>再对 <span class="math inline"><em>r</em></span> 求导。上式的分母产生
+<span class="math inline">−2∂<sub><em>r</em></sub><em>M</em><sub><em>h</em></sub>/<em>r</em></span>，积分上限变化产生球面上
+<span class="math inline"><em>Δ</em><em>h</em></span> 的平均。因此</p>
+<p><span class="math display">$$
+\boxed{\partial_{rr}M_h+\frac{2}{r}\partial_rM_h=M_{\Delta h}}.
+$$</span></p>
+<p>这个恒等式说明：球面平均后的函数，对半径 <span class="math inline"><em>r</em></span>
+来说，也满足刚才球对称函数的那种“径向拉普拉斯”结构。</p>
+<p>现在把 <span class="math inline"><em>h</em></span> 换成随时间变化的解
+<span class="math inline"><em>u</em></span>，并记 <span class="math inline"><em>M</em>(<strong>x</strong>, <em>r</em>, <em>t</em>) = <em>M</em><sub><em>u</em>(⋅, <em>t</em>)</sub>(<strong>x</strong>, <em>r</em>)</span>。时间微分可以与球面平均交换，所以由
+<span class="math inline"><em>u</em><sub><em>t</em><em>t</em></sub> = <em>a</em><sup>2</sup><em>Δ</em><em>u</em></span>
+得</p>
+<p><span class="math display">$$
+M_{tt}=a^2\left(M_{rr}+\frac{2}{r}M_r\right).
+$$</span></p>
+<p>再设 <span class="math inline"><em>w</em>(<strong>x</strong>, <em>r</em>, <em>t</em>) = <em>r</em><em>M</em>(<strong>x</strong>, <em>r</em>, <em>t</em>)</span>，就像球对称情形那样得到</p>
+<p><span class="math display">$$
+\boxed{w_{tt}=a^2w_{rr}},\qquad r&gt;0,
+$$</span></p>
+<p>并且</p>
+<p><span class="math display"><em>w</em>(<strong>x</strong>, 0, <em>t</em>) = 0,   <em>w</em>(<strong>x</strong>, <em>r</em>, 0) = <em>r</em><em>M</em><sub><em>φ</em></sub>(<strong>x</strong>, <em>r</em>),  <em>w</em><sub><em>t</em></sub>(<strong>x</strong>, <em>r</em>, 0) = <em>r</em><em>M</em><sub><em>ψ</em></sub>(<strong>x</strong>, <em>r</em>).</span></p>
+<p>原来的三维问题转成了对每个固定球心 <span class="math inline"><strong>x</strong></span> 的一维半直线问题。</p>
+<h3 id="用一维公式取回球心处的解">用一维公式取回球心处的解</h3>
+<p>将 <span class="math inline"><em>r</em><em>M</em><sub><em>φ</em></sub></span>、<span class="math inline"><em>r</em><em>M</em><sub><em>ψ</em></sub></span>
+作奇延拓，便可把一维达朗贝尔公式用于 <span class="math inline"><em>w</em></span>。因为 <span class="math inline"><em>M</em>(<strong>x</strong>, 0, <em>t</em>) = <em>u</em>(<strong>x</strong>, <em>t</em>)</span>，而
+<span class="math inline"><em>w</em> = <em>r</em><em>M</em></span>，所以</p>
+<p><span class="math display">$$
+u(\boldsymbol{x},t)=\left.\frac{\partial w}{\partial r}\right|_{r=0}.
+$$</span></p>
+<p>对延拓后的一维公式求导，再令 <span class="math inline"><em>r</em> = 0</span>，可得到非常紧凑的结果：</p>
+<p><span class="math display">$$
+\boxed{u(\boldsymbol{x},t)
+=\frac{\partial}{\partial t}\left[tM_{\varphi}(\boldsymbol{x},at)\right]
++tM_{\psi}(\boldsymbol{x},at).}
+$$</span></p>
+<p>把球面平均的定义代回去，就是三维波动方程的<strong>Poisson
+公式</strong>：</p>
+<p><span class="math display">$$
+\boxed{\begin{aligned}
+u(\boldsymbol{x},t)
+={}&amp;\frac{\partial}{\partial t}\left[
+\frac{1}{4\pi a^2t}
+\int_{|\boldsymbol{y}-\boldsymbol{x}|=at}
+\varphi(\boldsymbol{y})\,\mathrm dS_{\boldsymbol{y}}
+\right]\\
+&amp;+\frac{1}{4\pi a^2t}
+\int_{|\boldsymbol{y}-\boldsymbol{x}|=at}
+\psi(\boldsymbol{y})\,\mathrm dS_{\boldsymbol{y}},
+\qquad t&gt;0.
+\end{aligned}}
+$$</span></p>
+<p><span class="math inline"><em>t</em> = 0</span> 处不要把分母中的
+<span class="math inline"><em>t</em></span>
+直接代成零，而要回到平均形式取极限。用 <span class="math inline"><em>M</em><sub><em>h</em></sub>(<strong>x</strong>, 0) = <em>h</em>(<strong>x</strong>)</span>、<span class="math inline">∂<sub><em>r</em></sub><em>M</em><sub><em>h</em></sub>(<strong>x</strong>, 0) = 0</span>，可以验证
+<span class="math inline"><em>u</em>(<strong>x</strong>, 0) = <em>φ</em>(<strong>x</strong>)</span>
+且 <span class="math inline"><em>u</em><sub><em>t</em></sub>(<strong>x</strong>, 0) = <em>ψ</em>(<strong>x</strong>)</span>。在
+<span class="math inline"><em>φ</em> ∈ <em>C</em><sup>3</sup>(ℝ<sup>3</sup>)</span>、<span class="math inline"><em>ψ</em> ∈ <em>C</em><sup>2</sup>(ℝ<sup>3</sup>)</span>
+等足够光滑的条件下，这一表达式给出古典解；唯一性还可以通过后面的能量方法理解。</p>
+<h3 id="两个直接代入的例子">两个直接代入的例子</h3>
+<p><strong>例一：常数初始速度。</strong>设 <span class="math inline"><em>φ</em> ≡ 0</span>，<span class="math inline"><em>ψ</em> ≡ <em>c</em></span>。常数的球面平均仍为
+<span class="math inline"><em>c</em></span>，所以 <span class="math inline"><em>u</em>(<strong>x</strong>, <em>t</em>) = <em>c</em><em>t</em></span>。它满足
+<span class="math inline"><em>u</em><sub><em>t</em><em>t</em></sub> = 0</span>、<span class="math inline"><em>Δ</em><em>u</em> = 0</span>，初始速度也正是
+<span class="math inline"><em>c</em></span>。这个例子可用来检查 Poisson
+公式中速度项前面的因子确实是 <span class="math inline"><em>t</em></span>。</p>
+<p><strong>例二：二次初始位移。</strong>设 <span class="math inline"><em>φ</em>(<strong>x</strong>) = |<strong>x</strong>|<sup>2</sup></span>，<span class="math inline"><em>ψ</em> ≡ 0</span>。单位球面上 <span class="math inline"><strong>ω</strong></span> 的平均为零，因而</p>
+<p><span class="math display">$$
+M_{\varphi}(\boldsymbol{x},r)
+=\frac1{4\pi}\int_{S^2}|\boldsymbol{x}+r\boldsymbol{\omega}|^2\,\mathrm
+d\omega
+=|\boldsymbol{x}|^2+r^2.
+$$</span></p>
+<p>于是</p>
+<p><span class="math display">$$
+u(\boldsymbol{x},t)
+=\frac{\partial}{\partial t}
+\bigl[t(|\boldsymbol{x}|^2+a^2t^2)\bigr]
+=|\boldsymbol{x}|^2+3a^2t^2.
+$$</span></p>
+<p>再直接验算：<span class="math inline"><em>u</em><sub><em>t</em><em>t</em></sub> = 6<em>a</em><sup>2</sup></span>，而三维中
+<span class="math inline"><em>Δ</em>|<strong>x</strong>|<sup>2</sup> = 6</span>，所以
+<span class="math inline"><em>u</em><sub><em>t</em><em>t</em></sub> − <em>a</em><sup>2</sup><em>Δ</em><em>u</em> = 0</span>。通过这种简单数据检验系数，比死记分母
+<span class="math inline">4<em>π</em><em>a</em><sup>2</sup><em>t</em></span>
+更可靠。</p>
+<h3 id="波传播的几何意义及适用范围">波传播的几何意义及适用范围</h3>
+<p>三维 Poisson 公式由以 <span class="math inline"><strong>x</strong></span> 为球心、半径为 <span class="math inline"><em>a</em><em>t</em></span>
+的<strong>球面</strong>上的初始数据决定。速度项直接取 <span class="math inline"><em>ψ</em></span>
+的球面平均；位移项还对半径求导，因此也涉及 <span class="math inline"><em>φ</em></span>
+在该球面处沿径向的变化。若初始数据有紧支集，固定观察点 <span class="math inline"><strong>x</strong></span>
+后，足够晚的球面会离开支集，该点的解便回到零。这是三维齐次波动方程鲜明的有限传播特点。</p>
+<p>不要把它和一维的情况混同：一维达朗贝尔公式中的初始速度是在整个 <span class="math inline">[<em>x</em> − <em>a</em><em>t</em>, <em>x</em> + <em>a</em><em>t</em>]</span>
+上积分。二维波动方程的传播性质也与三维不同，因此不能直接把上面球面公式的
+<span class="math inline">4<em>π</em></span>
+改成圆周长来得到二维答案。</p>
+<p>Poisson
+公式在这里处理的是<strong>三维、整空间、齐次方程</strong>。若存在外力，可沿用前面的齐次化原理：对每个
+<span class="math inline"><em>τ</em></span>，把 <span class="math inline"><em>f</em>(⋅, <em>τ</em>)</span>
+当作当时施加的初始速度，再积分这些响应。形式上，零初值的受迫解为</p>
+<p><span class="math display"><em>u</em><sub><em>f</em></sub>(<strong>x</strong>, <em>t</em>) = ∫<sub>0</sub><sup><em>t</em></sup>(<em>t</em> − <em>τ</em>)<em>M</em><sub><em>f</em>(⋅, <em>τ</em>)</sub>(<strong>x</strong>, <em>a</em>(<em>t</em> − <em>τ</em>)) d<em>τ</em>,</span></p>
+<p>其余初值所产生的解仍由 Poisson
+公式给出。若有有限区域的边界，还必须处理反射与边界条件；这时不能只靠整空间的球面平均公式。</p>
+<h2 id="能量不等式波动方程解的唯一性与稳定性">能量不等式、波动方程解的唯一性与稳定性</h2>
+<p>前面的两种显式方法给出了许多解，但对复杂区域或一般初值，我们未必能把解写成整齐的公式。这时还可以先问：<strong>假设解存在，能不能从已知数据控制它的大小？同样的数据会不会产生两个不同的解？数据略有变化，解会不会剧烈变化？</strong>能量法正是处理这些问题的工具。</p>
+<p>这里得到的估计通常叫<strong>先验估计</strong>：它是在“解已经存在且足够光滑”的前提下推出来的，所以它本身不负责证明存在性，却能为唯一性与稳定性提供依据。</p>
+<h3 id="一维两端固定弦建立能量恒等式">一维两端固定弦：建立能量恒等式</h3>
+<p>先看 <span class="math inline">0 &lt; <em>x</em> &lt; <em>l</em></span>
+上的初边值问题：</p>
+<p><span class="math display">$$
+\begin{cases}
+u_{tt}-a^2u_{xx}=f(x,t),&amp;0&lt;x&lt;l,\quad 0&lt;t&lt;T,\\
+u(0,t)=u(l,t)=0,\\
+u(x,0)=\varphi(x),\quad u_t(x,0)=\psi(x).
+\end{cases}
+$$</span></p>
+<p>定义（省去一个无关紧要的 <span class="math inline">1/2</span>）</p>
+<p><span class="math display"><em>E</em>(<em>t</em>) = ∫<sub>0</sub><sup><em>l</em></sup>(<em>u</em><sub><em>t</em></sub>(<em>x</em>, <em>t</em>)<sup>2</sup> + <em>a</em><sup>2</sup><em>u</em><sub><em>x</em></sub>(<em>x</em>, <em>t</em>)<sup>2</sup>) <em>d</em><em>x</em>.</span></p>
+<p><span class="math inline"><em>u</em><sub><em>t</em></sub><sup>2</sup></span>
+对应运动速度的平方，<span class="math inline"><em>a</em><sup>2</sup><em>u</em><sub><em>x</em></sub><sup>2</sup></span>
+对应弦形变的平方。若还要写成真实的物理能量，需乘上线密度等常数；这里的
+<span class="math inline"><em>E</em></span>
+只作为便于估计的归一化能量。</p>
+<p>把方程两边乘以 <span class="math inline"><em>u</em><sub><em>t</em></sub></span>，再对 <span class="math inline"><em>x</em> ∈ (0, <em>l</em>)</span> 积分：</p>
+<p><span class="math display">∫<sub>0</sub><sup><em>l</em></sup><em>u</em><sub><em>t</em><em>t</em></sub><em>u</em><sub><em>t</em></sub> <em>d</em><em>x</em> = <em>a</em><sup>2</sup>∫<sub>0</sub><sup><em>l</em></sup><em>u</em><sub><em>x</em><em>x</em></sub><em>u</em><sub><em>t</em></sub> <em>d</em><em>x</em> + ∫<sub>0</sub><sup><em>l</em></sup><em>f</em><em>u</em><sub><em>t</em></sub> <em>d</em><em>x</em>.</span></p>
+<p>第一项是 <span class="math inline">$\frac12\frac{d}{dt}\int
+u_t^2dx$</span>。对含 <span class="math inline"><em>u</em><sub><em>x</em><em>x</em></sub></span>
+的项按 <span class="math inline"><em>x</em></span> 分部积分：</p>
+<p><span class="math display">$$
+\begin{aligned}
+a^2\int_0^lu_{xx}u_t\,dx
+&amp;=a^2\bigl[u_xu_t\bigr]_{x=0}^{x=l}
+-a^2\int_0^lu_xu_{xt}\,dx\\
+&amp;=a^2\bigl[u_xu_t\bigr]_{0}^{l}
+-\frac{a^2}{2}\frac{d}{dt}\int_0^lu_x^2\,dx.
+\end{aligned}
+$$</span></p>
+<p>由于端点位移对所有时间恒为零，端点速度 <span class="math inline"><em>u</em><sub><em>t</em></sub>(0, <em>t</em>)</span>、<span class="math inline"><em>u</em><sub><em>t</em></sub>(<em>l</em>, <em>t</em>)</span>
+也为零，边界项消失。于是得到<strong>能量恒等式</strong>：</p>
+<p><span class="math display">$$
+\boxed{\frac{dE}{dt}=2\int_0^lf(x,t)u_t(x,t)\,dx.}
+$$</span></p>
+<p>这一行是后面所有结论的起点。若边界条件不齐次，<span class="math inline">[<em>u</em><sub><em>x</em></sub><em>u</em><sub><em>t</em></sub>]<sub>0</sub><sup><em>l</em></sup></span>
+一般不为零，表示边界也能向弦做功；此时不能不加说明地沿用下面的守恒式。</p>
+<h3 id="无外力时能量守恒">无外力时：能量守恒</h3>
+<p>当 <span class="math inline"><em>f</em> ≡ 0</span>，能量恒等式右端为零，所以</p>
+<p><span class="math display"><em>E</em>(<em>t</em>) = <em>E</em>(0) = ∫<sub>0</sub><sup><em>l</em></sup>[<em>ψ</em>(<em>x</em>)<sup>2</sup> + <em>a</em><sup>2</sup><em>φ</em><sup>′</sup>(<em>x</em>)<sup>2</sup>]<em>d</em><em>x</em>.</span></p>
+<p>解的振动形状虽然在变，但能量并没有凭空产生或消失。固定端点不移动，也就不通过边界做功。如果以后遇到阻尼项或者会运动的端点，能量通常不再守恒，这反过来提示我们去检查方程和边界中有哪些能量输入或损耗。</p>
+<h3 id="有外力时从恒等式走到能量不等式">有外力时：从恒等式走到能量不等式</h3>
+<p>当 <span class="math inline"><em>f</em> ≠ 0</span>，外力可能使能量增加。利用
+<span class="math inline">2|<em>p</em><em>q</em>| ≤ <em>p</em><sup>2</sup> + <em>q</em><sup>2</sup></span>，有</p>
+<p><span class="math display">2|∫<sub>0</sub><sup><em>l</em></sup><em>f</em><em>u</em><sub><em>t</em></sub> <em>d</em><em>x</em>| ≤ ∫<sub>0</sub><sup><em>l</em></sup><em>f</em><sup>2</sup> <em>d</em><em>x</em> + ∫<sub>0</sub><sup><em>l</em></sup><em>u</em><sub><em>t</em></sub><sup>2</sup> <em>d</em><em>x</em> ≤ ∥<em>f</em>(⋅, <em>t</em>)∥<sub><em>L</em><sup>2</sup>(0, <em>l</em>)</sub><sup>2</sup> + <em>E</em>(<em>t</em>).</span></p>
+<p>于是 <span class="math inline"><em>E</em><sup>′</sup>(<em>t</em>) ≤ <em>E</em>(<em>t</em>)+∥<em>f</em>(⋅, <em>t</em>)∥<sub>2</sub><sup>2</sup></span>。为了看清积分因子，乘上
+<span class="math inline"><em>e</em><sup>−<em>t</em></sup></span>：</p>
+<p><span class="math display">$$
+\frac{d}{dt}\bigl(e^{-t}E(t)\bigr)
+=e^{-t}\bigl(E'(t)-E(t)\bigr)
+\le e^{-t}\|f(\cdot,t)\|_2^2.
+$$</span></p>
+<p>从 <span class="math inline">0</span> 积分到 <span class="math inline"><em>t</em></span> 得</p>
+<p><span class="math display">$$
+\boxed{E(t)\le e^t\left[E(0)+
+\int_0^te^{-s}\|f(\cdot,s)\|_2^2\,ds\right].}
+$$</span></p>
+<p>特别地，对所有 <span class="math inline">0 ≤ <em>t</em> ≤ <em>T</em></span> 都有</p>
+<p><span class="math display">$$
+\boxed{E(t)\le e^T\left[
+\int_0^l\bigl(\psi^2+a^2(\varphi')^2\bigr)dx
++\int_0^T\int_0^lf(x,s)^2\,dx\,ds\right].}
+$$</span></p>
+<p>右端只含已知的初始数据和外力；常数 <span class="math inline"><em>e</em><sup><em>T</em></sup></span>
+只依赖考察的时间范围。这就是一个典型的<strong>能量估计</strong>。常数还可以通过其他不等式改进，但“解能被数据控制”的结论才是重点。</p>
+<p>也可以从 <span class="math inline"><em>E</em><sup>′</sup> = 2∫<em>f</em><em>u</em><sub><em>t</em></sub></span>
+得到另一种直观估计：<span class="math inline">$E'\le2\|f\|_2\sqrt
+E$</span>，形式上除以 <span class="math inline">$2\sqrt E$</span>
+后积分，得</p>
+<p><span class="math display">$$
+\sqrt{E(t)}\le\sqrt{E(0)}+
+\int_0^t\|f(\cdot,s)\|_2\,ds.
+$$</span></p>
+<p>当 <span class="math inline"><em>E</em> = 0</span> 的时刻，用 <span class="math inline">$\sqrt{E+\varepsilon}$</span> 先推导，再令 <span class="math inline"><em>ε</em> ↓ 0</span>
+即可避免直接除以零。这个形式更能说明：外力在每一小段时间内给能量平方根增加多少。</p>
+<h3 id="为什么还要估计-u-本身">为什么还要估计 <span class="math inline"><em>u</em></span> 本身</h3>
+<p><span class="math inline"><em>E</em>(<em>t</em>)</span> 控制了 <span class="math inline"><em>u</em><sub><em>t</em></sub></span> 和 <span class="math inline"><em>u</em><sub><em>x</em></sub></span>，却没有在定义中直接出现
+<span class="math inline"><em>u</em></span>。对于零边界条件，可借助
+Poincaré 不等式从 <span class="math inline"><em>u</em><sub><em>x</em></sub></span> 控制 <span class="math inline"><em>u</em></span>；也可以直接由初始位移和速度来估计。记</p>
+<p><span class="math display"><em>H</em>(<em>t</em>) = ∫<sub>0</sub><sup><em>l</em></sup><em>u</em>(<em>x</em>, <em>t</em>)<sup>2</sup> <em>d</em><em>x</em>.</span></p>
+<p>求导并使用 <span class="math inline">2|<em>u</em><em>u</em><sub><em>t</em></sub>| ≤ <em>u</em><sup>2</sup> + <em>u</em><sub><em>t</em></sub><sup>2</sup></span>：</p>
+<p><span class="math display"><em>H</em><sup>′</sup>(<em>t</em>) = 2∫<sub>0</sub><sup><em>l</em></sup><em>u</em><em>u</em><sub><em>t</em></sub> <em>d</em><em>x</em> ≤ <em>H</em>(<em>t</em>) + ∫<sub>0</sub><sup><em>l</em></sup><em>u</em><sub><em>t</em></sub><sup>2</sup> <em>d</em><em>x</em> ≤ <em>H</em>(<em>t</em>) + <em>E</em>(<em>t</em>).</span></p>
+<p>同样乘以 <span class="math inline"><em>e</em><sup>−<em>t</em></sup></span>
+积分，得到</p>
+<p><span class="math display"><em>H</em>(<em>t</em>) ≤ <em>e</em><sup><em>t</em></sup>[<em>H</em>(0) + ∫<sub>0</sub><sup><em>t</em></sup><em>e</em><sup>−<em>s</em></sup><em>E</em>(<em>s</em>) <em>d</em><em>s</em>].</span></p>
+<p>再代入上一段的能量估计，便能同时控制 <span class="math inline">∥<em>u</em>∥<sub><em>L</em><sup>2</sup></sub></span>、<span class="math inline">∥<em>u</em><sub><em>t</em></sub>∥<sub><em>L</em><sup>2</sup></sub></span>
+和 <span class="math inline">∥<em>u</em><sub><em>x</em></sub>∥<sub><em>L</em><sup>2</sup></sub></span>。其中
+<span class="math inline"><em>H</em>(0) = ∫<sub>0</sub><sup><em>l</em></sup><em>φ</em><sup>2</sup><em>d</em><em>x</em></span>；这一项不能因为能量
+<span class="math inline"><em>E</em>(0)</span> 里没有它就随意丢掉。</p>
+<h3 id="从能量估计推出唯一性">从能量估计推出唯一性</h3>
+<p>假设 <span class="math inline"><em>u</em><sub>1</sub>, <em>u</em><sub>2</sub></span>
+对应<strong>同一组</strong> <span class="math inline"><em>f</em>, <em>φ</em>, <em>ψ</em></span>
+和零端点条件。令 <span class="math inline"><em>w</em> = <em>u</em><sub>1</sub> − <em>u</em><sub>2</sub></span>，则
+<span class="math inline"><em>w</em></span> 满足</p>
+<p><span class="math display">$$
+\begin{cases}
+w_{tt}-a^2w_{xx}=0,\\
+w(0,t)=w(l,t)=0,\\
+w(x,0)=0,\quad w_t(x,0)=0.
+\end{cases}
+$$</span></p>
+<p>对 <span class="math inline"><em>w</em></span> 使用能量守恒：<span class="math inline"><em>E</em><sub><em>w</em></sub>(<em>t</em>) = <em>E</em><sub><em>w</em></sub>(0) = 0</span>。由于被积函数
+<span class="math inline"><em>w</em><sub><em>t</em></sub><sup>2</sup> + <em>a</em><sup>2</sup><em>w</em><sub><em>x</em></sub><sup>2</sup></span>
+非负，只能有 <span class="math inline"><em>w</em><sub><em>t</em></sub> = <em>w</em><sub><em>x</em></sub> = 0</span>。因此
+<span class="math inline"><em>w</em></span> 在时空中为常数，再由初始条件
+<span class="math inline"><em>w</em>(<em>x</em>, 0) = 0</span> 知 <span class="math inline"><em>w</em> ≡ 0</span>，也就是</p>
+<p><span class="math display">$$
+\boxed{u_1=u_2.}
+$$</span></p>
+<p>注意这个证明没有给出“解一定存在”；它只说明，如果两个足够规则的解都存在，它们不可能不同。</p>
+<h3 id="从差函数理解稳定性">从差函数理解稳定性</h3>
+<p>现在允许两组数据稍有不同：<span class="math inline"><em>u</em><sub><em>i</em></sub></span> 对应 <span class="math inline"><em>φ</em><sub><em>i</em></sub>, <em>ψ</em><sub><em>i</em></sub>, <em>f</em><sub><em>i</em></sub></span>（<span class="math inline"><em>i</em> = 1, 2</span>）。差 <span class="math inline"><em>w</em> = <em>u</em><sub>1</sub> − <em>u</em><sub>2</sub></span>
+仍满足波动方程，只是数据变成差：</p>
+<p><span class="math display"><em>w</em><sub><em>t</em><em>t</em></sub> − <em>a</em><sup>2</sup><em>w</em><sub><em>x</em><em>x</em></sub> = <em>f</em><sub>1</sub> − <em>f</em><sub>2</sub>,  <em>w</em>(<em>x</em>, 0) = <em>φ</em><sub>1</sub> − <em>φ</em><sub>2</sub>,  <em>w</em><sub><em>t</em></sub>(<em>x</em>, 0) = <em>ψ</em><sub>1</sub> − <em>ψ</em><sub>2</sub>.</span></p>
+<p>把前面的估计应用到 <span class="math inline"><em>w</em></span>，便有</p>
+<p><span class="math display">$$
+\begin{aligned}
+&amp;\|u_{1,t}(\cdot,t)-u_{2,t}(\cdot,t)\|_2^2
++a^2\|u_{1,x}(\cdot,t)-u_{2,x}(\cdot,t)\|_2^2\\
+&amp;\qquad\le e^T\left[
+\|\psi_1-\psi_2\|_2^2
++a^2\|\varphi'_1-\varphi'_2\|_2^2
++\int_0^T\|f_1(\cdot,s)-f_2(\cdot,s)\|_2^2\,ds
+\right].
+\end{aligned}
+$$</span></p>
+<p>再配合对 <span class="math inline"><em>H</em><sub><em>w</em></sub></span>
+的估计，也能控制 <span class="math inline">∥<em>u</em><sub>1</sub> − <em>u</em><sub>2</sub>∥<sub>2</sub></span>。这说明在任意固定的有限时间区间
+<span class="math inline">[0, <em>T</em>]</span>
+内，初始位移、初始速度和外力的适当范数趋近时，解也在相应的能量范数中趋近，这就是<strong>连续依赖性（稳定性）</strong>。</p>
+<h3 id="二维有界区域同一个证明如何推广">二维有界区域：同一个证明如何推广</h3>
+<p>取平面上的有界区域 <span class="math inline"><em>Ω</em></span>，边界
+<span class="math inline"><em>Γ</em></span> 足够规则，考察</p>
+<p><span class="math display">$$
+\begin{cases}
+u_{tt}-a^2(u_{xx}+u_{yy})=f(x,y,t),&amp;(x,y)\in\Omega,\ t&gt;0,\\
+u|_\Gamma=0,\\
+u(x,y,0)=\varphi(x,y),\quad u_t(x,y,0)=\psi(x,y).
+\end{cases}
+$$</span></p>
+<p>一维的 <span class="math inline"><em>u</em><sub><em>x</em></sub><sup>2</sup></span>
+变成二维的 <span class="math inline">|∇<em>u</em>|<sup>2</sup> = <em>u</em><sub><em>x</em></sub><sup>2</sup> + <em>u</em><sub><em>y</em></sub><sup>2</sup></span>，定义</p>
+<p><span class="math display"><em>E</em><sub><em>Ω</em></sub>(<em>t</em>) = ∫<sub><em>Ω</em></sub>(<em>u</em><sub><em>t</em></sub><sup>2</sup> + <em>a</em><sup>2</sup>|∇<em>u</em>|<sup>2</sup>) <em>d</em><em>x</em> <em>d</em><em>y</em>.</span></p>
+<p>把方程乘以 <span class="math inline"><em>u</em><sub><em>t</em></sub></span> 后在 <span class="math inline"><em>Ω</em></span> 上积分，用 Green 公式处理 <span class="math inline"><em>Δ</em><em>u</em></span>：</p>
+<p><span class="math display">∫<sub><em>Ω</em></sub>(<em>Δ</em><em>u</em>)<em>u</em><sub><em>t</em></sub> <em>d</em><em>x</em> <em>d</em><em>y</em> = ∫<sub><em>Γ</em></sub><em>u</em><sub><em>t</em></sub>∂<sub><em>n</em></sub><em>u</em> <em>d</em><em>S</em> − ∫<sub><em>Ω</em></sub>∇<em>u</em> ⋅ ∇<em>u</em><sub><em>t</em></sub> <em>d</em><em>x</em> <em>d</em><em>y</em>.</span></p>
+<p>零 Dirichlet 边界使边界上的 <span class="math inline"><em>u</em><sub><em>t</em></sub> = 0</span>，于是</p>
+<p><span class="math display"><em>E</em><sub><em>Ω</em><sup>′</sup></sub>(<em>t</em>) = 2∫<sub><em>Ω</em></sub><em>f</em><em>u</em><sub><em>t</em></sub> <em>d</em><em>x</em> <em>d</em><em>y</em>.</span></p>
+<p>和一维完全同样地使用 Cauchy–Schwarz、不等式 <span class="math inline">2<em>p</em><em>q</em> ≤ <em>p</em><sup>2</sup> + <em>q</em><sup>2</sup></span>
+与积分因子，就有</p>
+<p><span class="math display">$$
+\boxed{E_\Omega(t)\le e^T\left[
+\int_\Omega\bigl(\psi^2+a^2|\nabla\varphi|^2\bigr)\,dx\,dy
++\int_0^T\int_\Omega f^2\,dx\,dy\,ds
+\right],\quad 0\le t\le T.}
+$$</span></p>
+<p>若 <span class="math inline"><em>f</em> = 0</span>，上式可加强为
+<span class="math inline"><em>E</em><sub><em>Ω</em></sub>(<em>t</em>) = <em>E</em><sub><em>Ω</em></sub>(0)</span>。对两个解的差应用该估计，立即得到古典解的唯一性；允许数据不同，则得到
+<span class="math inline"><em>H</em><sup>1</sup></span> 位移、<span class="math inline"><em>L</em><sup>2</sup></span>
+速度意义下的稳定性。这里的 <span class="math inline"><em>H</em><sup>1</sup></span>
+简单理解为函数和它的一阶空间导数都可用平方积分控制。</p>
+<p><strong>边界条件的提醒</strong>：上面的边界项消失依靠 <span class="math inline"><em>u</em>|<sub><em>Γ</em></sub> = 0</span>。齐次
+Neumann 条件 <span class="math inline">∂<sub><em>n</em></sub><em>u</em> = 0</span>
+也会让这个边界项消失，但 <span class="math inline"><em>E</em></span>
+对常数位移不敏感；证明唯一性时还需用初始位移确定该常数。非齐次边界条件应保留边界做功项，或先做变量代换把边界齐次化。</p>
+<h3 id="整个空间中的柯西问题收缩的影响锥">整个空间中的柯西问题：收缩的影响锥</h3>
+<p>有界区域上的能量证明使用了固定边界。整空间没有固定边界，但达朗贝尔公式告诉我们传播速度是有限的。要在二维柯西问题中同样利用这一点，可围绕目标点
+<span class="math inline">(<strong>x</strong><sub>0</sub>, <em>t</em><sub>0</sub>)</span>
+画一个向过去张开的<strong>特征锥</strong>。</p>
+<p>设 <span class="math inline"><strong>x</strong> = (<em>x</em>, <em>y</em>) ∈ ℝ<sup>2</sup></span>，考虑齐次方程
+<span class="math inline"><em>u</em><sub><em>t</em><em>t</em></sub> − <em>a</em><sup>2</sup><em>Δ</em><em>u</em> = 0</span>。对
+<span class="math inline">0 ≤ <em>s</em> ≤ <em>t</em><sub>0</sub></span>，取时刻
+<span class="math inline"><em>s</em></span> 的圆盘</p>
+<p><span class="math display"><em>Ω</em><sub><em>s</em></sub> = {<strong>x</strong> : |<strong>x</strong> − <strong>x</strong><sub>0</sub>| ≤ <em>a</em>(<em>t</em><sub>0</sub> − <em>s</em>)}.</span></p>
+<p><span class="math inline"><em>s</em> = 0</span> 时它的半径是 <span class="math inline"><em>a</em><em>t</em><sub>0</sub></span>；随着 <span class="math inline"><em>s</em></span> 接近 <span class="math inline"><em>t</em><sub>0</sub></span>，圆盘收缩到观察点。定义圆盘内的能量</p>
+<p><span class="math display">$$
+\mathcal E(s)=\frac12\int_{\Omega_s}
+\bigl(u_t^2+a^2|\nabla u|^2\bigr)\,dx\,dy.
+$$</span></p>
+<p>求导时有两个变化：被积函数本身随时间变化，积分区域的边界又以速度
+<span class="math inline"><em>a</em></span>
+向内移动。对第一部分使用方程和 Green
+公式，对第二部分计算移动边界带走的能量，可得</p>
+<p><span class="math display">$$
+\begin{aligned}
+\mathcal E'(s)
+={}&amp;\int_{\Omega_s}u_t(u_{tt}-a^2\Delta u)\,dx\,dy\\
+&amp;+\int_{\partial\Omega_s}
+\left[a^2u_t\partial_nu
+-\frac a2\bigl(u_t^2+a^2|\nabla u|^2\bigr)\right]dS.
+\end{aligned}
+$$</span></p>
+<p>内部积分为零。对边界积分，先用 <span class="math inline">|∂<sub><em>n</em></sub><em>u</em>| ≤ |∇<em>u</em>|</span>，再用
+<span class="math inline">2<em>p</em><em>q</em> ≤ <em>p</em><sup>2</sup> + <em>q</em><sup>2</sup></span>，便有</p>
+<p><span class="math display">$$
+a^2u_t\partial_nu
+\le\frac a2u_t^2+\frac{a^3}{2}|\nabla u|^2.
+$$</span></p>
+<p>因此 <span class="math inline">ℰ<sup>′</sup>(<em>s</em>) ≤ 0</span>，即</p>
+<p><span class="math display">$$
+\boxed{\mathcal E(s)\le\mathcal E(0),\qquad 0\le s&lt;t_0.}
+$$</span></p>
+<p>这是<strong>特征锥能量不等式</strong>：向目标点收缩时，锥内能量不能凭空增加。如果两组解在底面
+<span class="math inline"><em>Ω</em><sub>0</sub></span>
+的初始位移和速度完全相同，其差 <span class="math inline"><em>w</em></span> 的底面能量为零，则锥内 <span class="math inline"><em>w</em><sub><em>t</em></sub> = ∇<em>w</em> = 0</span>；再由底面上
+<span class="math inline"><em>w</em> = 0</span> 可知整锥内 <span class="math inline"><em>w</em> = 0</span>。特别地，两组解在目标点的值相同。由此既得到局部唯一性，也从另一个角度证明了<strong>有限传播速度</strong>：底面圆盘以外的初始扰动无法在
+<span class="math inline"><em>t</em><sub>0</sub></span>
+前影响圆锥顶点。</p>
+<p>这里的锥底半径必须是 <span class="math inline"><em>a</em><em>t</em><sub>0</sub></span>，锥在时刻
+<span class="math inline"><em>s</em></span> 的半径必须是 <span class="math inline"><em>a</em>(<em>t</em><sub>0</sub> − <em>s</em>)</span>。把半径写成
+<span class="math inline"><em>a</em><em>s</em></span>
+会变成向未来扩大的圆盘，就不再是同一个“过去依赖区域”。</p>
+<h3 id="柯西问题的稳定性和最后的区分">柯西问题的稳定性和最后的区分</h3>
+<p>若两组初始数据只是接近而不完全相同，仍对差 <span class="math inline"><em>w</em> = <em>u</em><sub>1</sub> − <em>u</em><sub>2</sub></span>
+使用同一个收缩锥。由 <span class="math inline">ℰ<sub><em>w</em></sub>(<em>s</em>) ≤ ℰ<sub><em>w</em></sub>(0)</span>，锥内的速度和空间梯度的平方积分范数被底面上
+<span class="math inline"><em>ψ</em><sub>1</sub> − <em>ψ</em><sub>2</sub></span>、<span class="math inline">∇(<em>φ</em><sub>1</sub> − <em>φ</em><sub>2</sub>)</span>
+控制。再利用</p>
+<p><span class="math display"><em>w</em>(<strong>x</strong>, <em>s</em>) = <em>w</em>(<strong>x</strong>, 0) + ∫<sub>0</sub><sup><em>s</em></sup><em>w</em><sub><em>t</em></sub>(<strong>x</strong>, <em>τ</em>) <em>d</em><em>τ</em>,</span></p>
+<p>也能把位移差控制住。于是只要在依赖圆盘内的初始位移、初始速度及适当导数足够接近，有限时间锥内的两组解也会接近。</p>
+<p>把这一章和前面的显式方法放在一起看，可以分清三件事：</p>
+<ol type="1">
+<li><strong>构造解</strong>：达朗贝尔公式、分离变量级数和三维 Poisson
+公式回答“解能怎样写出来”。</li>
+<li><strong>唯一性</strong>：对两个解的差做零数据能量估计，回答“会不会有另一个不同的解”。</li>
+<li><strong>稳定性</strong>：对两个解的差做非零但很小的数据估计，回答“数据改变一点，解会不会失控”。</li>
+</ol>
+<p>能量估计通常不能代替构造解的存在性证明；而单纯写出一个形式级数，也不能代替收敛、边界相容和唯一性检查。二者结合，才构成对波动方程定解问题比较完整的理解。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a target="_blank" rel="noopener" href="https://github.com/ergou10086">ErgouTree</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://ergou10086.github.io/posts/38102.html">https://ergou10086.github.io/posts/38102.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://ergou10086.github.io" target="_blank">ErgouTree's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E6%95%B0%E5%AD%A6/">数学</a><a class="post-meta__tags" href="/tags/%E7%89%A9%E7%90%86/">物理</a><a class="post-meta__tags" href="/tags/%E6%95%B0%E5%AD%A6%E5%BB%BA%E6%A8%A1/">数学建模</a><a class="post-meta__tags" href="/tags/%E5%AE%9A%E7%90%86%E8%AF%81%E6%98%8E/">定理证明</a><a class="post-meta__tags" href="/tags/%E6%95%B0%E5%AD%A6%E7%89%A9%E7%90%86%E6%96%B9%E6%B3%95/">数学物理方法</a></div><div class="post-share"><div class="addtoany"><div class="a2a_kit a2a_kit_size_32 a2a_default_style"><a class="a2a_button_facebook"></a><a class="a2a_button_twitter"></a><a class="a2a_button_wechat"></a><a class="a2a_button_sina_weibo"></a><a class="a2a_button_facebook_messenger"></a><a class="a2a_button_email"></a><a class="a2a_button_copy_link"></a><a class="a2a_dd" target="_blank" rel="noopener" href="https://www.addtoany.com/share"></a></div></div><script async="async" src="https://static.addtoany.com/menu/page.js"></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/posts/17776.html" title="ISLAND攻略"><img class="cover" src="/images/posts/cover_island.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">ISLAND攻略</div></div><div class="info-2"><div class="info-item-1">枢都 夏莲 夏篇路线  左边 Rinne Save 01 ……切那 (→有本事说出我的名字啊) (→不要爱上我啊) 我是三千界切那, 请多指教 Save 02 准备[对时间旅行者装备] [(→纱罗是我老婆) (→钟爱夏莲) 我觉得凛音很可爱 Save 03 放弃使命 (→进行时间旅行) 寻找粘合剂 (→按3部构成的节奏讲) 按2小时的节奏讲 (→还是放弃吧) 攻略玖音 Save 04 与夏莲和纱罗一起去游泳 Save 05 在这个岛上找到真正的自己 我是这个时代的人 Save 06 接受现在  夏莲路线 ​ Save 07  (→我错了) (→抱歉) 对不起 Save 08 昨天的事 (→因为迷上你了) (→因为爱你) 因为喜欢你 (→一起离开岛吧) (→去说服你父亲) 和我交往吧 我喜欢夏莲 夏莲 End  End 回收 ◆Load 1 我就是我 End → 轮回的终结 ◆Load 2 ……莫名其妙 End → 第二位时间旅行者 ◆Load 3 执行使命 End...</div></div></div></a><a class="pagination-related" href="/posts/61953.html" title="数学物理方程之弦振动方程模型的建立"><img class="cover" src="/images/posts/cover_front.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">数学物理方程之弦振动方程模型的建立</div></div><div class="info-2"><div class="info-item-1">...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/posts/47445.html" title="数学物理方程之三类典型模型的建立"><img class="cover" src="/images/posts/cover_teach2.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-02</div><div class="info-item-2">数学物理方程之三类典型模型的建立</div></div><div class="info-2"><div class="info-item-1">数学物理方程模型前言 介绍 《数学物理方程》是偏微分方程方向的一门入门课程。我们希望从具体的物理现象出发，找出所遵循的规律，把它写成方程，再研究方程的解能否解释和预测原来的现象。 数学物理方程主要研究由物理、力学等实际问题产生的函数方程，本部分以偏微分方程为主。偏微分方程理论还用于化学、生物、工程、图像处理和金融等领域。 这门课有两个比较明显的特点：  数学理论、解题方法与物理实际结合：不仅要会解方程，还要知道方程和定解条件是怎样从物理问题中来的。 需要综合运用已有知识：数学分析、常微分方程、线性代数、复变函数等知识都会用到。  本部分建立三类典型模型：波动方程、热传导方程、调和方程（及泊松方程）。它们分别描述振动传播、温度或物质的扩散、稳定状态下物理量的空间分布。 数学物理方程的研究方法 如何从实际问题中导出方程呢？课件给出的思路是： $$ \text{物理模型}\xrightarrow{\text{定量化}}\text{数学模型}. $$  建立坐标系，明确研究区域和时间范围。 选择表征过程的物理量，例如位移 u(x, t)...</div></div></div></a><a class="pagination-related" href="/posts/61953.html" title="数学物理方程之弦振动方程模型的建立"><img class="cover" src="/images/posts/cover_front.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-07-23</div><div class="info-item-2">数学物理方程之弦振动方程模型的建立</div></div><div class="info-2"><div class="info-item-1">...</div></div></div></a><a class="pagination-related" href="/posts/47136.html" title="推导theta&#x3D;0纵剖面上的抽水降落曲线公式"><img class="cover" src="/images/posts/cover_config.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-06-03</div><div class="info-item-2">推导theta&#x3D;0纵剖面上的抽水降落曲线公式</div></div><div class="info-2"><div class="info-item-1">推导 θ = 0 纵剖面上的抽水降落曲线公式 根据辐射井的抽水降落曲面模型论文内容，θ = 0 纵剖面是沿着辐射管方向的剖面。推导分为两个区域：辐射管范围内的垂直渗流区（0 ≤ ρ ≤ l + r）和辐射管范围外的水平渗流区（l + r ≤ ρ ≤ R）。以下是详细推导过程：  1. 垂直渗流区 (0 ≤ ρ ≤ l + r) 基本假设： 在垂直渗流区（辐射管范围内），地下水运动以垂向渗流为主，其核心特征是：  近井处水力坡度平缓（水位变化小） 远离井处水力坡度陡峭（水位变化大） 水位差变化率与当前位置水位差成正比  数学表述为： ΔT(ρ, 0) = ω ⋅ T(ρ, 0) ⋅ ΔρΔT(ρ, 0) = ω ⋅ T(ρ, 0) ⋅ Δρ 其中：  T(ρ, 0) = H(ρ, 0) − Hs（点(ρ, 0)与竖井水位差） ω：垂直渗流区特征参数（常数） Δρ：径向距离增量  在垂直渗流区，水位高度 T(ρ, 0) 的增长率为常数 ω。这意味着单位距离 Δρ 内，T(ρ, 0) 的增量与 T(ρ, 0)...</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="gitalk-container"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/arp.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">ErgouTree</div><div class="author-info-description">I start a brand-new life with you.</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">348</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">214</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">114</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/ergou10086"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/ergou10086" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="/zjm88822201@126.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a><a class="social-icon" href="https://space.bilibili.com/142045656?spm_id_from=333.1007.0.0" target="_blank" title="bilibili"><i class="fas fa-brands fa-bilibili" style="color: #4a72be;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">作者长期陷入galgame和osu!maina4k中 祝他好运吧 对了 如果图片加载过慢 建议科学上网进行使用</div></div><div class="card-widget card-weather"><div class="item-headline"><i class="fas fa-cloud-sun"></i><span>aside.card_weather</span></div><div class="weather-content"><div class="weather-loading"><i class="fas fa-spinner fa-spin"></i><span>加载中...</span></div><div class="weather-main" style="display: none;"><div class="weather-location"><i class="fas fa-map-marker-alt"></i><span id="weather-location">获取中...</span></div><div class="weather-info"><div class="weather-temp"><span id="weather-temp">--</span><span class="unit">°C</span></div><div class="weather-desc"><span id="weather-weather">--</span></div><div class="weather-details"><div class="weather-item"><i class="fas fa-wind"></i><span id="weather-windpower">--</span></div><div class="weather-item"><i class="fas fa-tint"></i><span id="weather-humidity">--</span></div><div class="weather-item"><i class="fas fa-eye"></i><span id="weather-winddir">--</span></div></div></div><div class="weather-update-time"><i class="fas fa-clock"></i><span id="weather-update-time">更新中...</span></div></div></div></div><div class="sticky_layout"></div><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B3%A2%E5%8A%A8%E6%96%B9%E7%A8%8B%E7%9A%84%E6%B1%82%E8%A7%A3"><span class="toc-number">1.</span> <span class="toc-text">波动方程的求解</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BE%BE%E6%9C%97%E8%B4%9D%E5%B0%94%E5%85%AC%E5%BC%8F"><span class="toc-number">2.</span> <span class="toc-text">达朗贝尔公式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BC%A6%E6%8C%AF%E5%8A%A8%E6%96%B9%E7%A8%8B%E7%9A%84%E8%BE%BE%E6%9C%97%E8%B4%9D%E5%B0%94%E8%A7%A3%E6%B3%95"><span class="toc-number">2.1.</span> <span class="toc-text">弦振动方程的达朗贝尔解法</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%97%AE%E9%A2%98%E5%92%8C%E6%96%B9%E7%A8%8B%E7%9A%84%E5%BC%95%E5%85%A5"><span class="toc-number">2.1.1.</span> <span class="toc-text">问题和方程的引入</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%9D%90%E6%A0%87%E5%8F%98%E6%8D%A2%E4%B8%8E%E6%96%B9%E7%A8%8B%E5%8C%96%E7%AE%80"><span class="toc-number">2.1.2.</span> <span class="toc-text">坐标变换与方程化简</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%80%9A%E8%A7%A3%E7%9A%84%E6%B1%82%E8%A7%A3"><span class="toc-number">2.1.3.</span> <span class="toc-text">通解的求解</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%A9%E7%94%A8%E5%88%9D%E5%A7%8B%E6%9D%A1%E4%BB%B6%E7%A1%AE%E5%AE%9A%E4%BB%BB%E6%84%8F%E5%87%BD%E6%95%B0"><span class="toc-number">2.2.</span> <span class="toc-text">利用初始条件确定任意函数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BE%BE%E6%9C%97%E8%B4%9D%E5%B0%94%E8%A7%A3%E7%9A%84%E7%89%A9%E7%90%86%E6%84%8F%E4%B9%89"><span class="toc-number">2.3.</span> <span class="toc-text">达朗贝尔解的物理意义</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%80%83%E5%AF%9F-u_1xt-fx-at"><span class="toc-number">2.3.1.</span> <span class="toc-text">考察 u1(x, t) &#x3D; f(x − at)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%80%83%E5%AF%9F-u_2xt-gxat"><span class="toc-number">2.3.2.</span> <span class="toc-text">考察 u2(x, t) &#x3D; g(x + at)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%80%BB%E7%BB%93%E8%BE%BE%E6%9C%97%E8%B4%9D%E5%B0%94%E8%A7%A3%E7%9A%84%E7%89%A9%E7%90%86%E6%84%8F%E4%B9%89"><span class="toc-number">2.3.3.</span> <span class="toc-text">总结达朗贝尔解的物理意义</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BE%9D%E8%B5%96%E5%8C%BA%E9%97%B4%E5%86%B3%E5%AE%9A%E5%8C%BA%E5%9F%9F%E5%92%8C%E5%BD%B1%E5%93%8D%E5%8C%BA%E5%9F%9F"><span class="toc-number">2.4.</span> <span class="toc-text">依赖区间、决定区域和影响区域</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BE%9D%E8%B5%96%E5%8C%BA%E9%97%B4-dependence-domain"><span class="toc-number">2.4.1.</span> <span class="toc-text">依赖区间 (Dependence Domain)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%86%B3%E5%AE%9A%E5%8C%BA%E5%9F%9F-domain-of-determination"><span class="toc-number">2.4.2.</span> <span class="toc-text">决定区域 (Domain of
 Determination)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%BD%B1%E5%93%8D%E5%8C%BA%E5%9F%9F-region-of-influence"><span class="toc-number">2.4.3.</span> <span class="toc-text">影响区域 (Region of
-Influence)</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%BD%90%E6%AC%A1%E5%8C%96%E5%8E%9F%E7%90%86"><span class="toc-number">2.5.</span> <span class="toc-text">齐次化原理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BE%BE%E6%9C%97%E8%B4%9D%E5%B0%94%E8%A7%A3%E6%B3%95%E8%A7%A3%E6%B3%A2%E5%8A%A8%E6%96%B9%E7%A8%8B%E7%9A%84%E6%80%BB%E7%BB%93"><span class="toc-number">2.6.</span> <span class="toc-text">达朗贝尔解法解波动方程的总结</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%97%A0%E9%99%90%E9%95%BF%E5%BC%A6%E8%87%AA%E7%94%B1%E6%8C%AF%E5%8A%A8%E9%97%AE%E9%A2%98"><span class="toc-number">2.6.1.</span> <span class="toc-text">无限长弦自由振动问题</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%97%A0%E9%99%90%E9%95%BF%E5%BC%A6%E5%BC%BA%E8%BF%AB%E6%8C%AF%E5%8A%A8%E9%97%AE%E9%A2%98"><span class="toc-number">2.6.2.</span> <span class="toc-text">无限长弦强迫振动问题</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%BE%BE%E6%9C%97%E8%B4%9D%E5%B0%94%E8%A7%A3%E7%9A%84%E7%89%A9%E7%90%86%E6%84%8F%E4%B9%89-1"><span class="toc-number">2.6.3.</span> <span class="toc-text">达朗贝尔解的物理意义</span></a></li></ol></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/16607.html" title="LangChain4j part9—MCP、可观测性、护栏机制"><img src="/images/posts/cover_wish.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="LangChain4j part9—MCP、可观测性、护栏机制"/></a><div class="content"><a class="title" href="/posts/16607.html" title="LangChain4j part9—MCP、可观测性、护栏机制">LangChain4j part9—MCP、可观测性、护栏机制</a><time datetime="2026-08-05T09:30:52.000Z" title="发表于 2026-08-05 17:30:52">2026-08-05</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/35721.html" title="LangChain4j part8—ToolCalling 和 FunctionCalling"><img src="/images/posts/cover_java24.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="LangChain4j part8—ToolCalling 和 FunctionCalling"/></a><div class="content"><a class="title" href="/posts/35721.html" title="LangChain4j part8—ToolCalling 和 FunctionCalling">LangChain4j part8—ToolCalling 和 FunctionCalling</a><time datetime="2026-07-29T09:59:48.000Z" title="发表于 2026-07-29 17:59:48">2026-07-29</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/28448.html" title="以一个真实的项目架构窥探实用性领域驱动设计的核心内容"><img src="/images/posts/cover_dubbo2.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="以一个真实的项目架构窥探实用性领域驱动设计的核心内容"/></a><div class="content"><a class="title" href="/posts/28448.html" title="以一个真实的项目架构窥探实用性领域驱动设计的核心内容">以一个真实的项目架构窥探实用性领域驱动设计的核心内容</a><time datetime="2026-07-07T03:53:38.000Z" title="发表于 2026-07-07 11:53:38">2026-07-07</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/63551.html" title="LangChain4j part7—RAG和向量嵌入的使用"><img src="/images/posts/cover_langchain4.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="LangChain4j part7—RAG和向量嵌入的使用"/></a><div class="content"><a class="title" href="/posts/63551.html" title="LangChain4j part7—RAG和向量嵌入的使用">LangChain4j part7—RAG和向量嵌入的使用</a><time datetime="2026-07-02T00:50:52.000Z" title="发表于 2026-07-02 08:50:52">2026-07-02</time></div></div></div></div></div></main><div class="fps-display"><span id="fps">FPS: 60</span></div><footer id="footer" style="background-image: url(/images/posts/cover_teach5.jpg);"><div id="footer-wrap"><div class="copyright">&copy;2024 - 2026 By ErgouTree</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">忘れたくない思い、ありますか？ <br>,<span id="realtime_duration" style="font-family: monospace;"></span>,<br><a href="https://icp.gov.moe/?keyword=20257009" target="_blank">萌ICP备20257009号</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><a class="icon-V hidden" onclick="switchNightMode()" title="日间和夜间模式切换"><svg width="25" height="25" viewBox="0 0 1024 1024"><use id="modeicon" xlink:href="#icon-moon"></use></svg></a><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="chat-btn" type="button" title="聊天" style="display:none"><i class="fas fa-comment"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><div class="js-pjax"><script>(() => {
+Influence)</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%BD%90%E6%AC%A1%E5%8C%96%E5%8E%9F%E7%90%86"><span class="toc-number">2.5.</span> <span class="toc-text">齐次化原理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BE%BE%E6%9C%97%E8%B4%9D%E5%B0%94%E8%A7%A3%E6%B3%95%E8%A7%A3%E6%B3%A2%E5%8A%A8%E6%96%B9%E7%A8%8B%E7%9A%84%E6%80%BB%E7%BB%93"><span class="toc-number">2.6.</span> <span class="toc-text">达朗贝尔解法解波动方程的总结</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%97%A0%E9%99%90%E9%95%BF%E5%BC%A6%E8%87%AA%E7%94%B1%E6%8C%AF%E5%8A%A8%E9%97%AE%E9%A2%98"><span class="toc-number">2.6.1.</span> <span class="toc-text">无限长弦自由振动问题</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%97%A0%E9%99%90%E9%95%BF%E5%BC%A6%E5%BC%BA%E8%BF%AB%E6%8C%AF%E5%8A%A8%E9%97%AE%E9%A2%98"><span class="toc-number">2.6.2.</span> <span class="toc-text">无限长弦强迫振动问题</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%BE%BE%E6%9C%97%E8%B4%9D%E5%B0%94%E8%A7%A3%E7%9A%84%E7%89%A9%E7%90%86%E6%84%8F%E4%B9%89-1"><span class="toc-number">2.6.3.</span> <span class="toc-text">达朗贝尔解的物理意义</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%9D%E8%BE%B9%E5%80%BC%E9%97%AE%E9%A2%98%E7%9A%84%E5%88%86%E7%A6%BB%E5%8F%98%E9%87%8F%E8%A7%A3%E6%B3%95"><span class="toc-number">3.</span> <span class="toc-text">初边值问题的分离变量解法</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%A4%E7%AB%AF%E5%9B%BA%E5%AE%9A%E5%BC%A6%E7%9A%84%E5%AE%9A%E8%A7%A3%E9%97%AE%E9%A2%98"><span class="toc-number">3.1.</span> <span class="toc-text">两端固定弦的定解问题</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AC%AC%E4%B8%80%E6%AD%A5%E6%8A%8A%E7%A9%BA%E9%97%B4%E5%92%8C%E6%97%B6%E9%97%B4%E5%88%86%E5%BC%80"><span class="toc-number">3.2.</span> <span class="toc-text">第一步：把空间和时间分开</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AC%AC%E4%BA%8C%E6%AD%A5%E6%B1%82%E7%89%B9%E5%BE%81%E5%80%BC%E4%B8%8E%E7%89%B9%E5%BE%81%E5%87%BD%E6%95%B0"><span class="toc-number">3.3.</span> <span class="toc-text">第二步：求特征值与特征函数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AC%AC%E4%B8%89%E6%AD%A5%E6%B1%82%E6%AF%8F%E4%B8%AA%E7%A9%BA%E9%97%B4%E5%BD%A2%E7%8A%B6%E5%A6%82%E4%BD%95%E9%9A%8F%E6%97%B6%E9%97%B4%E6%8C%AF%E5%8A%A8"><span class="toc-number">3.4.</span> <span class="toc-text">第三步：求每个空间形状如何随时间振动</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AC%AC%E5%9B%9B%E6%AD%A5%E5%8F%A0%E5%8A%A0%E5%90%84%E4%B8%AA%E6%A8%A1%E6%80%81%E5%88%A9%E7%94%A8%E5%88%9D%E5%A7%8B%E6%9D%A1%E4%BB%B6%E6%B1%82%E7%B3%BB%E6%95%B0"><span class="toc-number">3.5.</span> <span class="toc-text">第四步：叠加各个模态，利用初始条件求系数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B3%E4%BA%8E%E7%BA%A7%E6%95%B0%E7%AB%AF%E7%82%B9%E7%9B%B8%E5%AE%B9%E4%B8%8E%E8%A7%A3%E7%9A%84%E6%84%8F%E4%B9%89"><span class="toc-number">3.6.</span> <span class="toc-text">关于级数、端点相容与解的意义</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BA%A7%E6%95%B0%E8%A7%A3%E7%9A%84%E7%89%A9%E7%90%86%E6%84%8F%E4%B9%89%E9%A9%BB%E6%B3%A2"><span class="toc-number">3.7.</span> <span class="toc-text">级数解的物理意义：驻波</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BE%8B%E4%B8%80%E4%B8%A4%E7%AB%AF%E5%9B%BA%E5%AE%9A%E5%88%9D%E5%A7%8B%E4%BD%8D%E7%A7%BB%E6%98%AF%E4%B8%80%E7%A7%8D%E6%A8%A1%E6%80%81"><span class="toc-number">3.8.</span> <span class="toc-text">例一：两端固定，初始位移是一种模态</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BE%8B%E4%BA%8C%E5%B7%A6%E7%AB%AF%E5%9B%BA%E5%AE%9A%E5%8F%B3%E7%AB%AF%E8%87%AA%E7%94%B1"><span class="toc-number">3.9.</span> <span class="toc-text">例二：左端固定、右端自由</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%86%E7%A6%BB%E5%8F%98%E9%87%8F%E6%B3%95%E7%9A%84%E6%AD%A5%E9%AA%A4%E5%86%8D%E6%A2%B3%E7%90%86"><span class="toc-number">3.10.</span> <span class="toc-text">分离变量法的步骤再梳理</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%AB%98%E7%BB%B4%E6%B3%A2%E5%8A%A8%E6%96%B9%E7%A8%8B%E7%9A%84%E6%9F%AF%E8%A5%BF%E9%97%AE%E9%A2%98"><span class="toc-number">4.</span> <span class="toc-text">高维波动方程的柯西问题</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%88%E6%98%8E%E7%A1%AE%E9%AB%98%E7%BB%B4%E9%97%AE%E9%A2%98%E6%9C%89%E5%93%AA%E4%BA%9B%E5%AE%9A%E8%A7%A3%E6%9D%A1%E4%BB%B6"><span class="toc-number">4.1.</span> <span class="toc-text">先明确高维问题有哪些定解条件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%90%83%E5%AF%B9%E7%A7%B0%E7%9A%84%E6%83%85%E5%BD%A2%E4%B8%BA%E4%BB%80%E4%B9%88%E4%BC%9A%E5%87%BA%E7%8E%B0-ru"><span class="toc-number">4.2.</span> <span class="toc-text">球对称的情形：为什么会出现 ru</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80%E8%88%AC%E5%88%9D%E5%80%BC%E5%BC%95%E5%85%A5%E7%90%83%E9%9D%A2%E5%B9%B3%E5%9D%87"><span class="toc-number">4.3.</span> <span class="toc-text">一般初值：引入球面平均</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%90%83%E9%9D%A2%E5%B9%B3%E5%9D%87%E4%B8%8E%E6%8B%89%E6%99%AE%E6%8B%89%E6%96%AF%E7%AE%97%E5%AD%90%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="toc-number">4.4.</span> <span class="toc-text">球面平均与拉普拉斯算子的关系</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%94%A8%E4%B8%80%E7%BB%B4%E5%85%AC%E5%BC%8F%E5%8F%96%E5%9B%9E%E7%90%83%E5%BF%83%E5%A4%84%E7%9A%84%E8%A7%A3"><span class="toc-number">4.5.</span> <span class="toc-text">用一维公式取回球心处的解</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%A4%E4%B8%AA%E7%9B%B4%E6%8E%A5%E4%BB%A3%E5%85%A5%E7%9A%84%E4%BE%8B%E5%AD%90"><span class="toc-number">4.6.</span> <span class="toc-text">两个直接代入的例子</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B3%A2%E4%BC%A0%E6%92%AD%E7%9A%84%E5%87%A0%E4%BD%95%E6%84%8F%E4%B9%89%E5%8F%8A%E9%80%82%E7%94%A8%E8%8C%83%E5%9B%B4"><span class="toc-number">4.7.</span> <span class="toc-text">波传播的几何意义及适用范围</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%83%BD%E9%87%8F%E4%B8%8D%E7%AD%89%E5%BC%8F%E6%B3%A2%E5%8A%A8%E6%96%B9%E7%A8%8B%E8%A7%A3%E7%9A%84%E5%94%AF%E4%B8%80%E6%80%A7%E4%B8%8E%E7%A8%B3%E5%AE%9A%E6%80%A7"><span class="toc-number">5.</span> <span class="toc-text">能量不等式、波动方程解的唯一性与稳定性</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80%E7%BB%B4%E4%B8%A4%E7%AB%AF%E5%9B%BA%E5%AE%9A%E5%BC%A6%E5%BB%BA%E7%AB%8B%E8%83%BD%E9%87%8F%E6%81%92%E7%AD%89%E5%BC%8F"><span class="toc-number">5.1.</span> <span class="toc-text">一维两端固定弦：建立能量恒等式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%97%A0%E5%A4%96%E5%8A%9B%E6%97%B6%E8%83%BD%E9%87%8F%E5%AE%88%E6%81%92"><span class="toc-number">5.2.</span> <span class="toc-text">无外力时：能量守恒</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9C%89%E5%A4%96%E5%8A%9B%E6%97%B6%E4%BB%8E%E6%81%92%E7%AD%89%E5%BC%8F%E8%B5%B0%E5%88%B0%E8%83%BD%E9%87%8F%E4%B8%8D%E7%AD%89%E5%BC%8F"><span class="toc-number">5.3.</span> <span class="toc-text">有外力时：从恒等式走到能量不等式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E8%BF%98%E8%A6%81%E4%BC%B0%E8%AE%A1-u-%E6%9C%AC%E8%BA%AB"><span class="toc-number">5.4.</span> <span class="toc-text">为什么还要估计 u 本身</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%8E%E8%83%BD%E9%87%8F%E4%BC%B0%E8%AE%A1%E6%8E%A8%E5%87%BA%E5%94%AF%E4%B8%80%E6%80%A7"><span class="toc-number">5.5.</span> <span class="toc-text">从能量估计推出唯一性</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%8E%E5%B7%AE%E5%87%BD%E6%95%B0%E7%90%86%E8%A7%A3%E7%A8%B3%E5%AE%9A%E6%80%A7"><span class="toc-number">5.6.</span> <span class="toc-text">从差函数理解稳定性</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8C%E7%BB%B4%E6%9C%89%E7%95%8C%E5%8C%BA%E5%9F%9F%E5%90%8C%E4%B8%80%E4%B8%AA%E8%AF%81%E6%98%8E%E5%A6%82%E4%BD%95%E6%8E%A8%E5%B9%BF"><span class="toc-number">5.7.</span> <span class="toc-text">二维有界区域：同一个证明如何推广</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B4%E4%B8%AA%E7%A9%BA%E9%97%B4%E4%B8%AD%E7%9A%84%E6%9F%AF%E8%A5%BF%E9%97%AE%E9%A2%98%E6%94%B6%E7%BC%A9%E7%9A%84%E5%BD%B1%E5%93%8D%E9%94%A5"><span class="toc-number">5.8.</span> <span class="toc-text">整个空间中的柯西问题：收缩的影响锥</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9F%AF%E8%A5%BF%E9%97%AE%E9%A2%98%E7%9A%84%E7%A8%B3%E5%AE%9A%E6%80%A7%E5%92%8C%E6%9C%80%E5%90%8E%E7%9A%84%E5%8C%BA%E5%88%86"><span class="toc-number">5.9.</span> <span class="toc-text">柯西问题的稳定性和最后的区分</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/47445.html" title="数学物理方程之三类典型模型的建立"><img src="/images/posts/cover_teach2.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="数学物理方程之三类典型模型的建立"/></a><div class="content"><a class="title" href="/posts/47445.html" title="数学物理方程之三类典型模型的建立">数学物理方程之三类典型模型的建立</a><time datetime="2026-10-02T09:03:43.000Z" title="发表于 2026-10-02 17:03:43">2026-10-02</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/35817.html" title="Linux常用命令总结"><div style="background: /images/posts/cover_linux1"></div></a><div class="content"><a class="title" href="/posts/35817.html" title="Linux常用命令总结">Linux常用命令总结</a><time datetime="2026-10-02T08:33:32.000Z" title="发表于 2026-10-02 16:33:32">2026-10-02</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/9971.html" title="Linux常用知识总结"><div style="background: /images/posts/cover_linux3"></div></a><div class="content"><a class="title" href="/posts/9971.html" title="Linux常用知识总结">Linux常用知识总结</a><time datetime="2026-10-02T08:23:39.000Z" title="发表于 2026-10-02 16:23:39">2026-10-02</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/16607.html" title="LangChain4j part9—MCP、可观测性、护栏机制"><img src="/images/posts/cover_wish.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="LangChain4j part9—MCP、可观测性、护栏机制"/></a><div class="content"><a class="title" href="/posts/16607.html" title="LangChain4j part9—MCP、可观测性、护栏机制">LangChain4j part9—MCP、可观测性、护栏机制</a><time datetime="2026-08-05T09:30:52.000Z" title="发表于 2026-08-05 17:30:52">2026-08-05</time></div></div></div></div></div></main><div class="fps-display"><span id="fps">FPS: 60</span></div><footer id="footer" style="background-image: url(/images/posts/cover_teach5.jpg);"><div id="footer-wrap"><div class="copyright">&copy;2024 - 2026 By ErgouTree</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">忘れたくない思い、ありますか？ <br>,<span id="realtime_duration" style="font-family: monospace;"></span>,<br><a href="https://icp.gov.moe/?keyword=20257009" target="_blank">萌ICP备20257009号</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><a class="icon-V hidden" onclick="switchNightMode()" title="日间和夜间模式切换"><svg width="25" height="25" viewBox="0 0 1024 1024"><use id="modeicon" xlink:href="#icon-moon"></use></svg></a><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="chat-btn" type="button" title="聊天" style="display:none"><i class="fas fa-comment"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><div class="js-pjax"><script>(() => {
   const loadMathjax = () => {
     if (!window.MathJax) {
       window.MathJax = {

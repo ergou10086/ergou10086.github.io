@@ -1,0 +1,1009 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>数学物理方程之三类典型模型的建立 | ErgouTree's Blog</title><meta name="author" content="ErgouTree"><meta name="copyright" content="ErgouTree"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="数学物理方程模型前言 介绍 《数学物理方程》是偏微分方程方向的一门入门课程。我们希望从具体的物理现象出发，找出所遵循的规律，把它写成方程，再研究方程的解能否解释和预测原来的现象。 数学物理方程主要研究由物理、力学等实际问题产生的函数方程，本部分以偏微分方程为主。偏微分方程理论还用于化学、生物、工程、图像处理和金融等领域。 这门课有两个比较明显的特点：  数学理论、解题方法与物理实际结合">
+<meta property="og:type" content="article">
+<meta property="og:title" content="数学物理方程之三类典型模型的建立">
+<meta property="og:url" content="https://ergou10086.github.io/posts/47445.html">
+<meta property="og:site_name" content="ErgouTree&#39;s Blog">
+<meta property="og:description" content="数学物理方程模型前言 介绍 《数学物理方程》是偏微分方程方向的一门入门课程。我们希望从具体的物理现象出发，找出所遵循的规律，把它写成方程，再研究方程的解能否解释和预测原来的现象。 数学物理方程主要研究由物理、力学等实际问题产生的函数方程，本部分以偏微分方程为主。偏微分方程理论还用于化学、生物、工程、图像处理和金融等领域。 这门课有两个比较明显的特点：  数学理论、解题方法与物理实际结合">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://ergou10086.github.io/images/posts/cover_teach2.jpg">
+<meta property="article:published_time" content="2026-10-02T09:03:43.000Z">
+<meta property="article:modified_time" content="2026-10-02T09:18:42.615Z">
+<meta property="article:author" content="ErgouTree">
+<meta property="article:tag" content="数学">
+<meta property="article:tag" content="物理">
+<meta property="article:tag" content="数学建模">
+<meta property="article:tag" content="定理证明">
+<meta property="article:tag" content="数学物理方法">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ergou10086.github.io/images/posts/cover_teach2.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "数学物理方程之三类典型模型的建立",
+  "url": "https://ergou10086.github.io/posts/47445.html",
+  "image": "https://ergou10086.github.io/images/posts/cover_teach2.jpg",
+  "datePublished": "2026-10-02T09:03:43.000Z",
+  "dateModified": "2026-10-02T09:18:42.615Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "ErgouTree",
+      "url": "https://github.com/ergou10086"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/pi.ico"><link rel="canonical" href="https://ergou10086.github.io/posts/47445.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//hm.baidu.com"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!true && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?https://hm.baidu.com/hm.js?a6ab1b78e2c6320b664f31e8b9bf0e36";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+btf.addGlobalFn('pjaxComplete', () => {
+  _hmt.push(['_trackPageview',window.location.pathname])
+}, 'baidu_analytics')
+</script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.json","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":true},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: {"chs_to_cht":"已切换为繁体中文","cht_to_chs":"已切换为简体中文","day_to_night":"已切换为深色模式","night_to_day":"已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#1f1f1f","position":"bottom-left"},
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '数学物理方程之三类典型模型的建立',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css"><link rel="stylesheet" href="/css/littleGame.css"><svg aria-hidden="true" style="position:absolute; overflow:hidden; width:0; height:0"><symbol id="icon-sun" viewBox="0 0 1024 1024"><path d="M960 512l-128 128v192h-192l-128 128-128-128H192v-192l-128-128 128-128V192h192l128-128 128 128h192v192z" fill="#FFD878" p-id="8420"></path><path d="M736 512a224 224 0 1 0-448 0 224 224 0 1 0 448 0z" fill="#FFE4A9" p-id="8421"></path><path d="M512 109.248L626.752 224H800v173.248L914.752 512 800 626.752V800h-173.248L512 914.752 397.248 800H224v-173.248L109.248 512 224 397.248V224h173.248L512 109.248M512 64l-128 128H192v192l-128 128 128 128v192h192l128 128 128-128h192v-192l128-128-128-128V192h-192l-128-128z" fill="#4D5152" p-id="8422"></path><path d="M512 320c105.888 0 192 86.112 192 192s-86.112 192-192 192-192-86.112-192-192 86.112-192 192-192m0-32a224 224 0 1 0 0 448 224 224 0 0 0 0-448z" fill="#4D5152" p-id="8423"></path></symbol><symbol id="icon-moon" viewBox="0 0 1024 1024"><path d="M611.370667 167.082667a445.013333 445.013333 0 0 1-38.4 161.834666 477.824 477.824 0 0 1-244.736 244.394667 445.141333 445.141333 0 0 1-161.109334 38.058667 85.077333 85.077333 0 0 0-65.066666 135.722666A462.08 462.08 0 1 0 747.093333 102.058667a85.077333 85.077333 0 0 0-135.722666 65.024z" fill="#FFB531" p-id="11345"></path><path d="M329.728 274.133333l35.157333-35.157333a21.333333 21.333333 0 1 0-30.165333-30.165333l-35.157333 35.157333-35.114667-35.157333a21.333333 21.333333 0 0 0-30.165333 30.165333l35.114666 35.157333-35.114666 35.157334a21.333333 21.333333 0 1 0 30.165333 30.165333l35.114667-35.157333 35.157333 35.157333a21.333333 21.333333 0 1 0 30.165333-30.165333z" fill="#030835" p-id="11346"></path></symbol></svg><link rel="stylesheet" href="/css/custom.css"><!-- hexo injector head_end start --><link rel="stylesheet" href="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiperstyle.css" media="print" onload="this.media='all'"><!-- hexo injector head_end end --><meta name="generator" content="Hexo 7.3.0"></head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js/pace.min.js"></script><div id="web_bg" style="background: linear-gradient(20deg, #0062be, #925696, #cc426e, #fb0347);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/arp.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">348</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">214</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">114</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-images"></i><span> Gallery</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/games/"><i class="fa-fw fas fa-trophy"></i><span> GalGame</span></a></li><li><a class="site-page child" href="/video/"><i class="fa-fw fas fa-video"></i><span> Video</span></a></li><li><a class="site-page child" href="/viewpoint/"><i class="fa-fw fas fa-calculator"></i><span> ViewPoint</span></a></li><li><a class="site-page child" href="/littleGame/"><i class="fa-fw fas fa-thumbs-up"></i><span> littleGame</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div><div class="menus_item"><a class="site-page" href="javascript:randomPost();"><span> Random</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/images/posts/cover_teach2.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">ErgouTree's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">数学物理方程之三类典型模型的建立</span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-images"></i><span> Gallery</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/games/"><i class="fa-fw fas fa-trophy"></i><span> GalGame</span></a></li><li><a class="site-page child" href="/video/"><i class="fa-fw fas fa-video"></i><span> Video</span></a></li><li><a class="site-page child" href="/viewpoint/"><i class="fa-fw fas fa-calculator"></i><span> ViewPoint</span></a></li><li><a class="site-page child" href="/littleGame/"><i class="fa-fw fas fa-thumbs-up"></i><span> littleGame</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div><div class="menus_item"><a class="site-page" href="javascript:randomPost();"><span> Random</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div><div id="randomPost"><a class="site-page social-icon search" href="javascript:;" onclick="randomPost()" title="随机访问一篇文章"><i class="fas fa-circle-notch fa-fw"></i></a></div></nav><div id="post-info"><h1 class="post-title">数学物理方程之三类典型模型的建立<a class="post-edit-link" href="https://github.com/ergou10086/ergou10086.github.io/edit/main/source/_posts/_posts/数学物理方程之三类典型模型的建立.md" title="编辑" target="_blank"><i class="fas fa-pencil-alt"></i></a></h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-10-02T09:03:43.000Z" title="发表于 2026-10-02 17:03:43">2026-10-02</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-10-02T09:18:42.615Z" title="更新于 2026-10-02 17:18:42">2026-10-02</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%95%B0%E5%AD%A6%E7%B1%BB/">数学类</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%95%B0%E5%AD%A6%E7%B1%BB/%E6%95%B0%E5%AD%A6%E7%89%A9%E7%90%86%E6%96%B9%E7%A8%8B/">数学物理方程</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">4.4k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>15分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span><span class="post-meta-separator">|</span><span class="post-meta-commentcount"><i class="far fa-comments fa-fw post-meta-icon"></i><span class="post-meta-label">评论数:</span><a href="/posts/47445.html#post-comment"><span class="gitalk-comment-count"><i class="fa-solid fa-spinner fa-spin"></i></span></a></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="数学物理方程模型前言">数学物理方程模型前言</h2>
+<h3 id="介绍">介绍</h3>
+<p>《数学物理方程》是偏微分方程方向的一门入门课程。我们希望从具体的物理现象出发，找出所遵循的规律，把它写成方程，再研究方程的解能否解释和预测原来的现象。</p>
+<p>数学物理方程主要研究由物理、力学等实际问题产生的函数方程，本部分以偏微分方程为主。偏微分方程理论还用于化学、生物、工程、图像处理和金融等领域。</p>
+<p>这门课有两个比较明显的特点：</p>
+<ol type="1">
+<li><strong>数学理论、解题方法与物理实际结合</strong>：不仅要会解方程，还要知道方程和定解条件是怎样从物理问题中来的。</li>
+<li><strong>需要综合运用已有知识</strong>：数学分析、常微分方程、线性代数、复变函数等知识都会用到。</li>
+</ol>
+<p>本部分建立三类典型模型：<strong>波动方程、热传导方程、调和方程（及泊松方程）</strong>。它们分别描述振动传播、温度或物质的扩散、稳定状态下物理量的空间分布。</p>
+<h3 id="数学物理方程的研究方法">数学物理方程的研究方法</h3>
+<p>如何从实际问题中导出方程呢？课件给出的思路是：</p>
+<p><span class="math display">$$
+\text{物理模型}\xrightarrow{\text{定量化}}\text{数学模型}.
+$$</span></p>
+<ol type="1">
+<li>建立坐标系，明确研究区域和时间范围。</li>
+<li>选择表征过程的物理量，例如位移 <span class="math inline"><em>u</em>(<em>x</em>, <em>t</em>)</span> 或温度
+<span class="math inline"><em>u</em>(<em>x</em>, <em>y</em>, <em>z</em>, <em>t</em>)</span>。</li>
+<li>寻找过程遵守的物理定律，例如牛顿第二定律、热量守恒和傅里叶定律。</li>
+<li>写出物理定律的数学表达式，并结合初始状态、边界情况，形成<strong>定解问题</strong>。</li>
+</ol>
+<p>之后还要做三件事：求解定解问题，研究解的性质，再把解放回物理背景中解释。求解方法包括特征线法、分离变量法、Fourier
+变换法等；这一篇先专注于<strong>模型的建立</strong>。</p>
+<p>研究一个定解问题时，常关心它是否<strong>适定</strong>：</p>
+<ul>
+<li><strong>存在性</strong>：在给定数据下有没有解？</li>
+<li><strong>唯一性</strong>：相同数据能否确定唯一的解？</li>
+<li><strong>稳定性</strong>：初始和边界数据有小变化时，解是否也只发生相应的小变化（连续依赖于数据）？</li>
+</ul>
+<p>三者都满足时，称为适定。后面会看到，定解条件不是越多越好，也不能随意指定。</p>
+<h3 id="基本概念">基本概念</h3>
+<ul>
+<li><strong>偏微分方程（PDE）</strong>：未知函数依赖两个或更多自变量，方程中含有该函数的偏导数。</li>
+<li><strong>偏微分方程的阶</strong>：方程中未知函数出现的最高阶偏导数的阶数。</li>
+<li><strong>线性偏微分方程</strong>：未知函数及其各阶偏导数都只以一次线性组合出现；系数可以依赖自变量，但不能依赖未知函数或它的导数。</li>
+<li><strong>非线性偏微分方程</strong>：不满足上述线性条件的偏微分方程。例如
+<span class="math inline"><em>u</em><sub><em>t</em></sub> + <em>u</em><em>u</em><sub><em>x</em></sub> = 0</span>
+是一阶非线性方程（无粘 Burgers 方程，可出现激波）。</li>
+</ul>
+<p>两个自变量的二阶线性偏微分方程可写成</p>
+<p><span class="math display"><em>a</em><sub>11</sub>(<em>x</em>, <em>y</em>)<em>u</em><sub><em>x</em><em>x</em></sub> + 2<em>a</em><sub>12</sub>(<em>x</em>, <em>y</em>)<em>u</em><sub><em>x</em><em>y</em></sub> + <em>a</em><sub>22</sub>(<em>x</em>, <em>y</em>)<em>u</em><sub><em>y</em><em>y</em></sub> + <em>b</em><sub>1</sub>(<em>x</em>, <em>y</em>)<em>u</em><sub><em>x</em></sub> + <em>b</em><sub>2</sub>(<em>x</em>, <em>y</em>)<em>u</em><sub><em>y</em></sub> + <em>c</em>(<em>x</em>, <em>y</em>)<em>u</em> = <em>f</em>(<em>x</em>, <em>y</em>).</span></p>
+<p>其中各系数和 <span class="math inline"><em>f</em></span>
+都是已知函数。若 <span class="math inline"><em>f</em> = 0</span>，称方程为<strong>齐次方程</strong>；否则为非齐次方程。不要把“方程齐次”和“边界条件齐次”混为一谈，它们分别看方程右端和边界数据是否为零。</p>
+<p>本篇中反复出现的例子：</p>
+<table>
+<thead>
+<tr>
+<th>方程</th>
+<th>典型形式</th>
+<th>主要描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>波动方程</td>
+<td><span class="math inline"><em>u</em><sub><em>t</em><em>t</em></sub> − <em>a</em><sup>2</sup><em>u</em><sub><em>x</em><em>x</em></sub> = <em>f</em>(<em>x</em>, <em>t</em>)</span></td>
+<td>一维弦的横振动</td>
+</tr>
+<tr>
+<td>热传导方程</td>
+<td><span class="math inline"><em>u</em><sub><em>t</em></sub> − <em>a</em><sup>2</sup><em>u</em><sub><em>x</em><em>x</em></sub> = <em>f</em>(<em>x</em>, <em>t</em>)</span></td>
+<td>一维温度变化</td>
+</tr>
+<tr>
+<td>泊松方程</td>
+<td><span class="math inline"><em>Δ</em><em>u</em> = <em>f</em>(<strong>x</strong>)</span></td>
+<td>有源的稳态分布</td>
+</tr>
+<tr>
+<td>调和方程</td>
+<td><span class="math inline"><em>Δ</em><em>u</em> = 0</span></td>
+<td>无源的稳态分布</td>
+</tr>
+</tbody>
+</table>
+<p>这里 <span class="math inline"><em>Δ</em></span>
+是拉普拉斯算子，例如在三维中 <span class="math inline"><em>Δ</em><em>u</em> = <em>u</em><sub><em>x</em><em>x</em></sub> + <em>u</em><sub><em>y</em><em>y</em></sub> + <em>u</em><sub><em>z</em><em>z</em></sub></span>。课件中波动方程和热传导方程的二阶空间导数均为
+<span class="math inline"><em>u</em><sub><em>x</em><em>x</em></sub></span>，不是
+<span class="math inline"><em>u</em><sub><em>x</em><em>x</em><em>x</em></sub></span>。</p>
+<h2 id="三类典型模型的建立">三类典型模型的建立</h2>
+<h3 id="弦振动方程与定解条件">弦振动方程与定解条件</h3>
+<h4 id="引入">引入</h4>
+<p>演奏二胡、小提琴时，弓只接触弦的一小段，振动却会传播到整根弦。下面从一个小弦段的受力出发，解释它为什么满足波动方程。</p>
+<h4 id="以弦振动为例进行物理问题的分析">以弦振动为例进行物理问题的分析</h4>
+<ol type="1">
+<li><p><strong>物理问题提法</strong></p>
+<p>一根拉紧的均匀柔软细弦，长为 <span class="math inline"><em>l</em></span>，两端固定，在外力作用下于平衡位置附近作微小横振动。我们要研究弦上各点随时间的运动规律。</p></li>
+<li><p><strong>数学提法</strong></p>
+<p>以弦的平衡位置为 <span class="math inline"><em>x</em></span>
+轴，两端分别是 <span class="math inline"><em>x</em> = 0</span> 和 <span class="math inline"><em>x</em> = <em>l</em></span>。令 <span class="math inline"><em>u</em>(<em>x</em>, <em>t</em>)</span>
+表示弦上横坐标为 <span class="math inline"><em>x</em></span> 的点在时刻
+<span class="math inline"><em>t</em></span> 的横向位移，所求的就是 <span class="math inline"><em>u</em>(<em>x</em>, <em>t</em>)</span>。</p>
+<figure>
+<img src="/posts/47445/image-20250722092338308-1790932680962-8.png" alt="弦的位移示意">
+<figcaption aria-hidden="true">弦的位移示意</figcaption>
+</figure></li>
+<li><p><strong>理想化假设</strong></p>
+<ul>
+<li>弦均匀、足够细，线密度 <span class="math inline"><em>ρ</em></span>
+是常数。</li>
+<li>弦柔软，不抵抗弯曲；张力沿弦的切线方向，且弦的伸长与张力之间服从胡克定律。</li>
+<li>弦只在一个平面内作微小横振动，切线斜率满足 <span class="math inline">|<em>u</em><sub><em>x</em></sub>| ≪ 1</span>，可以忽略高阶小量。</li>
+<li>预先将弦拉紧，其平衡张力 <span class="math inline"><em>T</em> &gt; 0</span>。小振动时张力的变化是高阶小量，在<strong>线性近似</strong>中把
+<span class="math inline"><em>T</em></span> 看作常数。</li>
+</ul>
+<p>弦放松时不会抵抗弯曲；绷紧后相邻小段通过张力相互影响，扰动便能沿弦传播。</p></li>
+<li><p><strong>小弦段的受力分析</strong></p>
+<p>取两端横坐标为 <span class="math inline"><em>x</em><sub>1</sub>, <em>x</em><sub>2</sub></span>
+的小弦段 <span class="math inline">$\widehat{M_1M_2}$</span>：</p>
+<figure>
+<img src="/posts/47445/image-20250722092722224-1790932680963-9.png" alt="弦段示意">
+<figcaption aria-hidden="true">弦段示意</figcaption>
+</figure>
+<p>它的弧长为</p>
+<p><span class="math display">$$
+\Delta s=\int_{x_1}^{x_2}\sqrt{1+u_x(\xi,t)^2}\,\mathrm d\xi
+\approx x_2-x_1.
+$$</span></p>
+<p>因为 <span class="math inline">|<em>u</em><sub><em>x</em></sub>| ≪ 1</span>，弦段的伸长在一阶近似中可以忽略。若没有水平外力和水平加速度，两端张力的水平分量平衡：</p>
+<figure>
+<img src="/posts/47445/image-20250722092913927-1790932680964-10.png" alt="张力分解示意">
+<figcaption aria-hidden="true">张力分解示意</figcaption>
+</figure>
+<p><span class="math display"><em>T</em><sub>2</sub>cos <em>α</em><sub>2</sub> − <em>T</em><sub>1</sub>cos <em>α</em><sub>1</sub> = 0.</span></p>
+<p>小角度下 <span class="math inline">cos <em>α</em><sub>1</sub> ≈ cos <em>α</em><sub>2</sub> ≈ 1</span>，所以
+<span class="math inline"><em>T</em><sub>1</sub> ≈ <em>T</em><sub>2</sub></span>。结合伸长可忽略的假设，在线性化模型中记张力为常数
+<span class="math inline"><em>T</em></span>。这是一种近似，不是说真实弦的张力绝对不变。</p></li>
+</ol>
+<h4 id="结合分析进行数学物理方程的导出">结合分析进行数学物理方程的导出</h4>
+<p>课件用“动量增量 =
+外力的冲量”推导。我们把它写成等价的瞬时形式，积分变量也区分开来，方便以后自己复算。</p>
+<p>在 <span class="math inline">[<em>x</em><sub>1</sub>, <em>x</em><sub>2</sub>]</span>
+上取一段弦。它的横向动量为</p>
+<p><span class="math display"><em>P</em>(<em>t</em>) = ∫<sub><em>x</em><sub>1</sub></sub><sup><em>x</em><sub>2</sub></sup><em>ρ</em><em>u</em><sub><em>t</em></sub>(<em>ξ</em>, <em>t</em>) d<em>ξ</em>.</span></p>
+<p>右端张力的竖直分量约为 <span class="math inline"><em>T</em>sin <em>α</em><sub>2</sub> ≈ <em>T</em><em>u</em><sub><em>x</em></sub>(<em>x</em><sub>2</sub>, <em>t</em>)</span>，左端约为
+<span class="math inline">−<em>T</em><em>u</em><sub><em>x</em></sub>(<em>x</em><sub>1</sub>, <em>t</em>)</span>。若
+<span class="math inline"><em>F</em>(<em>x</em>, <em>t</em>)</span>
+是单位长度上的横向外力，牛顿第二定律给出</p>
+<p><span class="math display">$$
+\frac{\mathrm dP}{\mathrm dt}
+=T\bigl[u_x(x_2,t)-u_x(x_1,t)\bigr]
++\int_{x_1}^{x_2}F(\xi,t)\,\mathrm d\xi.
+$$</span></p>
+<p>把两边都写成对 <span class="math inline"><em>ξ</em></span>
+的积分：</p>
+<p><span class="math display">∫<sub><em>x</em><sub>1</sub></sub><sup><em>x</em><sub>2</sub></sup>[<em>ρ</em><em>u</em><sub><em>t</em><em>t</em></sub>(<em>ξ</em>, <em>t</em>) − <em>T</em><em>u</em><sub><em>x</em><em>x</em></sub>(<em>ξ</em>, <em>t</em>) − <em>F</em>(<em>ξ</em>, <em>t</em>)] d<em>ξ</em> = 0.</span></p>
+<p>由于小弦段任意，在足够光滑的情况下，被积函数为零，即</p>
+<p><span class="math display"><em>ρ</em><em>u</em><sub><em>t</em><em>t</em></sub> − <em>T</em><em>u</em><sub><em>x</em><em>x</em></sub> = <em>F</em>(<em>x</em>, <em>t</em>).</span></p>
+<p>令</p>
+<p><span class="math display">$$
+a^2=\frac{T}{\rho}&gt;0,\qquad f(x,t)=\frac{F(x,t)}{\rho},
+$$</span></p>
+<p>得到一维<strong>弦振动方程</strong>：</p>
+<p><span class="math display">$$
+\boxed{u_{tt}-a^2u_{xx}=f(x,t).}
+$$</span></p>
+<p>这里 <span class="math inline">$a=\sqrt{T/\rho}$</span> 是波速，<span class="math inline"><em>f</em></span> 是单位质量所受的横向外力。无外力时
+<span class="math inline"><em>f</em> = 0</span>，方程成为齐次波动方程
+<span class="math inline"><em>u</em><sub><em>t</em><em>t</em></sub> − <em>a</em><sup>2</sup><em>u</em><sub><em>x</em><em>x</em></sub> = 0</span>。</p>
+<p>类似地，薄膜振动和三维波动的形式分别为</p>
+<p><span class="math display"><em>u</em><sub><em>t</em><em>t</em></sub> = <em>a</em><sup>2</sup>(<em>u</em><sub><em>x</em><em>x</em></sub> + <em>u</em><sub><em>y</em><em>y</em></sub>) + <em>f</em>(<em>x</em>, <em>y</em>, <em>t</em>),</span></p>
+<p><span class="math display"><em>u</em><sub><em>t</em><em>t</em></sub> = <em>a</em><sup>2</sup>(<em>u</em><sub><em>x</em><em>x</em></sub> + <em>u</em><sub><em>y</em><em>y</em></sub> + <em>u</em><sub><em>z</em><em>z</em></sub>) + <em>f</em>(<em>x</em>, <em>y</em>, <em>z</em>, <em>t</em>).</span></p>
+<p>一般在 <span class="math inline">ℝ<sup><em>n</em></sup></span> 中写成
+<span class="math inline"><em>u</em><sub><em>t</em><em>t</em></sub> = <em>a</em><sup>2</sup><em>Δ</em><em>u</em> + <em>f</em>(<strong>x</strong>, <em>t</em>)</span>，其中
+<span class="math inline">$\Delta=\sum_{i=1}^n\partial^2/\partial
+x_i^2$</span>。</p>
+<h4 id="推导定解条件">推导定解条件</h4>
+<p>只给出方程还不能确定一次具体的振动。需要知道它最初是什么样，以及两端如何运动，这就是<strong>初始条件</strong>和<strong>边界条件</strong>。</p>
+<ol type="1">
+<li><p><strong>初始条件</strong>：二阶时间方程通常需要初始位移和初始速度两项：</p>
+<p><span class="math display"><em>u</em>(<em>x</em>, 0) = <em>φ</em>(<em>x</em>),   <em>u</em><sub><em>t</em></sub>(<em>x</em>, 0) = <em>ψ</em>(<em>x</em>),   0 ≤ <em>x</em> ≤ <em>l</em>.</span></p></li>
+<li><p><strong>第一类边界条件（Dirichlet）</strong>：给定端点的位移。例如两端固定时</p>
+<p><span class="math display"><em>u</em>(0, <em>t</em>) = <em>u</em>(<em>l</em>, <em>t</em>) = 0.</span></p>
+<p>如果端点按已知规律运动，则写成 <span class="math inline"><em>u</em>(0, <em>t</em>) = <em>g</em><sub>1</sub>(<em>t</em>)</span>、<span class="math inline"><em>u</em>(<em>l</em>, <em>t</em>) = <em>g</em><sub>2</sub>(<em>t</em>)</span>。数据不为零时，边界条件称为非齐次。</p></li>
+<li><p><strong>第二类边界条件（Neumann）</strong>：给定端点的斜率，等价于在此线性模型中给定端点的横向受力。自由端不受横向外力时，<span class="math inline"><em>u</em><sub><em>x</em></sub> = 0</span>；例如左端自由：</p>
+<p><span class="math display"><em>u</em><sub><em>x</em></sub>(0, <em>t</em>) = 0.</span></p>
+<p>两端若统一用<strong>外法向导数</strong>表示，则 <span class="math inline">∂<sub><em>n</em></sub><em>u</em>(0, <em>t</em>) = −<em>u</em><sub><em>x</em></sub>(0, <em>t</em>)</span>，<span class="math inline">∂<sub><em>n</em></sub><em>u</em>(<em>l</em>, <em>t</em>) = <em>u</em><sub><em>x</em></sub>(<em>l</em>, <em>t</em>)</span>。这样写非齐次条件时不容易弄错左端的符号。</p></li>
+<li><p><strong>第三类边界条件（Robin）</strong>：端点与弹性支承相连时，支承的反力与位移成正比。右端弹性支承刚度为
+<span class="math inline"><em>k</em> &gt; 0</span> 时，课件给出</p>
+<p><span class="math display">−<em>T</em><em>u</em><sub><em>x</em></sub>(<em>l</em>, <em>t</em>) = <em>k</em><em>u</em>(<em>l</em>, <em>t</em>),</span></p>
+<p>即</p>
+<p><span class="math display">$$
+u_x(l,t)+\alpha u(l,t)=0,\qquad \alpha=\frac{k}{T}&gt;0.
+$$</span></p>
+<p>统一使用外法向导数，形式是 <span class="math inline">∂<sub><em>n</em></sub><em>u</em> + <em>α</em><em>u</em> = <em>g</em></span>。左右两端的刚度可以不同，因此相应的
+<span class="math inline"><em>α</em></span> 也不必相同。</p></li>
+</ol>
+<h4 id="解决定解问题">解决定解问题</h4>
+<p>把偏微分方程与恰当的定解条件联立，就得到<strong>定解问题</strong>。有限长弦需要方程、两个初始条件以及两端的边界条件，这叫<strong>初边值问题</strong>，也叫混合问题。</p>
+<figure>
+<img src="/posts/47445/初边值问题示意图-1790932680964-11.png" alt="弦振动初边值问题示意，截自课件第 37 页">
+<figcaption aria-hidden="true">弦振动初边值问题示意，截自课件第 37
+页</figcaption>
+</figure>
+<p>例如第一初边值问题（Dirichlet）是</p>
+<p><span class="math display">$$
+\begin{cases}
+u_{tt}-a^2u_{xx}=f(x,t),&amp;0&lt;x&lt;l,\ t&gt;0,\\
+u(x,0)=\varphi(x),\quad u_t(x,0)=\psi(x),&amp;0\le x\le l,\\
+u(0,t)=g_1(t),\quad u(l,t)=g_2(t),&amp;t\ge0.
+\end{cases}
+$$</span></p>
+<p>第二初边值问题把最后一行改为 <span class="math inline">−<em>u</em><sub><em>x</em></sub>(0, <em>t</em>) = <em>g</em><sub>1</sub>(<em>t</em>)</span>、<span class="math inline"><em>u</em><sub><em>x</em></sub>(<em>l</em>, <em>t</em>) = <em>g</em><sub>2</sub>(<em>t</em>)</span>；第三初边值问题改为
+<span class="math inline">−<em>u</em><sub><em>x</em></sub>(0, <em>t</em>) + <em>α</em><sub>0</sub><em>u</em>(0, <em>t</em>) = <em>g</em><sub>1</sub>(<em>t</em>)</span>、<span class="math inline"><em>u</em><sub><em>x</em></sub>(<em>l</em>, <em>t</em>) + <em>α</em><sub><em>l</em></sub><em>u</em>(<em>l</em>, <em>t</em>) = <em>g</em><sub>2</sub>(<em>t</em>)</span>。后两类的方程和初始条件与上面相同。</p>
+<p>若研究整条无限长弦，就没有有限端点，只给初始条件，得到<strong>初值问题（Cauchy
+问题）</strong>：</p>
+<p><span class="math display">$$
+\begin{cases}
+u_{tt}-a^2u_{xx}=f(x,t),&amp;x\in\mathbb R,\ t&gt;0,\\
+u(x,0)=\varphi(x),\quad u_t(x,0)=\psi(x),&amp;x\in\mathbb R.
+\end{cases}
+$$</span></p>
+<p>如果要求解在 <span class="math inline"><em>t</em> = 0</span>
+及边界交点处连续，初始与边界数据还应相容。例如第一类边界条件至少要求
+<span class="math inline"><em>φ</em>(0) = <em>g</em><sub>1</sub>(0)</span>、<span class="math inline"><em>φ</em>(<em>l</em>) = <em>g</em><sub>2</sub>(0)</span>。</p>
+<h3 id="热传导方程与定解条件">热传导方程与定解条件</h3>
+<h4 id="热传导方程的导出">热传导方程的导出</h4>
+<p>若物体内部各点温度不同，热量会从高温处向低温处流动。设物体占据三维区域
+<span class="math inline"><em>G</em> ⊂ ℝ<sup>3</sup></span>，<span class="math inline"><em>u</em>(<strong>x</strong>, <em>t</em>)</span>
+表示位置 <span class="math inline"><strong>x</strong> = (<em>x</em>, <em>y</em>, <em>z</em>)</span>
+在时刻 <span class="math inline"><em>t</em></span>
+的温度。现在要找温度的变化规律。</p>
+<p>这里需要两个物理定律：</p>
+<ol type="1">
+<li><strong>热量守恒</strong>：区域内温度变化所需的热量 =
+从边界流入的热量 + 内部热源提供的热量。</li>
+<li><strong>傅里叶热传导定律</strong>：热流密度 <span class="math inline"><strong>q</strong> = −<em>k</em>(<strong>x</strong>)∇<em>u</em></span>，其中
+<span class="math inline"><em>k</em> &gt; 0</span>
+为热导率。负号说明热量沿温度降低方向流动。</li>
+</ol>
+<p>在 <span class="math inline"><em>G</em></span> 内任取由光滑闭曲面
+<span class="math inline"><em>S</em> = ∂<em>Ω</em></span> 围成的小区域
+<span class="math inline"><em>Ω</em></span>，令 <span class="math inline"><strong>n</strong></span> 指向 <span class="math inline"><em>Ω</em></span> 外侧。设 <span class="math inline"><em>c</em>(<strong>x</strong>)</span>
+为比热容，<span class="math inline"><em>ρ</em>(<strong>x</strong>)</span> 为密度，<span class="math inline"><em>F</em>(<strong>x</strong>, <em>t</em>)</span>
+为单位体积、单位时间的热源强度。在 <span class="math inline">[<em>t</em><sub>1</sub>, <em>t</em><sub>2</sub>]</span>
+中，三项热量分别是：</p>
+<p><span class="math display"><em>Q</em><sub>温变</sub> = ∫<sub><em>Ω</em></sub><em>c</em><em>ρ</em> [<em>u</em>(<strong>x</strong>, <em>t</em><sub>2</sub>) − <em>u</em>(<strong>x</strong>, <em>t</em><sub>1</sub>)] d<em>V</em> = ∫<sub><em>t</em><sub>1</sub></sub><sup><em>t</em><sub>2</sub></sup>∫<sub><em>Ω</em></sub><em>c</em><em>ρ</em><em>u</em><sub><em>t</em></sub> d<em>V</em> d<em>t</em>,</span></p>
+<p><span class="math display">$$
+Q_{\text{流入}}=-\int_{t_1}^{t_2}\int_S\boldsymbol q\cdot\boldsymbol
+n\,\mathrm dS\,\mathrm dt
+=\int_{t_1}^{t_2}\int_S k\frac{\partial u}{\partial n}\,\mathrm
+dS\,\mathrm dt,
+$$</span></p>
+<p><span class="math display"><em>Q</em><sub>热源</sub> = ∫<sub><em>t</em><sub>1</sub></sub><sup><em>t</em><sub>2</sub></sup>∫<sub><em>Ω</em></sub><em>F</em>(<strong>x</strong>, <em>t</em>) d<em>V</em> d<em>t</em>.</span></p>
+<p><strong>注意正负号</strong>：<span class="math inline"><strong>q</strong> ⋅ <strong>n</strong> = −<em>k</em>∂<sub><em>n</em></sub><em>u</em></span>
+是“向外”的热通量，而热量守恒中使用的是“流入”量，故前面要再加一个负号。课件第
+41、44 页的两种写法需要这样区分。</p>
+<p>由高斯公式，<span class="math inline">∫<sub><em>S</em></sub><em>k</em>∂<sub><em>n</em></sub><em>u</em> d<em>S</em> = ∫<sub><em>Ω</em></sub>∇ ⋅ (<em>k</em>∇<em>u</em>) d<em>V</em></span>。再利用
+<span class="math inline"><em>Ω</em></span>
+和时间区间的任意性，得到一般形式的<strong>热传导方程</strong>：</p>
+<p><span class="math display">$$
+\boxed{c(\boldsymbol{x})\rho(\boldsymbol{x})u_t
+=\nabla\cdot\bigl(k(\boldsymbol{x})\nabla u\bigr)+F(\boldsymbol{x},t).}
+$$</span></p>
+<p>若 <span class="math inline"><em>c</em>, <em>ρ</em>, <em>k</em></span>
+都为正常数，记</p>
+<p><span class="math display">$$
+a^2=\frac{k}{c\rho},\qquad f=\frac{F}{c\rho},
+$$</span></p>
+<p>便得到三维形式</p>
+<p><span class="math display">$$
+\boxed{u_t-a^2(u_{xx}+u_{yy}+u_{zz})=f(x,y,z,t).}
+$$</span></p>
+<p>无热源时 <span class="math inline"><em>f</em> = 0</span>。这里的
+<span class="math inline"><em>a</em><sup>2</sup></span>
+是<strong>热扩散率</strong>，单位是长度平方除以时间；虽然课件也记作
+<span class="math inline"><em>a</em><sup>2</sup></span>，它与弦振动中的波速平方代表不同物理量。一维和二维的无源形式分别是</p>
+<p><span class="math display"><em>u</em><sub><em>t</em></sub> = <em>a</em><sup>2</sup><em>u</em><sub><em>x</em><em>x</em></sub>,   <em>u</em><sub><em>t</em></sub> = <em>a</em><sup>2</sup>(<em>u</em><sub><em>x</em><em>x</em></sub> + <em>u</em><sub><em>y</em><em>y</em></sub>).</span></p>
+<h4 id="定解条件">定解条件</h4>
+<p>热传导方程对时间只有一阶，因此给定<strong>一个初始温度</strong>即可：</p>
+<p><span class="math display"><em>u</em>(<strong>x</strong>, 0) = <em>φ</em>(<strong>x</strong>),   <strong>x</strong> ∈ <em>G</em>.</span></p>
+<p>在物体边界 <span class="math inline"><em>Γ</em> = ∂<em>G</em></span>
+上，课件介绍了三类边界条件：</p>
+<ol type="1">
+<li><p><strong>第一类（Dirichlet）</strong>：指定表面温度，<span class="math inline"><em>u</em>|<sub><em>Γ</em></sub> = <em>g</em>(<strong>x</strong>, <em>t</em>)</span>。</p></li>
+<li><p><strong>第二类（Neumann）</strong>：指定法向温度梯度或热通量，例如
+<span class="math inline"><em>k</em>∂<sub><em>n</em></sub><em>u</em>|<sub><em>Γ</em></sub> = <em>g</em>(<strong>x</strong>, <em>t</em>)</span>。当
+<span class="math inline"><em>g</em> = 0</span>
+时，表面绝热；若用向外热通量 <span class="math inline">$q_{\rm
+out}$</span> 作为数据，则应写成 <span class="math inline">$-k\partial_nu=q_{\rm out}$</span>。</p></li>
+<li><p><strong>第三类（Robin）</strong>：物体与温度为 <span class="math inline">$u_{\rm env}$</span> 的外界介质换热。若换热系数
+<span class="math inline"><em>h</em> &gt; 0</span>，由牛顿冷却定律与傅里叶定律在表面相等，</p>
+<p><span class="math display">$$
+-k\partial_nu=h(u-u_{\rm env}),
+$$</span></p>
+<p>即</p>
+<p><span class="math display">$$
+\partial_nu+\alpha u=g,\qquad
+\alpha=\frac hk&gt;0,\quad g=\frac hk u_{\rm env}.
+$$</span></p>
+<p><strong>Robin 条件</strong>在同一处边界上把 <span class="math inline"><em>u</em></span> 与 <span class="math inline">∂<sub><em>n</em></sub><em>u</em></span>
+线性组合；<strong>Dirichlet–Neumann
+混合条件</strong>则通常指在边界的不同部分分别指定两类条件，二者不是一个概念。</p></li>
+</ol>
+<h4 id="定解问题">定解问题</h4>
+<p>在整个 <span class="math inline">ℝ<sup>3</sup></span>
+中，只给方程和初始温度，得到热传导的<strong>初值问题</strong>：</p>
+<p><span class="math display">$$
+\begin{cases}
+u_t-a^2\Delta u=f(\boldsymbol{x},t),&amp;\boldsymbol{x}\in\mathbb R^3,\
+t&gt;0,\\
+u(\boldsymbol{x},0)=\varphi(\boldsymbol{x}),&amp;\boldsymbol{x}\in\mathbb
+R^3.
+\end{cases}
+$$</span></p>
+<p>在有边界的 <span class="math inline"><em>G</em></span>
+中还要给边界数据。例如第一初边值问题为</p>
+<p><span class="math display">$$
+\begin{cases}
+u_t-a^2\Delta u=f(\boldsymbol{x},t),&amp;\boldsymbol{x}\in G,\ t&gt;0,\\
+u(\boldsymbol{x},0)=\varphi(\boldsymbol{x}),&amp;\boldsymbol{x}\in G,\\
+u(\boldsymbol{x},t)=g(\boldsymbol{x},t),&amp;\boldsymbol{x}\in\Gamma,\
+t&gt;0.
+\end{cases}
+$$</span></p>
+<p>经典解在初始时刻与边界交接处应满足相容关系 <span class="math inline"><em>φ</em>|<sub><em>Γ</em></sub> = <em>g</em>(<strong>x</strong>, 0)</span>。与波动方程比较，最容易记住的一点是：<strong>热方程只有一个初始条件，波动方程需要位移和速度两个初始条件</strong>。热方程也用于描述扩散过程。</p>
+<h3 id="调和方程与定解条件">调和方程与定解条件</h3>
+<h4 id="位势方程的导出">位势方程的导出</h4>
+<p>调和方程描述稳定状态下物理量的空间分布。比如常系数热传导方程达到稳态后
+<span class="math inline"><em>u</em><sub><em>t</em></sub> = 0</span>，于是</p>
+<p><span class="math display"><em>k</em><em>Δ</em><em>u</em> + <em>F</em> = 0,</span></p>
+<p>即 <span class="math inline"><em>Δ</em><em>u</em> = −<em>F</em>/<em>k</em></span>。若没有热源
+<span class="math inline"><em>F</em> = 0</span>，就得到<strong>调和方程</strong>（Laplace
+方程）：</p>
+<p><span class="math display">$$
+\boxed{\Delta u=u_{xx}+u_{yy}+u_{zz}=0.}
+$$</span></p>
+<p>把非零右端统一记作 <span class="math inline"><em>f</em>(<strong>x</strong>)</span>，得到<strong>泊松方程</strong>：</p>
+<p><span class="math display">$$
+\boxed{\Delta u=f(\boldsymbol{x}).}
+$$</span></p>
+<p>两者统称为位势方程。右端的正负号取决于 <span class="math inline"><em>f</em></span> 的定义；例如在稳态热传导问题中
+<span class="math inline"><em>f</em> = −<em>F</em>/<em>k</em></span>。波动方程的平衡态也可以导出同类方程。</p>
+<p>调和函数是至少具有连续二阶偏导数，并满足 <span class="math inline"><em>Δ</em><em>u</em> = 0</span>
+的函数。课件还提到两个例子：静电势在特定单位制下满足 <span class="math inline">$\Delta\phi=-4\pi\rho_{\rm
+e}$</span>；二维解析函数的实部和虚部满足二维调和方程（可由柯西–黎曼条件推出）。</p>
+<h4 id="定解条件边界条件">定解条件：边界条件</h4>
+<p>位势方程没有时间变量，<strong>不需要初始条件</strong>；要确定具体的稳态分布，通常需要边界条件。设
+<span class="math inline"><em>Ω</em> ⊂ ℝ<sup>3</sup></span>，<span class="math inline"><em>Γ</em> = ∂<em>Ω</em></span>，<span class="math inline"><strong>n</strong></span>
+是指向区域外侧的单位法向量。</p>
+<ol type="1">
+<li><strong>第一类（Dirichlet）</strong>：<span class="math inline"><em>u</em>|<sub><em>Γ</em></sub> = <em>g</em>(<strong>x</strong>)</span>，给定边界上的函数值。</li>
+<li><strong>第二类（Neumann）</strong>：<span class="math inline">∂<sub><em>n</em></sub><em>u</em>|<sub><em>Γ</em></sub> = <em>g</em>(<strong>x</strong>)</span>，给定外法向导数。</li>
+<li><strong>第三类（Robin）</strong>：<span class="math inline">(∂<sub><em>n</em></sub><em>u</em> + <em>σ</em><em>u</em>)|<sub><em>Γ</em></sub> = <em>g</em>(<strong>x</strong>)</span>，其中
+<span class="math inline"><em>σ</em> &gt; 0</span>。</li>
+</ol>
+<p>如果把 <span class="math inline"><em>Γ</em></span> 分为 <span class="math inline"><em>Γ</em><sub><em>D</em></sub></span> 与 <span class="math inline"><em>Γ</em><sub><em>N</em></sub></span>，在前者给定
+<span class="math inline"><em>u</em></span>、后者给定 <span class="math inline">∂<sub><em>n</em></sub><em>u</em></span>，才称为
+Dirichlet–Neumann <strong>混合边界条件</strong>。</p>
+<h4 id="定解问题内问题与外问题">定解问题：内问题与外问题</h4>
+<p>在有界区域内部求边值问题，叫<strong>内问题</strong>。例如泊松方程的
+Robin 内问题：</p>
+<p><span class="math display">$$
+\begin{cases}
+\Delta u=f(\boldsymbol{x}),&amp;\boldsymbol{x}\in\Omega,\\
+\partial_nu+\sigma u=g(\boldsymbol{x}),&amp;\boldsymbol{x}\in\Gamma.
+\end{cases}
+$$</span></p>
+<p>对有界区域的 Neumann
+内问题，还要特别注意：由高斯公式可得必要的<strong>相容条件</strong></p>
+<p><span class="math display">∫<sub><em>Ω</em></sub><em>f</em> d<em>V</em> = ∫<sub><em>Γ</em></sub><em>g</em> d<em>S</em>.</span></p>
+<p>而且如果 <span class="math inline"><em>u</em></span> 是解，<span class="math inline"><em>u</em> + <em>C</em></span> 也是解，所以 Neumann
+条件本身只能把解确定到一个常数；还需要指定平均值或某点的值才能得到唯一解。</p>
+<p>在有界物体的外部区域求解，叫<strong>外问题</strong>。此时仅给物体表面上的数据通常还不够，还要说明解在无穷远处的行为。课件中的例子很直观：设
+<span class="math inline"><em>Ω</em> = {<strong>x</strong> ∈ ℝ<sup>3</sup> : |<strong>x</strong>| &gt; 1}</span>，<span class="math inline"><em>Γ</em></span> 为单位球面，考虑</p>
+<p><span class="math display"><em>Δ</em><em>u</em> = 0  (<strong>x</strong> ∈ <em>Ω</em>),   <em>u</em>|<sub><em>Γ</em></sub> = 1.</span></p>
+<p>那么 <span class="math inline"><em>u</em><sub>1</sub> ≡ 1</span> 和
+<span class="math inline"><em>u</em><sub>2</sub>(<strong>x</strong>) = 1/|<strong>x</strong>|</span>
+都满足这两个条件。若再要求 <span class="math inline"><em>u</em> → 0</span>（当 <span class="math inline">|<strong>x</strong>| → ∞</span>），就排除了 <span class="math inline"><em>u</em><sub>1</sub></span>，选出 <span class="math inline"><em>u</em><sub>2</sub></span>。</p>
+<p>课件指出：三维外问题常要求解在无穷远处趋于零；二维外 Dirichlet
+问题常要求解在无穷远处有界。但<strong>二维外 Neumann
+问题仅要求有界仍不能消除“加常数”的自由度</strong>，还要指定归一化条件；边界数据也需满足相应的可解性条件。</p>
+<h3 id="三类模型放在一起比较">三类模型放在一起比较</h3>
+<table>
+<colgroup>
+<col style="width: 7%">
+<col style="width: 42%">
+<col style="width: 10%">
+<col style="width: 23%">
+<col style="width: 15%">
+</colgroup>
+<thead>
+<tr>
+<th>模型</th>
+<th>典型方程</th>
+<th>时间导数</th>
+<th>常见初始数据</th>
+<th>物理意义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>波动</td>
+<td><span class="math inline"><em>u</em><sub><em>t</em><em>t</em></sub> − <em>a</em><sup>2</sup><em>Δ</em><em>u</em> = <em>f</em></span></td>
+<td>二阶</td>
+<td>初始位移、初始速度</td>
+<td>扰动传播</td>
+</tr>
+<tr>
+<td>热传导</td>
+<td><span class="math inline"><em>u</em><sub><em>t</em></sub> − <em>a</em><sup>2</sup><em>Δ</em><em>u</em> = <em>f</em></span></td>
+<td>一阶</td>
+<td>初始温度</td>
+<td>热或物质扩散</td>
+</tr>
+<tr>
+<td>位势</td>
+<td><span class="math inline"><em>Δ</em><em>u</em> = <em>f</em></span>，无源时
+<span class="math inline"><em>Δ</em><em>u</em> = 0</span></td>
+<td>无</td>
+<td>不需要</td>
+<td>稳态分布</td>
+</tr>
+</tbody>
+</table>
+<p>三类模型都可以配 Dirichlet、Neumann 或 Robin
+边界条件，但同一种数学形式的边界条件，在弦、热和位势问题中的物理意义并不相同。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a target="_blank" rel="noopener" href="https://github.com/ergou10086">ErgouTree</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://ergou10086.github.io/posts/47445.html">https://ergou10086.github.io/posts/47445.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://ergou10086.github.io" target="_blank">ErgouTree's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E6%95%B0%E5%AD%A6/">数学</a><a class="post-meta__tags" href="/tags/%E7%89%A9%E7%90%86/">物理</a><a class="post-meta__tags" href="/tags/%E6%95%B0%E5%AD%A6%E5%BB%BA%E6%A8%A1/">数学建模</a><a class="post-meta__tags" href="/tags/%E5%AE%9A%E7%90%86%E8%AF%81%E6%98%8E/">定理证明</a><a class="post-meta__tags" href="/tags/%E6%95%B0%E5%AD%A6%E7%89%A9%E7%90%86%E6%96%B9%E6%B3%95/">数学物理方法</a></div><div class="post-share"><div class="addtoany"><div class="a2a_kit a2a_kit_size_32 a2a_default_style"><a class="a2a_button_facebook"></a><a class="a2a_button_twitter"></a><a class="a2a_button_wechat"></a><a class="a2a_button_sina_weibo"></a><a class="a2a_button_facebook_messenger"></a><a class="a2a_button_email"></a><a class="a2a_button_copy_link"></a><a class="a2a_dd" target="_blank" rel="noopener" href="https://www.addtoany.com/share"></a></div></div><script async="async" src="https://static.addtoany.com/menu/page.js"></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width" href="/posts/35817.html" title="Linux常用命令总结"><div class="cover" style="background: /images/posts/cover_linux1"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">Linux常用命令总结</div></div><div class="info-2"><div class="info-item-1"> 其实我也很清楚命令是用明白的，但是我真的是真的是总忘，而且经常不知道这种操作还有命令，所以说，这算是一个记录本了 推荐一个 Linux 命令快查网站，非常不错，大家如果遗忘某些命令或者对某些命令不理解都可以在这里得到解决。 Linux 命令在线速查手册：https://wangchujiang.com/linux-command/ 另外，shell.how 可以解释常见命令（包括 Git、npm）的作用。遇到不熟悉的选项，仍建议以本机 man 命令 或 命令 --help 为准。  系统级别操作 系统信息(系统监控)  iostat：CPU 和 IO 统计 iostat（Input/Output Statistics）是Linux系统下一个强大的性能监控工具，属于sysstat工具包的一部分。它主要用于监控系统的磁盘I/O活动情况和CPU使用情况。 1iostat [选项] [时间间隔] [次数] 包括 12345iostat	    # 显示自系统启动以来的CPU和磁盘统计信息iostat -c	# 仅显示CPU使用情况iostat...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/posts/61953.html" title="数学物理方程之弦振动方程模型的建立"><img class="cover" src="/images/posts/cover_front.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-07-23</div><div class="info-item-2">数学物理方程之弦振动方程模型的建立</div></div><div class="info-2"><div class="info-item-1">...</div></div></div></a><a class="pagination-related" href="/posts/38102.html" title="数学物理方程波动方程的解法"><img class="cover" src="/images/posts/cover_teach5.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-07-23</div><div class="info-item-2">数学物理方程波动方程的解法</div></div><div class="info-2"><div class="info-item-1">波动方程的求解 波动方程是描述波传播现象的基本偏微分方程，在物理、工程等领域有着广泛应用，例如弦的振动、声波、电磁波的传播等。理解波动方程的解法及其物理意义，是数学物理方程学习的核心内容之一。下面先讨论无限长弦的行波，再讨论有限长弦的驻波、高维柯西问题，以及能量估计。 达朗贝尔公式 达朗贝尔公式解法也叫行波法，直接求解整条实线上的一维波动方程初值问题。它把解写成向左、向右传播的两个波，因此特别适合看清波速和依赖区域。半无限或有限区间上的一些问题也能结合奇偶延拓、反射等方法处理，但需要把边界条件一并考虑。 弦振动方程的达朗贝尔解法 问题和方程的引入 如果我们所考察的弦线长度很长，而我们需要知道的又只是在较短时间且离开边界较远的一段范围内的振动情况，那么边界条件的影响就可以忽略，所以不妨把所考察弦线的长度视为无限。 我们先写出含外力的一般初值问题，随后利用叠加原理分别处理初值和外力： $$ \begin{cases} u_{tt} = a^2 u_{xx} + f(x, t) &amp; (-\infty &lt; x &lt; +\infty, t...</div></div></div></a><a class="pagination-related" href="/posts/47136.html" title="推导theta&#x3D;0纵剖面上的抽水降落曲线公式"><img class="cover" src="/images/posts/cover_config.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-06-03</div><div class="info-item-2">推导theta&#x3D;0纵剖面上的抽水降落曲线公式</div></div><div class="info-2"><div class="info-item-1">推导 θ = 0 纵剖面上的抽水降落曲线公式 根据辐射井的抽水降落曲面模型论文内容，θ = 0 纵剖面是沿着辐射管方向的剖面。推导分为两个区域：辐射管范围内的垂直渗流区（0 ≤ ρ ≤ l + r）和辐射管范围外的水平渗流区（l + r ≤ ρ ≤ R）。以下是详细推导过程：  1. 垂直渗流区 (0 ≤ ρ ≤ l + r) 基本假设： 在垂直渗流区（辐射管范围内），地下水运动以垂向渗流为主，其核心特征是：  近井处水力坡度平缓（水位变化小） 远离井处水力坡度陡峭（水位变化大） 水位差变化率与当前位置水位差成正比  数学表述为： ΔT(ρ, 0) = ω ⋅ T(ρ, 0) ⋅ ΔρΔT(ρ, 0) = ω ⋅ T(ρ, 0) ⋅ Δρ 其中：  T(ρ, 0) = H(ρ, 0) − Hs（点(ρ, 0)与竖井水位差） ω：垂直渗流区特征参数（常数） Δρ：径向距离增量  在垂直渗流区，水位高度 T(ρ, 0) 的增长率为常数 ω。这意味着单位距离 Δρ 内，T(ρ, 0) 的增量与 T(ρ, 0)...</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="gitalk-container"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/arp.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">ErgouTree</div><div class="author-info-description">I start a brand-new life with you.</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">348</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">214</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">114</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/ergou10086"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/ergou10086" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="/zjm88822201@126.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a><a class="social-icon" href="https://space.bilibili.com/142045656?spm_id_from=333.1007.0.0" target="_blank" title="bilibili"><i class="fas fa-brands fa-bilibili" style="color: #4a72be;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">作者长期陷入galgame和osu!maina4k中 祝他好运吧 对了 如果图片加载过慢 建议科学上网进行使用</div></div><div class="card-widget card-weather"><div class="item-headline"><i class="fas fa-cloud-sun"></i><span>aside.card_weather</span></div><div class="weather-content"><div class="weather-loading"><i class="fas fa-spinner fa-spin"></i><span>加载中...</span></div><div class="weather-main" style="display: none;"><div class="weather-location"><i class="fas fa-map-marker-alt"></i><span id="weather-location">获取中...</span></div><div class="weather-info"><div class="weather-temp"><span id="weather-temp">--</span><span class="unit">°C</span></div><div class="weather-desc"><span id="weather-weather">--</span></div><div class="weather-details"><div class="weather-item"><i class="fas fa-wind"></i><span id="weather-windpower">--</span></div><div class="weather-item"><i class="fas fa-tint"></i><span id="weather-humidity">--</span></div><div class="weather-item"><i class="fas fa-eye"></i><span id="weather-winddir">--</span></div></div></div><div class="weather-update-time"><i class="fas fa-clock"></i><span id="weather-update-time">更新中...</span></div></div></div></div><div class="sticky_layout"></div><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%95%B0%E5%AD%A6%E7%89%A9%E7%90%86%E6%96%B9%E7%A8%8B%E6%A8%A1%E5%9E%8B%E5%89%8D%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text">数学物理方程模型前言</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%8B%E7%BB%8D"><span class="toc-number">1.1.</span> <span class="toc-text">介绍</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E5%AD%A6%E7%89%A9%E7%90%86%E6%96%B9%E7%A8%8B%E7%9A%84%E7%A0%94%E7%A9%B6%E6%96%B9%E6%B3%95"><span class="toc-number">1.2.</span> <span class="toc-text">数学物理方程的研究方法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5"><span class="toc-number">1.3.</span> <span class="toc-text">基本概念</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E7%B1%BB%E5%85%B8%E5%9E%8B%E6%A8%A1%E5%9E%8B%E7%9A%84%E5%BB%BA%E7%AB%8B"><span class="toc-number">2.</span> <span class="toc-text">三类典型模型的建立</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BC%A6%E6%8C%AF%E5%8A%A8%E6%96%B9%E7%A8%8B%E4%B8%8E%E5%AE%9A%E8%A7%A3%E6%9D%A1%E4%BB%B6"><span class="toc-number">2.1.</span> <span class="toc-text">弦振动方程与定解条件</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%BC%95%E5%85%A5"><span class="toc-number">2.1.1.</span> <span class="toc-text">引入</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BB%A5%E5%BC%A6%E6%8C%AF%E5%8A%A8%E4%B8%BA%E4%BE%8B%E8%BF%9B%E8%A1%8C%E7%89%A9%E7%90%86%E9%97%AE%E9%A2%98%E7%9A%84%E5%88%86%E6%9E%90"><span class="toc-number">2.1.2.</span> <span class="toc-text">以弦振动为例进行物理问题的分析</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BB%93%E5%90%88%E5%88%86%E6%9E%90%E8%BF%9B%E8%A1%8C%E6%95%B0%E5%AD%A6%E7%89%A9%E7%90%86%E6%96%B9%E7%A8%8B%E7%9A%84%E5%AF%BC%E5%87%BA"><span class="toc-number">2.1.3.</span> <span class="toc-text">结合分析进行数学物理方程的导出</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8E%A8%E5%AF%BC%E5%AE%9A%E8%A7%A3%E6%9D%A1%E4%BB%B6"><span class="toc-number">2.1.4.</span> <span class="toc-text">推导定解条件</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%A7%A3%E5%86%B3%E5%AE%9A%E8%A7%A3%E9%97%AE%E9%A2%98"><span class="toc-number">2.1.5.</span> <span class="toc-text">解决定解问题</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%83%AD%E4%BC%A0%E5%AF%BC%E6%96%B9%E7%A8%8B%E4%B8%8E%E5%AE%9A%E8%A7%A3%E6%9D%A1%E4%BB%B6"><span class="toc-number">2.2.</span> <span class="toc-text">热传导方程与定解条件</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%83%AD%E4%BC%A0%E5%AF%BC%E6%96%B9%E7%A8%8B%E7%9A%84%E5%AF%BC%E5%87%BA"><span class="toc-number">2.2.1.</span> <span class="toc-text">热传导方程的导出</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%9A%E8%A7%A3%E6%9D%A1%E4%BB%B6"><span class="toc-number">2.2.2.</span> <span class="toc-text">定解条件</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%9A%E8%A7%A3%E9%97%AE%E9%A2%98"><span class="toc-number">2.2.3.</span> <span class="toc-text">定解问题</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%B0%83%E5%92%8C%E6%96%B9%E7%A8%8B%E4%B8%8E%E5%AE%9A%E8%A7%A3%E6%9D%A1%E4%BB%B6"><span class="toc-number">2.3.</span> <span class="toc-text">调和方程与定解条件</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BD%8D%E5%8A%BF%E6%96%B9%E7%A8%8B%E7%9A%84%E5%AF%BC%E5%87%BA"><span class="toc-number">2.3.1.</span> <span class="toc-text">位势方程的导出</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%9A%E8%A7%A3%E6%9D%A1%E4%BB%B6%E8%BE%B9%E7%95%8C%E6%9D%A1%E4%BB%B6"><span class="toc-number">2.3.2.</span> <span class="toc-text">定解条件：边界条件</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%9A%E8%A7%A3%E9%97%AE%E9%A2%98%E5%86%85%E9%97%AE%E9%A2%98%E4%B8%8E%E5%A4%96%E9%97%AE%E9%A2%98"><span class="toc-number">2.3.3.</span> <span class="toc-text">定解问题：内问题与外问题</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%89%E7%B1%BB%E6%A8%A1%E5%9E%8B%E6%94%BE%E5%9C%A8%E4%B8%80%E8%B5%B7%E6%AF%94%E8%BE%83"><span class="toc-number">2.4.</span> <span class="toc-text">三类模型放在一起比较</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/47445.html" title="数学物理方程之三类典型模型的建立"><img src="/images/posts/cover_teach2.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="数学物理方程之三类典型模型的建立"/></a><div class="content"><a class="title" href="/posts/47445.html" title="数学物理方程之三类典型模型的建立">数学物理方程之三类典型模型的建立</a><time datetime="2026-10-02T09:03:43.000Z" title="发表于 2026-10-02 17:03:43">2026-10-02</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/35817.html" title="Linux常用命令总结"><div style="background: /images/posts/cover_linux1"></div></a><div class="content"><a class="title" href="/posts/35817.html" title="Linux常用命令总结">Linux常用命令总结</a><time datetime="2026-10-02T08:33:32.000Z" title="发表于 2026-10-02 16:33:32">2026-10-02</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/9971.html" title="Linux常用知识总结"><div style="background: /images/posts/cover_linux3"></div></a><div class="content"><a class="title" href="/posts/9971.html" title="Linux常用知识总结">Linux常用知识总结</a><time datetime="2026-10-02T08:23:39.000Z" title="发表于 2026-10-02 16:23:39">2026-10-02</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/16607.html" title="LangChain4j part9—MCP、可观测性、护栏机制"><img src="/images/posts/cover_wish.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="LangChain4j part9—MCP、可观测性、护栏机制"/></a><div class="content"><a class="title" href="/posts/16607.html" title="LangChain4j part9—MCP、可观测性、护栏机制">LangChain4j part9—MCP、可观测性、护栏机制</a><time datetime="2026-08-05T09:30:52.000Z" title="发表于 2026-08-05 17:30:52">2026-08-05</time></div></div></div></div></div></main><div class="fps-display"><span id="fps">FPS: 60</span></div><footer id="footer" style="background-image: url(/images/posts/cover_teach2.jpg);"><div id="footer-wrap"><div class="copyright">&copy;2024 - 2026 By ErgouTree</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">忘れたくない思い、ありますか？ <br>,<span id="realtime_duration" style="font-family: monospace;"></span>,<br><a href="https://icp.gov.moe/?keyword=20257009" target="_blank">萌ICP备20257009号</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><a class="icon-V hidden" onclick="switchNightMode()" title="日间和夜间模式切换"><svg width="25" height="25" viewBox="0 0 1024 1024"><use id="modeicon" xlink:href="#icon-moon"></use></svg></a><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="chat-btn" type="button" title="聊天" style="display:none"><i class="fas fa-comment"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (true) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script><script>(() => {
+  const applyThemeDefaultsConfig = theme => {
+    if (theme === 'dark-mode') {
+      Chart.defaults.color = "rgba(255, 255, 255, 0.8)"
+      Chart.defaults.borderColor = "rgba(255, 255, 255, 0.2)"
+      Chart.defaults.scale.ticks.backdropColor = "transparent"
+    } else {
+      Chart.defaults.color = "rgba(0, 0, 0, 0.8)"
+      Chart.defaults.borderColor = "rgba(0, 0, 0, 0.1)"
+      Chart.defaults.scale.ticks.backdropColor = "transparent"
+    }
+  }
+
+  // Recursively traverse the config object and automatically apply theme-specific color schemes
+  const applyThemeConfig = (obj, theme) => {
+    if (typeof obj !== 'object' || obj === null) return
+
+    Object.keys(obj).forEach(key => {
+      const value = obj[key]
+      // If the property is an object and has theme-specific options, apply them
+      if (typeof value === 'object' && value !== null) {
+        if (value[theme]) {
+          obj[key] = value[theme] // Apply the value for the current theme
+        } else {
+          // Recursively process child objects
+          applyThemeConfig(value, theme)
+        }
+      }
+    })
+  }
+
+  const runChartJS = ele => {
+    window.loadChartJS = true
+
+    Array.from(ele).forEach((item, index) => {
+      const chartSrc = item.firstElementChild
+      const chartID = item.getAttribute('data-chartjs-id') || ('chartjs-' + index) // Use custom ID or default ID
+      const width = item.getAttribute('data-width')
+      const existingCanvas = document.getElementById(chartID)
+
+      // If a canvas already exists, remove it to avoid rendering duplicates
+      if (existingCanvas) {
+          existingCanvas.parentNode.remove()
+      }
+
+      const chartDefinition = chartSrc.textContent
+      const canvas = document.createElement('canvas')
+      canvas.id = chartID
+
+      const div = document.createElement('div')
+      div.className = 'chartjs-wrap'
+
+      if (width) {
+        div.style.width = width
+      }
+
+      div.appendChild(canvas)
+      chartSrc.insertAdjacentElement('afterend', div)
+
+      const ctx = document.getElementById(chartID).getContext('2d')
+
+      const config = JSON.parse(chartDefinition)
+
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark-mode' : 'light-mode'
+
+      // Set default styles (initial setup)
+      applyThemeDefaultsConfig(theme)
+
+      // Automatically traverse the config and apply dual-mode color schemes
+      applyThemeConfig(config, theme)
+
+      new Chart(ctx, config)
+    })
+  }
+
+  const loadChartJS = () => {
+    const chartJSEle = document.querySelectorAll('#article-container .chartjs-container')
+    if (chartJSEle.length === 0) return
+
+    window.loadChartJS ? runChartJS(chartJSEle) : btf.getScript('https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.min.js').then(() => runChartJS(chartJSEle))
+  }
+
+  // Listen for theme change events
+  btf.addGlobalFn('themeChange', loadChartJS, 'chartjs')
+  btf.addGlobalFn('encrypt', loadChartJS, 'chartjs')
+
+  window.pjax ? loadChartJS() : document.addEventListener('DOMContentLoaded', loadChartJS)
+})()</script><script>(function() {
+  const abcjsInit = function() {
+    const abcjsFn = function() {
+      setTimeout(function() {
+        const sheets = document.querySelectorAll(".abc-music-sheet")
+        for (let i = 0; i < sheets.length; i++) {
+          const ele = sheets[i]
+          if (ele.children.length > 0) continue
+
+          // Parse parameters from data-params attribute
+          let params = {}
+          const dp = ele.getAttribute("data-params")
+          if (dp) {
+            try {
+              params = JSON.parse(dp)
+            } catch (e) {
+              console.error("Failed to parse data-params:", e)
+            }
+          }
+
+          // Merge parsed parameters with the responsive option
+          // Ensures params content appears before responsive
+          const options = { ...params, responsive: "resize" }
+
+          // Render the music score using ABCJS.renderAbc
+          ABCJS.renderAbc(ele, ele.innerHTML, options)
+        }
+      }, 100)
+    }
+
+    if (typeof ABCJS === "object") {
+      abcjsFn()
+    } else {
+      btf.getScript("https://cdn.jsdelivr.net/npm/abcjs/dist/abcjs-basic-min.min.js").then(abcjsFn)
+    }
+  }
+
+  if (window.pjax) {
+    abcjsInit()
+  } else {
+    window.addEventListener("load", abcjsInit)
+  }
+
+  btf.addGlobalFn("encrypt", abcjsInit, "abcjs")
+})()</script><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = {"labels":["Gitalk","Comment"],"createIssueManually":false,"distractionFreeMode":false}
+
+  const commentCount = n => {
+    const isCommentCount = document.querySelector('#post-meta .gitalk-comment-count')
+    if (isCommentCount) {
+      isCommentCount.textContent= n
+    }
+  }
+
+  const initGitalk = (el, path) => {
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGitalk = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+
+    const gitalk = new Gitalk({
+      clientID: 'Ov23li3vDQANiUddL4XB',
+      clientSecret: '5c9a56d02995340fca117809cd414662aadce6ff',
+      repo: 'HexoComment',
+      owner: 'ergou10086',
+      admin: ['ergou10086'],
+      updateCountCallback: commentCount,
+      ...option,
+      id: isShuoshuo ? path : (option && option.id) || '37659a1f09e51c74b5c30676ecc20482'
+    })
+
+    gitalk.render('gitalk-container')
+  }
+
+  const loadGitalk = async(el, path) => {
+    if (typeof Gitalk === 'function') initGitalk(el, path)
+    else {
+      await btf.getCSS('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.css')
+      await btf.getScript('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.js')
+      initGitalk(el, path)
+    }
+  }
+
+  if (isShuoshuo) {
+    'Gitalk' === 'Gitalk'
+      ? window.shuoshuoComment = { loadComment: loadGitalk }
+      : window.loadOtherComment = loadGitalk
+    return
+  }
+
+  if ('Gitalk' === 'Gitalk' || !false) {
+    if (false) btf.loadComment(document.getElementById('gitalk-container'), loadGitalk)
+    else loadGitalk()
+  } else {
+    window.loadOtherComment = loadGitalk
+  }
+})()</script></div><div class="aplayer no-destroy" data-id="13587761608" data-server="netease" data-type="playlist" data-fixed="true" data-autoplay="false" data-lrcType="-1"> </div><script src="https://cdn.jsdelivr.net/npm/abcjs@7.1.2/dist/abcjs-basic-min.js"></script><script src="/js/sun_moon.js" async></script><script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.7/dayjs.min.js"></script><script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.7/plugin/duration.min.js"></script><script src="/scripts/realtime.js"></script><script src="/scripts/random.js"></script><script src="/scripts/weather.js"></script><script>if(window.location.pathname.includes('/viewpoint/')){function loadViewpointScripts(){var loadScript=function(src,callback){var s=document.createElement('script');s.src=src;s.async=false;s.defer=false;s.onload=function(){console.log('脚本加载成功:',src);setTimeout(function(){if(callback)callback();},100);};s.onerror=function(){console.error('脚本加载失败:',src);setTimeout(function(){if(callback)callback();},100);};document.body.appendChild(s);};loadScript('/scripts/viewpoint/math.js',function(){console.log('math.js 加载完成, math:',typeof math);loadScript('/scripts/viewpoint/katex.min.js',function(){console.log('katex.min.js 加载完成, katex:',typeof katex);loadScript('/scripts/viewpoint/sweetalert2@11.js',function(){console.log('sweetalert2@11.js 加载完成, Swal:',typeof Swal,'Sweetalert2:',typeof Sweetalert2);if(typeof Swal==='undefined'&&typeof Sweetalert2!=='undefined'){window.Swal=window.Sweetalert2;console.log('已设置 Swal 别名');}loadScript('/scripts/viewpoint/main.js',function(){console.log('Viewpoint 页面所有脚本加载完成');});});});});}if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',loadViewpointScripts);}else{loadViewpointScripts();}}</script><script>if(window.location.pathname.includes('/littleGame/')){function loadLittleGameScripts(){var load=function(src,cb){var s=document.createElement('script');s.src=src;s.async=false;s.defer=false;s.onload=function(){if(cb)cb();};document.body.appendChild(s);};load('/scripts/littleGame/2048.js',function(){load('/scripts/littleGame/extra-games.js');});}if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',loadLittleGameScripts);}else{loadLittleGameScripts();}}</script><script defer="defer" id="ribbon" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-ribbon.min.js" size="150" alpha="0.6" zIndex="-1" mobile="null" data-click="true"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = false;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><script id="click-heart" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/click-heart.min.js" async="async" mobile="false"></script><script>(() => {
+  window.ChatraID = '4bzb546NSBoJcrNyu'
+  window.Chatra = window.Chatra || function() {
+    (window.Chatra.q = window.Chatra.q || []).push(arguments)
+  }
+
+  btf.getScript('https://call.chatra.io/chatra.js').then(() => {
+    const isChatBtn = true
+    const isChatHideShow = true
+
+    if (isChatBtn) {
+      const close = () => {
+        Chatra('minimizeWidget')
+        Chatra('hide')
+      }
+
+      const open = () => {
+        Chatra('openChat', true)
+        Chatra('show')
+      }
+
+      window.ChatraSetup = { startHidden: true }
+    
+      window.chatBtnFn = () => document.getElementById('chatra').classList.contains('chatra--expanded') ? close() : open()
+
+      document.getElementById('chat-btn').style.display = 'block'
+    } else if (isChatHideShow) {
+      window.chatBtn = {
+        hide: () => Chatra('hide'),
+        show: () => Chatra('show')
+      }
+    }
+  })
+})()</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/metingjs/dist/Meting.min.js"></script><script>(() => {
+  const destroyAplayer = () => {
+    if (window.aplayers) {
+      for (let i = 0; i < window.aplayers.length; i++) {
+        if (!window.aplayers[i].options.fixed) {
+          window.aplayers[i].destroy()
+        }
+      }
+    }
+  }
+
+  const runMetingJS = () => {
+    typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+  }
+
+  btf.addGlobalFn('pjaxSend', destroyAplayer, 'destroyAplayer')
+  btf.addGlobalFn('pjaxComplete', loadMeting, 'runMetingJS')
+})()</script><script src="https://cdn.jsdelivr.net/npm/pjax/pjax.min.js"></script><script>(() => {
+  const pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+  window.pjax = new Pjax({
+    elements: 'a:not([target="_blank"]):not([href="/music/"]):not([href="/viewpoint/"])',
+    selectors: pjaxSelectors,
+    cacheBust: false,
+    analytics: false,
+    scrollRestoration: false
+  })
+
+  const triggerPjaxFn = (val) => {
+    if (!val) return
+    Object.values(val).forEach(fn => fn())
+  }
+
+  document.addEventListener('pjax:send', () => {
+    // removeEventListener
+    btf.removeGlobalFnEvent('pjaxSendOnce')
+    btf.removeGlobalFnEvent('themeChange')
+
+    // reset readmode
+    const $bodyClassList = document.body.classList
+    if ($bodyClassList.contains('read-mode')) $bodyClassList.remove('read-mode')
+
+    triggerPjaxFn(window.globalFn.pjaxSend)
+  })
+
+  document.addEventListener('pjax:complete', () => {
+    btf.removeGlobalFnEvent('pjaxCompleteOnce')
+    document.querySelectorAll('script[data-pjax]').forEach(item => {
+      const newScript = document.createElement('script')
+      const content = item.text || item.textContent || item.innerHTML || ""
+      Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+      newScript.appendChild(document.createTextNode(content))
+      item.parentNode.replaceChild(newScript, item)
+    })
+
+    triggerPjaxFn(window.globalFn.pjaxComplete)
+  })
+
+  document.addEventListener('pjax:error', e => {
+    if (e.request.status === 404) {
+      const usePjax = true
+      true 
+        ? (usePjax ? pjax.loadUrl('/404.html') : window.location.href = '/404.html')
+        : window.location.href = e.request.responseURL
+    }
+  })
+})()</script><script src="/js/fps-display.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><!-- hexo injector body_end start --><script data-pjax>
+  function butterfly_swiper_injector_config(){
+    var parent_div_git = document.getElementById('recent-posts');
+    var item_html = '<div class="recent-post-item" style="height: auto;width: 100%"><div class="blog-slider swiper-container-fade swiper-container-horizontal" id="swiper_container"><div class="blog-slider__wrp swiper-wrapper" style="transition-duration: 0ms;"><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_database.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-14</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt="">MySQL part2——结构化查询语言SQL</a><div class="blog-slider__text">SQL基本很常用的语句都在这里了，本质上是当初为了应付数据库考试整理的，后来发现还蛮有用的很方便查常用的语句</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java4.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-22</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt="">SpringBoot part0?INF-SpringBoot这个框架都需要学习什么</a><div class="blog-slider__text">主要围绕Spring Boot中重要知识来简洁或详细的说明，其中部分不够完全，持续更新</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java11.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-15</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt="">关于Lombok在高版本IDEA中注解处理不生效的问题解决</a><div class="blog-slider__text">基本上是彻底的解决了用 IDEA 新建 Spring Boot 项目时候会产生的 Lombok 注解处理失效的各种问题</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_实用.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-05</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt="">个人向galgame原声带或相关音乐整理及其资源</a><div class="blog-slider__text">整理了我喜欢的galgame ost或者衍生的音乐专辑，部分资源是自己扒盘扒下来的，部分来自鸟白岛放映厅</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_math.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-17</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt="">对书上证明样本方差是总体方差的无偏估计量的解析</a><div class="blog-slider__text">对书上证明样本方差是总体方差的无偏估计量的解析，高等教育出版社-华科大版本</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_alog.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-04-24</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt="">第十五届蓝桥杯Java国赛B组D题-园丁题解</a><div class="blog-slider__text">第十五届蓝桥杯Java国赛B组D题-园丁题解，该题解已经发布到洛谷社区中并且被全站推荐</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java4.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-04-29</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt="">操作系统之处理机的死锁部分概述</a><div class="blog-slider__text">对操作系统之处理机的死锁部分知识的总结，包括代码复现</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_lb.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-09</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt="">Little Busters!EX游戏攻略</a><div class="blog-slider__text">整理了一份详细清晰的Little Busters！EX的游戏攻略，因为我自己也在推，就顺手整理了一份方便查阅的md文档</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java9.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-16</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt="">Spring Boot中使用Hibernate框架</a><div class="blog-slider__text">对学习完Hibernate的应用部分，主要围绕Spring Boot中使用Hibernate框架，建议学习完 Hibernate 框架再看</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div></div><div class="blog-slider__pagination swiper-pagination-clickable swiper-pagination-bullets"></div></div></div>';
+    console.log('已挂载butterfly_swiper')
+    parent_div_git.insertAdjacentHTML("afterbegin",item_html)
+    }
+  var elist = 'undefined'.split(',');
+  var cpage = location.pathname;
+  var epage = '/';
+  var flag = 0;
+
+  for (var i=0;i<elist.length;i++){
+    if (cpage.includes(elist[i])){
+      flag++;
+    }
+  }
+
+  if ((epage ==='all')&&(flag == 0)){
+    butterfly_swiper_injector_config();
+  }
+  else if (epage === cpage){
+    butterfly_swiper_injector_config();
+  }
+  </script><script defer src="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper.min.js"></script><script defer data-pjax src="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper_init.js"></script><!-- hexo injector body_end end --></body></html>

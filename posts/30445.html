@@ -1,13 +1,13 @@
-<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>HTTP协议详解 | ErgouTree's Blog</title><meta name="author" content="ErgouTree"><meta name="copyright" content="ErgouTree"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="了解HTTP协议 HTTP 简介 HTTP 是 Hyper Text Transfer Protocol，超文本传输协议，HTTP是万维网的数据通信的基础，是互联网的基石。 因为 HTTP 定义了客户端（如浏览器）与服务器之间如何通信，以传输超文本（如 HTML、图片、视频等）。作为应用层协议，HTTP 基于 TCP 协议（默认端口 80），并通过请求 - 响应模型实现数据交换。">
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>HTTP协议详解 | ErgouTree's Blog</title><meta name="author" content="ErgouTree"><meta name="copyright" content="ErgouTree"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="了解HTTP协议 HTTP 简介 HTTP 是 Hyper Text Transfer Protocol，超文本传输协议，HTTP是万维网的数据通信的基础，是互联网的基石。 因为 HTTP 定义了客户端（如浏览器）与服务器之间如何通信，以传输超文本（如 HTML、图片、视频等）。作为应用层协议，HTTP 通过请求—响应模型交换消息。HTTP&#x2F;1.1、HTTP&#x2F;2 通常使用 TCP；H">
 <meta property="og:type" content="article">
 <meta property="og:title" content="HTTP协议详解">
 <meta property="og:url" content="https://ergou10086.github.io/posts/30445.html">
 <meta property="og:site_name" content="ErgouTree&#39;s Blog">
-<meta property="og:description" content="了解HTTP协议 HTTP 简介 HTTP 是 Hyper Text Transfer Protocol，超文本传输协议，HTTP是万维网的数据通信的基础，是互联网的基石。 因为 HTTP 定义了客户端（如浏览器）与服务器之间如何通信，以传输超文本（如 HTML、图片、视频等）。作为应用层协议，HTTP 基于 TCP 协议（默认端口 80），并通过请求 - 响应模型实现数据交换。">
+<meta property="og:description" content="了解HTTP协议 HTTP 简介 HTTP 是 Hyper Text Transfer Protocol，超文本传输协议，HTTP是万维网的数据通信的基础，是互联网的基石。 因为 HTTP 定义了客户端（如浏览器）与服务器之间如何通信，以传输超文本（如 HTML、图片、视频等）。作为应用层协议，HTTP 通过请求—响应模型交换消息。HTTP&#x2F;1.1、HTTP&#x2F;2 通常使用 TCP；H">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://ergou10086.github.io/images/posts/cover_security4.jpg">
 <meta property="article:published_time" content="2025-12-27T09:29:01.000Z">
-<meta property="article:modified_time" content="2025-12-27T09:38:14.151Z">
+<meta property="article:modified_time" content="2026-10-04T02:14:24.865Z">
 <meta property="article:author" content="ErgouTree">
 <meta property="article:tag" content="计算机网络">
 <meta property="article:tag" content="RPC协议">
@@ -22,7 +22,7 @@
   "url": "https://ergou10086.github.io/posts/30445.html",
   "image": "https://ergou10086.github.io/images/posts/cover_security4.jpg",
   "datePublished": "2025-12-27T09:29:01.000Z",
-  "dateModified": "2025-12-27T09:38:14.151Z",
+  "dateModified": "2026-10-04T02:14:24.865Z",
   "author": [
     {
       "@type": "Person",
@@ -181,32 +181,42 @@ btf.addGlobalFn('pjaxSend', () => {
   Pace.restart()
 }, 'pace_restart')
 
-</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js/pace.min.js"></script><div id="web_bg" style="background: linear-gradient(20deg, #0062be, #925696, #cc426e, #fb0347);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/arp.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">345</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">214</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">113</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-images"></i><span> Gallery</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/games/"><i class="fa-fw fas fa-trophy"></i><span> GalGame</span></a></li><li><a class="site-page child" href="/video/"><i class="fa-fw fas fa-video"></i><span> Video</span></a></li><li><a class="site-page child" href="/viewpoint/"><i class="fa-fw fas fa-calculator"></i><span> ViewPoint</span></a></li><li><a class="site-page child" href="/littleGame/"><i class="fa-fw fas fa-thumbs-up"></i><span> littleGame</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div><div class="menus_item"><a class="site-page" href="javascript:randomPost();"><span> Random</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/images/posts/cover_security4.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">ErgouTree's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">HTTP协议详解</span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-images"></i><span> Gallery</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/games/"><i class="fa-fw fas fa-trophy"></i><span> GalGame</span></a></li><li><a class="site-page child" href="/video/"><i class="fa-fw fas fa-video"></i><span> Video</span></a></li><li><a class="site-page child" href="/viewpoint/"><i class="fa-fw fas fa-calculator"></i><span> ViewPoint</span></a></li><li><a class="site-page child" href="/littleGame/"><i class="fa-fw fas fa-thumbs-up"></i><span> littleGame</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div><div class="menus_item"><a class="site-page" href="javascript:randomPost();"><span> Random</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div><div id="randomPost"><a class="site-page social-icon search" href="javascript:;" onclick="randomPost()" title="随机访问一篇文章"><i class="fas fa-circle-notch fa-fw"></i></a></div></nav><div id="post-info"><h1 class="post-title">HTTP协议详解<a class="post-edit-link" href="https://github.com/ergou10086/ergou10086.github.io/edit/main/source/_posts/_posts/HTTP协议详解.md" title="编辑" target="_blank"><i class="fas fa-pencil-alt"></i></a></h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2025-12-27T09:29:01.000Z" title="发表于 2025-12-27 17:29:01">2025-12-27</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2025-12-27T09:38:14.151Z" title="更新于 2025-12-27 17:38:14">2025-12-27</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%AD%A6%E4%B9%A0%E7%B1%BB/">学习类</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%AD%A6%E4%B9%A0%E7%B1%BB/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/">计算机基础知识</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%AD%A6%E4%B9%A0%E7%B1%BB/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/">计算机网络</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">12k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>39分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span><span class="post-meta-separator">|</span><span class="post-meta-commentcount"><i class="far fa-comments fa-fw post-meta-icon"></i><span class="post-meta-label">评论数:</span><a href="/posts/30445.html#post-comment"><span class="gitalk-comment-count"><i class="fa-solid fa-spinner fa-spin"></i></span></a></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="了解http协议">了解HTTP协议</h2>
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js/pace.min.js"></script><div id="web_bg" style="background: linear-gradient(20deg, #0062be, #925696, #cc426e, #fb0347);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/arp.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">348</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">214</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">114</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-images"></i><span> Gallery</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/games/"><i class="fa-fw fas fa-trophy"></i><span> GalGame</span></a></li><li><a class="site-page child" href="/video/"><i class="fa-fw fas fa-video"></i><span> Video</span></a></li><li><a class="site-page child" href="/viewpoint/"><i class="fa-fw fas fa-calculator"></i><span> ViewPoint</span></a></li><li><a class="site-page child" href="/littleGame/"><i class="fa-fw fas fa-thumbs-up"></i><span> littleGame</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div><div class="menus_item"><a class="site-page" href="javascript:randomPost();"><span> Random</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/images/posts/cover_security4.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">ErgouTree's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">HTTP协议详解</span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-images"></i><span> Gallery</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/games/"><i class="fa-fw fas fa-trophy"></i><span> GalGame</span></a></li><li><a class="site-page child" href="/video/"><i class="fa-fw fas fa-video"></i><span> Video</span></a></li><li><a class="site-page child" href="/viewpoint/"><i class="fa-fw fas fa-calculator"></i><span> ViewPoint</span></a></li><li><a class="site-page child" href="/littleGame/"><i class="fa-fw fas fa-thumbs-up"></i><span> littleGame</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div><div class="menus_item"><a class="site-page" href="javascript:randomPost();"><span> Random</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div><div id="randomPost"><a class="site-page social-icon search" href="javascript:;" onclick="randomPost()" title="随机访问一篇文章"><i class="fas fa-circle-notch fa-fw"></i></a></div></nav><div id="post-info"><h1 class="post-title">HTTP协议详解<a class="post-edit-link" href="https://github.com/ergou10086/ergou10086.github.io/edit/main/source/_posts/_posts/HTTP协议详解.md" title="编辑" target="_blank"><i class="fas fa-pencil-alt"></i></a></h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2025-12-27T09:29:01.000Z" title="发表于 2025-12-27 17:29:01">2025-12-27</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-10-04T02:14:24.865Z" title="更新于 2026-10-04 10:14:24">2026-10-04</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%AD%A6%E4%B9%A0%E7%B1%BB/">学习类</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%AD%A6%E4%B9%A0%E7%B1%BB/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/">计算机基础知识</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%AD%A6%E4%B9%A0%E7%B1%BB/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/">计算机网络</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">25.5k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>84分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span><span class="post-meta-separator">|</span><span class="post-meta-commentcount"><i class="far fa-comments fa-fw post-meta-icon"></i><span class="post-meta-label">评论数:</span><a href="/posts/30445.html#post-comment"><span class="gitalk-comment-count"><i class="fa-solid fa-spinner fa-spin"></i></span></a></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="了解http协议">了解HTTP协议</h2>
 <h3 id="http-简介">HTTP 简介</h3>
 <p>HTTP 是 Hyper Text Transfer
 Protocol，超文本传输协议，HTTP是万维网的数据通信的基础，是互联网的基石。</p>
 <p>因为 HTTP
 定义了客户端（如浏览器）与服务器之间如何通信，以传输超文本（如
-HTML、图片、视频等）。作为应用层协议，HTTP 基于 TCP 协议（默认端口
-80），并通过请求 - 响应模型实现数据交换。</p>
+HTML、图片、视频等）。作为应用层协议，HTTP
+通过请求—响应模型交换消息。HTTP/1.1、HTTP/2 通常使用 TCP；HTTP/3
+使用基于 UDP 的 QUIC。<code>http</code> URI 的默认端口为
+80，<code>https</code> URI 的默认端口为 443。</p>
 <p>HTTP的发展是由 蒂姆·伯纳斯·李
 于1989年在欧洲核子研究组织（CERN）所发起，最初版本为<strong>HTTP/0.9</strong>，仅支持
-GET 方法和纯文本响应。HTTP 在 1.0 实现了允许非持久连接。</p>
-<p>HTTP的标准制定由万维网协会（World Wide Web
-Consortium，W3C）和互联网工程任务组（Internet Engineering Task
-Force，IETF）进行协调，最终发布了一系列的RFC，其中最著名的是1999年6月公布的
-RFC 2616，定义了HTTP协议中现今依旧广泛使用的一个版本——HTTP 1.1。而 HTTP
-2.0 标准于 2015年5月以 RFC 7540 正式发表，取代 HTTP 1.1 成为 HTTP
-的实现标准。但是，现在 HTTP 1.1 依然以易用性在广泛使用。实际上，在 2022
-年，发布了 HTTP 3.0，但是用的不多，很多浏览器默认关闭 HTTP
-3，因为HTTP3.0彻底放弃TCP，感兴趣的可以去看这篇文章，https://www.cnblogs.com/beatle-go/p/17957267</p>
-<p>HTTP是一个客户端终端（用户）和服务器端（网站）请求和应答的标准（TCP）。它规定了双方如何发起请求、传递数据、返回结果，确保信息能被正确理解和处理。</p>
-<p>通常，由HTTP客户端发起一个请求，创建一个到服务器指定端口（默认是80端口）的TCP连接。HTTP服务器则在那个端口监听客户端的请求。一旦收到请求，服务器会向客户端返回一个状态，比如”HTTP/1.1
-200 OK”，以及返回的内容，如请求的文件、错误消息、或者其它信息。</p>
+GET 方法和纯文本响应。HTTP/1.0 默认采用非持久连接，HTTP/1.1
+默认采用持久连接。</p>
+<p>HTTP 的标准由 IETF 持续维护。RFC 2616 是理解 HTTP/1.1
+历史的重要文献，但已经被后续规范取代。本文涉及的 HTTP 语义、缓存和
+HTTP/1.1 消息语法，主要依据 2022 年发布的 RFC 9110、RFC 9111、RFC
+9112；HTTP/2 和 HTTP/3 分别参考 RFC 9113 与 RFC 9114。</p>
+<p>HTTP/2 与 HTTP/3 保留了 HTTP
+的核心语义，主要改变消息编码、连接和传输机制。新版本并不意味着 HTTP/1.1
+不再有效，也不宜用没有统计依据的“使用较少”“浏览器默认关闭”概括部署情况。</p>
+<p>参考：<a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc9110.html">RFC
+9110</a>、<a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc9112.html">RFC
+9112</a>、<a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc9113.html">RFC
+9113</a>、<a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc9114.html">RFC
+9114</a>。</p>
+<p>HTTP是一个客户端终端（用户）和服务器端（网站）请求和响应的应用层协议。它规定了双方如何发起请求、传递数据、返回结果，确保信息能被正确理解和处理。</p>
+<p>HTTP
+客户端向目标服务器发起请求，服务器解析请求并返回状态及可选内容。以
+HTTP/1.1 为例，客户端可以建立或复用 TCP 连接，并收到形如
+<code>HTTP/1.1 200 OK</code> 的状态行；HTTP/2、HTTP/3
+的消息编码和底层传输机制有所不同，后文分别介绍。</p>
 <p>而通过使用网页浏览器或者其它的工具，客户端发起一个HTTP请求到服务器上指定端口（默认端口为80）。我们称这个客户端为用户代理程序（user
 agent）。应答的服务器上存储着一些资源，比如HTML文件和图像。我们称这个应答服务器为源服务器（origin
 server）。在用户代理和源服务器中间可能存在多个“中间层”，比如代理服务器、网关或者隧道（tunnel）。而
-HTTP 协议中，请求是由接受方（通常是浏览器）发起的。</p>
+HTTP 的请求通常由客户端（例如浏览器）发起，服务器根据请求生成响应。</p>
 <p>设计 HTTP 最初的目的是为了提供一种发布和接收 HTML 页面的方法，通过
 HTTP 或者 HTTPS 协议请求的资源由统一资源标识符（Uniform Resource
 Identifiers，URI）来标识。</p>
@@ -214,42 +224,48 @@ Identifiers，URI）来标识。</p>
 <p>HTTP 本身是一个 应用层协议，它只关心
 要做什么（比如获取网页、提交表单），但不关心 怎么传输，而 TCP
 传输控制协议是互联网的传输层协议，负责确保数据可靠、有序地到达对方。IP
-是计算机之间的通信协议，TCP 是应用程序之间的通信协议。</p>
-<p>尽管TCP/IP协议是互联网上最流行的应用，但 HTTP
-协议中，并没有规定必须使用它或它支持的层。事实上，HTTP可以在任何互联网协议上，或其他网络上实现。HTTP假定其下层协议提供可靠的传输。因此，任何能够提供这种保证的协议都可以被其使用。因此也就是其在TCP/IP协议族使用TCP作为其传输层。</p>
+提供网络层寻址与分组传递，TCP
+提供端到端的可靠、有序字节流，端口用于区分通信端点。</p>
+<p>HTTP
+的方法、状态码和头字段等语义，与具体传输版本应分开理解。HTTP/1.1、HTTP/2
+常在 TCP 连接上交换消息；HTTP/3 将 HTTP 消息映射到 QUIC 流。QUIC 建立在
+UDP 之上，并提供可靠传输、拥塞控制和流管理等机制。<a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc9114.html#section-2">RFC
+9114，§2</a></p>
 <figure>
-<img src="/posts/30445/220476df9771175cc5f572940771ade3.png" alt="img">
+<img src="/posts/30445/220476df9771175cc5f572940771ade3-1791022406986-1.png" alt="img">
 <figcaption aria-hidden="true">img</figcaption>
 </figure>
-<p>那么，一个网络连接是由传输层来控制的，因此从根本上说不属于 HTTP
-的范畴。HTTP
-协议并不需要下面的传输层协议是面向连接的，仅仅需要它是可靠的。所以说，虽然HTTP在3.0换成了可靠的
-UDP，但是我们依旧认为，HTTP 是一个基于 TCP/IP
-通信协议来传递数据的应用层协议。</p>
-<p>在客户端与服务端能够传递请求、响应之前，这两者间必须建立一个 TCP
-链接，这个过程需要多次往返交互。为了解决为每一对请求响应都需要打开单独的TCP连接的性能问题，HTTP
-1.1 引入了持久化链接，可以通过 <code>Connection</code>
-标头来部分控制底层的 TCP 连接。HTTP/2
-则更进一步，通过在一个连接中复合多个消息，让这个连接始终平缓并更加高效。</p>
+<p>连接与流的机制随 HTTP 版本变化。以下工作流程主要以 HTTP/1.1
+为例；不能把“每次 HTTP 请求都先建立 TCP
+连接”推广到所有版本，已有连接通常也可以复用。</p>
+<p>HTTP/1.1 默认支持持久连接，<code>Connection: close</code>
+可表示当前消息后关闭连接。HTTP/2 在一个连接中复用多个流，并禁止使用
+<code>Connection</code> 这类连接专属头字段。<a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc9112.html#section-9.3">RFC
+9112，§9.3</a>、<a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc9113.html#section-8.2.2">RFC
+9113，§8.2.2</a></p>
 <h3 id="http-的核心特点">HTTP 的核心特点</h3>
 <p>HTTP 的设计简洁、灵活，也存在一些固有特性</p>
 <ol type="1">
 <li><p><strong>无状态（Stateless）</strong></p>
-<p>HTTP 协议本身不存储客户端的任何状态信息。也就是说在 HTTP
-这级别的协议，对于发送过的请求或响应都不做持久化处理。例如，当用户访问多个页面时，服务器无法区分是否为同一用户，需通过<strong>Cookie</strong>或<strong>Session</strong>等机制手动维护状态。</p>
-<p>注意，无状态指的是在同一个连接中，两个执行成功的请求之间是没有关系的。但是并非无绘会话，借助
-HTTP Cookie 就可使用有状态的会话</p></li>
-<li><p><strong>无连接（早期版本）</strong></p>
-<p>客户机（Web浏览器）和服务器之间默认不需要建立持久的连接，HTTP/1.0
-默认每次请求后关闭 TCP 连接，导致频繁握手开销。HTTP/1.1
+<p>HTTP
+不自动建立跨请求的应用会话。服务器不能只凭“前一个请求发生过”就从协议中获得当前请求的业务上下文；应用可以使用
+Cookie、认证凭据或 Session
+识别用户及维护会话。无状态不代表请求、响应不能被记录或缓存。</p>
+<p>注意，无状态描述的是协议不自动保存跨请求的应用上下文，与是否使用同一个连接无关。借助
+Cookie 和服务端 Session，应用仍可以实现有状态会话；这也需要与 REST
+的无状态约束区分。</p></li>
+<li><p><strong>非持久连接与持久连接</strong></p>
+<p>HTTP/1.0 默认每次请求后关闭 TCP
+连接；这称为非持久连接，不代表底层无需建立连接。频繁重建连接会带来握手开销。HTTP/1.1
 通过<strong>持久连接</strong>（Keep-Alive）允许同一连接处理多个请求 /
 响应，大幅减少延迟。</p></li>
 <li><p><strong>媒体独立</strong></p>
 <p>HTTP 不限制传输的数据类型，支持
 HTML、图片、视频、音频、文件等，只需通过<strong>Content-Type</strong>头指定数据格式。</p></li>
 <li><p><strong>HTTP 是简约的</strong></p>
-<p>大体上看，HTTP 被设计得简单且易读，HTTP
-报文能够被人读懂并理解，向开发者提供了更简单的测试方式</p></li>
+<p>HTTP/1.1
+的起始行和头字段采用文本形式，便于阅读和调试，但消息体可以是二进制。HTTP/2、HTTP/3
+使用帧编码，不能把所有 HTTP 报文都理解成明文文本。</p></li>
 <li><p><strong>HTTP是可扩展的</strong></p>
 <p>在 HTTP/1.0 中引入的 HTTP
 标头（header）让协议扩展变得非常容易。只要服务端客户端之间对新标头的语义经过简单协商，新功能就可以被加入进来。</p></li>
@@ -257,12 +273,18 @@ HTML、图片、视频、音频、文件等，只需通过<strong>Content-Type</
 <h2 id="http的工作流程">HTTP的工作流程</h2>
 <p>HTTP协议定义Web客户端如何从Web服务器请求Web页面，以及服务器如何把Web页面传送给客户端。</p>
 <p>首先，HTTP采用了请求-响应模型。客户端向服务器发送一个请求报文，请求报文包含请求的方法、URL、协议版本、请求头部和请求数据。服务器以一个状态行作为响应，响应的内容包括协议的版本、成功或者错误代码、服务器信息、响应头部和响应数据。</p>
-<p>HTTP由请求和响应构成，是一个标准的客户端服务器模型（BS架构）。HTTP协议永远都是客户端发起请求，服务器回送响应。</p>
+<p>HTTP
+采用客户端—服务器交互模型；浏览器是常见客户端，但客户端也可以是移动应用、命令行工具或其他服务，不能将
+HTTP 限定为 B/S 应用。普通 HTTP
+交互由客户端发起请求，服务器返回响应。HTTP/2
+还定义了服务器推送机制，后文会说明其使用边界。</p>
 <figure>
-<img src="/posts/30445/a6e715a94b799a65e7de5fffbdb536f5.png" alt="img">
+<img src="/posts/30445/a6e715a94b799a65e7de5fffbdb536f5-1791022406987-2.png" alt="img">
 <figcaption aria-hidden="true">img</figcaption>
 </figure>
-<p>HTTP 请求/响应的步骤是这样的：</p>
+<p>下面以获取一个网页的 HTTP/1.1 交互为例，假设需要建立新的 TCP
+连接；若已有可复用连接，则不必重新握手。HTTPS 还需要建立 TLS
+安全通道。步骤如下：</p>
 <ol type="1">
 <li><p>客户端连接到 Web 服务器，建立TCP连接</p>
 <p>一个HTTP客户端，通常是浏览器，与Web服务器的HTTP端口（默认为80)建立一个TCP套接字连接。这部分涉及到了地址解析的相关内容（浏览器向
@@ -270,14 +292,14 @@ DNS 服务器请求解析该 URL 中的域名所对应的 IP
 地址），解析出了地址信息才能开始建立连接</p>
 <p>该连接是通过TCP来完成的，该协议与IP协议共同构建Internet，即著名的TCP/IP协议族，因此Internet又被称作是TCP/IP网络。HTTP是比TCP更高层次的应用层协议，根据规则，只有低层协议建立之后才能，才能进行更层协议的连接，因此，首先要建立TCP连接</p></li>
 <li><p>发送 HTTP 请求</p>
-<p>通过TCP套接字，客户端向Web服务器发送一个文本的请求报文，一个请求报文由请求行、请求头部、空行和请求数据4部分组成。在这部分，客户端会把自己的请求封装成一个HTTP请求数据包，然后再封装成TCP包</p></li>
+<p>通过TCP套接字，客户端向Web服务器发送一个文本的请求报文，一个请求报文由请求行、请求头部、空行和请求数据4部分组成。应用生成
+HTTP 消息，传输层再根据字节流及分段机制发送；一条 HTTP 消息不必对应一个
+TCP 段</p></li>
 <li><p>服务器接受请求并返回HTTP响应</p>
 <p>Web服务器解析请求，定位请求资源。服务器将资源复本写到TCP套接字，由客户端读取。一个响应由状态行、响应头部、空行和响应数据4部分组成。</p></li>
 <li><p>释放连接TCP连接</p>
 <p>若 connection 模式为
-close，则服务器主动关闭TCP连接，客户端被动关闭连接，释放TCP连接；若
-connection 模式为
-keepalive，则该连接会保持一段时间，在该时间内可以继续接收请求</p>
+close，则服务器主动关闭TCP连接，客户端被动关闭连接，释放TCP连接；若连接保持开放，则可继续用于后续消息，实际寿命由端点、超时和实现策略决定</p>
 <p>这部分涉及到了 HTTP 的连接管理</p>
 <ul>
 <li><p><strong>Connection:
@@ -291,13 +313,13 @@ close</strong>：客户端或服务器可以通过<code>Connection: close</code>
 </ol>
 <p>所以说，在客户端请求的时候，数据在各层协议的整体组织如下</p>
 <figure>
-<img src="/posts/30445/6c8a42effdcb522fc5eda0175205ee22.png" alt="img">
+<img src="/posts/30445/6c8a42effdcb522fc5eda0175205ee22-1791022406987-4.png" alt="img">
 <figcaption aria-hidden="true">img</figcaption>
 </figure>
 <p>Nginx 服务器就是我们最常用的 Web 服务器</p>
 <p>而经过上面的内容，可以总结出来 HTTP 协议由以下四部分构成</p>
 <figure>
-<img src="/posts/30445/image-20251227154734287.png" alt="image-20251227154734287">
+<img src="/posts/30445/image-20251227154734287-1791022406987-3.png" alt="image-20251227154734287">
 <figcaption aria-hidden="true">image-20251227154734287</figcaption>
 </figure>
 <p>这个结构放到下面 HTTP 消息结构再详细讲解</p>
@@ -311,86 +333,94 @@ Not
 Allowed），当服务器不认识或者不支持对应的请求方法的时候，应当返回状态码501（Not
 Implemented）。</li>
 <li>HTTP服务器至少应该实现GET和HEAD方法，其他方法都是可选的。当然，所有的方法支持的实现都应当匹配下述的方法各自的语义定义。此外，除了上述方法，特定的HTTP服务器还能够扩展自定义的方法。例如PATCH（由
-RFC 5789 指定的方法）用于将局部修改应用到资源<em>。</em></li>
+RFC 5789 指定的方法）用于将局部修改应用到资源。</li>
 </ol>
 <h3 id="get">GET</h3>
-<p>请求获取指定资源方法，更准确的说，是向指定的资源发出“显示”请求。</p>
-<p>使用GET方法应该只用在读取数据，而不应当被用于产生“副作用”的操作中</p>
+<p>请求读取目标资源的表示，适合获取页面、文件或查询结果。</p>
 <ul>
-<li><strong>安全</strong>：不会修改服务器数据</li>
-<li><strong>幂等</strong>：多次请求同一资源的结果相同。</li>
-<li><strong>无请求体</strong>：请求参数通过 URL 的查询字符串（Query
-String）传递（如<code>?id=123&amp;name=test</code>）。虽然也可以发送带请求体的
-GET 请求，但是我们认为 GET 是无请求体的</li>
+<li><strong>安全</strong>：请求语义为只读，不要求修改资源；记录日志等附带行为是允许的。</li>
+<li><strong>幂等</strong>：多次相同请求的预期效果与一次相同，不要求返回内容每次相同。</li>
+<li>GET
+请求内容没有通用定义的语义，部分实现会拒绝它；公开接口通常使用查询参数，不应依赖
+GET 请求体传参。</li>
 </ul>
-<p>GET提交的数据会放在 URL 之后，也就是请求行里面，以 <code>?</code>
-分割URL和传输数据，参数之间以<code>&amp;</code>相连</p>
-<p>GET提交的数据大小有限制（因为浏览器对URL的长度有限制），而POST方法提交的数据没有限制</p>
+<p>例如
+<code>GET /users?id=123&amp;name=test</code>。查询参数和请求体都不能仅凭所在位置就被视为安全：HTTPS
+会保护传输中的路径、查询和内容，但 URL
+还可能进入历史记录及日志。凭据不应放在 URL 中。</p>
+<p>HTTP 没有规定统一的 GET 参数长度上限，也没有保证 POST
+数据无限大。浏览器、服务器、代理和应用都可能施加限制，过长 URI
+或过大内容可分别触发 <code>414</code>、<code>413</code>。</p>
 <h3 id="head">HEAD</h3>
-<p>与GET方法一样，都是向服务器发出指定资源的请求。只不过服务器将不传回资源的本文部分。也就是，仅返回响应头，不返回响应体</p>
-<p>它的好处在于，使用这个方法可以在不必传输全部内容的情况下，就可以获取其中“关于该资源的信息”（元信息或称元数据）。</p>
+<p>语义与 GET
+相同，但响应不包含内容。可以用于检查资源元数据、验证缓存等。</p>
 <ul>
-<li><strong>安全</strong>：不修改服务器数据。</li>
-<li><strong>幂等</strong>：多次请求结果相同。</li>
-<li><strong>无请求体</strong>。</li>
+<li><strong>安全、幂等</strong>。</li>
+<li>请求内容没有通用定义的语义，通常不发送。</li>
+<li>响应通常提供对应 GET
+会提供的头字段；规范允许省略只能在生成内容时确定的部分字段，因此不能保证一定返回资源大小。</li>
 </ul>
-<p>一般在检查资源是否存在、获取资源大小等时候，使用 HEAD</p>
 <h3 id="post">POST</h3>
-<p>向服务器提交数据，创建新资源，用于创建新资源或执行具有 “副作用”
-的操作</p>
+<p>请求目标资源按自身语义处理提交内容。常见用途包括创建资源、提交表单和触发业务处理，并不限于新增数据库记录。</p>
 <ul>
-<li><strong>非安全</strong>：可能修改服务器数据。</li>
-<li><strong>非幂等</strong>：多次请求可能导致创建多个资源。</li>
-<li><strong>有请求体</strong>：数据通过请求体（Request Body）传递</li>
+<li><strong>不安全</strong>：可能改变资源状态。</li>
+<li><strong>协议不保证幂等</strong>：重复提交可能重复创建或处理；具体接口可提供业务幂等机制。</li>
+<li>通常携带内容，具体格式和处理规则由目标资源定义。</li>
 </ul>
 <h3 id="put">PUT</h3>
-<p>更新<strong>整个</strong>指定资源（若资源不存在则创建），一般在全量更新资源时候使用，我们更多认为，在向指定资源位置上传其最新内容时候，使用
-PUT 方法</p>
+<p>请求在指定 URI
+创建或替换资源状态。客户端应提交接口契约要求的完整表示；不等于必须提交所有数据库字段。</p>
 <ul>
-<li><strong>幂等</strong>：多次请求同一资源的结果相同（例如 PUT
-<code>/users/123</code> 无论调用多少次，用户 123
-的信息都会被更新为最新值）。</li>
-<li><strong>有请求体</strong>：包含完整的资源数据（如更新用户 123
-的所有信息）。</li>
+<li><strong>不安全、幂等</strong>。</li>
+<li>创建成功返回 <code>201</code>；修改已有资源成功通常返回
+<code>200</code> 或 <code>204</code>。</li>
+<li>是否允许在资源不存在时创建、哪些字段由服务端管理，需要在 API
+契约中明确。</li>
 </ul>
 <h3 id="delete">DELETE</h3>
-<p>请求服务器删除 Request-URI 所标识的资源。也就是，删除指定资源。</p>
+<p>请求移除目标 URI
+与其当前功能的关联。物理删除、软删除或归档属于服务端实现，不由 DELETE
+方法保证。</p>
 <ul>
-<li><strong>幂等</strong>：多次删除同一资源的结果相同（例如 DELETE
-<code>/users/123</code> 调用两次，第二次会返回
-“资源不存在”，但不会导致错误）。</li>
-<li><strong>无请求体</strong>：无需传递数据。</li>
+<li><strong>不安全、幂等</strong>。</li>
+<li>第一次删除返回 <code>204</code>、再次删除返回
+<code>404</code>，仍可能满足幂等语义，因为预期效果相同。</li>
+<li>请求内容没有通用定义的语义，公开接口通常不依赖 DELETE 请求体。</li>
 </ul>
-<p>误用非幂等方法（如 POST 删除），可能导致重复删除引起问题</p>
 <h3 id="patch">PATCH</h3>
-<p>更新<strong>部分</strong>指定资源，若资源不存在则创建</p>
+<p>请求将补丁文档描述的修改应用于目标资源。</p>
 <ul>
-<li><strong>幂等</strong>：多次请求同一资源的结果相同（例如 PATCH
-<code>/users/123</code> 每次更新部分字段，最终资源状态一致）。</li>
-<li><strong>有请求体</strong>：包含需要更新的字段（如仅更新用户的邮箱）。</li>
+<li><strong>不安全，协议不保证幂等</strong>。设定固定值可以实现幂等，重复向数组追加元素则可能不幂等。</li>
+<li>请求内容是修改指令，其解释依赖补丁媒体类型。常见标准包括 JSON Patch
+与 JSON Merge Patch。</li>
+<li>是否能创建不存在的资源，取决于补丁格式和服务端规则，不是 PATCH
+的默认保证。</li>
+<li>服务器必须原子地应用整份补丁，失败时不能保留部分修改。</li>
 </ul>
+<p>参考：<a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc5789.html#section-2">RFC
+5789，§2</a>。后文 RESTful API 部分会进一步区分 PUT、PATCH
+和补丁格式。</p>
 <h3 id="options">OPTIONS</h3>
-<p>查询服务器支持的请求方法、响应头、跨域设置等，一般用于预检请求，CORS
-用的最多</p>
-<ul>
-<li><strong>安全</strong>：不修改服务器数据。</li>
-<li><strong>幂等</strong>：多次请求结果相同。</li>
-<li><strong>无请求体</strong>（或可选）。听说的，确实没见过 OPTIONS
-带请求体的</li>
-</ul>
+<p>查询目标资源或服务器支持的通信选项，<strong>安全、幂等</strong>。它常用于浏览器
+CORS 预检，但并非所有 OPTIONS 都是预检，也并非所有跨源请求都会预检。</p>
+<p>OPTIONS 可以携带请求内容，但需要用 <code>Content-Type</code>
+声明媒体类型；HTTP 没有定义通用的 OPTIONS 请求内容格式。可用
+<code>OPTIONS *</code> 查询面向服务器整体的选项。</p>
 <h3 id="trace">TRACE</h3>
-<p>回显服务器收到的请求，一般调试时候使用，就是测试服务器是否正确处理请求</p>
-<ul>
-<li><strong>安全</strong>：不修改服务器数据。</li>
-<li><strong>幂等</strong>：多次请求结果相同。</li>
-<li><strong>无请求体</strong>。</li>
-</ul>
+<p>执行应用层消息回环，用于诊断经过代理等组件后的请求情况，<strong>安全、幂等</strong>。TRACE
+请求不得携带内容，客户端也不应发送认证凭据等敏感字段；服务端可因安全策略禁用它。</p>
 <h3 id="connect">CONNECT</h3>
-<p>HTTP/1.1协议中预留给能够将连接改为管道方式的代理服务器。通常用于SSL加密服务器的链接（经由非加密的HTTP代理服务器）。</p>
+<p>请求代理为目标建立隧道。传统 HTTP/1.1 示例为
+<code>CONNECT example.com:443 HTTP/1.1</code>；成功后可在隧道中执行 TLS
+握手并交换加密通信。</p>
+<p>上述核心方法语义、请求内容限制及成功状态，参考 <a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc9110.html#section-9">RFC
+9110，§9</a>。</p>
 <h2 id="http状态码">HTTP状态码</h2>
-<p>当浏览者访问一个网页时，浏览者的浏览器会向网页所在服务器发出请求。当浏览器接收并显示网页前，此网页所在的服务器会返回一个包含
-HTTP 状态码的信息头（server header）用以响应浏览器的请求。</p>
-<p>所有HTTP响应的第一行都是状态行，依次是当前HTTP版本号，3位数字组成的状态代码，以及描述状态的短语，彼此由空格分隔。</p>
+<p>当浏览者访问一个网页时，浏览者的浏览器会向网页所在服务器发出请求。当浏览器接收并显示网页前，服务器会在响应消息中提供
+HTTP 状态码，表示这次请求的处理结果。</p>
+<p>HTTP/1.1 响应的第一行是状态行；HTTP/2、HTTP/3 使用
+<code>:status</code> 伪头字段表示状态，不存在相同的文本状态行。HTTP/1.1
+状态行依次包含当前HTTP版本号，3位数字组成的状态代码，以及描述状态的短语，彼此由空格分隔。</p>
 <p>状态代码的第一个数字代表当前响应的类型：</p>
 <ul>
 <li>1xx消息——请求已被服务器接收，继续处理</li>
@@ -400,17 +430,25 @@ HTTP 状态码的信息头（server header）用以响应浏览器的请求。</
 <li>5xx服务器错误——服务器在处理某个正确请求时发生错误</li>
 </ul>
 <figure>
-<img src="/posts/30445/877318-20180418161321986-304902913.png" alt="img">
+<img src="/posts/30445/877318-20180418161321986-304902913-1791022406987-5.png" alt="img">
 <figcaption aria-hidden="true">img</figcaption>
 </figure>
-<p>虽然 RFC 2616 中已经推荐了描述状态的短语，例如”200 OK”，“404 Not
-Found”，但是开发者仍然能够自行决定采用何种短语，用以显示本地化的状态描述或者自定义信息。说实话，一般是加而不是改</p>
+<p>本文沿用原稿已有截图与历史示意图，图中的旧版本术语和说明没有逐项更新；协议结论以修订正文及所引用规范为准。</p>
+<p>HTTP/1.1
+的原因短语用于便于人阅读，可以为空，也不是程序判断结果的依据。客户端应根据数字状态码处理响应；HTTP/2、HTTP/3
+不传输这类原因短语。<a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc9112.html#section-4">RFC
+9112，§4</a></p>
+<p>常见状态码如下，其中核心状态语义参考 <a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc9110.html#section-15">RFC
+9110，§15</a>，428、429 参考 <a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc6585.html">RFC
+6585</a>。301、302 在自动重定向时允许历史上常见的 POST 转 GET
+行为；307、308 则明确要求保留请求方法，不能把它们都概括成 GET
+重定向。</p>
 <p>HTTP状态码列表：</p>
 <table>
 <colgroup>
 <col style="width: 6%">
 <col style="width: 31%">
-<col style="width: 61%">
+<col style="width: 62%">
 </colgroup>
 <thead>
 <tr>
@@ -428,7 +466,7 @@ Found”，但是开发者仍然能够自行决定采用何种短语，用以显
 <tr>
 <td>101</td>
 <td>Switching Protocols</td>
-<td>切换协议。服务器根据客户端的请求切换协议。只能切换到更高级的协议，例如，切换到HTTP的新版本协议</td>
+<td>切换到 Upgrade 协商的协议，并非只能升级到“更高级”的 HTTP 版本</td>
 </tr>
 <tr>
 <td></td>
@@ -453,7 +491,8 @@ Found”，但是开发者仍然能够自行决定采用何种短语，用以显
 <tr>
 <td>203</td>
 <td>Non-Authoritative Information</td>
-<td>非授权信息。请求成功。但返回的meta信息不在原始的服务器，而是一个副本</td>
+<td>请求成功，但响应内容被转换代理相对于源服务器的 200
+响应作了修改；与认证或授权无关</td>
 </tr>
 <tr>
 <td>204</td>
@@ -493,17 +532,18 @@ Found”，但是开发者仍然能够自行决定采用何种短语，用以显
 <tr>
 <td>303</td>
 <td>See Other</td>
-<td>查看其它地址。与301类似。使用GET和POST请求查看</td>
+<td>通过 Location 指向其他资源，通常以 GET 或 HEAD 获取该资源</td>
 </tr>
 <tr>
 <td>304</td>
 <td>Not Modified</td>
-<td>未修改。所请求的资源未修改，服务器返回此状态码时，不会返回任何资源。客户端通常会缓存访问过的资源，通过提供一个头信息指出客户端希望只返回在指定日期之后修改的资源</td>
+<td>条件 GET 或 HEAD
+验证通过，可以按缓存规则复用已有表示；响应不含内容</td>
 </tr>
 <tr>
 <td>305</td>
 <td>Use Proxy</td>
-<td>使用代理。所请求的资源必须通过代理访问</td>
+<td>已废弃，不应作为新系统的代理协商机制</td>
 </tr>
 <tr>
 <td>306</td>
@@ -513,12 +553,17 @@ Found”，但是开发者仍然能够自行决定采用何种短语，用以显
 <tr>
 <td>307</td>
 <td>Temporary Redirect</td>
-<td>临时重定向。与302类似。使用GET请求重定向</td>
+<td>临时重定向；自动重定向时不得改变请求方法</td>
 </tr>
 <tr>
 <td></td>
 <td></td>
 <td></td>
+</tr>
+<tr>
+<td>308</td>
+<td>Permanent Redirect</td>
+<td>永久重定向；自动重定向时不得改变请求方法</td>
 </tr>
 <tr>
 <td>400</td>
@@ -568,8 +613,7 @@ Found”，但是开发者仍然能够自行决定采用何种短语，用以显
 <tr>
 <td>409</td>
 <td>Conflict</td>
-<td>服务器完成客户端的 PUT
-请求时可能返回此代码，服务器处理请求时发生了冲突</td>
+<td>请求与目标资源当前状态冲突，不限于 PUT</td>
 </tr>
 <tr>
 <td>410</td>
@@ -588,13 +632,13 @@ Found”，但是开发者仍然能够自行决定采用何种短语，用以显
 </tr>
 <tr>
 <td>413</td>
-<td>Request Entity Too Large</td>
-<td>由于请求的实体过大，服务器无法处理，因此拒绝请求。为防止客户端的连续请求，服务器可能会关闭连接。如果只是服务器暂时无法处理，则会包含一个Retry-After的响应信息</td>
+<td>Content Too Large</td>
+<td>请求内容过大；暂时性限制时可以提供 Retry-After</td>
 </tr>
 <tr>
 <td>414</td>
-<td>Request-URI Too Large</td>
-<td>请求的URI过长（URI通常为网址），服务器无法处理</td>
+<td>URI Too Long</td>
+<td>请求目标 URI 过长</td>
 </tr>
 <tr>
 <td>415</td>
@@ -603,8 +647,8 @@ Found”，但是开发者仍然能够自行决定采用何种短语，用以显
 </tr>
 <tr>
 <td>416</td>
-<td>Requested range not satisfiable</td>
-<td>客户端请求的范围无效</td>
+<td>Range Not Satisfiable</td>
+<td>请求范围不可满足</td>
 </tr>
 <tr>
 <td>417</td>
@@ -613,15 +657,28 @@ Found”，但是开发者仍然能够自行决定采用何种短语，用以显
 </tr>
 <tr>
 <td>418</td>
-<td>I’m a teapot</td>
-<td>状态码 418 实际上是一个愚人节玩笑。它在 RFC 2324 中定义，该 RFC
-是一个关于超文本咖啡壶控制协议（HTCPCP）的笑话文件。在这个笑话中，418
-状态码是作为一个玩笑加入到 HTTP 协议中的。</td>
+<td>Unused</td>
+<td>历史源于愚人节协议；当前 HTTP 语义规范将其保留为未使用状态码</td>
 </tr>
 <tr>
 <td></td>
 <td></td>
 <td></td>
+</tr>
+<tr>
+<td>422</td>
+<td>Unprocessable Content</td>
+<td>内容类型及语法可理解，但包含无法处理的指令</td>
+</tr>
+<tr>
+<td>428</td>
+<td>Precondition Required</td>
+<td>服务器要求请求带有前置条件</td>
+</tr>
+<tr>
+<td>429</td>
+<td>Too Many Requests</td>
+<td>请求过多，可以提供 Retry-After</td>
 </tr>
 <tr>
 <td>500</td>
@@ -660,7 +717,9 @@ Found”，但是开发者仍然能够自行决定采用何种短语，用以显
 URL，<strong>统一资源定位符</strong>，就是标记资源在互联网上的位置，它不仅是浏览器加载资源的地址，也是
 HTTP 请求的目的地。</p>
 <p>URL
-是一种<strong>结构化的字符串</strong>，用于唯一标识和定位互联网上的资源</p>
+是一种<strong>结构化的字符串</strong>，用来标识并定位资源。同一资源可能具有多个
+URL，同一 URL
+的表示也可能随时间变化，不能把它理解成数据库中的唯一键。</p>
 <ol type="1">
 <li>告诉 HTTP
 客户端（如浏览器）：<strong>从哪个服务器</strong>获取资源，以及<strong>获取哪个资源</strong>。</li>
@@ -670,9 +729,11 @@ HTTP 请求的目的地。</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://www.example.com:8080/api/users?id=123&amp;page=1#section1</span><br></pre></td></tr></table></figure>
 <p>这个 URL 表示：通过 HTTPS
 协议，访问<code>www.example.com</code>服务器的 8080
-端口，获取<code>/api/users</code>路径下的资源，并传递<code>id=123</code>和<code>page=1</code>两个参数，最后定位到页面的<code>section1</code>部分。(<code>#</code>不是hash路由)</p>
-<p>URL 的结构遵循 RFC 3986 标准，由<strong>6
-个核心部分</strong>组成，按顺序排列如下：</p>
+端口，获取<code>/api/users</code>路径下的资源，并传递<code>id=123</code>和<code>page=1</code>两个参数，片段
+<code>section1</code> 由客户端处理；它不会进入发送给服务器的 HTTP
+请求目标。前端也可以自行解释片段，例如实现 hash 路由。</p>
+<p>URL 的结构遵循 RFC 3986
+标准，可以分解为下列组成部分（并非全部必选），按顺序排列如下：</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[协议]://[用户信息]@[主机]:[端口]/[路径]?[查询参数]#[片段标识符]</span><br></pre></td></tr></table></figure>
 <p>其中</p>
 <p>协议就是客户端与服务端的通信协议，不止 HTTP
@@ -683,64 +744,81 @@ URL 几乎不使用此部分，已被 HTTP
 <p>主机就是指定资源所在服务器的<strong>域名</strong>或<strong>IP
 地址</strong>，若使用域名，需通过 DNS 解析为 IP 地址。</p>
 <p>端口就是指定服务器上的<strong>服务端口号</strong>，区分同一主机上的不同服务。</p>
-<p>路径就是指定资源在服务器上的<strong>具体位置</strong></p>
-<p>查询参数就是向服务器传递<strong>额外参数</strong>，以<code>?</code>开头，参数之间用<code>&amp;</code>分隔，格式为<code>key=value</code>。</p>
-<p>片段标识符是用于<strong>定位资源内部的特定部分</strong>，以<code>#</code>开头，后面跟片段名称，你去油管复制个视频，就是
-#
-标注的资源，而且片段标识符<strong>不会被发送到服务器</strong>，仅在客户端浏览器中使用，若资源是
-API 接口，片段通常无效。</p>
-<p>URL 是有编码规则的，URL
-中<strong>不允许包含特殊字符</strong>（如空格、中文、<code>&amp;</code>、<code>?</code>、<code>#</code>等），这些字符需要进行<strong>URL
-编码</strong>，转换为<code>%XX</code>格式，<code>XX</code>为字符的 ASCII
-码的两位十六进制表示。</p>
+<p>路径标识服务端命名空间中的资源，不一定对应服务器文件系统中的目录或文件。</p>
+<p>查询参数就是向服务器传递<strong>额外参数</strong>，以 <code>?</code>
+引入。Web API 常约定参数用 <code>&amp;</code> 分隔、以
+<code>key=value</code> 表达，但 URI
+规范并未要求所有查询字符串必须采用键值对。</p>
+<p>片段标识符是用于<strong>定位资源内部的特定部分</strong>，以<code>#</code>开头，后面跟片段名称，例如
+HTML 的锚点定位。片段标识符<strong>不会进入 HTTP
+请求目标</strong>，由客户端处理，若资源是 API 接口，片段通常无效。</p>
+<p>URI 的保留字符可以按语法直接承担分隔作用，例如 <code>?</code>
+引入查询、<code>#</code>
+引入片段。只有在需要把它们作为特定组成部分中的普通数据、且可能产生语义歧义时，才需要进行百分号编码；不能把完整
+URL 的分隔符全部编码。</p>
 <ul>
-<li><strong>保留字符</strong>：<code>! * ' ( ) ; : @ &amp; = + $ , / ? # [ ]</code>（这些字符有特殊含义，若需作为普通字符使用，需编码）。</li>
-<li><strong>非保留字符</strong>：<code>a-z, A-Z, 0-9, - _ . ~</code>（这些字符可直接使用，无需编码）。</li>
-<li><strong>空格</strong>：空格在 URL
-中需编码为<code>%20</code>（注意：<code>+</code>号也可表示空格，但推荐使用<code>%20</code>）。</li>
-<li><strong>中文 / 特殊字符</strong>：中文等非 ASCII 字符需编码为 UTF-8
-格式的<code>%XX</code>（如 “你好”
-编码为<code>%E4%BD%A0%E5%A5%BD</code>）。</li>
+<li><strong>保留字符</strong>：<code>: / ? # [ ] @ ! $ &amp; ' ( ) * + , ; =</code>。</li>
+<li><strong>非保留字符</strong>：字母、数字和
+<code>- . _ ~</code>，可以直接使用。</li>
+<li><strong>百分号编码</strong>：<code>%XX</code>
+表示一个八位字节，而不是笼统的“字符 ASCII 码”。中文通常先转为 UTF-8
+字节再逐字节编码，例如“你好”为 <code>%E4%BD%A0%E5%A5%BD</code>。</li>
+<li><strong>空格</strong>：通常编码为 <code>%20</code>。<code>+</code>
+代表空格是 <code>application/x-www-form-urlencoded</code>
+等表单编码的约定，不是所有 URI 组成部分的通用规则。</li>
 </ul>
+<p>参考：<a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc3986.html#section-2">RFC
+3986，§2</a>。</p>
 <p>JavaScript
 中可使用<code>encodeURIComponent()</code>编码查询参数，解码使用<code>decodeURIComponent()</code></p>
 <h2 id="http消息结构">HTTP消息结构</h2>
-<p>HTTP消息分为两种类型：请求消息和响应消息。不同的消息，大体格式都是一样的，核心还是四个部分，请求和响应的不太一样，而且顺序固定</p>
-<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">GET /api/users?id=123 HTTP/1.1  # 请求行</span><br><span class="line"><span class="attribute">Host</span><span class="punctuation">: </span>www.example.com           # 请求头（第一行）</span><br><span class="line"><span class="attribute">User-Agent</span><span class="punctuation">: </span>Chrome/120.0.0.0    # 请求头（第二行）</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>application/json  # 请求头（第三行）</span><br><span class="line">                                # 空行（必须）</span><br><span class="line">&#123;&quot;name&quot;:&quot;张三&quot;,&quot;age&quot;:25&#125;        # 请求体（可选，GET通常无，POST/PUT有）</span><br></pre></td></tr></table></figure>
+<p>HTTP 消息分为请求和响应。下面介绍 <strong>HTTP/1.1
+的文本消息语法</strong>：起始行、头字段、空行，以及可选消息体。HTTP/2、HTTP/3
+使用帧承载消息，不能直接套用文本报文结构。<a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc9112.html#section-2">RFC
+9112，§2</a></p>
+<p>文中的报文示例若包含 <code>#</code> 注释或
+<code>[二进制数据]</code>，属于教学示意；这些注释、占位符不是实际报文字节。消息长度示例按实际消息体字节数计算，不能把字符数或注释计入长度。</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">POST /api/users HTTP/1.1         # 请求行</span><br><span class="line"><span class="attribute">Host</span><span class="punctuation">: </span>www.example.com           # 请求头（第一行）</span><br><span class="line"><span class="attribute">User-Agent</span><span class="punctuation">: </span>Chrome/120.0.0.0    # 请求头（第二行）</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>application/json  # 请求头（第三行）</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>26              # 请求体的 UTF-8 字节长度</span><br><span class="line">                                # 空行（必须）</span><br><span class="line">&#123;&quot;name&quot;:&quot;张三&quot;,&quot;age&quot;:25&#125;        # 请求体（可选，GET通常无，POST/PUT有）</span><br></pre></td></tr></table></figure>
 <h3 id="http请求格式">HTTP请求格式</h3>
 <p>客户端发送一个 HTTP
 请求到服务器的请求消息，包括以下格式：请求行（request
 line）、请求头部（header）、空行和请求数据四个部分</p>
 <p>下图给出了请求报文的一般格式</p>
 <figure>
-<img src="/posts/30445/image-20251227163219704.png" alt="image-20251227163219704">
+<img src="/posts/30445/image-20251227163219704-1791022406987-6.png" alt="image-20251227163219704">
 <figcaption aria-hidden="true">image-20251227163219704</figcaption>
 </figure>
 <p>来看我往 osu 浏览器发送了一个下载的请求</p>
 <figure>
-<img src="/posts/30445/image-20251227163408086.png" alt="image-20251227163408086">
+<img src="/posts/30445/image-20251227163408086-1791022406987-7.png" alt="image-20251227163408086">
 <figcaption aria-hidden="true">image-20251227163408086</figcaption>
 </figure>
 <p>其中，请求行非常显眼而且清晰，请求行是 HTTP
 请求的第一行，也是最关键的一行，<strong>必须存在</strong>，格式为</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">请求方法 + 空格 + 请求目标 + 空格 + HTTP版本 + 回车换行</span><br></pre></td></tr></table></figure>
-<p>请求目标就是请求 URL，是请求的资源路径，注意，<strong>请求目标必须以
-/ 开头</strong>，否则会400</p>
+<p>直接访问源服务器时，请求目标通常采用 origin-form，即以 <code>/</code>
+开头的路径和可选查询字符串。但它还有其他形式：代理请求可以使用完整
+URI，CONNECT 使用主机和端口，服务器级 OPTIONS 可以使用
+<code>*</code>。所以“必须以 <code>/</code> 开头”只适用于通常的
+origin-form。<a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc9112.html#section-3.2">RFC
+9112，§3.2</a></p>
 <p>例如<code>GET /api/users?page=1&amp;size=10 HTTP/1.1</code>，<code>POST /api/users HTTP/1.1</code>等都是请求行</p>
 <p>上述的请求头就是这样的</p>
 <figure>
-<img src="/posts/30445/image-20251227163615226.png" alt="image-20251227163615226">
+<img src="/posts/30445/image-20251227163615226-1791022406987-10.png" alt="image-20251227163615226">
 <figcaption aria-hidden="true">image-20251227163615226</figcaption>
 </figure>
 <p>请求头是请求行之后、空行之前的多行文本，每一行都是一个
 “键值对”，作用是向服务器传递<strong>元信息</strong>,如请求的主机、数据格式、认证信息等，格式为：</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">头字段名: 头字段值 + 回车换行（\r\n）</span><br></pre></td></tr></table></figure>
 <ul>
-<li>虽然头字段名<strong>大小写不敏感</strong>，规范推荐首字母大写，如<code>Host</code>而非<code>host</code></li>
-<li>冒号<code>:</code>后必须跟<strong>一个空格</strong>，如<code>Host: example.com</code>，无空格会解析失败，而且每行末尾必须是<code>\r\n</code></li>
-<li>请求头分为<strong>通用头</strong>（如<code>Connection</code>）、<strong>请求头</strong>（如<code>Host</code>）、<strong>实体头</strong>（如<code>Content-Type</code>）三类</li>
-<li>HTTP1.1 必选 Host 请求头，因为它指定请求的服务器主机名 +
-端口，其他头均为可选</li>
+<li>HTTP/1.1 头字段名<strong>大小写不敏感</strong>，<code>Host</code> 与
+<code>host</code> 等价；HTTP/2、HTTP/3 中传输的字段名必须小写</li>
+<li>字段名与冒号之间不允许有空白；冒号后的空白是可选的，惯例写作一个空格。HTTP/1.1
+中字段行以 <code>\r\n</code> 结束</li>
+<li>旧资料常按“通用头、请求头、实体头”分组；现代规范更强调每个字段的具体语义，例如表示元数据、内容协商、认证及条件请求。</li>
+<li>HTTP/1.1 请求必须包含 Host，通常携带 URI
+中的主机和可选端口。其他字段是否必须，取决于方法、消息内容、协议语义及接口契约，不能一概认为均可省略。</li>
 </ul>
 <p>那么，常用的请求头如下</p>
 <table>
@@ -765,7 +843,7 @@ line）、请求头部（header）、空行和请求数据四个部分</p>
 </tr>
 <tr>
 <td>Content-Type</td>
-<td>声明请求体的格式（仅 POST/PUT/PATCH 有请求体时需要）</td>
+<td>声明消息内容的媒体类型，是否需要取决于具体请求</td>
 <td>Content-Type: application/json（JSON 格式）Content-Type:
 application/x-www-form-urlencoded（表单格式）Content-Type:
 multipart/form-data（文件上传）</td>
@@ -799,46 +877,52 @@ multipart/form-data（文件上传）</td>
 </table>
 <p>下属是一个完整的请求头示例</p>
 <figure>
-<img src="/posts/30445/image-20251227164030114.png" alt="image-20251227164030114">
+<img src="/posts/30445/image-20251227164030114-1791022406987-8.png" alt="image-20251227164030114">
 <figcaption aria-hidden="true">image-20251227164030114</figcaption>
 </figure>
 <p>空行是<strong>单个回车换行（）</strong>，作用是告诉服务器：请求头已经结束，接下来是请求体（如果有的话），而且空行<strong>必须存在</strong>，即使没有请求体，注意空行不能有任何字符（包括空格、制表符），否则服务器会把后续内容当成请求头解析，导致错误；</p>
-<p>请求体是可选部分，仅当请求需要向服务器传递数据时存在，
-GET/HEAD/DELETE 等方法<strong>通常无请求体</strong>（HTTP 规范允许 GET
-带请求体，但这并不好）。</p>
+<p>请求体是可选部分。GET、HEAD、DELETE
+的请求内容没有通用定义的语义，客户端不应依赖它来改变目标资源或请求含义；公开
+API 通常避免发送这类请求体。</p>
 <ul>
-<li>请求体的格式由<code>Content-Type</code>请求头指定，请求体的长度由<code>Content-Length</code>指定</li>
+<li>请求体格式由 <code>Content-Type</code> 声明。HTTP/1.1
+请求体边界通常通过 <code>Content-Length</code> 或
+<code>Transfer-Encoding: chunked</code> 确定，不能认为必须始终有
+Content-Length。</li>
 <li>请求体是纯文本 / 二进制数据，如 JSON
 字符串、表单数据、文件二进制，这是 HTTP 协议可视化的重要因素</li>
 </ul>
 <p>常见请求体格式</p>
-<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"># 请求头声明格式</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>application/json</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>27</span><br><span class="line"># 空行</span><br><span class="line"># 请求体(JSON)</span><br><span class="line">&#123;&quot;name&quot;:&quot;张三&quot;,&quot;age&quot;:25,&quot;gender&quot;:&quot;男&quot;&#125;</span><br></pre></td></tr></table></figure>
-<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"># 请求头声明格式</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>application/x-www-form-urlencoded</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>29</span><br><span class="line"># 空行</span><br><span class="line"># 请求体（key=value&amp;key=value格式）</span><br><span class="line">name=张三&amp;age=25&amp;gender=男</span><br></pre></td></tr></table></figure>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"># 请求头声明格式</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>application/json</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>41</span><br><span class="line"># 空行</span><br><span class="line"># 请求体(JSON)</span><br><span class="line">&#123;&quot;name&quot;:&quot;张三&quot;,&quot;age&quot;:25,&quot;gender&quot;:&quot;男&quot;&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"># 请求头声明格式</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>application/x-www-form-urlencoded</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>47</span><br><span class="line"># 空行</span><br><span class="line"># 请求体（表单编码，中文采用 UTF-8 百分号编码）</span><br><span class="line">name=%E5%BC%A0%E4%B8%89&amp;age=25&amp;gender=%E7%94%B7</span><br></pre></td></tr></table></figure>
 <figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"># 请求头声明格式（boundary是分隔符，随机生成）</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW</span><br><span class="line"># 空行</span><br><span class="line"># 请求体（分隔符分隔不同字段，包含文件二进制）</span><br><span class="line">------WebKitFormBoundary7MA4YWxkTrZu0gW</span><br><span class="line"><span class="attribute">Content-Disposition</span><span class="punctuation">: </span>form-data; name=&quot;username&quot;</span><br><span class="line"></span><br><span class="line">张三</span><br><span class="line">------WebKitFormBoundary7MA4YWxkTrZu0gW</span><br><span class="line"><span class="attribute">Content-Disposition</span><span class="punctuation">: </span>form-data; name=&quot;avatar&quot;; filename=&quot;avatar.jpg&quot;</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>image/jpeg</span><br><span class="line"></span><br><span class="line">[二进制图片数据]</span><br><span class="line">------WebKitFormBoundary7MA4YWxkTrZu0gW--</span><br></pre></td></tr></table></figure>
 <h3 id="http响应格式">HTTP响应格式</h3>
-<p>HTTP 响应格式是服务器向客户端传递 处理结果
-的核心，与请求格式相对应，也整体遵循<strong>文本格式</strong>，所以 HTTP
+<p>HTTP 响应向客户端传递处理结果。下面仍以 HTTP/1.1
+为例，起始行与头字段采用文本格式，消息体可以是二进制，所以 HTTP
 响应也由四个部分组成，分别是：状态行、消息报头、空行和响应正文。例如</p>
-<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">HTTP/1.1</span> <span class="number">200</span> OK  # 状态行</span><br><span class="line"><span class="attribute">Date</span><span class="punctuation">: </span>Mon, 10 Jul 2023 12:00:00 GMT  # 响应头（第一行）</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>application/json       # 响应头（第二行）</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>120                 # 响应头（第三行）</span><br><span class="line">                                     # 空行（必须）</span><br><span class="line">&#123;&quot;name&quot;:&quot;张三&quot;,&quot;age&quot;:25&#125;             # 响应体（可选，成功时通常有，错误时可能有错误信息）</span><br></pre></td></tr></table></figure>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">HTTP/1.1</span> <span class="number">200</span> OK  # 状态行</span><br><span class="line"><span class="attribute">Date</span><span class="punctuation">: </span>Mon, 10 Jul 2023 12:00:00 GMT  # 响应头（第一行）</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>application/json       # 响应头（第二行）</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>26                  # 响应头（第三行）</span><br><span class="line">                                     # 空行（必须）</span><br><span class="line">&#123;&quot;name&quot;:&quot;张三&quot;,&quot;age&quot;:25&#125;             # 响应体（可选，成功时通常有，错误时可能有错误信息）</span><br></pre></td></tr></table></figure>
 <p>状态行是 HTTP
 响应的第一行，也是最关键的一行，<strong>必须存在</strong>，格式为：</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">HTTP版本 + 空格 + 状态码 + 空格 + 状态描述 + 回车换行（\r\n）</span><br></pre></td></tr></table></figure>
 <p>HTTP 版本就是要声明一下使用的 HTTP
-协议版本，状态码是响应体返回的，状态描述就是对状态码的解释，回车换行还是<code>\r\n</code></p>
+协议版本，状态码由状态行返回，状态描述就是对状态码的解释，回车换行还是<code>\r\n</code></p>
 <p>响应头是状态行之后、空行之前的多行文本，每一行都是一个
 “键值对”，作用是向客户端传递<strong>元信息</strong>（如响应的内容格式、长度、缓存策略、认证信息等），格式和请求头一样：</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">头字段名: 头字段值 + 回车换行（\r\n）</span><br></pre></td></tr></table></figure>
 <ul>
-<li>头字段名<strong>大小写不敏感</strong>，规范推荐首字母大写</li>
-<li>一样，冒号<code>:</code>后必须跟<strong>一个空格</strong>，而且每行末尾必须是<code>\r\n</code>；</li>
-<li>响应头可以有任意多行，分为<strong>通用头</strong>（如<code>Date</code>）、<strong>响应头</strong>（如<code>Content-Type</code>）、<strong>实体头</strong>（如<code>Content-Length</code>）三类。</li>
+<li>HTTP/1.1
+头字段名<strong>大小写不敏感</strong>，不要求首字母大写</li>
+<li>字段名与冒号之间不能有空白；冒号后允许可选空白，惯例使用一个空格；HTTP/1.1
+字段行以 <code>\r\n</code> 结束。</li>
+<li>响应可以包含多个头字段，但实现会设置总长度及字段数限制；字段含义需要按各自规范解释。Content-Type
+描述内容类型，Content-Length 参与消息长度处理，两者不能混用。</li>
 </ul>
 <p>那么常用的响应头如下</p>
 <table>
 <colgroup>
-<col style="width: 11%">
-<col style="width: 44%">
-<col style="width: 44%">
+<col style="width: 16%">
+<col style="width: 41%">
+<col style="width: 41%">
 </colgroup>
 <thead>
 <tr>
@@ -873,7 +957,7 @@ text/html（HTML 格式）Content-Type: image/jpeg（图片格式）</td>
 <td>Cache-Control</td>
 <td>声明客户端的缓存策略（控制浏览器是否缓存响应体）</td>
 <td>Cache-Control: max-age=31536000（缓存 1 年）Cache-Control:
-no-cache（不缓存）</td>
+no-cache（可存储，复用前必须成功验证）</td>
 </tr>
 <tr>
 <td>Expires</td>
@@ -883,7 +967,7 @@ Cache-Control）</td>
 </tr>
 <tr>
 <td>Location</td>
-<td>声明重定向的目标 URL（仅 3xx 状态码使用）</td>
+<td>标识重定向目标，也可在 201 响应中标识新建资源</td>
 <td>Location: <a target="_blank" rel="noopener" href="https://www.example.com/">https://www.example.com</a></td>
 </tr>
 <tr>
@@ -907,15 +991,15 @@ Cache-Control）</td>
 <td>X-Frame-Options: DENY（禁止嵌入）</td>
 </tr>
 <tr>
-<td>X-XSS-Protection</td>
-<td>声明 XSS 防护等级（防止跨站脚本攻击）</td>
-<td>X-XSS-Protection: 1; mode=block</td>
+<td>Content-Security-Policy</td>
+<td>限制允许加载或执行的内容来源，是浏览器内容安全策略的一部分</td>
+<td>Content-Security-Policy: default-src ‘self’</td>
 </tr>
 </tbody>
 </table>
 <p>例如，我加载 osu 的主页图</p>
 <figure>
-<img src="/posts/30445/image-20251227165305990.png" alt="image-20251227165305990">
+<img src="/posts/30445/image-20251227165305990-1791022406987-9.png" alt="image-20251227165305990">
 <figcaption aria-hidden="true">image-20251227165305990</figcaption>
 </figure>
 <p>空行是<strong>单个回车换行（）</strong>，作用是告诉客户端：“响应头已经结束，接下来是响应体（如果有的话）”。</p>
@@ -923,17 +1007,33 @@ Cache-Control）</td>
 <li>一样，空行<strong>必须存在</strong>，即使没有响应体，而且空行不能有任何字符</li>
 </ul>
 <p>响应体是可选部分，仅当服务器需要向客户端传递数据时存在（如成功返回资源、错误返回错误信息），204
-No Content、304 Not Modified 等状态码<strong>通常无响应体</strong>。</p>
+No Content、304 Not Modified 响应以及 HEAD
+响应<strong>不包含消息体</strong>；1xx 响应也不包含消息体。</p>
 <ul>
-<li>响应体的格式由<code>Content-Type</code>响应头指定，响应体的长度由<code>Content-Length</code>指定</li>
+<li>响应内容格式由 <code>Content-Type</code> 声明；HTTP/1.1
+响应消息体边界还可能由分块编码或连接关闭确定，并非所有响应都有
+Content-Length。</li>
 <li>响应体是纯文本 /
 二进制数据，请求体响应体可读几乎是HTTP可读的核心</li>
 </ul>
 <p>常见响应体格式示例</p>
-<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"># 响应头声明格式</span><br><span class="line"><span class="meta">HTTP/1.1</span> <span class="number">200</span> OK</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>application/json</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>120</span><br><span class="line"># 空行</span><br><span class="line"># 响应体</span><br><span class="line">&#123;&quot;name&quot;:&quot;张三&quot;,&quot;age&quot;:25,&quot;gender&quot;:&quot;男&quot;&#125;</span><br></pre></td></tr></table></figure>
-<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"># 响应头声明格式</span><br><span class="line"><span class="meta">HTTP/1.1</span> <span class="number">200</span> OK</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>text/html</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>1024</span><br><span class="line"># 空行</span><br><span class="line"># 响应体（HTML页面内容）</span><br><span class="line">&lt;!DOCTYPE html&gt;</span><br><span class="line">&lt;html&gt;</span><br><span class="line">&lt;head&gt;</span><br><span class="line">    &lt;title&gt;首页&lt;/title&gt;</span><br><span class="line">&lt;/head&gt;</span><br><span class="line">&lt;body&gt;</span><br><span class="line">    &lt;h1&gt;欢迎访问&lt;/h1&gt;</span><br><span class="line">&lt;/body&gt;</span><br><span class="line">&lt;/html&gt;</span><br></pre></td></tr></table></figure>
-<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"># 响应头声明格式</span><br><span class="line"><span class="meta">HTTP/1.1</span> <span class="number">200</span> OK</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>application/octet-stream</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>102400  # 100KB</span><br><span class="line"><span class="attribute">Content-Disposition</span><span class="punctuation">: </span>attachment; filename=&quot;file.zip&quot;  # 触发浏览器下载</span><br><span class="line"># 空行</span><br><span class="line"># 响应体（文件二进制数据）</span><br><span class="line">[二进制文件数据]</span><br></pre></td></tr></table></figure>
-<p>掌握这些规则后，你可以手动构造 HTTP 响应 (Telnet)，来测测爆</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"># 响应头声明格式</span><br><span class="line"><span class="meta">HTTP/1.1</span> <span class="number">200</span> OK</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>application/json</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>41</span><br><span class="line"># 空行</span><br><span class="line"># 响应体</span><br><span class="line">&#123;&quot;name&quot;:&quot;张三&quot;,&quot;age&quot;:25,&quot;gender&quot;:&quot;男&quot;&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"># 响应头声明格式</span><br><span class="line"><span class="meta">HTTP/1.1</span> <span class="number">200</span> OK</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>text/html; charset=UTF-8</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>112</span><br><span class="line"># 空行</span><br><span class="line"># 响应体（HTML页面内容，实际编码为 UTF-8，行末使用 LF）</span><br><span class="line">&lt;!DOCTYPE html&gt;</span><br><span class="line">&lt;html&gt;</span><br><span class="line">&lt;head&gt;</span><br><span class="line">    &lt;title&gt;首页&lt;/title&gt;</span><br><span class="line">&lt;/head&gt;</span><br><span class="line">&lt;body&gt;</span><br><span class="line">    &lt;h1&gt;欢迎访问&lt;/h1&gt;</span><br><span class="line">&lt;/body&gt;</span><br><span class="line">&lt;/html&gt;</span><br></pre></td></tr></table></figure>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"># 响应头声明格式</span><br><span class="line"><span class="meta">HTTP/1.1</span> <span class="number">200</span> OK</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>application/octet-stream</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>102400  # 假设实际文件为 100 KiB；下面是占位符</span><br><span class="line"><span class="attribute">Content-Disposition</span><span class="punctuation">: </span>attachment; filename=&quot;file.zip&quot;  # 触发浏览器下载</span><br><span class="line"># 空行</span><br><span class="line"># 响应体（文件二进制数据）</span><br><span class="line">[二进制文件数据]</span><br></pre></td></tr></table></figure>
+<p>掌握消息结构后，可以使用 curl、浏览器开发者工具或受控的本地服务观察
+HTTP 请求与响应。</p>
+<h3 id="消息体边界与分块编码">消息体边界与分块编码</h3>
+<p><code>Content-Length</code>
+表示字节数，不是字符数，也不是整个报文的长度。中文和压缩内容尤其需要按实际发送的字节计算，不能把示例数字直接复制到真实请求中。</p>
+<p>HTTP/1.1 的 <code>Transfer-Encoding: chunked</code>
+通过多个块传输消息体：每块给出十六进制长度，最后用零长度块结束；它用于消息分帧，与
+gzip
+这样的内容压缩不同。某些响应也可以由关闭连接标记结束，但这种方式不能继续复用该连接。</p>
+<p>发送方不得同时发送 <code>Transfer-Encoding</code> 和
+<code>Content-Length</code>。代理与源服务器若对消息边界解释不同，可能产生请求走私风险；接收方需按规范处理异常长度及冲突字段。<a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc9112.html#section-6">RFC
+9112，§6、§7.1、§11.2</a></p>
+<p>HTTP/2、HTTP/3 通过帧和流结束机制确定消息边界，不使用 HTTP/1.1 的
+chunked 传输编码。</p>
 <h3 id="http-content-type">HTTP content-type</h3>
 <p>Content-Type，如图字面含义，就是内容的类型，一般是指网页中存在的Content-Type，用于定义网络文件的类型和网页的编码，决定浏览器将以什么形式、什么编码读取这个文件，明确告诉服务器如何解析请求体或客户端如何解析响应体</p>
 <p><code>Content-Type</code>
@@ -943,19 +1043,19 @@ MIME 类型，下面说</p>
 <ul>
 <li>作用：告诉服务器
 我发送的请求体数据是什么格式，服务器据此解析数据。</li>
-<li>位置：位于请求头中，仅当请求有请求体时（如
-POST/PUT/PATCH）需要声明。</li>
+<li>位置：位于请求头中，描述消息内容时通常应提供，例如 POST、PUT、PATCH
+的内容；具体要求取决于方法和接口契约。</li>
 </ul>
 <figure>
-<img src="/posts/30445/image-20251227170123317.png" alt="image-20251227170123317">
+<img src="/posts/30445/image-20251227170123317-1791022406987-11.png" alt="image-20251227170123317">
 <figcaption aria-hidden="true">image-20251227170123317</figcaption>
 </figure>
 <p>在响应中（Response）</p>
 <ul>
 <li>作用：告诉客户端
 “我返回的响应体数据是什么格式”，客户端据此解析数据。</li>
-<li>位置：位于响应头中，无论响应是否有响应体（如 204
-无响应体时通常省略）。</li>
+<li>位置：位于响应头中，通常用于描述响应内容；HEAD
+等无响应内容的消息也可以携带对应表示的元数据。</li>
 </ul>
 <p>Content-Type 的分类与常见类型</p>
 <ol type="1">
@@ -984,11 +1084,6 @@ POST/PUT/PATCH）需要声明。</li>
 <td><code>text/html</code></td>
 <td>HTML 格式</td>
 <td>服务器返回 HTML 页面</td>
-</tr>
-<tr>
-<td><code>text/json</code></td>
-<td>JSON 格式</td>
-<td>API 接口返回 JSON 数据</td>
 </tr>
 <tr>
 <td><code>text/xml</code></td>
@@ -1064,11 +1159,6 @@ POST/PUT/PATCH）需要声明。</li>
 <td>ZIP 格式</td>
 <td>下载压缩包</td>
 </tr>
-<tr>
-<td><code>application/x-www-form-urlencoded</code></td>
-<td>表单数据格式（键值对，如<code>key=value&amp;key=value</code>）</td>
-<td>传统表单提交</td>
-</tr>
 </tbody>
 </table></li>
 <li><p>Multipart 多部分类型</p>
@@ -1109,12 +1199,14 @@ POST/PUT/PATCH）需要声明。</li>
 <p>不多说了</p></li>
 </ol>
 <p><code>Content-Type</code>
-除了主类型和子类型，还可以包含<strong>参数</strong>（键值对），用于补充说明数据的细节。常见参数如下：</p>
+除了主类型和子类型，还可以包含<strong>参数</strong>（键值对），用于补充说明数据的细节。常见参数如下。注意，文件名
+<code>filename</code> 是 <code>Content-Disposition</code> 的参数，不是
+<code>Content-Type</code> 的参数。</p>
 <table>
 <colgroup>
 <col style="width: 8%">
-<col style="width: 41%">
-<col style="width: 50%">
+<col style="width: 40%">
+<col style="width: 51%">
 </colgroup>
 <thead>
 <tr>
@@ -1135,19 +1227,9 @@ POST/PUT/PATCH）需要声明。</li>
 <td><code>Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW</code></td>
 </tr>
 <tr>
-<td><code>boundary</code></td>
-<td>声明多部分数据的分隔符（仅<code>multipart</code>类型需要）</td>
-<td><code>Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW</code></td>
-</tr>
-<tr>
-<td><code>filename</code></td>
-<td>声明文件的名称（仅<code>multipart</code>类型的文件字段需要）</td>
-<td><code>Content-Disposition: form-data; name="avatar"; filename="avatar.jpg"</code></td>
-</tr>
-<tr>
 <td><code>type</code></td>
-<td>声明 MIME 类型（如<code>multipart/mixed</code>的子类型）</td>
-<td><code>Content-Type: multipart/mixed; type="text/plain"</code></td>
+<td>在 multipart/related 中描述根部分的媒体类型</td>
+<td><code>Content-Type: multipart/related; boundary=example; type="text/html"</code></td>
 </tr>
 </tbody>
 </table>
@@ -1159,8 +1241,19 @@ POST/PUT/PATCH）需要声明。</li>
 类型，而不是文件扩展名，因为文件扩展名不够可靠，来确定如何处理URL，因此
 Web 服务器在响应头中添加正确的 MIME
 类型非常重要。如果配置不正确，浏览器可能会无法解析文件内容，网站将无法正常工作，并且下载的文件也会被错误处理。</p>
+<p>JSON 应使用 <code>application/json</code>，不是
+<code>text/json</code>。不同媒体类型支持的参数由对应规范定义；网络交换中的
+JSON 应使用 UTF-8，RFC 8259 并未为 <code>application/json</code> 定义
+<code>charset</code> 参数。<a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc8259.html#section-8.1">RFC
+8259，§8.1、§11</a></p>
+<p>文件上传中，文件名属于该部分的 <code>Content-Disposition</code>；详见
+<a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc7578.html#section-4.2">RFC
+7578，§4.2</a>。</p>
 <p>MIME 类型通用结构：</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">type/subtype</span><br></pre></td></tr></table></figure>
+<p>参数的含义由对应媒体类型定义；例如 multipart/related 的 type 参数见
+<a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc2387.html#section-3.1">RFC
+2387，§3.1</a>。</p>
 <p>MIME 的组成结构非常简单，由类型与子类型两个字符串中间用
 <code>/</code>分隔而组成，<strong>不允许有空格。</strong></p>
 <p><code>type</code>
@@ -1181,20 +1274,19 @@ HTTP
 最初设计时数据是明文在网络上传输的，也就是任何人只要拦截了网络，就可以不费吹灰之力获取到HTTP请求/响应内容，从而非法获取信息。</p>
 <p>HTTPS 协议是 HyperText Transfer Protocol
 Secure（超文本传输安全协议）的缩写，是一种通过计算机网络进行安全通信的传输协议。它相比
-HTTP 更加安全，因为 HTTP
-本身是不安全的，因为传输的数据未经加密，可能会被窃听或篡改，它解决了
-HTTP 的三大安全问题：</p>
+HTTP 更加安全，因为 未经 TLS 等保护的 HTTP
+通信缺少传输机密性和完整性保护，可能会被窃听或篡改，它解决了 HTTP
+的三大安全问题：</p>
 <ol type="1">
 <li><strong>窃听</strong>：数据在传输过程中被第三方拦截并查看内容（如监听网络流量）。</li>
 <li><strong>篡改</strong>：数据在传输过程中被第三方修改（如修改网页内容、注入恶意代码）。</li>
 <li><strong>伪造</strong>：第三方伪装成服务器或客户端，与对方建立虚假连接。</li>
 </ol>
-<p>HTTPS 在 HTTP 上加入 SSL/TLS
-协议，为数据传输提供了加密和身份验证。HTTPS 经由 HTTP 进行通信，但利用
-SSL/TLS 来加密数据包，HTTPS
+<p>HTTPS 通过 TLS 保护 HTTP 通信，为数据传输提供了加密和身份验证。HTTPS
+经由 HTTP 进行通信，但利用 SSL/TLS 来加密数据包，HTTPS
 开发的主要目的，是提供对网站服务器的身份认证，保护交换资料的隐私与完整性。</p>
 <figure>
-<img src="/posts/30445/66eed03da01a689f2ba8e1c74e9b1f8e.webp" alt="img">
+<img src="/posts/30445/66eed03da01a689f2ba8e1c74e9b1f8e-1791022406987-12.webp" alt="img">
 <figcaption aria-hidden="true">img</figcaption>
 </figure>
 <p>可以看到，HTTPS
@@ -1203,75 +1295,58 @@ SSL/TLS 来加密数据包，HTTPS
 HTTPS 的 URL 则是由 https://
 起始与默认使用端口<strong>443</strong>。</p>
 <figure>
-<img src="/posts/30445/image-20251227154315119.png" alt="image-20251227154315119">
+<img src="/posts/30445/image-20251227154315119-1791022406987-13.png" alt="image-20251227154315119">
 <figcaption aria-hidden="true">image-20251227154315119</figcaption>
 </figure>
-<p>那么，加密是如何实现的，SSL/TLS协议的基本思路是采用
-非对称加密+对称加密的综合模式。</p>
-<p>首先，HTTPS
-的通信开始于<strong>握手阶段</strong>，客户端与服务器通过一系列步骤建立安全连接。</p>
+<p>那么，HTTPS 怎样建立安全通信？现代部署使用 TLS，SSL
+是历史协议名称。下面以<strong>完整的、基于证书认证和 (EC)DHE 密钥协商的
+TLS 1.3 握手</strong>为例；会话恢复、PSK 和 0-RTT 有不同流程。</p>
 <ol type="1">
-<li><p>客户端发起请求</p>
-<p>客户端（浏览器）向服务器发送 HTTPS 请求，请求包含：</p>
-<ul>
-<li>支持的 SSL/TLS 版本（如 TLS 1.2、TLS 1.3）。</li>
-<li>支持的加密套件（如 AES-256-GCM、RSA-2048）。</li>
-<li>支持的哈希算法（如 SHA-256）。</li>
-</ul>
-<figure>
-<img src="/posts/30445/image-20251227171103997.png" alt="image-20251227171103997">
-<figcaption aria-hidden="true">image-20251227171103997</figcaption>
-</figure></li>
-<li><p>服务器收到请求后，返回：</p>
-<ul>
-<li><p><strong>服务器证书</strong>：由权威
-CA（证书颁发机构）颁发，包含服务器的公钥、域名、有效期等信息。</p>
-<figure>
-<img src="/posts/30445/image-20251227171143406.png" alt="image-20251227171143406">
-<figcaption aria-hidden="true">image-20251227171143406</figcaption>
-</figure></li>
-<li><p><strong>加密套件列表</strong>：从客户端的列表中选择一个双方都支持的加密套件。</p></li>
-<li><p><strong>服务器公钥</strong>：用于加密后续的会话密钥。</p></li>
-</ul></li>
-<li><p>客户端验证服务器证书</p>
-<p>客户端验证服务器证书的有效性，如果合法，就会生成一个随机码，然后用服务器的公钥加密这个随机码，发送给服务器。</p></li>
-<li><p>客户端生成会话密钥</p>
-<p>客户端生成一个<strong>随机的会话密钥</strong>（如 AES-256
-的密钥），并使用服务器公钥加密该密钥，发送给服务器。</p></li>
-<li><p>服务器端解密会话密钥</p>
-<p>服务器收到加密的会话密钥后，使用自己的私钥解密，得到会话密钥。</p></li>
-<li><p>开始建立安全通信</p>
-<p>客户端和服务器使用会话密钥进行对称加密通信，此后的所有数据都通过会话密钥加密传输，第三方即使拦截到数据包，也无法解密内容。</p></li>
+<li><strong>客户端发送 ClientHello。</strong> 提供支持的 TLS
+版本、密码套件、密钥协商组和密钥份额等。TLS 1.3
+密码套件描述记录保护算法与相关哈希，不再把 RSA
+密钥交换等机制绑定进套件名称。</li>
+<li><strong>服务器发送 ServerHello。</strong>
+选择双方支持的参数，并给出自己的密钥份额。双方据密钥协商结果派生握手流量密钥；不是客户端生成完整会话密钥后用证书公钥直接发送。</li>
+<li><strong>服务器发送证书及握手证明。</strong>
+后续握手消息受到加密保护；CertificateVerify
+的签名证明服务器掌握相应私钥，Finished 验证握手完整性。</li>
+<li><strong>客户端验证服务器。</strong>
+验证证书链、信任锚、有效期和访问主机名等，并验证握手签名及
+Finished。证书可以经过中间 CA，不能简化为始终由根 CA 直接签发。</li>
+<li><strong>双方完成握手并交换应用数据。</strong>
+派生应用流量密钥，使用对称的认证加密保护 HTTP 数据。</li>
 </ol>
-<figure>
-<img src="/posts/30445/816762-20250703142149540-1930975259.png" alt="img">
-<figcaption aria-hidden="true">img</figcaption>
-</figure>
-<p>所以，HTTPS
-使用<strong>非对称加密</strong>和<strong>对称加密</strong>结合的方式，既保证密钥的安全传输，又保证数据的高效加密。非对称加密就是使用一对密钥（公钥和私钥），公钥加密的数据只能用私钥解密，私钥加密的数据只能用公钥解密。而对称加密就是使用同一密钥进行加密和解密</p>
-<p>HTTPS 的信任基于预先安装在操作系统中的证书颁发机构（CA）。HTTPS
-通过<strong>证书验证</strong>和<strong>域名匹配</strong>机制，确保客户端与服务器的身份真实可靠。</p>
-<p>因为服务器证书由权威 CA 颁发，客户端内置了根 CA 的公钥，通过根 CA
-验证服务器证书的签名，确保证书未被篡改且由可信 CA
-颁发。而证书中包含服务器的域名，客户端验证证书中的域名与当前访问的域名一致就可以达到匹配域名。</p>
+<p>这套机制把<strong>密钥协商、身份认证和数据加密</strong>分开处理。TLS
+1.3 已移除静态 RSA
+密钥传输；把“客户端用服务器公钥加密随机数/会话密钥，服务端解密”作为现代
+TLS 的通用流程是不准确的。公钥签名也不能笼统地解释为“私钥加密”。<a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc8446.html#section-2">RFC
+8446，§1.2、§2、§4</a></p>
+<p>HTTPS 通常认证服务器；只有采用客户端证书等机制时，才涉及相应的客户端
+TLS 身份认证。用户登录和业务授权仍由应用处理。HTTPS 保护传输中的 HTTP
+数据，但不保证终端、日志、数据库或业务权限本身安全。</p>
+<p>本文保留的前面两幅示意图用于观察 HTTP
+与安全传输的分层及默认端口，具体握手过程以上述限定场景和 TLS
+规范为准。</p>
 <h2 id="http2一些值得注意的特点">HTTP2一些值得注意的特点</h2>
 <h3 id="二进制分帧">二进制分帧</h3>
 <p>HTTP/2
 最核心的底层优化是引入了<strong>二进制分帧层</strong>，它将所有传输的内容（请求头、请求体、响应头、响应体）都拆分为更小的<strong>帧（Frame）</strong>，每个帧包含类型、标志、流
 ID、长度等元数据。</p>
 <p>所以说，HTTP2 从 HTTP1 的文本协议，变成了二进制协议</p>
-<p>那么解析方式也从逐行解析变成了按帧解析，因为二进制格式比文本格式更紧凑，解析效率自然高。而且二进制格式减少了传输过程中的开销，降低了网络延迟。好处不言而喻</p>
+<p>那么解析方式也从逐行解析变成了按帧解析，二进制帧让消息边界和流的处理方式更明确，便于多路复用。具体解析效率和延迟仍受实现、负载及网络条件影响，不能仅凭二进制格式就推导出必然更快。</p>
 <h3 id="多路复用">多路复用</h3>
-<p>简单的说，HTTP/2 允许同时发送多个请求和响应，而不是像 HTTP/1.1
-一样只能一个一个地处理。</p>
+<p>HTTP/2 可以在同一连接上交错传输多个流的消息；HTTP/1.1
+也可以使用多个连接并发，因此这里比较的是同一连接内的消息组织。</p>
 <p>HTTP/2 的多路复用是基于
 流（Stream）的，每个流是一个独立的双向字节流。流的创建和管理由 HTTP/2
 的分帧层处理。</p>
-<p>这样可以减少延迟，提高效率，提高网络吞吐量。这解决了 HTTP/1.1 的
-队头阻塞（Head-of-line Blocking）问题。</p>
+<p>这样可以减少延迟，提高效率，提高网络吞吐量。它缓解了 HTTP/1.1
+同一连接上响应必须按请求顺序发送所造成的应用层队头阻塞；但 HTTP/2 基于
+TCP，TCP 丢包造成的传输层队头阻塞仍可能影响多个流。</p>
 <p><strong>什么是队头阻塞</strong></p>
-<p>HTTP/1.1 中，在同一个 TCP
-连接上，一个请求的响应未完成时，后续请求必须等待，即使其他请求已准备好。例如：</p>
+<p>HTTP/1.1
+若使用流水线，可以在前一个响应完成前发送后续请求，但响应必须按请求顺序返回；不使用流水线时，客户端通常等待响应后再在该连接上发起下一个请求。例如：</p>
 <ul>
 <li>客户端发送请求 1（请求一个大图片）。</li>
 <li>服务器开始处理请求 1，但由于图片较大，响应需要一段时间。</li>
@@ -1284,17 +1359,20 @@ ID、长度等元数据。</p>
 ID）</strong>，不同流的帧可以在同一个 TCP 连接上并行传输。</p>
 <ul>
 <li>客户端发送请求 1（流 ID=1）。</li>
-<li>客户端发送请求 2（流 ID=2）。</li>
-<li>服务器处理请求 1 和请求 2，同时发送响应 1 和响应 2。</li>
+<li>客户端发送请求 2（流 ID=3；客户端发起的流使用奇数 ID）。</li>
+<li>服务器处理请求 1 和请求 2，可以交错发送两个响应的帧。</li>
 <li>客户端根据流 ID 将响应 1 和响应 2 分配给对应的请求。</li>
 </ul>
-<p>这样，即使请求 1 的响应未完成，请求 2
-也可以继续处理，不会被阻塞。</p>
+<p>这样，请求 2 的帧不必等待请求 1 的整个响应结束。不过，TCP
+丢包、连接级流量控制或服务端调度仍可能阻塞传输。HTTP/3 使用 QUIC
+独立流，降低跨流的丢包阻塞，但同一流内部仍要求有序交付。<a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc9113.html#section-5">RFC
+9113，§5</a>、<a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc9114.html#section-2">RFC
+9114，§2</a></p>
 <h3 id="头部压缩">头部压缩</h3>
 <p>HTTP/2 使用 HPACK 算法对 HTTP
 头部进行压缩，减少了头部传输的数据量，从而减少了网络延迟。</p>
-<p>HPACK
-算法的核心思想是<strong>维护一个动态字典</strong>，用于存储之前交换过的头部字段。当发送一个头部字段时，如果该字段已经在字典中，则只发送字段的索引，而不是完整的字段名和值。</p>
+<p>HPACK 使用静态表、动态表及字面量编码，字符串还可以采用 Huffman
+编码。适合索引的字段可以用索引表示；敏感字段也可以选择不加入动态表。动态表按连接中的方向维护，是有状态的压缩机制，不能跨连接直接复用。<a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc7541.html">RFC 7541</a></p>
 <p>HTTP/2
 的头部压缩是在<strong>分帧层</strong>实现的，每个请求和响应的头部都会被压缩后传输。</p>
 <h3 id="服务器推送">服务器推送</h3>
@@ -1302,31 +1380,1130 @@ ID）</strong>，不同流的帧可以在同一个 TCP 连接上并行传输。<
 支持服务器推送，允许服务器在客户端请求之前推送资源，以提高性能。</p>
 <p>服务器推送是指服务器在响应一个请求时，主动推送客户端可能需要的其他资源（如图片、CSS、JS
 等）。</p>
-<p>服务器主动推送资源，那么就减少了客户端的请求次数。那么客户端可以更快地获取所需的资源，提高了页面加载速度。</p>
-<p>实际上，服务器推送是在<strong>分帧层</strong>实现的，服务器可以通过发送
-<strong>推送帧（Push Frame）</strong> 来推送资源。</p>
-<h3 id="默认长连接">默认长连接</h3>
-<p>HTTP/2 默认使用长连接，一个连接可以处理多个流（请求 /
-响应），而不是像 HTTP/1.1 一样需要频繁地建立和关闭连接。HTTP/2
-的长连接是在<strong>分帧层</strong>实现的，一个连接可以处理多个流</p>
-<p>HTTP/2 的长连接管理由 <strong>流（Stream）</strong>
-的创建和关闭来控制。当一个流完成后，该流的资源会被释放，连接可以继续处理其他流。</p>
-<h3 id="必须使用-https">必须使用 HTTPS</h3>
-<ul>
-<li><strong>HTTP1.1</strong>：可通过
-HTTPS（HTTP+SSL/TLS）加密传输，但无特殊优化。</li>
-<li><strong>HTTP2.0</strong>：<strong>必须使用
-HTTPS</strong>（因二进制分帧层依赖 TLS 加密），且支持 TLS 的所有扩展（如
-TLS 1.3），安全性更高。</li>
-</ul>
-<p>HTTP/2 是在 HTTPS 的基础上实现的，它使用 HTTPS
-的加密功能来保护数据传输，同时通过二进制分帧层提高了传输效率。</p>
-<p>HTTP/2 支持 TLS 的所有扩展（如 TLS 1.3），提供了更高的安全性。TLS 1.3
-的握手过程更快，加密效率更高</p>
+<p>推送在资源确实需要且未被缓存时可能减少等待；如果推送了已有缓存或不需要的资源，也可能浪费带宽并降低性能。</p>
+<p>服务器使用 <code>PUSH_PROMISE</code>
+帧声明准备推送的请求，再通过推送流发送相应响应。它是可选机制，客户端可以禁用，并不等同于业务消息推送或
+WebSocket。<a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc9113.html#section-8.4">RFC
+9113，§8.4</a></p>
+<p>部署时还要检查客户端支持。Chrome 已从 106 版本起默认禁用 HTTP/2
+Server Push，因此不能把它作为现代浏览器性能优化的默认前提。<a target="_blank" rel="noopener" href="https://developer.chrome.com/blog/removing-push">Chrome
+官方说明</a></p>
+<h3 id="连接复用">连接复用</h3>
+<p>HTTP/1.1 默认采用持久连接；HTTP/2
+进一步允许同一连接承载多个并发流。流结束不意味着连接必须关闭，连接关闭也不由某一个流结束直接决定。连接级关闭可使用
+GOAWAY 等机制，服务端仍可设置空闲超时。<a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc9113.html#section-6.8">RFC
+9113，§5、§6.8</a></p>
+<h3 id="http2-与-https">HTTP/2 与 HTTPS</h3>
+<p>HTTP/2 协议可以运行于 TLS 加密连接，也支持满足规范要求的明文 TCP
+场景。因此，“二进制分帧依赖 TLS，所以 HTTP/2 必须 HTTPS”并不成立。</p>
+<p>主流浏览器的 HTTP/2 部署通常要求 TLS，并通过 ALPN
+协商协议。需要区分协议允许的形式与特定客户端的实现政策。HTTP/2 使用 TLS
+时还有明确的版本及配置要求，不能描述成“支持 TLS 的所有扩展”。<a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc9113.html#section-3">RFC
+9113，§3、§9.2</a></p>
 <h3 id="兼容性">兼容性</h3>
 <p>HTTP/2 可以与 HTTP/1.1 共存，服务器可以同时支持 HTTP/1.1 和
 HTTP/2。如果客户端不支持 HTTP/2，服务器可以回退到 HTTP/1.1。</p>
-</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a target="_blank" rel="noopener" href="https://github.com/ergou10086">ErgouTree</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://ergou10086.github.io/posts/30445.html">https://ergou10086.github.io/posts/30445.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://ergou10086.github.io" target="_blank">ErgouTree's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/">计算机网络</a><a class="post-meta__tags" href="/tags/RPC%E5%8D%8F%E8%AE%AE/">RPC协议</a><a class="post-meta__tags" href="/tags/HTTP/">HTTP</a><a class="post-meta__tags" href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/">计算机基础知识</a><a class="post-meta__tags" href="/tags/%E9%9D%A2%E8%AF%95%E5%90%91/">面试向</a></div><div class="post-share"><div class="addtoany"><div class="a2a_kit a2a_kit_size_32 a2a_default_style"><a class="a2a_button_facebook"></a><a class="a2a_button_twitter"></a><a class="a2a_button_wechat"></a><a class="a2a_button_sina_weibo"></a><a class="a2a_button_facebook_messenger"></a><a class="a2a_button_email"></a><a class="a2a_button_copy_link"></a><a class="a2a_dd" target="_blank" rel="noopener" href="https://www.addtoany.com/share"></a></div></div><script async="async" src="https://static.addtoany.com/menu/page.js"></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/posts/50004.html" title="详解RPC，并与HTTP进行对比——既生瑜何生亮"><img class="cover" src="/images/posts/cover_wish.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">详解RPC，并与HTTP进行对比——既生瑜何生亮</div></div><div class="info-2"><div class="info-item-1">HTTP协议 对HTTP协议的详解先不放到这里，移到了另外一章，看到这篇的默认认为了解 HTTP 协议 https://www.ergoutreegal.cn/posts/30445.html RPC协议 为什么要有RPC协议 RPC，全称 Remote Procedure Call，远程过程调用，是一种允许程序调用另一个地址空间（通常是在网络中的另一台计算机上）的程序的协议。它使得程序能够像调用本地函数一样调用远程函数，而无需显式编码这些远程交互的细节。  但这个名字起的一点都不好，过分强调了和LPC（本地过程调用）的对比。没有突出出来 RPC 本身涉及到的一些技术特点。 我非常同意上述观点，跟他妈的鲁棒性那个翻译似的  什么意思 假设你有两台电脑：  本地电脑 A：你写的程序运行在这里，想获取用户信息； 远程电脑 B：数据库在这，有一个 getUserInfo(userId) 函数能查用户信息。  如果没有 RPC，你要实现 “调用 B 的函数”，得自己做这些事：  手动写网络通信代码，比如用 Socket，把...</div></div></div></a><a class="pagination-related" href="/posts/64917.html" title="贪心策略的不同限制？抽象广告小游戏背后的最优解思考"><img class="cover" src="/images/posts/cover_js2.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">贪心策略的不同限制？抽象广告小游戏背后的最优解思考</div></div><div class="info-2"><div class="info-item-1">...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/posts/50004.html" title="详解RPC，并与HTTP进行对比——既生瑜何生亮"><img class="cover" src="/images/posts/cover_wish.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-12-27</div><div class="info-item-2">详解RPC，并与HTTP进行对比——既生瑜何生亮</div></div><div class="info-2"><div class="info-item-1">HTTP协议 对HTTP协议的详解先不放到这里，移到了另外一章，看到这篇的默认认为了解 HTTP 协议 https://www.ergoutreegal.cn/posts/30445.html RPC协议 为什么要有RPC协议 RPC，全称 Remote Procedure Call，远程过程调用，是一种允许程序调用另一个地址空间（通常是在网络中的另一台计算机上）的程序的协议。它使得程序能够像调用本地函数一样调用远程函数，而无需显式编码这些远程交互的细节。  但这个名字起的一点都不好，过分强调了和LPC（本地过程调用）的对比。没有突出出来 RPC 本身涉及到的一些技术特点。 我非常同意上述观点，跟他妈的鲁棒性那个翻译似的  什么意思 假设你有两台电脑：  本地电脑 A：你写的程序运行在这里，想获取用户信息； 远程电脑 B：数据库在这，有一个 getUserInfo(userId) 函数能查用户信息。  如果没有 RPC，你要实现 “调用 B 的函数”，得自己做这些事：  手动写网络通信代码，比如用 Socket，把...</div></div></div></a><a class="pagination-related" href="/posts/32619.html" title="认识并了解常见的流媒体协议"><img class="cover" src="/images/posts/cover_java15.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-03-19</div><div class="info-item-2">认识并了解常见的流媒体协议</div></div><div class="info-2"><div class="info-item-1">介绍流媒体协议 什么是流媒体协议？ 协议是定义数据如何在网络中传输的规则和流程，千万要把它和格式分开，格式是定义音视频数据如何组织和封装，包括容器格式和编码格式的。 流媒体协议简要来说就是视频 / 音频在网络上 实时传输 的规则。包括规定了音视频数据如何被切分、打包、在网络中传输以及在接收端如何还原这种。 流媒体协议是视频在线传输的协议。 互联网上流媒体技术的变更 在过去的接近10多年时间里（从2004年到2018年），网页视频播放一直是 Flash 技术的天下，我们所熟悉的众多视频网站和新闻门户网站一直都在使用 Flash 技术来播放网页视频。 这里的主要原因是IE浏览器的高比例占有量和 Flash 插件在客户端的普及，还有就是主要流媒体服务器产品对 RTMP 协议和FLV 视频格式的广泛支持，这是这一个时期的视频生态系统。 在那个浏览器功能贫瘠的年代，Flash 插件几乎是网页视频的唯一救命稻草。RTMP 低延迟，而且 FLV 容器简单，非常适合流式传输。但是，他太封闭了，不管是服务端的生态 FMS 还是 客户端的 Flash...</div></div></div></a><a class="pagination-related" href="/posts/8003.html" title="Elasticsearch part5—在Spring框架中操作ES文档"><img class="cover" src="/images/posts/cover_database3.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-10-19</div><div class="info-item-2">Elasticsearch part5—在Spring框架中操作ES文档</div></div><div class="info-2"><div class="info-item-1">RestAPI 在前面我们讲解了手动发送的对 ES 索引库和文档的操作 本质上这些都是组装请求，携带JSON，进行我们想要的操作，通过http请求发送给ES。 REST（Representational State Transfer，表述性状态转移）是一种软件架构风格，用于构建网络应用程序。而基于 REST 风格设计的 API 就称为 RestAPI。 RestAPI 具备以下特点：  资源抽象：将网络中的一切都视为资源，比如一篇文章、一个用户、一条订单记录等，每个资源都有对应的唯一 URI（Uniform Resource Identifier，统一资源标识符）来标识，像https://example.com/api/users/1 就可以表示 ID 为 1 的用户资源。 无状态通信：客户端和服务器之间的通信是无状态的，即每次请求都包含了处理该请求所需的全部信息，服务器不会依赖之前请求的状态来处理当前请求。这使得请求可以被独立处理，提高了系统的可扩展性和可靠性。 统一接口：使用标准的 HTTP 方法（GET、POST、PUT、DELETE...</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="gitalk-container"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/arp.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">ErgouTree</div><div class="author-info-description">I start a brand-new life with you.</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">345</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">214</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">113</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/ergou10086"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/ergou10086" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="/zjm88822201@126.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a><a class="social-icon" href="https://space.bilibili.com/142045656?spm_id_from=333.1007.0.0" target="_blank" title="bilibili"><i class="fas fa-brands fa-bilibili" style="color: #4a72be;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">作者长期陷入galgame和osu!maina4k中 祝他好运吧 对了 如果图片加载过慢 建议科学上网进行使用</div></div><div class="card-widget card-weather"><div class="item-headline"><i class="fas fa-cloud-sun"></i><span>aside.card_weather</span></div><div class="weather-content"><div class="weather-loading"><i class="fas fa-spinner fa-spin"></i><span>加载中...</span></div><div class="weather-main" style="display: none;"><div class="weather-location"><i class="fas fa-map-marker-alt"></i><span id="weather-location">获取中...</span></div><div class="weather-info"><div class="weather-temp"><span id="weather-temp">--</span><span class="unit">°C</span></div><div class="weather-desc"><span id="weather-weather">--</span></div><div class="weather-details"><div class="weather-item"><i class="fas fa-wind"></i><span id="weather-windpower">--</span></div><div class="weather-item"><i class="fas fa-tint"></i><span id="weather-humidity">--</span></div><div class="weather-item"><i class="fas fa-eye"></i><span id="weather-winddir">--</span></div></div></div><div class="weather-update-time"><i class="fas fa-clock"></i><span id="weather-update-time">更新中...</span></div></div></div></div><div class="sticky_layout"></div><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%86%E8%A7%A3http%E5%8D%8F%E8%AE%AE"><span class="toc-number">1.</span> <span class="toc-text">了解HTTP协议</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#http-%E7%AE%80%E4%BB%8B"><span class="toc-number">1.1.</span> <span class="toc-text">HTTP 简介</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#http%E6%98%AF%E5%BA%94%E7%94%A8%E5%B1%82%E5%8D%8F%E8%AE%AE"><span class="toc-number">1.2.</span> <span class="toc-text">HTTP是应用层协议</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#http-%E7%9A%84%E6%A0%B8%E5%BF%83%E7%89%B9%E7%82%B9"><span class="toc-number">1.3.</span> <span class="toc-text">HTTP 的核心特点</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#http%E7%9A%84%E5%B7%A5%E4%BD%9C%E6%B5%81%E7%A8%8B"><span class="toc-number">2.</span> <span class="toc-text">HTTP的工作流程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#http%E7%9A%84%E8%AF%B7%E6%B1%82%E6%96%B9%E6%B3%95"><span class="toc-number">3.</span> <span class="toc-text">HTTP的请求方法</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#get"><span class="toc-number">3.1.</span> <span class="toc-text">GET</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#head"><span class="toc-number">3.2.</span> <span class="toc-text">HEAD</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#post"><span class="toc-number">3.3.</span> <span class="toc-text">POST</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#put"><span class="toc-number">3.4.</span> <span class="toc-text">PUT</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#delete"><span class="toc-number">3.5.</span> <span class="toc-text">DELETE</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#patch"><span class="toc-number">3.6.</span> <span class="toc-text">PATCH</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#options"><span class="toc-number">3.7.</span> <span class="toc-text">OPTIONS</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#trace"><span class="toc-number">3.8.</span> <span class="toc-text">TRACE</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#connect"><span class="toc-number">3.9.</span> <span class="toc-text">CONNECT</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#http%E7%8A%B6%E6%80%81%E7%A0%81"><span class="toc-number">4.</span> <span class="toc-text">HTTP状态码</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#url"><span class="toc-number">5.</span> <span class="toc-text">URL</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#http%E6%B6%88%E6%81%AF%E7%BB%93%E6%9E%84"><span class="toc-number">6.</span> <span class="toc-text">HTTP消息结构</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#http%E8%AF%B7%E6%B1%82%E6%A0%BC%E5%BC%8F"><span class="toc-number">6.1.</span> <span class="toc-text">HTTP请求格式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#http%E5%93%8D%E5%BA%94%E6%A0%BC%E5%BC%8F"><span class="toc-number">6.2.</span> <span class="toc-text">HTTP响应格式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#http-content-type"><span class="toc-number">6.3.</span> <span class="toc-text">HTTP content-type</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#mime-%E7%B1%BB%E5%9E%8B"><span class="toc-number">6.4.</span> <span class="toc-text">MIME 类型</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#https"><span class="toc-number">7.</span> <span class="toc-text">HTTPS</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#http2%E4%B8%80%E4%BA%9B%E5%80%BC%E5%BE%97%E6%B3%A8%E6%84%8F%E7%9A%84%E7%89%B9%E7%82%B9"><span class="toc-number">8.</span> <span class="toc-text">HTTP2一些值得注意的特点</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%88%86%E5%B8%A7"><span class="toc-number">8.1.</span> <span class="toc-text">二进制分帧</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%9A%E8%B7%AF%E5%A4%8D%E7%94%A8"><span class="toc-number">8.2.</span> <span class="toc-text">多路复用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%B4%E9%83%A8%E5%8E%8B%E7%BC%A9"><span class="toc-number">8.3.</span> <span class="toc-text">头部压缩</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9C%8D%E5%8A%A1%E5%99%A8%E6%8E%A8%E9%80%81"><span class="toc-number">8.4.</span> <span class="toc-text">服务器推送</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%BB%98%E8%AE%A4%E9%95%BF%E8%BF%9E%E6%8E%A5"><span class="toc-number">8.5.</span> <span class="toc-text">默认长连接</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BF%85%E9%A1%BB%E4%BD%BF%E7%94%A8-https"><span class="toc-number">8.6.</span> <span class="toc-text">必须使用 HTTPS</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%BC%E5%AE%B9%E6%80%A7"><span class="toc-number">8.7.</span> <span class="toc-text">兼容性</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/16607.html" title="LangChain4j part9—MCP、可观测性、护栏机制"><img src="/images/posts/cover_wish.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="LangChain4j part9—MCP、可观测性、护栏机制"/></a><div class="content"><a class="title" href="/posts/16607.html" title="LangChain4j part9—MCP、可观测性、护栏机制">LangChain4j part9—MCP、可观测性、护栏机制</a><time datetime="2026-08-05T09:30:52.000Z" title="发表于 2026-08-05 17:30:52">2026-08-05</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/35721.html" title="LangChain4j part8—ToolCalling 和 FunctionCalling"><img src="/images/posts/cover_java24.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="LangChain4j part8—ToolCalling 和 FunctionCalling"/></a><div class="content"><a class="title" href="/posts/35721.html" title="LangChain4j part8—ToolCalling 和 FunctionCalling">LangChain4j part8—ToolCalling 和 FunctionCalling</a><time datetime="2026-07-29T09:59:48.000Z" title="发表于 2026-07-29 17:59:48">2026-07-29</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/28448.html" title="以一个真实的项目架构窥探实用性领域驱动设计的核心内容"><img src="/images/posts/cover_dubbo2.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="以一个真实的项目架构窥探实用性领域驱动设计的核心内容"/></a><div class="content"><a class="title" href="/posts/28448.html" title="以一个真实的项目架构窥探实用性领域驱动设计的核心内容">以一个真实的项目架构窥探实用性领域驱动设计的核心内容</a><time datetime="2026-07-07T03:53:38.000Z" title="发表于 2026-07-07 11:53:38">2026-07-07</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/63551.html" title="LangChain4j part7—RAG和向量嵌入的使用"><img src="/images/posts/cover_langchain4.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="LangChain4j part7—RAG和向量嵌入的使用"/></a><div class="content"><a class="title" href="/posts/63551.html" title="LangChain4j part7—RAG和向量嵌入的使用">LangChain4j part7—RAG和向量嵌入的使用</a><time datetime="2026-07-02T00:50:52.000Z" title="发表于 2026-07-02 08:50:52">2026-07-02</time></div></div></div></div></div></main><div class="fps-display"><span id="fps">FPS: 60</span></div><footer id="footer" style="background-image: url(/images/posts/cover_security4.jpg);"><div id="footer-wrap"><div class="copyright">&copy;2024 - 2026 By ErgouTree</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">忘れたくない思い、ありますか？ <br>,<span id="realtime_duration" style="font-family: monospace;"></span>,<br><a href="https://icp.gov.moe/?keyword=20257009" target="_blank">萌ICP备20257009号</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><a class="icon-V hidden" onclick="switchNightMode()" title="日间和夜间模式切换"><svg width="25" height="25" viewBox="0 0 1024 1024"><use id="modeicon" xlink:href="#icon-moon"></use></svg></a><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="chat-btn" type="button" title="聊天" style="display:none"><i class="fas fa-comment"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><div class="js-pjax"><script>(() => {
+<h2 id="http3基于-quic-的-http">HTTP/3：基于 QUIC 的 HTTP</h2>
+<p>前面介绍了 HTTP/2
+的二进制分帧与多路复用。那么，既然多个请求已经可以共用一个连接，HTTP/3
+还要解决什么问题？</p>
+<p>关键在于：HTTP/2 把多个流放进同一个 TCP 字节流，但 TCP
+不知道哪些字节属于哪个 HTTP
+流。只要前面出现缺口，后续已经到达的字节仍需要等待。HTTP/3 因此采用
+QUIC，让传输层本身理解多个独立的流。</p>
+<p><strong>HTTP/3 是 HTTP 语义到 QUIC 的映射。</strong>
+方法、状态码、资源标识和内容协商等语义继续沿用，变化主要发生在连接建立、消息编码和底层传输。HTTP/3
+的正式规范为 2022 年发布的 RFC 9114。<a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc9114.html#section-1">RFC
+9114，§1—§2</a></p>
+<h3 id="http3quic-与-udp-的关系">HTTP/3、QUIC 与 UDP 的关系</h3>
+<p>先区分三个概念：</p>
+<table>
+<colgroup>
+<col style="width: 7%">
+<col style="width: 28%">
+<col style="width: 64%">
+</colgroup>
+<thead>
+<tr>
+<th>名称</th>
+<th>所处职责</th>
+<th>主要作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>HTTP/3</td>
+<td>应用层协议</td>
+<td>将 HTTP 消息编码为帧，并映射到 QUIC 流</td>
+</tr>
+<tr>
+<td>QUIC</td>
+<td>安全的多路复用传输协议</td>
+<td>提供可靠流、流量控制、丢包恢复、拥塞控制及连接管理</td>
+</tr>
+<tr>
+<td>UDP</td>
+<td>底层数据报传输</td>
+<td>承载 QUIC 数据包，本身不提供可靠、有序交付</td>
+</tr>
+</tbody>
+</table>
+<p>所以，“HTTP/3 使用 UDP”不能理解为“HTTP 不再保证可靠传输”。对于普通
+HTTP 请求和响应，可靠性与每条流内部的有序交付由 QUIC 提供。</p>
+<p>QUIC 的标准传输机制主要见 RFC 9000，安全机制见 RFC
+9001，丢包检测与拥塞控制见 RFC
+9002。本文围绕这些规范所定义的机制解释，不把早期 Google QUIC 与 IETF
+QUIC 混为一谈；HTTP/3 的版本号也不是 QUIC 的版本号。</p>
+<figure>
+<img src="HTTP协议详解/http3-01-protocol-stack.png" alt="HTTP/2 与 HTTP/3 的协议分层对比">
+<figcaption aria-hidden="true">HTTP/2 与 HTTP/3
+的协议分层对比</figcaption>
+</figure>
+<p><em>图 1：本文绘制的协议分层示意。左侧展示常见的 HTTP/2 over TLS over
+TCP；右侧将 TLS 握手与密钥派生画在 QUIC 内部，表示二者协作，而不是独立的
+TLS 记录层叠放在 UDP 上。</em></p>
+<p>QUIC 使用 TLS 1.3 握手完成身份认证和密钥协商，利用派生密钥保护 QUIC
+数据包；它不采用“把 TLS 应用数据记录原样传进 QUIC”的方式。<a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc9001.html#section-3">RFC
+9001，§3</a></p>
+<p>还需要区分不同密钥阶段：QUIC Initial
+包的保护密钥可以由公开信息推导，不能把它当成保密信道；后续握手与应用数据使用相应阶段的密钥保护。网络观察者也仍能看到部分网络和传输元数据。因此，“HTTP/3
+使用加密”不等于握手开始后所有信息都不可观察。<a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc9001.html#section-5.2">RFC
+9001，§5.2</a></p>
+<p>实际访问时，URL 仍然可以是
+<code>https://api.example.com/orders/123</code>，不需要变成
+<code>http3://...</code>。同一个 HTTPS 服务可以同时提供
+HTTP/1.1、HTTP/2、HTTP/3。</p>
+<h3 id="quic-怎样提供可靠传输">QUIC 怎样提供可靠传输</h3>
+<p>QUIC
+的<strong>流（Stream）</strong>是有序字节序列，可以是单向或双向。一条连接能够承载多个流，而每条流分别维护自己的数据偏移与交付顺序。</p>
+<p>用一个简化例子说明：</p>
+<ol type="1">
+<li>发送方把流 A 的一段字节放入 QUIC <code>STREAM</code> 帧，携带流
+ID、偏移等信息。</li>
+<li>一个或多个 QUIC 帧被装入 QUIC 数据包，再由 UDP 数据报承载。</li>
+<li>接收方按流 ID 分配数据，按偏移重组同一流的字节，并通过 QUIC ACK
+确认数据包的接收情况。</li>
+<li>发送方根据确认、计时器和丢包检测机制判断哪些信息需要重新发送。</li>
+</ol>
+<p>这里需要区分<strong>包号（Packet
+Number）</strong>与<strong>流偏移（Stream
+Offset）</strong>：包号在对应的包号空间内标识某次发送的包，偏移标识某条流中的字节位置。丢失的流数据可以被重新装入使用新包号的数据包，而不是原封不动地用旧包号“重发同一个包”。<a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc9000.html#section-13">RFC
+9000，§12.3、§13</a></p>
+<p>QUIC 还会进行拥塞控制和发送节奏控制，并不是因为使用 UDP
+就可以无限发送。可靠性、网络公平性和性能优化，仍然需要传输协议的机制来实现。<a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc9002.html">RFC 9002</a></p>
+<h3 id="多路复用与队头阻塞">多路复用与队头阻塞</h3>
+<h4 id="http2-为什么仍然会被-tcp-丢包阻塞">HTTP/2 为什么仍然会被 TCP
+丢包阻塞</h4>
+<p>假设一个 TCP 连接承载两个 HTTP/2 流：流 A 返回大图片，流 B
+返回小文件。它们的帧在发送时交错进入同一 TCP 字节流。</p>
+<p>如果携带流 A 部分数据的 TCP 段丢失，后续携带流 B
+数据的段即使已经到达，通常也不能越过缺失的字节被交给上层协议。TCP
+提供的是一条有序字节流，它不会按 HTTP/2 流分别交付。</p>
+<p>HTTP/2 解决了 HTTP/1.1
+同一连接中响应必须按请求顺序返回的限制，但没有消除 TCP
+层面的队头阻塞。</p>
+<h4 id="quic-把交付顺序限定在每条流内部">QUIC
+把交付顺序限定在每条流内部</h4>
+<p>对于 HTTP/3，若丢失的数据只属于流 A，而流 B
+所需的数据已经到达、相关依赖也满足，则流 B 可以继续交付，不必等待 A
+补齐缺口。</p>
+<figure>
+<img src="HTTP协议详解/http3-02-head-of-line.png" alt="TCP 全局字节顺序与 QUIC 独立流交付的对比">
+<figcaption aria-hidden="true">TCP 全局字节顺序与 QUIC
+独立流交付的对比</figcaption>
+</figure>
+<p><em>图 2：本文绘制的丢包交付示意。A1、A2、A3 表示流 A
+的连续数据片段，B1、B2 表示流 B
+的片段。为突出顺序依赖，图中假设丢失包只携带
+A2，且不存在额外的压缩或业务依赖。</em></p>
+<p>但这里不能写成“HTTP/3 完全没有队头阻塞”：</p>
+<ul>
+<li><strong>同一流内部仍然有序。</strong> A2 未到达时，A3
+不能越过它按有序流交付。</li>
+<li><strong>一个丢失包可以包含多个流的数据。</strong>
+此时这些流都可能受到影响，流与包不是一一对应关系。</li>
+<li><strong>流共享网络路径和连接资源。</strong>
+拥塞控制、连接级流量控制及发送调度，仍可能影响多个请求。</li>
+<li><strong>上层依赖仍然存在。</strong> QPACK
+动态表、应用处理顺序或数据库锁，都可能形成等待。</li>
+</ul>
+<p>准确的说法是：<strong>QUIC 避免了 TCP
+单一有序字节流造成的跨流交付阻塞，但不承诺所有请求在任何条件下都完全互不影响。</strong><a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc9000.html#section-2">RFC
+9000，§2、§4</a>、<a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc9114.html#section-1.1">RFC
+9114，§1.1</a></p>
+<h3 id="连接建立tls-1.3-与-0-rtt">连接建立、TLS 1.3 与 0-RTT</h3>
+<h4 id="首次连接通常是-1-rtt">首次连接通常是 1-RTT</h4>
+<p>RTT 是 <strong>Round-Trip
+Time</strong>，表示消息往返一次所需的时间。QUIC 将传输参数协商与 TLS
+握手结合，在没有额外协商、丢包或地址验证阻碍的常见完整握手中，客户端收到服务端首轮握手消息后，就可以发送受
+1-RTT 密钥保护的 HTTP 请求。</p>
+<p>这减少了在 TCP 建连之后再单独执行 TLS 握手所需的串行等待。但“1-RTT
+建连”不是“页面一定在一个 RTT
+内加载完成”：DNS、端点发现、证书处理、服务端计算以及响应传输仍需时间。<a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc9001.html#section-2.1">RFC
+9001，§2.1</a></p>
+<figure>
+<img src="HTTP协议详解/http3-03-handshake.png" alt="QUIC 完整握手与恢复连接时的 0-RTT 请求">
+<figcaption aria-hidden="true">QUIC 完整握手与恢复连接时的 0-RTT
+请求</figcaption>
+</figure>
+<p><em>图
+3：本文绘制的简化时序。左侧客户端等到服务端握手消息返回后发送请求；右侧利用先前会话信息提前发送
+0-RTT 请求。图中省略 ACK、HTTP/3
+控制流及密钥阶段细节，箭头不是数据包数量或实际时延的精确比例。</em></p>
+<p>服务器还需要防止源地址伪造造成的放大攻击。在客户端地址尚未验证时，服务器发送的字节总量不得超过从该地址接收字节总量的三倍；服务器也可以使用
+Retry
+要求客户端证明能够接收数据。Retry、较大的证书链、丢包等情况可能增加等待，不能假设每次握手都严格具有相同开销。<a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc9000.html#section-8.1">RFC
+9000，§8.1</a></p>
+<h4 id="rtt-需要已有会话信息">0-RTT 需要已有会话信息</h4>
+<p>在后续连接中，如果客户端拥有可用于恢复的会话信息，服务端允许早期数据，并且相关参数满足要求，客户端可以在发送
+ClientHello 时一并发送 HTTP 请求数据，无需先等待本次服务端握手响应。</p>
+<p>这里的“零往返”是指<strong>发送早期应用数据前不增加一次握手等待</strong>，不表示没有握手、没有加密，也不表示响应瞬间返回。首次访问没有相应恢复信息时，不能直接依靠
+0-RTT；服务端还可以拒绝早期数据，客户端随后按协议重新发送。<a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc9001.html#section-4.6">RFC
+9001，§4.6</a></p>
+<h4 id="早期数据存在重放风险">早期数据存在重放风险</h4>
+<p>0-RTT
+数据可能被攻击者重放。因此，不能只因为请求使用加密连接，就把扣款、下单或不可重复的操作直接放入早期数据。</p>
+<p>请求方法是否安全、具体资源是否允许重放、业务幂等机制和服务端防重放能力，都需要纳入判断。“HTTP
+方法幂等”也不能单独代替整个业务的重放风险评估。</p>
+<p>服务端认为某个请求不适合在早期数据中执行时，可以返回：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">425 Too Early</span><br></pre></td></tr></table></figure>
+<p>这是 HTTP
+状态码，表示服务端不愿承担该请求可能被重放的风险；客户端重试时应在握手完成后发送，而不是再次放进早期数据。<a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc8470.html#section-5.2">RFC
+8470，§3—§5</a></p>
+<p>这与“服务端繁忙所以稍后重试”不同，也不等同于
+<code>429 Too Many Requests</code>。</p>
+<h3 id="http3-怎样组织请求与响应">HTTP/3 怎样组织请求与响应</h3>
+<h4 id="一个普通请求对应一条客户端发起的双向流">一个普通请求对应一条客户端发起的双向流</h4>
+<p>对于普通请求，客户端在一条双向 QUIC
+流的发送方向发送请求，服务器在同一条流的反方向返回响应。多个请求使用不同的请求流并发交互。</p>
+<p>QUIC 流 ID 的编码与 HTTP/2 不同。HTTP/3 的客户端双向请求流 ID 可以是
+<code>0</code>、<code>4</code>、<code>8</code>……，不能直接套用 HTTP/2
+的客户端奇数流 ID 规则。<a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc9114.html#section-6.1">RFC
+9114，§6.1</a></p>
+<p>请求流之外，还有控制流及按需建立的 QPACK
+编码器、解码器流等单向流，分别承担连接设置和压缩状态同步等职责。每个端点必须建立一条控制流，并在其首个帧发送
+SETTINGS；这类关键流不能像普通请求流一样随意关闭。不能认为 HTTP/3
+连接里的每条流都是一个业务请求。<a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc9114.html#section-6.2.1">RFC
+9114，§6.2.1</a></p>
+<h4 id="http3-帧与-quic-帧不是同一层">HTTP/3 帧与 QUIC 帧不是同一层</h4>
+<p>HTTP/3 仍使用 <code>HEADERS</code>、<code>DATA</code>
+等帧组织消息。简单请求或最终响应的结构可以概括为：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">HEADERS → DATA（可有多个，也可没有）→ 尾部 HEADERS（可选）</span><br></pre></td></tr></table></figure>
+<p>其通用帧结构包含类型、长度和对应负载；这些字节进入 QUIC 流之后，由
+QUIC <code>STREAM</code> 帧传输，再装入 QUIC 数据包。</p>
+<p>也就是说：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">HTTP 消息</span><br><span class="line">  → HTTP/3 HEADERS / DATA 等帧</span><br><span class="line">  → QUIC 流中的字节</span><br><span class="line">  → QUIC STREAM 等传输帧</span><br><span class="line">  → QUIC 数据包</span><br><span class="line">  → UDP 数据报</span><br></pre></td></tr></table></figure>
+<p>这里是逻辑上的承载关系，不要求帧、包与数据报一一对应。一个 HTTP/3
+帧可以跨越多个 QUIC 数据包；一个 QUIC 数据包也可以携带多个传输帧。<a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc9114.html#section-4.1">RFC
+9114，§4.1、§7.1</a></p>
+<p>与 HTTP/2 的固定帧头不同，HTTP/3 帧使用 QUIC
+可变长度整数编码类型和长度，而且不需要在每个 HTTP/3 帧头里再携带流
+ID，因为所在 QUIC 流已经提供这项上下文。</p>
+<h4 id="伪头字段表达-http-控制信息">伪头字段表达 HTTP 控制信息</h4>
+<p>下面展示一个请求解码后的字段集合，<strong>只是逻辑示意，不是可以直接发送的文本报文</strong>：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">:method: GET</span><br><span class="line">:scheme: https</span><br><span class="line">:authority: api.example.com</span><br><span class="line">:path: /orders/123</span><br><span class="line">accept: application/json</span><br></pre></td></tr></table></figure>
+<p>响应的状态则可以由 <code>:status: 200</code>
+表达。字段名在编码前必须转换为小写，头字段通过 QPACK 编码进入 HEADERS
+帧；HTTP/3 不存在 <code>GET /... HTTP/3</code>
+这样的线上文本请求行。</p>
+<p>HTTP/3 不使用 <code>Connection: keep-alive</code> 或 HTTP/1.1 的
+<code>Transfer-Encoding: chunked</code>。流的结束标记由 QUIC
+提供，但仍可发送 <code>content-length</code>
+表示内容长度；如果提供，其值必须与相应 DATA
+帧中的内容总长度一致，HEAD、304 等特殊响应还需按 HTTP 语义理解。<a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc9114.html#section-4.1.2">RFC
+9114，§4.1.2—§4.3</a></p>
+<h4 id="取消请求与关闭连接">取消请求与关闭连接</h4>
+<p>客户端不再需要某个响应时，可以利用 QUIC
+的流重置、停止发送等机制取消相应流上的交互，而不必关闭整个连接。正常结束一条请求流，同样不等于结束连接。</p>
+<p>连接准备停止接受新请求时，HTTP/3 使用 GOAWAY
+等机制协调关闭。不过，取消传输不保证业务操作已经回滚：POST
+可能已经被服务器执行，仍然需要前文所述的业务幂等及结果查询机制。<a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc9114.html#section-4.1.1">RFC
+9114，§4.1.1、§5.2</a></p>
+<p>HTTP/3 还定义了可选的服务器推送，采用推送 ID、PUSH_PROMISE
+和单向推送流等机制；它需要客户端允许，不等同于持续的业务消息推送，也不能把
+HTTP/2 推送能力原样套用。<a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc9114.html#section-4.6">RFC
+9114，§4.6</a></p>
+<h3 id="qpack为什么不直接沿用-hpack">QPACK：为什么不直接沿用 HPACK</h3>
+<p>HTTP/2 的 HPACK
+利用静态表和动态表压缩字段，依赖连接中确定的编码顺序。QUIC
+不保证不同流之间的到达顺序，如果直接沿用这种假设，某个流的字段就可能依赖另一个流上尚未到达的动态表更新。</p>
+<p>HTTP/3 因此采用
+<strong>QPACK</strong>。它仍使用静态表、动态表和字面量表示等机制，但把动态表更新与字段段编码分开，通过专门的流和确认机制管理依赖。<a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc9204.html#section-2">RFC
+9204，§1—§2</a></p>
+<figure>
+<img src="HTTP协议详解/http3-04-qpack.png" alt="QPACK 动态表依赖与无依赖字段的解码对比">
+<figcaption aria-hidden="true">QPACK
+动态表依赖与无依赖字段的解码对比</figcaption>
+</figure>
+<p><em>图 4：本文绘制的 QPACK
+解码示意，假设端点已允许动态表且配置允许这种潜在阻塞。字段段 A
+引用了尚未到达的动态表条目，因此等待；字段段 B
+只使用静态表或字面量，没有这项动态表依赖。图中的 A、B
+是示例名称，不表示协议定义的特殊流。</em></p>
+<p>QPACK
+并不保证“绝不阻塞”。如果字段段引用尚未接收到的动态表条目，就需要等待对应更新。解码器通过
+<code>SETTINGS_QPACK_BLOCKED_STREAMS</code>
+限制允许阻塞的流数；编码器也可以选择只引用已确认的动态表条目，或者使用静态表、字面量，以降低这类等待风险。</p>
+<p>因此，QPACK
+的设计提供的是<strong>压缩效率与阻塞风险之间的控制空间</strong>。不引用尚未到达的动态条目可以避免该依赖，但可能增大字段数据量；字段更大也会消耗网络和流量控制额度。<a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc9204.html#section-2.1.2">RFC
+9204，§2.1.2、§2.2.1</a></p>
+<h3 id="流量控制拥塞控制与优先级">流量控制、拥塞控制与优先级</h3>
+<p>这三个概念解决的问题不同：</p>
+<table>
+<colgroup>
+<col style="width: 30%">
+<col style="width: 22%">
+<col style="width: 46%">
+</colgroup>
+<thead>
+<tr>
+<th>机制</th>
+<th>主要保护或协调的对象</th>
+<th>举例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>流量控制（Flow Control）</td>
+<td>接收方的缓冲与处理能力</td>
+<td>接收方限制某条流及整个连接可新增发送的数据量</td>
+</tr>
+<tr>
+<td>拥塞控制（Congestion Control）</td>
+<td>网络路径的承载能力</td>
+<td>发送方依据丢包、确认及 RTT 调整发送窗口和节奏</td>
+</tr>
+<tr>
+<td>优先级（Priority）</td>
+<td>多个请求之间的资源调度</td>
+<td>希望关键 CSS 比非关键图片更早得到发送机会</td>
+</tr>
+</tbody>
+</table>
+<p>QUIC
+既有流级，也有连接级流量控制。某条流耗尽自己的额度，不必直接阻止其他仍有额度的流；但连接总额度不足时，其他流也可能无法继续发送新数据。</p>
+<p>拥塞控制则关注网络路径，即使每条流独立重组，也仍共享可用网络容量。增加更多流，不会凭空增加带宽。<a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc9000.html#section-4">RFC
+9000，§4</a>、<a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc9002.html#section-7">RFC
+9002，§7</a></p>
+<p>HTTP/3 也不能直接套用 HTTP/2 的依赖树优先级方案。RFC 9218
+定义了可扩展优先级机制，例如表示紧急程度的 <code>urgency</code>
+和可增量处理的 <code>incremental</code>
+参数；这些属于调度提示，不保证服务端严格按某种顺序发送，也不能覆盖应用自身的处理依赖。<a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc9218.html">RFC 9218</a></p>
+<h3 id="连接迁移与-connection-id">连接迁移与 Connection ID</h3>
+<p>传统 TCP 连接通常由源 IP、源端口、目标 IP、目标端口标识。如果设备从
+Wi-Fi 切换到移动网络，客户端地址发生变化，已有 TCP
+连接通常无法按原来的标识继续工作。</p>
+<p>QUIC 使用 <strong>Connection
+ID（连接标识）</strong>辅助识别连接，把连接身份与当前
+IP、端口解耦。在协议、端点及网络允许时，客户端可以切换路径，并通过路径验证继续使用原连接。</p>
+<p>例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">同一条 QUIC 连接</span><br><span class="line">  旧路径：客户端 Wi-Fi 地址 → 服务端</span><br><span class="line">  新路径：客户端移动网络地址 → 服务端</span><br><span class="line">  验证新路径后继续通信，而不一定重新建立完整连接</span><br></pre></td></tr></table></figure>
+<p>Connection ID
+不是“永远不变的一串编号”。端点可以为同一连接提供并轮换多个连接
+ID，以满足路由和隐私需求。新路径也需要验证，例如使用
+<code>PATH_CHALLENGE</code> 和
+<code>PATH_RESPONSE</code>，不能只看到一个连接 ID 就无条件信任来源。<a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc9000.html#section-9">RFC
+9000，§5.1、§8.2、§9</a></p>
+<p>还要明确其边界：端点可以禁用主动迁移，零长度连接 ID
+等配置也会限制能力；迁移后拥塞与 RTT
+状态需要按新路径情况调整。<strong>连接迁移不等于任意断网都能无损恢复，也不等于
+QUIC 默认同时利用多条路径聚合带宽。</strong></p>
+<h3 id="客户端如何发现-http3">客户端如何发现 HTTP/3</h3>
+<p>支持 HTTP/3 不会改变资源的 HTTPS URL，但客户端需要知道哪里可以建立
+QUIC 连接。</p>
+<h4 id="通过-alt-svc-宣告替代服务">通过 Alt-Svc 宣告替代服务</h4>
+<p>服务器可以在已有的 HTTP/1.1 或 HTTP/2 响应中提供：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="attribute">Alt-Svc</span><span class="punctuation">: </span>h3=&quot;:443&quot;; ma=86400</span><br></pre></td></tr></table></figure>
+<p>这里，<code>h3</code> 表示 HTTP/3，<code>:443</code> 表示同一主机的
+UDP 443 端点，<code>ma</code> 表示替代服务信息的缓存有效期。本例的 86400
+秒是部署选择，不是 HTTP/3 固定要求。</p>
+<p>Alt-Svc 的有效期也不是响应资源的缓存时间，更不等于一次 HTTP
+重定向。客户端仍然访问原来的源站身份，替代服务必须通过相应的权威性和证书验证。<a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc7838.html#section-3">RFC
+7838，§2—§3</a>、<a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc9114.html#section-3.1.1">RFC
+9114，§3.1.1</a></p>
+<h4 id="通过-dns-或已有配置发现">通过 DNS 或已有配置发现</h4>
+<p>支持相应机制的客户端还可以读取 DNS HTTPS 资源记录中的服务参数，例如
+<code>alpn</code>
+宣告的应用协议。已有配置或缓存也可以帮助确定端点，因此不应写成“必须先访问一次
+HTTP/2 才能使用 HTTP/3”。<a target="_blank" rel="noopener" href="https://datatracker.ietf.org/doc/html/rfc9460#section-9">RFC
+9460，§7.1、§9</a></p>
+<p>建立 QUIC 连接时，TLS 握手中的 ALPN 用于协商应用协议。<code>h3</code>
+是 HTTP/3 的应用协议标识；QUIC 版本协商与 ALPN
+各有职责，不能把它们看成同一套版本选择机制。</p>
+<h4 id="udp-不可用时的回退">UDP 不可用时的回退</h4>
+<p>部分网络会阻断或限制 UDP。客户端若无法建立 HTTP/3
+连接，应具备尝试基于 TCP 的 HTTP/2 或 HTTP/1.1
+的能力；是否并行尝试、何时回退，取决于客户端实现。</p>
+<p>这不是“把同一个 UDP 连接切换成 TCP”，而是建立另一条连接。UDP
+失败也不代表源站业务一定不可用。<a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc9114.html#section-3.2">RFC
+9114，§3.2</a></p>
+<h3 id="部署与调试时需要注意什么">部署与调试时需要注意什么</h3>
+<p>如果一个服务使用 <code>https://example.com</code>，常见部署会同时开放
+TCP 443 与 UDP 443。两者属于不同的传输协议端点；只配置 TCP 443 并不能让
+QUIC 请求到达服务。</p>
+<p>部署时需要检查 QUIC 终止节点、UDP 防火墙规则、负载均衡和连接 ID
+路由、证书、协议宣告以及回退行为。HTTP/3 可以只部署在客户端到 CDN
+或网关这一段，网关到源站继续使用 HTTP/2 或
+HTTP/1.1，并不要求所有链路同时升级。</p>
+<p>curl 的 HTTP/3 支持取决于它的构建选项，可以先查看：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl --version</span><br></pre></td></tr></table></figure>
+<p>确认功能列表含有 <code>HTTP3</code> 后，再对支持 HTTP/3
+的测试端点使用：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">curl --http3-only -I https://example.com/</span><br><span class="line">curl --http3 -I https://example.com/</span><br></pre></td></tr></table></figure>
+<p>这里的域名只是示例，应替换为实际支持 HTTP/3
+的测试服务。<code>--http3-only</code> 用于仅尝试
+HTTP/3；<code>--http3</code> 允许按 curl 的策略尝试其他 HTTP
+版本。某次请求成功，不代表它最终使用了 HTTP/3，仍需查看实际协商结果。<a target="_blank" rel="noopener" href="https://curl.se/docs/http3.html">curl 官方 HTTP/3 文档</a></p>
+<p>浏览器开发者工具中的协议列可以帮助观察实际使用的 HTTP
+版本。性能分析还应结合握手耗时、丢包、RTT、回退次数和服务端处理时间；只看某个头字段或看到
+UDP 流量，并不足以证明整个请求路径及性能收益。</p>
+<h3 id="http3-会比-http2-更快吗">HTTP/3 会比 HTTP/2 更快吗</h3>
+<p>HTTP/3 为高
+RTT、存在丢包、需要并发传输或发生网络切换的场景提供了改进机制，但它不承诺所有环境都更快。</p>
+<p>具体效果还会受到 UDP 可达性、拥塞控制实现、端点 CPU
+开销、系统网络栈优化、连接复用率、资源数量和应用处理时间影响。例如，已经建立且无丢包的
+HTTP/2
+连接可能具有很好的性能；若主要瓶颈在数据库，改变传输协议也不会消除数据库等待。</p>
+<p>因此，严肃的性能结论需要说明网络、客户端、服务端和负载条件，并分别比较冷连接、复用连接及有丢包场景。这些是根据前述机制作出的工程分析，不能替代实际测量。</p>
+<table>
+<colgroup>
+<col style="width: 14%">
+<col style="width: 25%">
+<col style="width: 21%">
+<col style="width: 38%">
+</colgroup>
+<thead>
+<tr>
+<th>对比项</th>
+<th>HTTP/1.1</th>
+<th>HTTP/2</th>
+<th>HTTP/3</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>消息组织</td>
+<td>文本起始行、头字段和消息体</td>
+<td>二进制帧</td>
+<td>HTTP/3 二进制帧映射到 QUIC 流</td>
+</tr>
+<tr>
+<td>常见底层传输</td>
+<td>TCP</td>
+<td>TCP</td>
+<td>QUIC over UDP</td>
+</tr>
+<tr>
+<td>同一连接内的交互</td>
+<td>流水线响应需要按请求顺序返回</td>
+<td>多个 HTTP/2 流</td>
+<td>多个 QUIC 请求流</td>
+</tr>
+<tr>
+<td>丢包后的交付顺序</td>
+<td>同一 TCP 字节流有序交付</td>
+<td>仍受同一 TCP 字节流影响</td>
+<td>各流内部有序；独立流不必等待别的流补齐字节</td>
+</tr>
+<tr>
+<td>字段压缩</td>
+<td>无 HTTP/2 式内建字段压缩</td>
+<td>HPACK</td>
+<td>QPACK</td>
+</tr>
+<tr>
+<td>安全机制</td>
+<td>HTTPS 使用 TLS</td>
+<td>常见部署为 TLS over TCP</td>
+<td>QUIC 集成 TLS 握手与包保护</td>
+</tr>
+<tr>
+<td>网络地址变化</td>
+<td>通常需要重建 TCP 连接</td>
+<td>通常需要重建 TCP 连接</td>
+<td>条件满足时可迁移已有连接</td>
+</tr>
+</tbody>
+</table>
+<p>最后还要把传输与业务分开：HTTP/3 不会改变 GET、POST
+的方法语义，也不会自动解决认证、缓存策略、业务幂等和数据库事务问题。前面讨论的
+HTTP 语义和后面的 RESTful API 设计原则仍然适用。</p>
+<h3 id="本节参考资料">本节参考资料</h3>
+<table>
+<colgroup>
+<col style="width: 12%">
+<col style="width: 55%">
+<col style="width: 32%">
+</colgroup>
+<thead>
+<tr>
+<th>类别</th>
+<th>资料</th>
+<th>主要内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>HTTP/3 标准</td>
+<td><a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc9114.html">RFC
+9114</a></td>
+<td>HTTP 语义映射、帧、流、端点发现</td>
+</tr>
+<tr>
+<td>QUIC 传输标准</td>
+<td><a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc9000.html">RFC
+9000</a></td>
+<td>可靠流、流量控制、连接 ID、路径验证</td>
+</tr>
+<tr>
+<td>QUIC 安全标准</td>
+<td><a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc9001.html">RFC
+9001</a></td>
+<td>TLS 集成、密钥阶段与早期数据</td>
+</tr>
+<tr>
+<td>QUIC 恢复标准</td>
+<td><a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc9002.html">RFC
+9002</a></td>
+<td>丢包检测、拥塞控制</td>
+</tr>
+<tr>
+<td>字段压缩标准</td>
+<td><a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc9204.html">RFC
+9204</a></td>
+<td>QPACK 与压缩依赖</td>
+</tr>
+<tr>
+<td>早期数据标准</td>
+<td><a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc8470.html">RFC
+8470</a></td>
+<td>重放风险及 425 状态码</td>
+</tr>
+<tr>
+<td>服务发现标准</td>
+<td><a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc7838.html">RFC
+7838</a>、<a target="_blank" rel="noopener" href="https://datatracker.ietf.org/doc/html/rfc9460">RFC
+9460</a></td>
+<td>Alt-Svc、DNS HTTPS 记录</td>
+</tr>
+<tr>
+<td>调度标准</td>
+<td><a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc9218.html">RFC
+9218</a></td>
+<td>HTTP 可扩展优先级</td>
+</tr>
+<tr>
+<td>官方工具文档</td>
+<td><a target="_blank" rel="noopener" href="https://curl.se/docs/http3.html">curl HTTP/3</a></td>
+<td>功能支持、测试及回退行为</td>
+</tr>
+</tbody>
+</table>
+<h2 id="restful-api">RESTful API</h2>
+<p><strong>RESTful API 是按照 REST 架构风格设计的接口。在 Web
+场景中，它通常通过 HTTP 交换资源的表示，并利用 HTTP
+方法、状态码和头字段表达交互语义。</strong></p>
+<p>前面介绍了 HTTP 请求方法、状态码、URL
+和消息结构。那么，实际开发接口时，应该怎样把这些机制组织起来，让客户端、服务器以及中间的代理能够一致地理解请求？这就是本文接着讨论
+RESTful API 的原因。</p>
+<h3 id="rest-与-http-的关系">REST 与 HTTP 的关系</h3>
+<p>REST 是 <strong>Representational State Transfer</strong>
+的缩写，通常译为“表述性状态转移”或“表现层状态转移”。Roy Fielding 在 2000
+年的博士论文中系统描述了这种架构风格。<a target="_blank" rel="noopener" href="https://ics.uci.edu/~fielding/pubs/dissertation/rest_arch_style.htm">Fielding
+论文，第 5 章</a></p>
+<p>理解这部分时，先区分三个层次：</p>
+<table>
+<colgroup>
+<col style="width: 16%">
+<col style="width: 42%">
+<col style="width: 41%">
+</colgroup>
+<thead>
+<tr>
+<th>层次</th>
+<th>解决的问题</th>
+<th>示例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>HTTP</td>
+<td>请求、响应及其语义如何表达</td>
+<td><code>GET</code>、<code>201</code>、<code>Content-Type</code></td>
+</tr>
+<tr>
+<td>REST</td>
+<td>分布式系统的组件应遵循哪些交互约束</td>
+<td>无状态、缓存、统一接口</td>
+</tr>
+<tr>
+<td>具体 API 契约</td>
+<td>某个业务接口有哪些资源、字段和规则</td>
+<td><code>/orders/123</code>、订单状态、金额格式</td>
+</tr>
+</tbody>
+</table>
+<p>所以，HTTP 为 Web API 提供了协议机制，REST 约束这些机制怎样组织，而
+API 契约补充业务含义。REST 本身不是一个通信协议，也没有规定必须使用
+JSON。</p>
+<p>例如，<code>POST /getUser</code> 可以是一个合法的 HTTP
+接口，但它主要表达“调用 getUser 这个操作”。<code>GET /users/123</code>
+则表达“读取用户 123 这个资源的表示”。二者体现了不同的接口组织方式。</p>
+<p>不过，仅凭一个 URL 的写法，还不能判断整个系统是否满足 REST
+的约束。</p>
+<h3 id="资源uri-与资源表示">资源、URI 与资源表示</h3>
+<p>REST
+中的<strong>资源（Resource）</strong>是接口对外暴露的概念。例如用户、订单、文章、订单集合，甚至一次导出任务，都可以被建模为资源。</p>
+<p><strong>资源标识符</strong>用来指向这个概念；<strong>资源表示（Representation）</strong>则是某个时刻对它的描述。客户端在请求和响应中交换表示，而不是直接访问服务器的内部对象。</p>
+<p>例如：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">GET</span> <span class="string">/orders/123</span> <span class="meta">HTTP/1.1</span></span><br><span class="line"><span class="attribute">Host</span><span class="punctuation">: </span>api.example.com</span><br><span class="line"><span class="attribute">Accept</span><span class="punctuation">: </span>application/json</span><br></pre></td></tr></table></figure>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">HTTP/1.1</span> <span class="number">200</span> OK</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>application/json</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>42</span><br><span class="line"></span><br><span class="line"><span class="language-json"><span class="punctuation">&#123;</span><span class="attr">&quot;id&quot;</span><span class="punctuation">:</span><span class="number">123</span><span class="punctuation">,</span><span class="attr">&quot;status&quot;</span><span class="punctuation">:</span><span class="string">&quot;pending&quot;</span><span class="punctuation">,</span><span class="attr">&quot;amount&quot;</span><span class="punctuation">:</span><span class="number">199</span><span class="punctuation">&#125;</span></span></span><br></pre></td></tr></table></figure>
+<p>这里，订单 123 是资源，<code>/orders/123</code>
+是资源标识的一部分，响应中的 JSON 是它的一种表示。金额 <code>199</code>
+的单位必须由接口契约明确，例如本例约定为人民币分，不能让客户端自行猜测。</p>
+<p>订单状态改变之后，URI 可以保持不变，表示中的 <code>status</code>
+则发生变化。同一资源也可以提供多种表示，例如 JSON 与 HTML。</p>
+<p>这还意味着：<strong>资源不必对应一张数据库表，返回的表示也不必等于数据库的一行记录。</strong>
+一个订单表示可以聚合订单项、配送进度和可执行操作；底层数据怎样存储，应由服务端实现决定。<a target="_blank" rel="noopener" href="https://google.aip.dev/121">Google AIP-121：资源导向设计</a></p>
+<h4 id="content-type-与-accept">Content-Type 与 Accept</h4>
+<p>这两个头字段容易混淆：</p>
+<ul>
+<li><code>Content-Type</code>
+说明<strong>这条消息中发送的内容是什么格式</strong>。</li>
+<li><code>Accept</code>
+说明<strong>客户端希望收到哪些响应格式</strong>。</li>
+</ul>
+<p>例如，客户端发送 JSON，同时希望收到 JSON：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">POST</span> <span class="string">/orders</span> <span class="meta">HTTP/1.1</span></span><br><span class="line"><span class="attribute">Host</span><span class="punctuation">: </span>api.example.com</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>application/json</span><br><span class="line"><span class="attribute">Accept</span><span class="punctuation">: </span>application/json</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>21</span><br><span class="line"></span><br><span class="line"><span class="language-json"><span class="punctuation">&#123;</span><span class="attr">&quot;productId&quot;</span><span class="punctuation">:</span><span class="string">&quot;p-100&quot;</span><span class="punctuation">&#125;</span></span></span><br></pre></td></tr></table></figure>
+<p>服务器不支持请求内容的媒体类型时，可以返回
+<code>415 Unsupported Media Type</code>。如果按内容协商无法提供客户端可接受的响应格式，可以返回
+<code>406 Not Acceptable</code>；是否严格拒绝或采用默认表示，需要明确接口策略。<a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc9110.html#section-12">RFC
+9110，§12、§15.5</a></p>
+<h3 id="rest-的架构约束">REST 的架构约束</h3>
+<p>Fielding
+的论文列出了六类约束，其中按需代码是可选的。下面概括各自作用，详细定义以论文为准。<a target="_blank" rel="noopener" href="https://ics.uci.edu/~fielding/pubs/dissertation/rest_arch_style.htm#sec_5_1">Fielding
+论文，§5.1</a></p>
+<table>
+<colgroup>
+<col style="width: 34%">
+<col style="width: 65%">
+</colgroup>
+<thead>
+<tr>
+<th>约束</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>客户端—服务器（Client–Server）</td>
+<td>分离客户端交互职责与服务器的数据、业务职责</td>
+</tr>
+<tr>
+<td>无状态（Stateless）</td>
+<td>每次请求包含理解它所需的信息，不依赖服务端保存的客户端会话上下文</td>
+</tr>
+<tr>
+<td>缓存（Cache）</td>
+<td>响应应能被判断为可缓存或不可缓存，使等价请求可以按规则复用响应</td>
+</tr>
+<tr>
+<td>统一接口（Uniform Interface）</td>
+<td>资源标识、表示、消息语义以及状态转移采用一致的交互机制</td>
+</tr>
+<tr>
+<td>分层系统（Layered System）</td>
+<td>组件只面向直接交互的一层，允许引入代理、网关和缓存等中间层</td>
+</tr>
+<tr>
+<td>按需代码（Code-on-Demand，可选）</td>
+<td>服务端可以通过下发可执行代码扩展客户端能力</td>
+</tr>
+</tbody>
+</table>
+<p>例如，一次订单查询可能经过浏览器缓存、API
+网关、反向代理，最终到达订单服务。客户端只需要面对约定的接口，不必知道内部有多少服务。</p>
+<h4 id="无状态到底是什么意思">无状态到底是什么意思</h4>
+<p>假设客户端先发送“选中订单
+123”，之后再发送“取消当前订单”。如果第二个请求不携带订单标识，只能依赖服务器记住“这个客户端刚才选中了什么”，就存在客户端会话上下文依赖。</p>
+<p>更明确的设计是直接请求创建订单 123
+的取消申请，并在请求中携带认证信息及必要参数。服务器能够从这次请求和已有业务资源中理解操作。</p>
+<p>因此，需要区分：</p>
+<ul>
+<li><strong>资源状态</strong>：订单内容、库存、用户资料等，可以保存在服务器。</li>
+<li><strong>客户端会话上下文</strong>：客户端当前选中了什么、进行到哪一步等，不应成为解释下一条请求的隐含前提。</li>
+</ul>
+<p>HTTP 协议本身无状态，并不自动保证应用符合 REST
+的无状态约束。应用仍然可以通过 Cookie 和服务端 Session
+建立有状态会话。</p>
+<p>同样，换成 Token 或 JWT，也不能单凭认证方式就认定 API
+无状态。判断重点是请求是否仍依赖隐含的服务端会话上下文，而不是数据库是否存在、认证令牌叫什么名字。服务器维护账号、权限和业务数据，本身不等于保存客户端的交互会话。</p>
+<h3 id="统一接口与-hateoas">统一接口与 HATEOAS</h3>
+<p>统一接口不只是“统一返回 JSON”，也不只是“所有响应都有
+code、message、data”。它包含资源标识、通过表示操作资源、消息自描述，以及通过超媒体驱动应用状态转移这四方面。</p>
+<p><strong>HATEOAS（Hypermedia As The Engine Of Application
+State）</strong>强调：客户端根据响应中提供的链接和操作控制，发现下一步可执行的交互。Fielding
+本人在文章中专门强调了这个要求。<a target="_blank" rel="noopener" href="https://roy.gbiv.com/untangled/2008/rest-apis-must-be-hypertext-driven">Fielding：REST
+APIs must be hypertext-driven</a></p>
+<p>例如，订单表示可以包含当前允许的操作：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;id&quot;</span><span class="punctuation">:</span> <span class="number">123</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;status&quot;</span><span class="punctuation">:</span> <span class="string">&quot;pending&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;links&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;self&quot;</span><span class="punctuation">:</span> <span class="string">&quot;/orders/123&quot;</span></span><br><span class="line">  <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;actions&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;cancel&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">      <span class="attr">&quot;href&quot;</span><span class="punctuation">:</span> <span class="string">&quot;/orders/123/cancellations&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;method&quot;</span><span class="punctuation">:</span> <span class="string">&quot;POST&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;contentType&quot;</span><span class="punctuation">:</span> <span class="string">&quot;application/json&quot;</span></span><br><span class="line">    <span class="punctuation">&#125;</span></span><br><span class="line">  <span class="punctuation">&#125;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+<p>客户端理解 <code>cancel</code>
+控制之后，可以使用服务端提供的地址提交取消申请。如果订单已经发货，服务端可能不再提供该控制，而提供其他符合业务规则的操作。</p>
+<p>注意，上面的 <code>links</code>、<code>actions</code>
+是为了说明机制而自定义的结构，<strong>不是 JSON 或 HTTP
+自带的标准字段</strong>。实际设计需要约定媒体类型或表示规范，明确链接关系、操作含义和输入结构；客户端仍需预先理解这些语义。也不能认为只要在
+JSON 中添加几个 URL，就完整实现了 HATEOAS。</p>
+<p>很多工程中被称为“RESTful API”的接口，只实现了资源路径与 HTTP
+方法映射，仍依赖客户端硬编码业务流程。描述这类接口时，应说明实际采用了哪些
+REST 原则，不能把“JSON + HTTP + CRUD”直接等同于完整的 REST。</p>
+<h3 id="uri-如何围绕资源组织">URI 如何围绕资源组织</h3>
+<p>下面是常见的资源路径：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">/users                   用户集合</span><br><span class="line">/users/123               用户 123</span><br><span class="line">/orders                  订单集合</span><br><span class="line">/orders/123              订单 123</span><br><span class="line">/orders/123/items        订单 123 的订单项集合</span><br></pre></td></tr></table></figure>
+<p>使用名词、集合名称采用复数、保持一致的命名方式，是便于理解和维护的<strong>工程惯例</strong>，不是
+HTTP 协议规定的 URI 语法要求，也不是判断 REST 的充分条件。<a target="_blank" rel="noopener" href="https://learn.microsoft.com/en-us/azure/architecture/best-practices/api-design">微软：Web
+API 设计最佳实践</a></p>
+<p>设计时还应明确几个问题：</p>
+<ol type="1">
+<li><strong>资源地址应尽量稳定。</strong>
+避免把内部类名、数据库表名或框架实现暴露为接口契约。</li>
+<li><strong>嵌套表达真实关系。</strong> <code>/orders/123/items</code>
+表达订单与订单项关系；没有必要把所有关联层层拼进 URL。</li>
+<li><strong>筛选、排序通常使用查询参数。</strong> 例如
+<code>/orders?status=pending&amp;sort=-createdAt&amp;limit=20</code>。这些参数名和语法由
+API 定义，不是 REST 的统一标准。</li>
+<li><strong>查询字符串也参与资源标识。</strong>
+<code>/orders?status=pending</code>
+表达筛选后的结果，不能认为只有路径才影响资源和缓存。</li>
+<li><strong>敏感凭据不应放进 URL。</strong> URL
+可能进入浏览器历史、代理日志或监控系统。</li>
+</ol>
+<p>业务动作不一定能简单映射成字段修改。例如取消订单涉及库存、付款和业务审批，可以把“取消申请”建模为资源：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">POST /orders/123/cancellations</span><br></pre></td></tr></table></figure>
+<p>如果这个领域确实更适合显式操作，也可以设计操作型接口，并如实描述其交互方式。资源建模应服务于业务契约，不能为了让路径看起来符合某种形式而隐藏业务规则。</p>
+<h3 id="http-方法如何映射到资源操作">HTTP 方法如何映射到资源操作</h3>
+<p>下面以订单 API
+为例。这里是常见设计，并不意味着每个资源都必须支持所有方法。</p>
+<table>
+<colgroup>
+<col style="width: 20%">
+<col style="width: 42%">
+<col style="width: 36%">
+</colgroup>
+<thead>
+<tr>
+<th>请求</th>
+<th>示例语义</th>
+<th>常见成功响应</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GET /orders</code></td>
+<td>获取订单集合的表示</td>
+<td><code>200 OK</code></td>
+</tr>
+<tr>
+<td><code>GET /orders/123</code></td>
+<td>获取订单 123 的表示</td>
+<td><code>200 OK</code></td>
+</tr>
+<tr>
+<td><code>POST /orders</code></td>
+<td>提交创建订单请求，由服务端分配标识</td>
+<td><code>201 Created</code></td>
+</tr>
+<tr>
+<td><code>PUT /orders/123</code></td>
+<td>在该 URI 创建或替换客户端可管理的资源状态</td>
+<td>创建时 <code>201</code>；替换时 <code>200</code> 或
+<code>204</code></td>
+</tr>
+<tr>
+<td><code>PATCH /orders/123</code></td>
+<td>应用补丁文档描述的修改</td>
+<td><code>200</code> 或 <code>204</code></td>
+</tr>
+<tr>
+<td><code>DELETE /orders/123</code></td>
+<td>删除该 URI 与当前功能的关联</td>
+<td><code>200</code>、<code>204</code>；异步执行可为
+<code>202</code></td>
+</tr>
+</tbody>
+</table>
+<p>这张表的重点是<strong>方法语义</strong>。使用某个 HTTP
+方法，服务端实现就应遵守它的语义。例如，不能通过
+<code>GET /orders/123/delete</code>
+执行删除，因为浏览器预取、爬虫或其他自动化工具可能触发 GET。</p>
+<p>POST 的含义比“新增”更宽泛：它要求目标资源按自身语义处理提交内容。PUT
+的目标 URI 则由客户端指定。DELETE
+也不保证数据库记录被物理清除，归档、软删除等实现细节由业务定义。<a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc9110.html#section-9.3">RFC
+9110，§9.3</a></p>
+<h4 id="安全与幂等">安全与幂等</h4>
+<p><strong>安全（Safe）</strong>是指客户端请求的语义本质上是只读的，不要求改变资源状态；服务器记录访问日志等附带行为不使
+GET 变成不安全方法。这里的“安全”不是“具有加密或权限保护”。</p>
+<p><strong>幂等（Idempotent）</strong>是指多次相同请求对服务器产生的预期效果，与执行一次相同。它不要求响应状态码和响应体每次都一样。<a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc9110.html#section-9.2">RFC
+9110，§9.2</a></p>
+<p>例如，对同一订单连续发送 DELETE，第一次返回
+<code>204</code>，第二次返回
+<code>404</code>，仍可以满足幂等性：订单都处于已删除状态。GET
+两次之间订单可能被其他客户端更新，返回内容不同，也不破坏 GET
+的幂等语义。</p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>安全</th>
+<th>协议层是否保证幂等语义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GET、HEAD、OPTIONS、TRACE</td>
+<td>是</td>
+<td>是</td>
+</tr>
+<tr>
+<td>PUT、DELETE</td>
+<td>否</td>
+<td>是</td>
+</tr>
+<tr>
+<td>POST</td>
+<td>否</td>
+<td>否；具体操作可以另行提供幂等保证</td>
+</tr>
+<tr>
+<td>PATCH</td>
+<td>否</td>
+<td>否；取决于补丁语义及实现</td>
+</tr>
+</tbody>
+</table>
+<p>PATCH
+中，“把邮箱设为某值”可以实现幂等；“向列表末尾追加一个元素”重复执行却可能产生多个元素。PATCH
+也不是“资源不存在就一定创建”，是否允许创建取决于补丁格式和服务端能力。<a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc5789.html#section-2">RFC
+5789，§2</a></p>
+<h4 id="put-与-patch-的更新边界">PUT 与 PATCH 的更新边界</h4>
+<p>PUT 表达创建或替换资源状态，PATCH
+表达应用一组修改指令。这里的“完整状态”应由<strong>资源表示契约</strong>定义，不能理解成客户端必须提交数据库中的全部字段。服务端管理的
+ID、创建时间等，可以是只读字段。</p>
+<p>例如，对支持 JSON Merge Patch 的订单接口修改备注：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">PATCH</span> <span class="string">/orders/123</span> <span class="meta">HTTP/1.1</span></span><br><span class="line"><span class="attribute">Host</span><span class="punctuation">: </span>api.example.com</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>application/merge-patch+json</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>16</span><br><span class="line"></span><br><span class="line"><span class="language-json"><span class="punctuation">&#123;</span><span class="attr">&quot;note&quot;</span><span class="punctuation">:</span><span class="string">&quot;leave&quot;</span><span class="punctuation">&#125;</span></span></span><br></pre></td></tr></table></figure>
+<p><code>application/merge-patch+json</code>
+中，未出现的对象成员保持不变，成员值为 <code>null</code>
+表示删除该成员，数组则整体替换。因此它不适合直接表达所有需要保留显式
+<code>null</code> 的业务结构。<a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc7396.html">RFC 7396：JSON Merge
+Patch</a></p>
+<p>另一种标准格式是 JSON Patch：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">[</span></span><br><span class="line">  <span class="punctuation">&#123;</span> <span class="attr">&quot;op&quot;</span><span class="punctuation">:</span> <span class="string">&quot;replace&quot;</span><span class="punctuation">,</span> <span class="attr">&quot;path&quot;</span><span class="punctuation">:</span> <span class="string">&quot;/note&quot;</span><span class="punctuation">,</span> <span class="attr">&quot;value&quot;</span><span class="punctuation">:</span> <span class="string">&quot;leave&quot;</span> <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="punctuation">&#123;</span> <span class="attr">&quot;op&quot;</span><span class="punctuation">:</span> <span class="string">&quot;add&quot;</span><span class="punctuation">,</span> <span class="attr">&quot;path&quot;</span><span class="punctuation">:</span> <span class="string">&quot;/tags/-&quot;</span><span class="punctuation">,</span> <span class="attr">&quot;value&quot;</span><span class="punctuation">:</span> <span class="string">&quot;urgent&quot;</span> <span class="punctuation">&#125;</span></span><br><span class="line"><span class="punctuation">]</span></span><br></pre></td></tr></table></figure>
+<p>对应媒体类型为
+<code>application/json-patch+json</code>。它以操作序列表达修改，包含
+<code>add</code>、<code>remove</code>、<code>replace</code>、<code>move</code>、<code>copy</code>、<code>test</code>；其中向数组末尾追加元素的操作，重复执行可能不幂等。<a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc6902.html">RFC 6902：JSON
+Patch</a></p>
+<p>因此，使用普通 <code>application/json</code>
+加上一部分字段时，必须在接口文档中说明补丁规则，不能让客户端自行假设“缺失”“null”“空字符串”的含义。服务器还应按
+PATCH 规范原子地应用整份补丁，避免失败后留下部分修改。<a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc5789.html#section-2">RFC
+5789，§2</a></p>
+<h3 id="状态码与错误响应">状态码与错误响应</h3>
+<p>状态码表达 HTTP
+层面的处理结果，响应体补充业务信息。服务端应根据真实处理结果选择状态码，方便客户端、网关和监控使用标准语义。</p>
+<p>例如创建订单成功：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">HTTP/1.1</span> <span class="number">201</span> Created</span><br><span class="line"><span class="attribute">Location</span><span class="punctuation">: </span>/orders/124</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>application/json</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>29</span><br><span class="line"></span><br><span class="line"><span class="language-json"><span class="punctuation">&#123;</span><span class="attr">&quot;id&quot;</span><span class="punctuation">:</span><span class="number">124</span><span class="punctuation">,</span><span class="attr">&quot;status&quot;</span><span class="punctuation">:</span><span class="string">&quot;pending&quot;</span><span class="punctuation">&#125;</span></span></span><br></pre></td></tr></table></figure>
+<p><code>Location</code>
+指向新建资源，响应体可以同时返回它的表示。它并非仅用于重定向。<a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc9110.html#section-10.2.2">RFC
+9110，§10.2.2、§15.3.2</a></p>
+<p>API 中几个需要明确区分的结果如下：</p>
+<table>
+<colgroup>
+<col style="width: 31%">
+<col style="width: 68%">
+</colgroup>
+<thead>
+<tr>
+<th>状态码</th>
+<th>典型用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>202 Accepted</code></td>
+<td>已接受请求，处理尚未完成；不保证最终成功</td>
+</tr>
+<tr>
+<td><code>204 No Content</code></td>
+<td>操作成功，没有响应内容；不能再附带 JSON</td>
+</tr>
+<tr>
+<td><code>400 Bad Request</code></td>
+<td>请求存在语法、结构等客户端错误</td>
+</tr>
+<tr>
+<td><code>401 Unauthorized</code></td>
+<td>缺少有效认证凭据；响应必须包含适用的 <code>WWW-Authenticate</code>
+挑战</td>
+</tr>
+<tr>
+<td><code>403 Forbidden</code></td>
+<td>服务器理解请求，但拒绝执行；权限不足是常见原因</td>
+</tr>
+<tr>
+<td><code>404 Not Found</code></td>
+<td>未找到目标资源，或服务端不愿披露它的存在</td>
+</tr>
+<tr>
+<td><code>405 Method Not Allowed</code></td>
+<td>目标资源不支持该方法；必须返回 <code>Allow</code></td>
+</tr>
+<tr>
+<td><code>409 Conflict</code></td>
+<td>操作与资源当前状态冲突，例如订单已发货而不允许取消</td>
+</tr>
+<tr>
+<td><code>412 Precondition Failed</code></td>
+<td><code>If-Match</code> 等请求前置条件不成立</td>
+</tr>
+<tr>
+<td><code>415 Unsupported Media Type</code></td>
+<td>请求内容的媒体类型或相关编码不受支持</td>
+</tr>
+<tr>
+<td><code>422 Unprocessable Content</code></td>
+<td>内容类型和语法可理解，但包含无法处理的指令</td>
+</tr>
+<tr>
+<td><code>429 Too Many Requests</code></td>
+<td>请求过多，可以用 <code>Retry-After</code> 告知等待时间</td>
+</tr>
+<tr>
+<td><code>503 Service Unavailable</code></td>
+<td>服务暂时不可用，例如过载或维护</td>
+</tr>
+</tbody>
+</table>
+<p>这里沿用 HTTP 状态码语义；<code>422</code>
+用于哪类业务校验、<code>400</code> 的具体边界等，还要在 API
+契约中保持一致。<a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc9110.html#section-15">RFC
+9110，§15</a>、<a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc6585.html#section-4">RFC
+6585，§4</a></p>
+<h4 id="使用-problem-details-描述错误">使用 Problem Details
+描述错误</h4>
+<p>错误响应可以采用 <strong>RFC 9457 Problem Details</strong>，JSON
+媒体类型为
+<code>application/problem+json</code>。例如取消已发货的订单：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">HTTP/1.1</span> <span class="number">409</span> Conflict</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>application/problem+json</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>148</span><br><span class="line"></span><br><span class="line"><span class="language-json"><span class="punctuation">&#123;</span><span class="attr">&quot;type&quot;</span><span class="punctuation">:</span><span class="string">&quot;https://api.example.com/problems/order-shipped&quot;</span><span class="punctuation">,</span><span class="attr">&quot;title&quot;</span><span class="punctuation">:</span><span class="string">&quot;Order cannot be cancelled&quot;</span><span class="punctuation">,</span><span class="attr">&quot;status&quot;</span><span class="punctuation">:</span><span class="number">409</span><span class="punctuation">,</span><span class="attr">&quot;detail&quot;</span><span class="punctuation">:</span><span class="string">&quot;Order 123 has already shipped.&quot;</span><span class="punctuation">&#125;</span></span></span><br></pre></td></tr></table></figure>
+<p><code>type</code> 标识问题类型，<code>title</code>
+是该类型的简短说明，<code>detail</code>
+解释本次问题，<code>instance</code>
+可标识本次发生的问题。<code>status</code>
+如果提供，应与实际响应状态码一致。客户端应依据问题类型和约定的扩展字段处理错误，不要解析面向人的自然语言描述。<a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc9457.html#section-3">RFC
+9457，§3</a></p>
+<p>这些字段并不是必须全部出现。Problem Details
+也不应包含堆栈、数据库语句或凭据；错误内容需要帮助调用方处理问题，而不是泄露内部实现。</p>
+<p>如果接口实际拒绝了创建订单，却始终返回 <code>200</code> 并只在 JSON
+中写一个错误码，HTTP
+客户端和监控只能看到成功状态，容易误判。业务错误字段应补充 HTTP
+状态，而不是普遍替代它。</p>
+<h3 id="缓存条件请求与并发更新">缓存、条件请求与并发更新</h3>
+<h4 id="缓存是-http-api-的一部分">缓存是 HTTP API 的一部分</h4>
+<p>GET 响应是否可复用，不能只看它是不是
+JSON，还要结合状态码、缓存头和请求上下文判断。</p>
+<table>
+<colgroup>
+<col style="width: 34%">
+<col style="width: 65%">
+</colgroup>
+<thead>
+<tr>
+<th>响应中的 Cache-Control 指令</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>max-age=60</code></td>
+<td>设定 60 秒新鲜度期限；复用仍需考虑响应已有年龄等因素</td>
+</tr>
+<tr>
+<td><code>private</code></td>
+<td>共享缓存不能存储；允许私有缓存按其他规则处理</td>
+</tr>
+<tr>
+<td><code>no-cache</code></td>
+<td>可以存储，但未经服务端成功验证不能复用</td>
+</tr>
+<tr>
+<td><code>no-store</code></td>
+<td>缓存不得存储该请求、响应；并不保证此前副本已被清除</td>
+</tr>
+</tbody>
+</table>
+<p>例如，公开产品目录可以设置适当的新鲜度；个人账单需要严格区分用户并制定缓存策略，敏感响应可使用
+<code>no-store</code>。不要把“带 Token”当成安全缓存隔离的自动保证。<a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc9111.html#section-5.2">RFC
+9111，§3、§5.2</a></p>
+<p>当同一 URI 按 <code>Accept</code> 选择 JSON 或 HTML 时，可以使用
+<code>Vary: Accept</code>
+告知缓存，响应选择依赖该请求字段。<code>Vary</code>
+解决表示选择问题，不能替代访问控制。</p>
+<h4 id="用-etag-验证缓存">用 ETag 验证缓存</h4>
+<p>服务器可以为表示生成一个不透明的验证标识：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">HTTP/1.1</span> <span class="number">200</span> OK</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>application/json</span><br><span class="line"><span class="attribute">Cache-Control</span><span class="punctuation">: </span>private, no-cache</span><br><span class="line"><span class="attribute">ETag</span><span class="punctuation">: </span>&quot;order-123-v7&quot;</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>29</span><br><span class="line"></span><br><span class="line"><span class="language-json"><span class="punctuation">&#123;</span><span class="attr">&quot;id&quot;</span><span class="punctuation">:</span><span class="number">123</span><span class="punctuation">,</span><span class="attr">&quot;status&quot;</span><span class="punctuation">:</span><span class="string">&quot;pending&quot;</span><span class="punctuation">&#125;</span></span></span><br></pre></td></tr></table></figure>
+<p>客户端再次读取时携带：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">GET</span> <span class="string">/orders/123</span> <span class="meta">HTTP/1.1</span></span><br><span class="line"><span class="attribute">Host</span><span class="punctuation">: </span>api.example.com</span><br><span class="line"><span class="attribute">If-None-Match</span><span class="punctuation">: </span>&quot;order-123-v7&quot;</span><br></pre></td></tr></table></figure>
+<p>当验证条件满足时，服务器可以返回
+<code>304 Not Modified</code>，不再发送响应内容；客户端按缓存规则更新元数据并复用已有表示。ETag
+不要求必须是内容哈希或数据库版本号，其生成方式由服务端决定。<a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc9110.html#section-8.8.3">RFC
+9110，§8.8.3、§13.1.2</a></p>
+<h4 id="用-if-match-避免丢失更新">用 If-Match 避免丢失更新</h4>
+<p>假设两个客户端都读取到版本
+7，先后提交修改。若没有并发控制，后提交的修改可能覆盖先前结果。</p>
+<p>接口可以要求更新时携带读取到的强 ETag：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">PATCH</span> <span class="string">/orders/123</span> <span class="meta">HTTP/1.1</span></span><br><span class="line"><span class="attribute">Host</span><span class="punctuation">: </span>api.example.com</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>application/merge-patch+json</span><br><span class="line"><span class="attribute">If-Match</span><span class="punctuation">: </span>&quot;order-123-v7&quot;</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>16</span><br><span class="line"></span><br><span class="line"><span class="language-json"><span class="punctuation">&#123;</span><span class="attr">&quot;note&quot;</span><span class="punctuation">:</span><span class="string">&quot;leave&quot;</span><span class="punctuation">&#125;</span></span></span><br></pre></td></tr></table></figure>
+<p>服务器应原子地检查版本并执行修改。如果资源已经变化，通常返回
+<code>412</code>，由客户端重新读取并处理冲突。需要强调，<strong>先检查版本、再无条件写入</strong>仍可能存在竞争，服务端必须把检查与更新结合起来。</p>
+<p><code>If-Match</code> 使用强比较，<code>W/"..."</code> 形式的弱 ETag
+不能用来匹配这类更新条件。要求条件请求但客户端未提供时，可返回
+<code>428 Precondition Required</code>。<a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc9110.html#section-13.1.1">RFC
+9110，§13.1.1</a>、<a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc6585.html#section-3">RFC
+6585，§3</a></p>
+<h3 id="重试分页与异步任务">重试、分页与异步任务</h3>
+<h4 id="请求超时不代表操作没有发生">请求超时不代表操作没有发生</h4>
+<p>客户端提交创建订单请求后超时，可能是服务端尚未处理，也可能是订单已经创建而响应未送达。因此，直接重复
+POST 可能生成两个订单。</p>
+<p>对这类操作，可以在 API 契约中约定业务幂等键，例如
+<code>Idempotency-Key</code>。服务端需要将键与调用方、操作范围、请求参数和处理结果关联，并在并发重试时保证只产生一次相应的业务效果。<a target="_blank" rel="noopener" href="https://docs.stripe.com/api/idempotent_requests">Stripe：幂等请求官方文档</a></p>
+<p>幂等键的有效期、同键不同参数的处理方式、进行中请求的响应，都需要明确。这是具体
+API 提供的机制，不能由某个头字段名称推导出所有接口都有相同保证。</p>
+<p>重试策略还应限制次数，并采用退避；当响应提供 <code>Retry-After</code>
+时，应结合它决定重试时机。认证失败、输入校验失败等问题通常需要先修正请求，不能靠不断重试解决。</p>
+<h4 id="集合接口应考虑分页">集合接口应考虑分页</h4>
+<p>订单集合可能持续增长，直接返回所有订单会扩大数据库、网络和客户端处理开销。接口设计时应提前定义分页，例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GET /orders?status=pending&amp;limit=20&amp;cursor=opaque-token</span><br></pre></td></tr></table></figure>
+<p>响应可以包含本页数据和下一页链接。<code>limit</code>、<code>cursor</code>
+是本例约定，实际 API 可以使用其他命名。</p>
+<p>使用游标分页时，需要稳定排序，例如 <code>createdAt</code> 与唯一 ID
+的组合；游标应被客户端视为不透明值，也不能代替认证和授权。<a target="_blank" rel="noopener" href="https://google.aip.dev/158">Google AIP-158：分页</a></p>
+<p>偏移分页便于按页跳转，但并发新增、删除可能造成遗漏或重复；游标分页也不自动提供一致性快照。如果要求跨页结果固定，还需约定快照或版本机制。这些属于集合查询契约，应根据数据规模和业务一致性要求设计。</p>
+<h4 id="耗时操作可以建模为任务资源">耗时操作可以建模为任务资源</h4>
+<p>导出大量订单时，可以先接受任务，再让客户端查询任务状态：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">HTTP/1.1</span> <span class="number">202</span> Accepted</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>application/json</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>62</span><br><span class="line"></span><br><span class="line"><span class="language-json"><span class="punctuation">&#123;</span><span class="attr">&quot;id&quot;</span><span class="punctuation">:</span><span class="string">&quot;job-900&quot;</span><span class="punctuation">,</span><span class="attr">&quot;status&quot;</span><span class="punctuation">:</span><span class="string">&quot;queued&quot;</span><span class="punctuation">,</span><span class="attr">&quot;statusUrl&quot;</span><span class="punctuation">:</span><span class="string">&quot;/jobs/job-900&quot;</span><span class="punctuation">&#125;</span></span></span><br></pre></td></tr></table></figure>
+<p>客户端随后读取 <code>/jobs/job-900</code>，获取
+<code>queued</code>、<code>running</code>、<code>succeeded</code> 或
+<code>failed</code> 等状态，成功后再使用结果链接下载文件。这些状态名和
+<code>statusUrl</code> 字段由本例契约定义。</p>
+<p>这里，<code>202</code>
+只表示请求已接受；最终完成情况通过任务资源表达。任务的可见性、过期时间、失败详情及取消规则，也应在设计时明确。</p>
+<h3 id="认证授权与-cors">认证、授权与 CORS</h3>
+<p>对外提供 HTTP API 时，应使用 HTTPS
+保护传输，并分别考虑认证与授权：</p>
+<ul>
+<li><strong>认证（Authentication）</strong>：调用方是谁、凭据是否有效。</li>
+<li><strong>授权（Authorization）</strong>：调用方能否对这个资源执行该操作。</li>
+</ul>
+<p>例如，用户已经登录，不代表可以通过修改 <code>/orders/123</code> 中的
+ID 访问其他人的订单。服务端需要进行资源级权限检查；使用 UUID
+只能降低猜测便利性，不能替代授权。<a target="_blank" rel="noopener" href="https://owasp.org/API-Security/editions/2023/en/0xa1-broken-object-level-authorization/">OWASP
+API1:2023：对象级授权缺陷</a></p>
+<p><strong>CORS（跨源资源共享）</strong>则是浏览器环境中的访问机制。部分跨源请求在正式发送前会触发
+OPTIONS 预检，浏览器据服务端响应判断是否允许后续请求和读取响应。</p>
+<p>它与认证、授权不同，不能阻止非浏览器客户端直接请求接口；也不能把“预检通过”理解为“调用方有业务权限”。使用
+Cookie 等自动携带凭据的方式时，还需考虑 CSRF 防护，不能仅依赖 CORS。<a target="_blank" rel="noopener" href="https://fetch.spec.whatwg.org/#http-cors-protocol">WHATWG Fetch
+Standard：CORS protocol</a></p>
+<h3 id="api-契约与版本演进">API 契约与版本演进</h3>
+<p>接口除了路径，还需要定义字段类型、必填条件、缺失值与
+<code>null</code>
+的差别、金额单位、时间格式、分页规则、错误类型和权限边界。</p>
+<p><strong>OpenAPI</strong> 可以描述 HTTP API
+的路径、操作、参数、请求和响应结构、安全方案等，便于生成文档和工具；但拥有一份
+OpenAPI 文档，并不证明接口满足 REST 的架构约束。<a target="_blank" rel="noopener" href="https://spec.openapis.org/oas/latest.html">OpenAPI
+官方规范</a></p>
+<p>接口演进时，应评估已有客户端的行为。例如删除字段、修改字段类型、改变金额单位，通常会破坏兼容；新增字段也要考虑严格校验的客户端，新增枚举值则可能影响穷举处理。</p>
+<p><code>/v1/orders</code>、版本请求头或媒体类型版本，都是可选择的契约策略，REST
+没有要求统一使用某一种。项目应明确兼容性规则、废弃通知和迁移期限，不应仅添加版本号而忽略字段与行为的变化。<a target="_blank" rel="noopener" href="https://learn.microsoft.com/en-us/azure/architecture/best-practices/api-design#version-a-restful-web-api">微软：API
+版本管理</a></p>
+<h3 id="本节参考资料-1">本节参考资料</h3>
+<p>下面区分架构定义、协议标准与工程指南。工程指南中的具体命名或设计偏好，应结合项目取舍，不能直接当成
+REST 或 HTTP 的强制要求。</p>
+<table>
+<colgroup>
+<col style="width: 14%">
+<col style="width: 60%">
+<col style="width: 26%">
+</colgroup>
+<thead>
+<tr>
+<th>类别</th>
+<th>资料</th>
+<th>阅读重点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>架构原始文献</td>
+<td><a target="_blank" rel="noopener" href="https://ics.uci.edu/~fielding/pubs/dissertation/rest_arch_style.htm">Fielding
+博士论文第 5 章</a></td>
+<td>REST 的约束、资源与表示</td>
+</tr>
+<tr>
+<td>作者技术文章</td>
+<td><a target="_blank" rel="noopener" href="https://roy.gbiv.com/untangled/2008/rest-apis-must-be-hypertext-driven">REST
+APIs must be hypertext-driven</a></td>
+<td>超媒体与应用状态转移</td>
+</tr>
+<tr>
+<td>协议标准</td>
+<td><a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc9110.html">RFC
+9110</a>、<a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc9111.html">RFC
+9111</a></td>
+<td>HTTP 语义、条件请求与缓存</td>
+</tr>
+<tr>
+<td>协议标准</td>
+<td><a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc5789.html">RFC
+5789</a>、<a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc7396.html">RFC
+7396</a>、<a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc6902.html">RFC
+6902</a></td>
+<td>PATCH 与两种 JSON 补丁格式</td>
+</tr>
+<tr>
+<td>协议标准</td>
+<td><a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc9457.html">RFC
+9457</a>、<a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc6585.html">RFC
+6585</a></td>
+<td>结构化错误、428 与 429</td>
+</tr>
+<tr>
+<td>官方工程指南</td>
+<td><a target="_blank" rel="noopener" href="https://learn.microsoft.com/en-us/azure/architecture/best-practices/api-design">微软
+Web API 设计</a>、<a target="_blank" rel="noopener" href="https://google.aip.dev/121">Google
+AIP-121</a>、<a target="_blank" rel="noopener" href="https://google.aip.dev/158">AIP-158</a></td>
+<td>资源建模、分页和接口演进</td>
+</tr>
+<tr>
+<td>官方实现文档</td>
+<td><a target="_blank" rel="noopener" href="https://docs.stripe.com/api/idempotent_requests">Stripe
+幂等请求</a></td>
+<td>POST 重试的业务幂等机制</td>
+</tr>
+<tr>
+<td>安全资料与规范</td>
+<td><a target="_blank" rel="noopener" href="https://owasp.org/API-Security/editions/2023/en/0xa1-broken-object-level-authorization/">OWASP
+API Security</a>、<a target="_blank" rel="noopener" href="https://fetch.spec.whatwg.org/#http-cors-protocol">Fetch
+Standard</a></td>
+<td>资源授权与 CORS 边界</td>
+</tr>
+<tr>
+<td>接口描述规范</td>
+<td><a target="_blank" rel="noopener" href="https://spec.openapis.org/oas/latest.html">OpenAPI
+Specification</a></td>
+<td>HTTP API 契约描述</td>
+</tr>
+</tbody>
+</table>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a target="_blank" rel="noopener" href="https://github.com/ergou10086">ErgouTree</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://ergou10086.github.io/posts/30445.html">https://ergou10086.github.io/posts/30445.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://ergou10086.github.io" target="_blank">ErgouTree's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/">计算机网络</a><a class="post-meta__tags" href="/tags/RPC%E5%8D%8F%E8%AE%AE/">RPC协议</a><a class="post-meta__tags" href="/tags/HTTP/">HTTP</a><a class="post-meta__tags" href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/">计算机基础知识</a><a class="post-meta__tags" href="/tags/%E9%9D%A2%E8%AF%95%E5%90%91/">面试向</a></div><div class="post-share"><div class="addtoany"><div class="a2a_kit a2a_kit_size_32 a2a_default_style"><a class="a2a_button_facebook"></a><a class="a2a_button_twitter"></a><a class="a2a_button_wechat"></a><a class="a2a_button_sina_weibo"></a><a class="a2a_button_facebook_messenger"></a><a class="a2a_button_email"></a><a class="a2a_button_copy_link"></a><a class="a2a_dd" target="_blank" rel="noopener" href="https://www.addtoany.com/share"></a></div></div><script async="async" src="https://static.addtoany.com/menu/page.js"></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/posts/50004.html" title="详解RPC，并与HTTP进行对比——既生瑜何生亮"><img class="cover" src="/images/posts/cover_wish.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">详解RPC，并与HTTP进行对比——既生瑜何生亮</div></div><div class="info-2"><div class="info-item-1">HTTP协议 对HTTP协议的详解先不放到这里，移到了另外一章，看到这篇的默认认为了解 HTTP 协议 RPC协议 为什么要有RPC协议 RPC，全称 Remote Procedure Call，远程过程调用，是一种允许程序调用另一个地址空间（通常是在网络中的另一台计算机上）的程序的协议。它使得程序能够像调用本地函数一样调用远程函数，而无需显式编码这些远程交互的细节。  但这个名字起的一点都不好，过分强调了和LPC（本地过程调用）的对比。没有突出出来 RPC 本身涉及到的一些技术特点。 我非常同意上述观点，跟他妈的鲁棒性那个翻译似的  什么意思 假设你有两台电脑：  本地电脑 A：你写的程序运行在这里，想获取用户信息； 远程电脑 B：数据库在这，有一个 getUserInfo(userId) 函数能查用户信息。  如果没有 RPC，你要实现 “调用 B 的函数”，得自己做这些事：  手动写网络通信代码，比如用 Socket，把 userId 打包成字节流； 处理网络传输，比如 TCP 连接、IP 地址、端口，把数据发给 B； B...</div></div></div></a><a class="pagination-related" href="/posts/64917.html" title="贪心策略的不同限制？抽象广告小游戏背后的最优解思考"><img class="cover" src="/images/posts/cover_js2.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">贪心策略的不同限制？抽象广告小游戏背后的最优解思考</div></div><div class="info-2"><div class="info-item-1">...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/posts/50004.html" title="详解RPC，并与HTTP进行对比——既生瑜何生亮"><img class="cover" src="/images/posts/cover_wish.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-12-27</div><div class="info-item-2">详解RPC，并与HTTP进行对比——既生瑜何生亮</div></div><div class="info-2"><div class="info-item-1">HTTP协议 对HTTP协议的详解先不放到这里，移到了另外一章，看到这篇的默认认为了解 HTTP 协议 RPC协议 为什么要有RPC协议 RPC，全称 Remote Procedure Call，远程过程调用，是一种允许程序调用另一个地址空间（通常是在网络中的另一台计算机上）的程序的协议。它使得程序能够像调用本地函数一样调用远程函数，而无需显式编码这些远程交互的细节。  但这个名字起的一点都不好，过分强调了和LPC（本地过程调用）的对比。没有突出出来 RPC 本身涉及到的一些技术特点。 我非常同意上述观点，跟他妈的鲁棒性那个翻译似的  什么意思 假设你有两台电脑：  本地电脑 A：你写的程序运行在这里，想获取用户信息； 远程电脑 B：数据库在这，有一个 getUserInfo(userId) 函数能查用户信息。  如果没有 RPC，你要实现 “调用 B 的函数”，得自己做这些事：  手动写网络通信代码，比如用 Socket，把 userId 打包成字节流； 处理网络传输，比如 TCP 连接、IP 地址、端口，把数据发给 B； B...</div></div></div></a><a class="pagination-related" href="/posts/32619.html" title="认识并了解常见的流媒体协议"><img class="cover" src="/images/posts/cover_java15.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-03-19</div><div class="info-item-2">认识并了解常见的流媒体协议</div></div><div class="info-2"><div class="info-item-1">介绍流媒体协议 什么是流媒体协议？ 协议是定义数据如何在网络中传输的规则和流程，千万要把它和格式分开，格式是定义音视频数据如何组织和封装，包括容器格式和编码格式的。 流媒体协议简要来说就是视频 / 音频在网络上 实时传输 的规则。包括规定了音视频数据如何被切分、打包、在网络中传输以及在接收端如何还原这种。 流媒体协议是视频在线传输的协议。 互联网上流媒体技术的变更 在过去的接近10多年时间里（从2004年到2018年），网页视频播放一直是 Flash 技术的天下，我们所熟悉的众多视频网站和新闻门户网站一直都在使用 Flash 技术来播放网页视频。 这里的主要原因是IE浏览器的高比例占有量和 Flash 插件在客户端的普及，还有就是主要流媒体服务器产品对 RTMP 协议和FLV 视频格式的广泛支持，这是这一个时期的视频生态系统。 在那个浏览器功能贫瘠的年代，Flash 插件几乎是网页视频的唯一救命稻草。RTMP 低延迟，而且 FLV 容器简单，非常适合流式传输。但是，他太封闭了，不管是服务端的生态 FMS 还是 客户端的 Flash...</div></div></div></a><a class="pagination-related" href="/posts/8003.html" title="Elasticsearch part5—在Spring框架中操作ES文档"><img class="cover" src="/images/posts/cover_database3.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-10-19</div><div class="info-item-2">Elasticsearch part5—在Spring框架中操作ES文档</div></div><div class="info-2"><div class="info-item-1">RestAPI 在前面我们讲解了手动发送的对 ES 索引库和文档的操作 本质上这些都是组装请求，携带JSON，进行我们想要的操作，通过http请求发送给ES。 REST（Representational State Transfer，表述性状态转移）是一种软件架构风格，用于构建网络应用程序。而基于 REST 风格设计的 API 就称为 RestAPI。 RestAPI 具备以下特点：  资源抽象：将网络中的一切都视为资源，比如一篇文章、一个用户、一条订单记录等，每个资源都有对应的唯一 URI（Uniform Resource Identifier，统一资源标识符）来标识，像https://example.com/api/users/1 就可以表示 ID 为 1 的用户资源。 无状态通信：客户端和服务器之间的通信是无状态的，即每次请求都包含了处理该请求所需的全部信息，服务器不会依赖之前请求的状态来处理当前请求。这使得请求可以被独立处理，提高了系统的可扩展性和可靠性。 统一接口：使用标准的 HTTP 方法（GET、POST、PUT、DELETE...</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="gitalk-container"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/arp.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">ErgouTree</div><div class="author-info-description">I start a brand-new life with you.</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">348</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">214</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">114</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/ergou10086"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/ergou10086" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="/zjm88822201@126.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a><a class="social-icon" href="https://space.bilibili.com/142045656?spm_id_from=333.1007.0.0" target="_blank" title="bilibili"><i class="fas fa-brands fa-bilibili" style="color: #4a72be;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">作者长期陷入galgame和osu!maina4k中 祝他好运吧 对了 如果图片加载过慢 建议科学上网进行使用</div></div><div class="card-widget card-weather"><div class="item-headline"><i class="fas fa-cloud-sun"></i><span>aside.card_weather</span></div><div class="weather-content"><div class="weather-loading"><i class="fas fa-spinner fa-spin"></i><span>加载中...</span></div><div class="weather-main" style="display: none;"><div class="weather-location"><i class="fas fa-map-marker-alt"></i><span id="weather-location">获取中...</span></div><div class="weather-info"><div class="weather-temp"><span id="weather-temp">--</span><span class="unit">°C</span></div><div class="weather-desc"><span id="weather-weather">--</span></div><div class="weather-details"><div class="weather-item"><i class="fas fa-wind"></i><span id="weather-windpower">--</span></div><div class="weather-item"><i class="fas fa-tint"></i><span id="weather-humidity">--</span></div><div class="weather-item"><i class="fas fa-eye"></i><span id="weather-winddir">--</span></div></div></div><div class="weather-update-time"><i class="fas fa-clock"></i><span id="weather-update-time">更新中...</span></div></div></div></div><div class="sticky_layout"></div><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%86%E8%A7%A3http%E5%8D%8F%E8%AE%AE"><span class="toc-number">1.</span> <span class="toc-text">了解HTTP协议</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#http-%E7%AE%80%E4%BB%8B"><span class="toc-number">1.1.</span> <span class="toc-text">HTTP 简介</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#http%E6%98%AF%E5%BA%94%E7%94%A8%E5%B1%82%E5%8D%8F%E8%AE%AE"><span class="toc-number">1.2.</span> <span class="toc-text">HTTP是应用层协议</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#http-%E7%9A%84%E6%A0%B8%E5%BF%83%E7%89%B9%E7%82%B9"><span class="toc-number">1.3.</span> <span class="toc-text">HTTP 的核心特点</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#http%E7%9A%84%E5%B7%A5%E4%BD%9C%E6%B5%81%E7%A8%8B"><span class="toc-number">2.</span> <span class="toc-text">HTTP的工作流程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#http%E7%9A%84%E8%AF%B7%E6%B1%82%E6%96%B9%E6%B3%95"><span class="toc-number">3.</span> <span class="toc-text">HTTP的请求方法</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#get"><span class="toc-number">3.1.</span> <span class="toc-text">GET</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#head"><span class="toc-number">3.2.</span> <span class="toc-text">HEAD</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#post"><span class="toc-number">3.3.</span> <span class="toc-text">POST</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#put"><span class="toc-number">3.4.</span> <span class="toc-text">PUT</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#delete"><span class="toc-number">3.5.</span> <span class="toc-text">DELETE</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#patch"><span class="toc-number">3.6.</span> <span class="toc-text">PATCH</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#options"><span class="toc-number">3.7.</span> <span class="toc-text">OPTIONS</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#trace"><span class="toc-number">3.8.</span> <span class="toc-text">TRACE</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#connect"><span class="toc-number">3.9.</span> <span class="toc-text">CONNECT</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#http%E7%8A%B6%E6%80%81%E7%A0%81"><span class="toc-number">4.</span> <span class="toc-text">HTTP状态码</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#url"><span class="toc-number">5.</span> <span class="toc-text">URL</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#http%E6%B6%88%E6%81%AF%E7%BB%93%E6%9E%84"><span class="toc-number">6.</span> <span class="toc-text">HTTP消息结构</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#http%E8%AF%B7%E6%B1%82%E6%A0%BC%E5%BC%8F"><span class="toc-number">6.1.</span> <span class="toc-text">HTTP请求格式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#http%E5%93%8D%E5%BA%94%E6%A0%BC%E5%BC%8F"><span class="toc-number">6.2.</span> <span class="toc-text">HTTP响应格式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B6%88%E6%81%AF%E4%BD%93%E8%BE%B9%E7%95%8C%E4%B8%8E%E5%88%86%E5%9D%97%E7%BC%96%E7%A0%81"><span class="toc-number">6.3.</span> <span class="toc-text">消息体边界与分块编码</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#http-content-type"><span class="toc-number">6.4.</span> <span class="toc-text">HTTP content-type</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#mime-%E7%B1%BB%E5%9E%8B"><span class="toc-number">6.5.</span> <span class="toc-text">MIME 类型</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#https"><span class="toc-number">7.</span> <span class="toc-text">HTTPS</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#http2%E4%B8%80%E4%BA%9B%E5%80%BC%E5%BE%97%E6%B3%A8%E6%84%8F%E7%9A%84%E7%89%B9%E7%82%B9"><span class="toc-number">8.</span> <span class="toc-text">HTTP2一些值得注意的特点</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%88%86%E5%B8%A7"><span class="toc-number">8.1.</span> <span class="toc-text">二进制分帧</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%9A%E8%B7%AF%E5%A4%8D%E7%94%A8"><span class="toc-number">8.2.</span> <span class="toc-text">多路复用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%B4%E9%83%A8%E5%8E%8B%E7%BC%A9"><span class="toc-number">8.3.</span> <span class="toc-text">头部压缩</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9C%8D%E5%8A%A1%E5%99%A8%E6%8E%A8%E9%80%81"><span class="toc-number">8.4.</span> <span class="toc-text">服务器推送</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%9E%E6%8E%A5%E5%A4%8D%E7%94%A8"><span class="toc-number">8.5.</span> <span class="toc-text">连接复用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#http2-%E4%B8%8E-https"><span class="toc-number">8.6.</span> <span class="toc-text">HTTP&#x2F;2 与 HTTPS</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%BC%E5%AE%B9%E6%80%A7"><span class="toc-number">8.7.</span> <span class="toc-text">兼容性</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#http3%E5%9F%BA%E4%BA%8E-quic-%E7%9A%84-http"><span class="toc-number">9.</span> <span class="toc-text">HTTP&#x2F;3：基于 QUIC 的 HTTP</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#http3quic-%E4%B8%8E-udp-%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="toc-number">9.1.</span> <span class="toc-text">HTTP&#x2F;3、QUIC 与 UDP 的关系</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#quic-%E6%80%8E%E6%A0%B7%E6%8F%90%E4%BE%9B%E5%8F%AF%E9%9D%A0%E4%BC%A0%E8%BE%93"><span class="toc-number">9.2.</span> <span class="toc-text">QUIC 怎样提供可靠传输</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%9A%E8%B7%AF%E5%A4%8D%E7%94%A8%E4%B8%8E%E9%98%9F%E5%A4%B4%E9%98%BB%E5%A1%9E"><span class="toc-number">9.3.</span> <span class="toc-text">多路复用与队头阻塞</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#http2-%E4%B8%BA%E4%BB%80%E4%B9%88%E4%BB%8D%E7%84%B6%E4%BC%9A%E8%A2%AB-tcp-%E4%B8%A2%E5%8C%85%E9%98%BB%E5%A1%9E"><span class="toc-number">9.3.1.</span> <span class="toc-text">HTTP&#x2F;2 为什么仍然会被 TCP
+丢包阻塞</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#quic-%E6%8A%8A%E4%BA%A4%E4%BB%98%E9%A1%BA%E5%BA%8F%E9%99%90%E5%AE%9A%E5%9C%A8%E6%AF%8F%E6%9D%A1%E6%B5%81%E5%86%85%E9%83%A8"><span class="toc-number">9.3.2.</span> <span class="toc-text">QUIC
+把交付顺序限定在每条流内部</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%9E%E6%8E%A5%E5%BB%BA%E7%AB%8Btls-1.3-%E4%B8%8E-0-rtt"><span class="toc-number">9.4.</span> <span class="toc-text">连接建立、TLS 1.3 与 0-RTT</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%A6%96%E6%AC%A1%E8%BF%9E%E6%8E%A5%E9%80%9A%E5%B8%B8%E6%98%AF-1-rtt"><span class="toc-number">9.4.1.</span> <span class="toc-text">首次连接通常是 1-RTT</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#rtt-%E9%9C%80%E8%A6%81%E5%B7%B2%E6%9C%89%E4%BC%9A%E8%AF%9D%E4%BF%A1%E6%81%AF"><span class="toc-number">9.4.2.</span> <span class="toc-text">0-RTT 需要已有会话信息</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%97%A9%E6%9C%9F%E6%95%B0%E6%8D%AE%E5%AD%98%E5%9C%A8%E9%87%8D%E6%94%BE%E9%A3%8E%E9%99%A9"><span class="toc-number">9.4.3.</span> <span class="toc-text">早期数据存在重放风险</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#http3-%E6%80%8E%E6%A0%B7%E7%BB%84%E7%BB%87%E8%AF%B7%E6%B1%82%E4%B8%8E%E5%93%8D%E5%BA%94"><span class="toc-number">9.5.</span> <span class="toc-text">HTTP&#x2F;3 怎样组织请求与响应</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%80%E4%B8%AA%E6%99%AE%E9%80%9A%E8%AF%B7%E6%B1%82%E5%AF%B9%E5%BA%94%E4%B8%80%E6%9D%A1%E5%AE%A2%E6%88%B7%E7%AB%AF%E5%8F%91%E8%B5%B7%E7%9A%84%E5%8F%8C%E5%90%91%E6%B5%81"><span class="toc-number">9.5.1.</span> <span class="toc-text">一个普通请求对应一条客户端发起的双向流</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#http3-%E5%B8%A7%E4%B8%8E-quic-%E5%B8%A7%E4%B8%8D%E6%98%AF%E5%90%8C%E4%B8%80%E5%B1%82"><span class="toc-number">9.5.2.</span> <span class="toc-text">HTTP&#x2F;3 帧与 QUIC 帧不是同一层</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BC%AA%E5%A4%B4%E5%AD%97%E6%AE%B5%E8%A1%A8%E8%BE%BE-http-%E6%8E%A7%E5%88%B6%E4%BF%A1%E6%81%AF"><span class="toc-number">9.5.3.</span> <span class="toc-text">伪头字段表达 HTTP 控制信息</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%8F%96%E6%B6%88%E8%AF%B7%E6%B1%82%E4%B8%8E%E5%85%B3%E9%97%AD%E8%BF%9E%E6%8E%A5"><span class="toc-number">9.5.4.</span> <span class="toc-text">取消请求与关闭连接</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#qpack%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%8D%E7%9B%B4%E6%8E%A5%E6%B2%BF%E7%94%A8-hpack"><span class="toc-number">9.6.</span> <span class="toc-text">QPACK：为什么不直接沿用 HPACK</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B5%81%E9%87%8F%E6%8E%A7%E5%88%B6%E6%8B%A5%E5%A1%9E%E6%8E%A7%E5%88%B6%E4%B8%8E%E4%BC%98%E5%85%88%E7%BA%A7"><span class="toc-number">9.7.</span> <span class="toc-text">流量控制、拥塞控制与优先级</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%9E%E6%8E%A5%E8%BF%81%E7%A7%BB%E4%B8%8E-connection-id"><span class="toc-number">9.8.</span> <span class="toc-text">连接迁移与 Connection ID</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%A2%E6%88%B7%E7%AB%AF%E5%A6%82%E4%BD%95%E5%8F%91%E7%8E%B0-http3"><span class="toc-number">9.9.</span> <span class="toc-text">客户端如何发现 HTTP&#x2F;3</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%80%9A%E8%BF%87-alt-svc-%E5%AE%A3%E5%91%8A%E6%9B%BF%E4%BB%A3%E6%9C%8D%E5%8A%A1"><span class="toc-number">9.9.1.</span> <span class="toc-text">通过 Alt-Svc 宣告替代服务</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%80%9A%E8%BF%87-dns-%E6%88%96%E5%B7%B2%E6%9C%89%E9%85%8D%E7%BD%AE%E5%8F%91%E7%8E%B0"><span class="toc-number">9.9.2.</span> <span class="toc-text">通过 DNS 或已有配置发现</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#udp-%E4%B8%8D%E5%8F%AF%E7%94%A8%E6%97%B6%E7%9A%84%E5%9B%9E%E9%80%80"><span class="toc-number">9.9.3.</span> <span class="toc-text">UDP 不可用时的回退</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%83%A8%E7%BD%B2%E4%B8%8E%E8%B0%83%E8%AF%95%E6%97%B6%E9%9C%80%E8%A6%81%E6%B3%A8%E6%84%8F%E4%BB%80%E4%B9%88"><span class="toc-number">9.10.</span> <span class="toc-text">部署与调试时需要注意什么</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#http3-%E4%BC%9A%E6%AF%94-http2-%E6%9B%B4%E5%BF%AB%E5%90%97"><span class="toc-number">9.11.</span> <span class="toc-text">HTTP&#x2F;3 会比 HTTP&#x2F;2 更快吗</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9C%AC%E8%8A%82%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="toc-number">9.12.</span> <span class="toc-text">本节参考资料</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#restful-api"><span class="toc-number">10.</span> <span class="toc-text">RESTful API</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#rest-%E4%B8%8E-http-%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="toc-number">10.1.</span> <span class="toc-text">REST 与 HTTP 的关系</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%B5%84%E6%BA%90uri-%E4%B8%8E%E8%B5%84%E6%BA%90%E8%A1%A8%E7%A4%BA"><span class="toc-number">10.2.</span> <span class="toc-text">资源、URI 与资源表示</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#content-type-%E4%B8%8E-accept"><span class="toc-number">10.2.1.</span> <span class="toc-text">Content-Type 与 Accept</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#rest-%E7%9A%84%E6%9E%B6%E6%9E%84%E7%BA%A6%E6%9D%9F"><span class="toc-number">10.3.</span> <span class="toc-text">REST 的架构约束</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%97%A0%E7%8A%B6%E6%80%81%E5%88%B0%E5%BA%95%E6%98%AF%E4%BB%80%E4%B9%88%E6%84%8F%E6%80%9D"><span class="toc-number">10.3.1.</span> <span class="toc-text">无状态到底是什么意思</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BB%9F%E4%B8%80%E6%8E%A5%E5%8F%A3%E4%B8%8E-hateoas"><span class="toc-number">10.4.</span> <span class="toc-text">统一接口与 HATEOAS</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#uri-%E5%A6%82%E4%BD%95%E5%9B%B4%E7%BB%95%E8%B5%84%E6%BA%90%E7%BB%84%E7%BB%87"><span class="toc-number">10.5.</span> <span class="toc-text">URI 如何围绕资源组织</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#http-%E6%96%B9%E6%B3%95%E5%A6%82%E4%BD%95%E6%98%A0%E5%B0%84%E5%88%B0%E8%B5%84%E6%BA%90%E6%93%8D%E4%BD%9C"><span class="toc-number">10.6.</span> <span class="toc-text">HTTP 方法如何映射到资源操作</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%89%E5%85%A8%E4%B8%8E%E5%B9%82%E7%AD%89"><span class="toc-number">10.6.1.</span> <span class="toc-text">安全与幂等</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#put-%E4%B8%8E-patch-%E7%9A%84%E6%9B%B4%E6%96%B0%E8%BE%B9%E7%95%8C"><span class="toc-number">10.6.2.</span> <span class="toc-text">PUT 与 PATCH 的更新边界</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%8A%B6%E6%80%81%E7%A0%81%E4%B8%8E%E9%94%99%E8%AF%AF%E5%93%8D%E5%BA%94"><span class="toc-number">10.7.</span> <span class="toc-text">状态码与错误响应</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8-problem-details-%E6%8F%8F%E8%BF%B0%E9%94%99%E8%AF%AF"><span class="toc-number">10.7.1.</span> <span class="toc-text">使用 Problem Details
+描述错误</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BC%93%E5%AD%98%E6%9D%A1%E4%BB%B6%E8%AF%B7%E6%B1%82%E4%B8%8E%E5%B9%B6%E5%8F%91%E6%9B%B4%E6%96%B0"><span class="toc-number">10.8.</span> <span class="toc-text">缓存、条件请求与并发更新</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BC%93%E5%AD%98%E6%98%AF-http-api-%E7%9A%84%E4%B8%80%E9%83%A8%E5%88%86"><span class="toc-number">10.8.1.</span> <span class="toc-text">缓存是 HTTP API 的一部分</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%94%A8-etag-%E9%AA%8C%E8%AF%81%E7%BC%93%E5%AD%98"><span class="toc-number">10.8.2.</span> <span class="toc-text">用 ETag 验证缓存</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%94%A8-if-match-%E9%81%BF%E5%85%8D%E4%B8%A2%E5%A4%B1%E6%9B%B4%E6%96%B0"><span class="toc-number">10.8.3.</span> <span class="toc-text">用 If-Match 避免丢失更新</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%87%8D%E8%AF%95%E5%88%86%E9%A1%B5%E4%B8%8E%E5%BC%82%E6%AD%A5%E4%BB%BB%E5%8A%A1"><span class="toc-number">10.9.</span> <span class="toc-text">重试、分页与异步任务</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%AF%B7%E6%B1%82%E8%B6%85%E6%97%B6%E4%B8%8D%E4%BB%A3%E8%A1%A8%E6%93%8D%E4%BD%9C%E6%B2%A1%E6%9C%89%E5%8F%91%E7%94%9F"><span class="toc-number">10.9.1.</span> <span class="toc-text">请求超时不代表操作没有发生</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%9B%86%E5%90%88%E6%8E%A5%E5%8F%A3%E5%BA%94%E8%80%83%E8%99%91%E5%88%86%E9%A1%B5"><span class="toc-number">10.9.2.</span> <span class="toc-text">集合接口应考虑分页</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%80%97%E6%97%B6%E6%93%8D%E4%BD%9C%E5%8F%AF%E4%BB%A5%E5%BB%BA%E6%A8%A1%E4%B8%BA%E4%BB%BB%E5%8A%A1%E8%B5%84%E6%BA%90"><span class="toc-number">10.9.3.</span> <span class="toc-text">耗时操作可以建模为任务资源</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AE%A4%E8%AF%81%E6%8E%88%E6%9D%83%E4%B8%8E-cors"><span class="toc-number">10.10.</span> <span class="toc-text">认证、授权与 CORS</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#api-%E5%A5%91%E7%BA%A6%E4%B8%8E%E7%89%88%E6%9C%AC%E6%BC%94%E8%BF%9B"><span class="toc-number">10.11.</span> <span class="toc-text">API 契约与版本演进</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9C%AC%E8%8A%82%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99-1"><span class="toc-number">10.12.</span> <span class="toc-text">本节参考资料</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/47445.html" title="数学物理方程之三类典型模型的建立"><img src="/images/posts/cover_teach2.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="数学物理方程之三类典型模型的建立"/></a><div class="content"><a class="title" href="/posts/47445.html" title="数学物理方程之三类典型模型的建立">数学物理方程之三类典型模型的建立</a><time datetime="2026-10-02T09:03:43.000Z" title="发表于 2026-10-02 17:03:43">2026-10-02</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/35817.html" title="Linux常用命令总结"><div style="background: /images/posts/cover_linux1"></div></a><div class="content"><a class="title" href="/posts/35817.html" title="Linux常用命令总结">Linux常用命令总结</a><time datetime="2026-10-02T08:33:32.000Z" title="发表于 2026-10-02 16:33:32">2026-10-02</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/9971.html" title="Linux常用知识总结"><div style="background: /images/posts/cover_linux3"></div></a><div class="content"><a class="title" href="/posts/9971.html" title="Linux常用知识总结">Linux常用知识总结</a><time datetime="2026-10-02T08:23:39.000Z" title="发表于 2026-10-02 16:23:39">2026-10-02</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/16607.html" title="LangChain4j part9—MCP、可观测性、护栏机制"><img src="/images/posts/cover_wish.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="LangChain4j part9—MCP、可观测性、护栏机制"/></a><div class="content"><a class="title" href="/posts/16607.html" title="LangChain4j part9—MCP、可观测性、护栏机制">LangChain4j part9—MCP、可观测性、护栏机制</a><time datetime="2026-08-05T09:30:52.000Z" title="发表于 2026-08-05 17:30:52">2026-08-05</time></div></div></div></div></div></main><div class="fps-display"><span id="fps">FPS: 60</span></div><footer id="footer" style="background-image: url(/images/posts/cover_security4.jpg);"><div id="footer-wrap"><div class="copyright">&copy;2024 - 2026 By ErgouTree</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">忘れたくない思い、ありますか？ <br>,<span id="realtime_duration" style="font-family: monospace;"></span>,<br><a href="https://icp.gov.moe/?keyword=20257009" target="_blank">萌ICP备20257009号</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><a class="icon-V hidden" onclick="switchNightMode()" title="日间和夜间模式切换"><svg width="25" height="25" viewBox="0 0 1024 1024"><use id="modeicon" xlink:href="#icon-moon"></use></svg></a><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="chat-btn" type="button" title="聊天" style="display:none"><i class="fas fa-comment"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><div class="js-pjax"><script>(() => {
   const loadMathjax = () => {
     if (!window.MathJax) {
       window.MathJax = {
