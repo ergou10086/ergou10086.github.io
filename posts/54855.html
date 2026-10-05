@@ -1,0 +1,1969 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>从JDK8开始各个版本JDK的重要新特性 | ErgouTree's Blog</title><meta name="author" content="ErgouTree"><meta name="copyright" content="ErgouTree"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="前言 关注 JDK 新特性中的什么内容 学习 JDK 新特性，最容易遇到的问题就是：版本很多，特性更多，但是看完一长串名称之后，还是不知道它们到底解决了什么问题。 对企业开发来说，真正值得关注的变化，通常会影响下面几件事：  业务代码怎么写：Lambda、Stream、Record、模式匹配。 并发任务怎么组织：CompletableFuture、虚拟线程、ScopedValue。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="从JDK8开始各个版本JDK的重要新特性">
+<meta property="og:url" content="https://ergou10086.github.io/posts/54855.html">
+<meta property="og:site_name" content="ErgouTree&#39;s Blog">
+<meta property="og:description" content="前言 关注 JDK 新特性中的什么内容 学习 JDK 新特性，最容易遇到的问题就是：版本很多，特性更多，但是看完一长串名称之后，还是不知道它们到底解决了什么问题。 对企业开发来说，真正值得关注的变化，通常会影响下面几件事：  业务代码怎么写：Lambda、Stream、Record、模式匹配。 并发任务怎么组织：CompletableFuture、虚拟线程、ScopedValue。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://ergou10086.github.io/img/arp.jpg">
+<meta property="article:published_time" content="2026-10-05T08:30:05.000Z">
+<meta property="article:modified_time" content="2026-10-05T08:31:14.913Z">
+<meta property="article:author" content="ErgouTree">
+<meta property="article:tag" content="Java技术">
+<meta property="article:tag" content="实用知识">
+<meta property="article:tag" content="JavaSE">
+<meta property="article:tag" content="Java基础知识">
+<meta property="article:tag" content="语言基础">
+<meta property="article:tag" content="知识总结">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ergou10086.github.io/img/arp.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "从JDK8开始各个版本JDK的重要新特性",
+  "url": "https://ergou10086.github.io/posts/54855.html",
+  "image": "https://ergou10086.github.io/img/arp.jpg",
+  "datePublished": "2026-10-05T08:30:05.000Z",
+  "dateModified": "2026-10-05T08:31:14.913Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "ErgouTree",
+      "url": "https://github.com/ergou10086"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/pi.ico"><link rel="canonical" href="https://ergou10086.github.io/posts/54855.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//hm.baidu.com"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!true && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?https://hm.baidu.com/hm.js?a6ab1b78e2c6320b664f31e8b9bf0e36";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+btf.addGlobalFn('pjaxComplete', () => {
+  _hmt.push(['_trackPageview',window.location.pathname])
+}, 'baidu_analytics')
+</script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.json","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":true},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: {"chs_to_cht":"已切换为繁体中文","cht_to_chs":"已切换为简体中文","day_to_night":"已切换为深色模式","night_to_day":"已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#1f1f1f","position":"bottom-left"},
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '从JDK8开始各个版本JDK的重要新特性',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css"><link rel="stylesheet" href="/css/littleGame.css"><svg aria-hidden="true" style="position:absolute; overflow:hidden; width:0; height:0"><symbol id="icon-sun" viewBox="0 0 1024 1024"><path d="M960 512l-128 128v192h-192l-128 128-128-128H192v-192l-128-128 128-128V192h192l128-128 128 128h192v192z" fill="#FFD878" p-id="8420"></path><path d="M736 512a224 224 0 1 0-448 0 224 224 0 1 0 448 0z" fill="#FFE4A9" p-id="8421"></path><path d="M512 109.248L626.752 224H800v173.248L914.752 512 800 626.752V800h-173.248L512 914.752 397.248 800H224v-173.248L109.248 512 224 397.248V224h173.248L512 109.248M512 64l-128 128H192v192l-128 128 128 128v192h192l128 128 128-128h192v-192l128-128-128-128V192h-192l-128-128z" fill="#4D5152" p-id="8422"></path><path d="M512 320c105.888 0 192 86.112 192 192s-86.112 192-192 192-192-86.112-192-192 86.112-192 192-192m0-32a224 224 0 1 0 0 448 224 224 0 0 0 0-448z" fill="#4D5152" p-id="8423"></path></symbol><symbol id="icon-moon" viewBox="0 0 1024 1024"><path d="M611.370667 167.082667a445.013333 445.013333 0 0 1-38.4 161.834666 477.824 477.824 0 0 1-244.736 244.394667 445.141333 445.141333 0 0 1-161.109334 38.058667 85.077333 85.077333 0 0 0-65.066666 135.722666A462.08 462.08 0 1 0 747.093333 102.058667a85.077333 85.077333 0 0 0-135.722666 65.024z" fill="#FFB531" p-id="11345"></path><path d="M329.728 274.133333l35.157333-35.157333a21.333333 21.333333 0 1 0-30.165333-30.165333l-35.157333 35.157333-35.114667-35.157333a21.333333 21.333333 0 0 0-30.165333 30.165333l35.114666 35.157333-35.114666 35.157334a21.333333 21.333333 0 1 0 30.165333 30.165333l35.114667-35.157333 35.157333 35.157333a21.333333 21.333333 0 1 0 30.165333-30.165333z" fill="#030835" p-id="11346"></path></symbol></svg><link rel="stylesheet" href="/css/custom.css"><!-- hexo injector head_end start --><link rel="stylesheet" href="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiperstyle.css" media="print" onload="this.media='all'"><!-- hexo injector head_end end --><meta name="generator" content="Hexo 7.3.0"></head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js/pace.min.js"></script><div id="web_bg" style="background: linear-gradient(20deg, #0062be, #925696, #cc426e, #fb0347);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/arp.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">352</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">214</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">114</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-images"></i><span> Gallery</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/games/"><i class="fa-fw fas fa-trophy"></i><span> GalGame</span></a></li><li><a class="site-page child" href="/video/"><i class="fa-fw fas fa-video"></i><span> Video</span></a></li><li><a class="site-page child" href="/viewpoint/"><i class="fa-fw fas fa-calculator"></i><span> ViewPoint</span></a></li><li><a class="site-page child" href="/littleGame/"><i class="fa-fw fas fa-thumbs-up"></i><span> littleGame</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div><div class="menus_item"><a class="site-page" href="javascript:randomPost();"><span> Random</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/images/posts/);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">ErgouTree's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">从JDK8开始各个版本JDK的重要新特性</span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-images"></i><span> Gallery</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/games/"><i class="fa-fw fas fa-trophy"></i><span> GalGame</span></a></li><li><a class="site-page child" href="/video/"><i class="fa-fw fas fa-video"></i><span> Video</span></a></li><li><a class="site-page child" href="/viewpoint/"><i class="fa-fw fas fa-calculator"></i><span> ViewPoint</span></a></li><li><a class="site-page child" href="/littleGame/"><i class="fa-fw fas fa-thumbs-up"></i><span> littleGame</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div><div class="menus_item"><a class="site-page" href="javascript:randomPost();"><span> Random</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div><div id="randomPost"><a class="site-page social-icon search" href="javascript:;" onclick="randomPost()" title="随机访问一篇文章"><i class="fas fa-circle-notch fa-fw"></i></a></div></nav><div id="post-info"><h1 class="post-title">从JDK8开始各个版本JDK的重要新特性<a class="post-edit-link" href="https://github.com/ergou10086/ergou10086.github.io/edit/main/source/_posts/_posts/从JDK8开始各个版本JDK的重要新特性.md" title="编辑" target="_blank"><i class="fas fa-pencil-alt"></i></a></h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-10-05T08:30:05.000Z" title="发表于 2026-10-05 16:30:05">2026-10-05</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-10-05T08:31:14.913Z" title="更新于 2026-10-05 16:31:14">2026-10-05</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Java%E5%AD%A6%E4%B9%A0/">Java学习</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Java%E5%AD%A6%E4%B9%A0/JavaSE/">JavaSE</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Java%E5%AD%A6%E4%B9%A0/JavaSE/Java%E6%96%B0%E7%89%B9%E6%80%A7/">Java新特性</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">17.1k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>61分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span><span class="post-meta-separator">|</span><span class="post-meta-commentcount"><i class="far fa-comments fa-fw post-meta-icon"></i><span class="post-meta-label">评论数:</span><a href="/posts/54855.html#post-comment"><span class="gitalk-comment-count"><i class="fa-solid fa-spinner fa-spin"></i></span></a></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="前言">前言</h2>
+<h3 id="关注-jdk-新特性中的什么内容">关注 JDK 新特性中的什么内容</h3>
+<p>学习 JDK
+新特性，最容易遇到的问题就是：版本很多，特性更多，但是看完一长串名称之后，还是不知道它们到底解决了什么问题。</p>
+<p>对企业开发来说，真正值得关注的变化，通常会影响下面几件事：</p>
+<ul>
+<li><strong>业务代码怎么写</strong>：Lambda、Stream、Record、模式匹配。</li>
+<li><strong>并发任务怎么组织</strong>：CompletableFuture、虚拟线程、ScopedValue。</li>
+<li><strong>应用怎么运行</strong>：容器资源识别、垃圾收集器、启动与预热优化。</li>
+<li><strong>老项目怎么升级</strong>：模块封装、默认字符集、API
+移除、Agent 与本地访问限制。</li>
+</ul>
+<p>所以，这篇文章只介绍重要的新特性和对企业开发影响较大的调整。某些版本只是在继续预览同一项特性，就放到该特性正式发布的版本中说明，不重复列一遍。</p>
+<p><strong>资料核对日期：2026 年 10 月 5 日。本文覆盖 JDK 8 至 JDK
+27；JDK 27 已于 2026 年 9 月 15 日正式发布。</strong> 发布状态以 <a target="_blank" rel="noopener" href="https://www.oracle.com/java/technologies/javase/27all-relnotes.html">Oracle
+JDK 27 发布说明</a>为依据。</p>
+<p>如果没有特殊说明，JVM 实现相关内容针对
+<strong>HotSpot</strong>；示例均为 Java SE / JDK API</p>
+<blockquote>
+<p>常见面试题和工程问题：</p>
+<ul>
+<li>Lambda、Stream 和普通循环有什么不同？</li>
+<li>CompletableFuture 的 Async 方法一定使用新线程吗？</li>
+<li><code>var</code> 会让 Java 变成动态类型语言吗？</li>
+<li><code>List.of()</code> 的不可修改，是否代表元素也不可变？</li>
+<li>Record 能直接替代所有 JavaBean 和 ORM 实体吗？</li>
+<li>虚拟线程为什么适合大量阻塞 I/O？为什么不能让 CPU 计算无限加速？</li>
+<li>虚拟线程的 <code>synchronized</code>
+固定问题在哪个版本发生变化？</li>
+<li>JDK 8 升级到 17、21、25，为什么旧代码可能编译成功却运行失败？</li>
+<li>JDK 21、23、24 的 ZGC 启动参数有什么区别？</li>
+<li>正式特性、预览特性和孵化 API，有什么不同？</li>
+</ul>
+</blockquote>
+<h3 id="理解版本和特性状态">理解版本和特性状态</h3>
+<h3 id="lts-是支持策略不是一种额外的语言能力">LTS
+是支持策略，不是一种额外的语言能力</h3>
+<p>我们经常听到 JDK 8、11、17、21、25 是 LTS 版本。</p>
+<p><strong>LTS（Long-Term
+Support，长期支持）主要描述发行商的维护政策。</strong> Oracle
+将这些版本列为
+LTS，但不同发行商的支持年限、更新渠道和条款可能不同，不能把某一家发行商的政策当作整个
+OpenJDK 项目的统一承诺。具体策略参考 <a target="_blank" rel="noopener" href="https://www.oracle.com/java/technologies/java-se-support-roadmap.html">Oracle
+Java SE 支持路线图</a>。</p>
+<p>比如，Record 在 JDK 16 正式发布，即使 JDK 16 不是 Oracle 的 LTS
+版本，它仍然是正式语言特性；升级到 JDK 17 后也可以使用。</p>
+<p>而且“出现过” 和 “正式可用” 是两件事</p>
+<table>
+<colgroup>
+<col style="width: 23%">
+<col style="width: 29%">
+<col style="width: 47%">
+</colgroup>
+<thead>
+<tr>
+<th>状态</th>
+<th>含义</th>
+<th>使用时需要注意什么</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>正式特性 / 正式 API</td>
+<td>已进入该版本的正式规范或受支持实现</td>
+<td>通常不需要启用预览；某些 JVM 功能仍需显式开启</td>
+</tr>
+<tr>
+<td>Preview，预览</td>
+<td>设计和实现供开发者评估，尚未永久定型</td>
+<td>一般需要 <code>--enable-preview</code>，版本之间可能修改或撤回</td>
+</tr>
+<tr>
+<td>Incubator，孵化</td>
+<td>用孵化模块提供尚未稳定的 API</td>
+<td>通常需 <code>--add-modules jdk.incubator.xxx</code>，不能当作稳定
+API</td>
+</tr>
+<tr>
+<td>Experimental，实验性 JVM 功能</td>
+<td>用于验证 JVM 实现方案</td>
+<td>常需
+<code>-XX:+UnlockExperimentalVMOptions</code>，不等于正式功能</td>
+</tr>
+</tbody>
+</table>
+<p>例如，虚拟线程在 JDK 19、20 中预览，在 <strong>JDK 21
+正式发布</strong>；Record 在 14、15 中预览，在 <strong>JDK 16
+正式发布</strong>。版本归属需要区分第一次出现和正式发布。<a target="_blank" rel="noopener" href="https://docs.oracle.com/en/java/javase/25/language/java-language-changes-summary.html">Oracle
+语言变化汇总</a>、<a target="_blank" rel="noopener" href="https://openjdk.org/jeps/444">JEP
+444：Virtual Threads</a>记录了这些阶段。</p>
+<p>使用预览特性时，要用对应版本的 JDK 编译和运行，升级后重新核对
+API。下面正文的完整示例只使用正式特性，均不需要
+<code>--enable-preview</code>。</p>
+<h3 id="重要版本速览">重要版本速览</h3>
+<table>
+<colgroup>
+<col style="width: 4%">
+<col style="width: 63%">
+<col style="width: 31%">
+</colgroup>
+<thead>
+<tr>
+<th>JDK</th>
+<th>本文关注的主要变化</th>
+<th>对企业开发的主要影响</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>8</td>
+<td>Lambda、Stream、Optional、java.time、CompletableFuture、元空间</td>
+<td>业务写法、异步编排、内存配置</td>
+</tr>
+<tr>
+<td>9</td>
+<td>模块系统、集合工厂、紧凑字符串、G1 默认策略、统一日志</td>
+<td>依赖边界、部署、内存与运维</td>
+</tr>
+<tr>
+<td>10</td>
+<td><code>var</code>、容器资源识别、Application CDS</td>
+<td>可读性、容器容量规划与启动</td>
+</tr>
+<tr>
+<td>11</td>
+<td>标准 HttpClient、OpenJDK JFR、TLS 1.3、移除部分内置模块</td>
+<td>HTTP 调用、诊断与老项目兼容</td>
+</tr>
+<tr>
+<td>14</td>
+<td>switch 表达式、移除 CMS</td>
+<td>业务分支、GC 配置迁移</td>
+</tr>
+<tr>
+<td>15</td>
+<td>文本块、ZGC / Shenandoah 转为生产功能</td>
+<td>SQL 等多行文本、低延迟 GC</td>
+</tr>
+<tr>
+<td>16</td>
+<td>Record、instanceof 模式匹配</td>
+<td>数据传输对象、类型判断</td>
+</tr>
+<tr>
+<td>17</td>
+<td>sealed、进一步强封装 JDK 内部实现</td>
+<td>领域建模、反射兼容性</td>
+</tr>
+<tr>
+<td>18</td>
+<td>默认 UTF-8、finalization 标记为待移除</td>
+<td>文件编码、资源生命周期</td>
+</tr>
+<tr>
+<td>21</td>
+<td>虚拟线程、模式匹配 switch、Record 模式、有序集合接口、分代 ZGC</td>
+<td>并发、业务模型、集合与 GC</td>
+</tr>
+<tr>
+<td>22</td>
+<td>FFM API 正式发布</td>
+<td>本地函数调用、堆外内存管理</td>
+</tr>
+<tr>
+<td>23</td>
+<td>分代 ZGC 成为 ZGC 默认模式</td>
+<td>JVM 参数与 GC 策略</td>
+</tr>
+<tr>
+<td>24</td>
+<td>减少虚拟线程固定、Stream Gatherers、Class-File API、AOT
+缓存、本地访问告警</td>
+<td>并发扩展、批处理、工具链与启动</td>
+</tr>
+<tr>
+<td>25</td>
+<td>ScopedValue 正式发布、紧凑对象头转正、AOT 演进、灵活构造器</td>
+<td>请求上下文、内存、预热与建模</td>
+</tr>
+<tr>
+<td>26</td>
+<td>HTTP/3、反射修改 final 告警、AOT 对象缓存支持所有 GC</td>
+<td>网络、框架兼容与启动</td>
+</tr>
+<tr>
+<td>27</td>
+<td>G1 默认范围扩大、紧凑对象头默认开启、TLS 混合密钥交换、JFR 脱敏</td>
+<td>容量规划、安全与诊断</td>
+</tr>
+</tbody>
+</table>
+<p>JDK 12、13、19、20 不单独展开，本文选中的
+switch、文本块、虚拟线程等变化，在正式发布版本中统一讲解。<strong>这并不表示这些版本没有改进。</strong></p>
+<h2 id="jdk-8现代-java-编程方式的基础">JDK 8：现代 Java
+编程方式的基础</h2>
+<h3 id="lambda-与函数式接口">Lambda 与函数式接口</h3>
+<p>在 JDK 8
+之前，如果我们想把“一个操作”传给另一个方法，通常需要匿名内部类。</p>
+<p>Lambda
+让这件事变得更直接，它能<strong>把一段行为当作参数传递。</strong>
+比如，把“如何筛选用户”传给集合处理流程。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// JDK 8，代码片段：函数式接口只有一个抽象方法</span></span><br><span class="line"><span class="meta">@FunctionalInterface</span></span><br><span class="line"><span class="keyword">interface</span> <span class="title class_">DiscountPolicy</span> &#123;</span><br><span class="line">    <span class="type">int</span> <span class="title function_">discount</span><span class="params">(<span class="type">int</span> amount)</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 默认方法可以拥有实现，不计入“一个抽象方法”</span></span><br><span class="line">    <span class="keyword">default</span> String <span class="title function_">description</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">&quot;优惠策略&quot;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 在方法内部使用</span></span><br><span class="line"><span class="type">DiscountPolicy</span> <span class="variable">policy</span> <span class="operator">=</span> amount -&gt; amount &gt;= <span class="number">100</span> ? <span class="number">10</span> : <span class="number">0</span>;</span><br><span class="line"><span class="type">int</span> <span class="variable">discount</span> <span class="operator">=</span> policy.discount(<span class="number">200</span>); <span class="comment">// 结果为 10</span></span><br></pre></td></tr></table></figure>
+<p><code>amount -&gt; ...</code> 就是 <code>discount</code>
+方法的具体行为。Lambda
+的目标类型必须是函数式接口；它也可以引用外部局部变量，但该变量必须是
+<code>final</code> 或“事实上不再被赋值”的 effectively final。</p>
+<p>同时，接口可以定义 <code>default</code>
+方法。这样为接口添加某些新能力时，旧实现类不必全部补上实现。不过多个接口默认方法发生冲突时，仍需要实现类明确解决。参考
+<a target="_blank" rel="noopener" href="https://docs.oracle.com/javase/8/docs/technotes/guides/language/enhancements.html">Oracle：Java
+SE 8 语言增强</a>。</p>
+<h3 id="stream把集合处理写成流水线">Stream：把集合处理写成流水线</h3>
+<p>我们看一下“筛选姓张的用户，再生成展示文本”怎么写。</p>
+<p><strong>下面示例最低版本：JDK 8。</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.util.Arrays;</span><br><span class="line"><span class="keyword">import</span> java.util.List;</span><br><span class="line"><span class="keyword">import</span> java.util.stream.Collectors;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">StreamDemo</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        List&lt;String&gt; names = Arrays.asList(<span class="string">&quot;张三&quot;</span>, <span class="string">&quot;李四&quot;</span>, <span class="string">&quot;张小明&quot;</span>);</span><br><span class="line">        List&lt;String&gt; result = names.stream()</span><br><span class="line">                .filter(name -&gt; name.startsWith(<span class="string">&quot;张&quot;</span>)) <span class="comment">// 过滤：保留姓张的名字</span></span><br><span class="line">                .map(name -&gt; <span class="string">&quot;用户：&quot;</span> + name)           <span class="comment">// 转换：生成展示文本</span></span><br><span class="line">                .collect(Collectors.toList());        <span class="comment">// 终止操作：真正执行流水线</span></span><br><span class="line">        System.out.println(result);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>运行结果：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[用户：张三, 用户：张小明]</span><br></pre></td></tr></table></figure>
+<p>这个处理过程可以画成一条流水线：</p>
+<pre><code class="highlight mermaid">flowchart LR
+    A[原始名字列表] --&gt; B[filter：过滤]
+    B --&gt; C[map：转换]
+    C --&gt; D[collect：收集结果]</code></pre>
+<p><strong>Stream
+不是保存数据的容器，它描述的是数据的处理过程。</strong>
+<code>filter</code>、<code>map</code>
+是中间操作，通常具有惰性；终止操作触发遍历，一个 Stream
+使用终止操作后不能再重复消费。<a target="_blank" rel="noopener" href="https://docs.oracle.com/javase/8/docs/api/java/util/stream/package-summary.html">Java
+SE 8 Stream 包说明</a>明确了这些语义。</p>
+<p>注意两个容易误解的地方：</p>
+<ul>
+<li><code>stream()</code>
+默认是顺序流。写成流水线不代表自动多线程。</li>
+<li><code>parallelStream()</code>
+也不保证一定更快。数据量、拆分成本、排序、共享状态都会影响收益，不能把数据库调用随意塞进去就期待吞吐量提升。</li>
+</ul>
+<p>所以，Stream
+更适合表达清楚的过滤、转换、聚合。复杂分支和大量副作用仍然可以使用普通循环。</p>
+<h3 id="optional表达结果可能不存在">Optional：表达结果可能不存在</h3>
+<p><strong>Optional 是一个可能包含非 null 值的容器。</strong>
+它比较适合表达查询方法的返回结果，比如按 id 查用户，有可能查不到。</p>
+<p><strong>下面示例最低版本：JDK 8。</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.util.Optional;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">OptionalDemo</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">String</span> <span class="variable">nickname</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line">        <span class="type">String</span> <span class="variable">displayName</span> <span class="operator">=</span> Optional.ofNullable(nickname)</span><br><span class="line">                .filter(name -&gt; !name.trim().isEmpty())</span><br><span class="line">                .orElseGet(() -&gt; <span class="string">&quot;匿名用户&quot;</span>); <span class="comment">// 没有有效值时，才调用 Supplier</span></span><br><span class="line">        System.out.println(displayName);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>输出为 <code>匿名用户</code>。如果把 <code>nickname</code>
+改成一个有效名字，就使用该名字。</p>
+<p>我们再看一下源码。下面摘自 <strong>OpenJDK JDK 25 的 Optional
+实现</strong>；用于解释自 JDK 8 就存在的
+<code>ofNullable</code>，并不是说它到 25 才出现：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> &lt;T&gt; Optional&lt;T&gt; <span class="title function_">ofNullable</span><span class="params">(T value)</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> value == <span class="literal">null</span> ? (Optional&lt;T&gt;) EMPTY</span><br><span class="line">                         : <span class="keyword">new</span> <span class="title class_">Optional</span>&lt;&gt;(value);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>可以看到，传入 null 时得到空
+Optional，否则包装这个值。<strong>Optional 不会让被包装的对象自动变成非
+null；它把“可能为空”变成一种明确的返回类型。</strong> 源码参考 <a target="_blank" rel="noopener" href="https://github.com/openjdk/jdk/blob/jdk-25%2B36/src/java.base/share/classes/java/util/Optional.java">OpenJDK
+Optional.java，jdk-25+36</a>。</p>
+<p><code>orElse(expensiveCall())</code>
+中的参数表达式会先求值；<code>orElseGet(() -&gt; expensiveCall())</code>
+只有缺值时才调用 Supplier。不要无条件调用
+<code>get()</code>，空值时会抛出异常，也不要给 Optional 变量本身赋
+null。<a target="_blank" rel="noopener" href="https://docs.oracle.com/javase/8/docs/api/java/util/Optional.html">Java
+SE 8 Optional API</a>给出了这些方法的契约。</p>
+<h3 id="java.time把时间点和本地时间区分开">java.time：把时间点和本地时间区分开</h3>
+<p>以前使用
+<code>Date</code>、<code>Calendar</code>、<code>SimpleDateFormat</code>，常常要额外考虑可变对象、线程安全和时区。</p>
+<p>JDK 8 引入了新的日期时间 API。先记住下面几个类型的职责：</p>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>表达什么</th>
+<th>常见用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Instant</code></td>
+<td>时间线上的一个瞬间</td>
+<td>创建时间、事件发生时间</td>
+</tr>
+<tr>
+<td><code>LocalDate</code></td>
+<td>不带时区的日期</td>
+<td>生日、营业日期</td>
+</tr>
+<tr>
+<td><code>LocalDateTime</code></td>
+<td>不带时区的日期和时间</td>
+<td>表达某地约定的日历时间</td>
+</tr>
+<tr>
+<td><code>ZonedDateTime</code></td>
+<td>带时区的日期和时间</td>
+<td>跨地区排期、时区转换</td>
+</tr>
+<tr>
+<td><code>Duration</code></td>
+<td>以秒、纳秒为基础的时间量</td>
+<td>超时、耗时</td>
+</tr>
+</tbody>
+</table>
+<p><strong>下面示例最低版本：JDK 8。</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.time.Instant;</span><br><span class="line"><span class="keyword">import</span> java.time.LocalDateTime;</span><br><span class="line"><span class="keyword">import</span> java.time.ZoneId;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">TimeDemo</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">Instant</span> <span class="variable">createdAt</span> <span class="operator">=</span> Instant.parse(<span class="string">&quot;2026-10-05T00:00:00Z&quot;</span>);</span><br><span class="line">        <span class="comment">// 同一个时间点，按上海时区转换成当地日期时间</span></span><br><span class="line">        <span class="type">LocalDateTime</span> <span class="variable">local</span> <span class="operator">=</span> LocalDateTime.ofInstant(</span><br><span class="line">                createdAt, ZoneId.of(<span class="string">&quot;Asia/Shanghai&quot;</span>));</span><br><span class="line">        System.out.println(local);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>输出为 <code>2026-10-05T08:00</code>。这是 UTC 时间
+<code>00:00</code> 按上海时区转换得到的本地时间。</p>
+<p><strong>LocalDateTime 自身不能唯一确定一个全球时间点。</strong>
+如果只有“2026 年 10 月 5 日上午 8
+点”，还需要时区才能映射到时间线；遇到夏令时切换还要考虑当地时间的重叠和缺口。</p>
+<p>新 API
+的主要值类型采用不可变设计，适合安全共享。订单时间、审计事件等数据要明确约定存储语义和时区，不能仅靠“把
+Date 换成 LocalDateTime”解决全部问题。参考 <a target="_blank" rel="noopener" href="https://docs.oracle.com/javase/8/docs/api/java/time/package-summary.html">Java
+SE 8 java.time 包说明</a>。</p>
+<h3 id="completablefuture组合异步任务">CompletableFuture：组合异步任务</h3>
+<p>一个接口同时需要用户信息和积分。如果先查用户，再查积分，两个等待过程就串在一起了。</p>
+<p>CompletableFuture
+让我们可以表达：<strong>两个任务分别执行，完成后组合结果。</strong></p>
+<p><strong>下面示例最低版本：JDK 8。</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.util.concurrent.CompletableFuture;</span><br><span class="line"><span class="keyword">import</span> java.util.concurrent.ExecutorService;</span><br><span class="line"><span class="keyword">import</span> java.util.concurrent.Executors;</span><br><span class="line"><span class="keyword">import</span> java.util.concurrent.TimeUnit;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">CompletableFutureDemo</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        <span class="type">ExecutorService</span> <span class="variable">ioPool</span> <span class="operator">=</span> Executors.newFixedThreadPool(<span class="number">2</span>);</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            CompletableFuture&lt;String&gt; user = CompletableFuture.supplyAsync(</span><br><span class="line">                    () -&gt; <span class="string">&quot;张三&quot;</span>, ioPool); <span class="comment">// 模拟读取用户信息</span></span><br><span class="line">            CompletableFuture&lt;Integer&gt; points = CompletableFuture.supplyAsync(</span><br><span class="line">                    () -&gt; <span class="number">100</span>, ioPool);    <span class="comment">// 模拟读取积分</span></span><br><span class="line">            <span class="type">String</span> <span class="variable">result</span> <span class="operator">=</span> user.thenCombine(points,</span><br><span class="line">                    (name, score) -&gt; name + <span class="string">&quot;，积分：&quot;</span> + score)</span><br><span class="line">                    .get(<span class="number">2</span>, TimeUnit.SECONDS); <span class="comment">// 限制调用方等待时间</span></span><br><span class="line">            System.out.println(result);</span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">            ioPool.shutdown(); <span class="comment">// JDK 8 的 ExecutorService 还不能用于 try-with-resources</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>结果为
+<code>张三，积分：100</code>。示例中的两个任务只是模拟返回数据，没有进行真实网络调用。</p>
+<pre><code class="highlight mermaid">flowchart LR
+    A[收到请求] --&gt; B[读取用户信息]
+    A --&gt; C[读取积分]
+    B --&gt; D[thenCombine：组合两个结果]
+    C --&gt; D
+    D --&gt; E[返回展示数据]</code></pre>
+<p>这里显式指定了线程池，所以任务的执行资源是可见的。未指定执行器的
+Async 方法通常使用 <code>ForkJoinPool.commonPool()</code>；不带 Async
+的后续操作可能由完成前一个任务的线程执行，并不保证切换线程。具体策略见
+<a target="_blank" rel="noopener" href="https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/CompletableFuture.html">CompletableFuture
+API</a>。</p>
+<p>另外，<code>get(2, TimeUnit.SECONDS)</code>
+<strong>只限制当前调用方等待结果的时间</strong>，不保证底层任务被中断。真实
+HTTP、数据库调用仍需要配置自身超时；取消、异常传播和线程池容量也需要一起设计。</p>
+<h3 id="永久代移除类元数据进入本地内存">永久代移除，类元数据进入本地内存</h3>
+<p>从 JDK 8 开始，HotSpot
+移除了永久代，类元数据改为使用本地内存中的元空间。老脚本中的
+<code>PermSize</code>、<code>MaxPermSize</code>
+需要清理，相关限制改为考虑 <code>MaxMetaspaceSize</code>。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-XX:MaxMetaspaceSize=256m</span><br></pre></td></tr></table></figure>
+<p><strong>元空间不占 Java 堆，但仍占进程内存。</strong>
+这里的“本地内存”也不能简单等同于
+<code>ByteBuffer.allocateDirect()</code>
+所管理的直接缓冲区。容器内存预算不能只看 <code>-Xmx</code>。参考 <a target="_blank" rel="noopener" href="https://docs.oracle.com/en/java/javase/25/gctuning/other-considerations.html">Oracle：Class
+Metadata</a>。</p>
+<h2 id="jdk-9模块化与运行时结构的变化">JDK
+9：模块化与运行时结构的变化</h2>
+<h3 id="模块系统把依赖和开放边界写出来">模块系统：把依赖和开放边界写出来</h3>
+<p>JDK 8 的 classpath 很像把所有 JAR
+放在同一个仓库里：只要找到类，很多内部实现也能被应用依赖。</p>
+<p><strong>模块系统进一步表达“我依赖谁”“我允许谁访问哪些包”。</strong>
+JDK 自身也被拆成模块，传统 <code>rt.jar</code>
+等内部文件布局随之变化。Java 模块与 Maven 模块并不是同一个概念。参考 <a target="_blank" rel="noopener" href="https://openjdk.org/jeps/261">JEP 261：Module System</a>和 <a target="_blank" rel="noopener" href="https://docs.oracle.com/javase/9/docs/api/java/lang/module/package-summary.html">java.lang.module
+包说明</a>。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// JDK 9，module-info.java，独立的模块声明示意</span></span><br><span class="line"><span class="keyword">module</span> com.example.orders &#123;</span><br><span class="line">    <span class="keyword">requires</span> java.sql;                    <span class="comment">// 依赖 JDBC 模块</span></span><br><span class="line">    <span class="keyword">exports</span> com.example.orders.api;       <span class="comment">// 对外提供公开 API</span></span><br><span class="line">    opens com.example.orders.entity</span><br><span class="line">            to com.example.mapper;        <span class="comment">// 只向指定框架模块开放深反射</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这段声明假设 API 包、实体包和 <code>com.example.mapper</code>
+模块实际存在；它不是一个可以单文件运行的 main 示例。</p>
+<ul>
+<li><code>requires</code>：声明模块依赖。</li>
+<li><code>exports</code>：开放包的公共 API 访问。</li>
+<li><code>opens</code>：开放运行时反射访问，包括适用条件下的非 public
+成员。</li>
+</ul>
+<p><strong>exports 不等于 opens。</strong> 一个包允许正常调用 public
+方法，不代表框架就能反射访问里面的 private 字段。</p>
+<pre><code class="highlight mermaid">flowchart LR
+    A[订单模块] --&gt;|requires| B[java.sql]
+    C[业务调用模块] --&gt;|访问 exports 的 API 包| A
+    D[映射框架模块] --&gt;|深反射访问 opens 的实体包| A</code></pre>
+<p>企业项目不必为了升级 JDK，立即把所有业务 JAR 改成具名模块。传统
+classpath 仍可使用；但依赖 JDK 内部 API
+的代码仍需要迁移。真正的影响经常落在反射框架、字节码工具、旧启动脚本和自定义类加载器上。</p>
+<p>模块化还带来了
+<code>jlink</code>：为模块化应用组合需要的运行时模块。它可以缩小运行时分发内容，但仍要处理第三方依赖、自动模块等限制，不能把任意老项目
+JAR 原样交给它就认为完成了裁剪。</p>
+<h3 id="集合工厂创建不可修改集合更直接">集合工厂：创建不可修改集合更直接</h3>
+<p>JDK 9 增加
+<code>List.of()</code>、<code>Set.of()</code>、<code>Map.of()</code>；JDK
+10 又增加 <code>copyOf()</code> 系列。</p>
+<p><strong>下面示例最低版本：JDK 9。</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.util.ArrayList;</span><br><span class="line"><span class="keyword">import</span> java.util.List;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">CollectionFactoryDemo</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        List&lt;String&gt; fixed = List.of(<span class="string">&quot;订单&quot;</span>, <span class="string">&quot;支付&quot;</span>);</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            fixed.add(<span class="string">&quot;库存&quot;</span>); <span class="comment">// 不可修改集合，抛出 UnsupportedOperationException</span></span><br><span class="line">        &#125; <span class="keyword">catch</span> (UnsupportedOperationException e) &#123;</span><br><span class="line">            System.out.println(<span class="string">&quot;List.of 创建的集合不能添加元素&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        List&lt;String&gt; mutable = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;(fixed);</span><br><span class="line">        mutable.add(<span class="string">&quot;库存&quot;</span>); <span class="comment">// 需要修改时，显式创建可变副本</span></span><br><span class="line">        System.out.println(mutable);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这些集合适合表示固定配置、结果快照等内容，但需要明确它们的边界：</p>
+<ul>
+<li><code>of()</code> 创建的集合不允许 null。</li>
+<li><code>Set.of()</code> 的重复元素、<code>Map.of()</code>
+的重复键会抛出异常。</li>
+<li><strong>集合不可修改，不代表里面的对象不可变。</strong>
+保存的是可变对象时，对象内部仍可能变化。</li>
+<li>不要依赖 <code>Set.of()</code>、<code>Map.of()</code>
+的迭代顺序。</li>
+</ul>
+<p><code>Collections.unmodifiableList(source)</code>
+通常是包装原列表的视图，原列表改变会反映到视图。<code>List.copyOf(source)</code>
+则不会跟随 source
+后续的结构变化，不过仍是浅拷贝，也不保证一定创建新实例。参考 <a target="_blank" rel="noopener" href="https://docs.oracle.com/javase/9/docs/api/java/util/List.html">JDK
+9 List API</a>、<a target="_blank" rel="noopener" href="https://openjdk.org/jeps/269">JEP 269</a>。</p>
+<h3 id="紧凑字符串从-char-到-byte-加编码标记">紧凑字符串：从 char[] 到
+byte[] 加编码标记</h3>
+<p>在 JDK 8 的 String 实现中，字符内容由 <code>char[]</code>
+保存。即使字符串只包含英文和数字，每个 UTF-16
+代码单元也需要两个字节。</p>
+<p>JDK 9 的 Compact Strings 改为根据内容选择 Latin-1 或 UTF-16
+存储。下面两个字段摘自 <strong>OpenJDK JDK 25 的 String
+实现</strong>：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> <span class="type">byte</span>[] value;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> <span class="type">byte</span> coder;</span><br></pre></td></tr></table></figure>
+<p><code>value</code> 保存内容，<code>coder</code>
+标识内部编码。可以用下面这张示意图理解：</p>
+<pre><code class="highlight mermaid">flowchart TD
+    A[创建字符串] --&gt; B&#123;是否可用 Latin-1 表示&#125;
+    B --&gt;|可以| C[byte 数组，每个字符一个字节]
+    B --&gt;|不可以| D[byte 数组，以 UTF-16 保存代码单元]
+    C --&gt; E[coder 标识内部编码]
+    D --&gt; E</code></pre>
+<p><strong>这是 JVM 类库内部的存储优化，没有把 String 的对外语义改成
+UTF-8。</strong> <code>length()</code>、<code>charAt()</code> 仍按
+UTF-16 代码单元工作；中文字符串通常不能享受 Latin-1
+带来的那部分内容压缩。</p>
+<p>对大量英文标识、JSON
+字段名等场景，这可能降低内存开销，但不能推出“所有字符串对象都缩小一半”。对象头、数组头和对齐也占空间。参考
+<a target="_blank" rel="noopener" href="https://openjdk.org/jeps/254">JEP 254</a>、<a target="_blank" rel="noopener" href="https://github.com/openjdk/jdk/blob/jdk-25%2B36/src/java.base/share/classes/java/lang/String.java">OpenJDK
+String.java，jdk-25+36</a>。</p>
+<h3 id="g1-默认策略与统一-jvm-日志">G1 默认策略与统一 JVM 日志</h3>
+<p>JDK 9 将 G1 设为 <strong>server
+配置的默认垃圾收集器</strong>。以前常见的“JDK 9 后所有环境默认都是
+G1”说法并不严谨；全环境默认策略是在 JDK 27 进一步改变的。见 <a target="_blank" rel="noopener" href="https://docs.oracle.com/javase/9/whatsnew/">Oracle JDK 9
+新特性说明</a>。</p>
+<p>同时，JDK 9 引入统一 JVM 日志。GC 日志通常用下面的形式配置：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">java -Xlog:gc*:file=gc.log:time,uptime,level,tags:filecount=5,filesize=20M -jar app.jar</span><br></pre></td></tr></table></figure>
+<p>这里按 GC
+标签记录日志，并配置轮转。企业升级时应同步检查日志采集和解析规则，不能继续假定新版本日志与
+JDK 8 的 <code>PrintGCDetails</code> 输出完全一致。</p>
+<h2 id="jdk-10局部变量推断与容器运行">JDK
+10：局部变量推断与容器运行</h2>
+<h3 id="var减少重复类型信息">var：减少重复类型信息</h3>
+<p><strong>var 是编译期局部变量类型推断，不是动态类型。</strong></p>
+<p><strong>下面示例最低版本：JDK 10。</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.util.ArrayList;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">VarDemo</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">var</span> <span class="variable">names</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;String&gt;(); <span class="comment">// 编译期推断为 ArrayList&lt;String&gt;</span></span><br><span class="line">        names.add(<span class="string">&quot;张三&quot;</span>);</span><br><span class="line">        <span class="comment">// names = 123; // 编译错误：变量类型不会因为使用 var 而改变</span></span><br><span class="line">        System.out.println(names.get(<span class="number">0</span>));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>编译器看右边的 <code>new ArrayList&lt;String&gt;()</code>，就知道
+names 是什么类型，所以后面仍然进行静态类型检查。</p>
+<p><code>var</code>
+不能直接用于字段、方法返回类型或普通方法参数；也不能写
+<code>var value = null</code>，因为推断不出有用的类型。它适合右侧已经清楚说明类型的局部变量。<code>var result = service.process()</code>
+这种写法如果隐藏了关键信息，就不一定值得使用。参考 <a target="_blank" rel="noopener" href="https://docs.oracle.com/en/java/javase/25/language/local-variable-type-inference.html">Oracle：Local
+Variable Type Inference</a>。</p>
+<h3 id="容器资源识别jvm-需要知道自己实际能用多少资源">容器资源识别：JVM
+需要知道自己实际能用多少资源</h3>
+<p>一个容器只能使用 2GB 内存，但宿主机有 64GB。如果 JVM
+按宿主机资源估算堆大小和并行度，就可能超过容器边界。</p>
+<p>JDK 10 改善了 Linux 容器中的 CPU、内存资源识别，并提供
+<code>UseContainerSupport</code>、RAM
+百分比等相关参数；部分能力也回移到了 <strong>8u191</strong>
+等更新版本。是否完整识别 cgroups v2
+等环境，还要看具体更新版本和发行商构建。参考 <a target="_blank" rel="noopener" href="https://www.oracle.com/java/technologies/javase/10all-relnotes.html">JDK
+10 发布说明</a>、<a target="_blank" rel="noopener" href="https://www.oracle.com/java/technologies/javase/8u191-relnotes.html">JDK
+8u191 发布说明</a>。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">java -XX:MaxRAMPercentage=60.0 -jar app.jar</span><br></pre></td></tr></table></figure>
+<p>这个例子只是一个比例配置，<strong>60%
+并不是通用最佳值</strong>。进程总内存还包含元空间、线程栈、直接缓冲区、GC
+数据结构等；容器预算必须覆盖这些部分。</p>
+<p>在支持相关日志标签的现代 JDK 上，可以用下面的命令检查识别情况：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">java -Xlog:os+container=trace -version</span><br></pre></td></tr></table></figure>
+<p>JDK 10 的另一项重要变化是 <strong>Application CDS（JEP
+310）</strong>：把类数据共享扩展到应用类，减少重复的类加载相关工作。后面的
+AOT 优化是在这个方向上继续演进，见 <a target="_blank" rel="noopener" href="https://docs.oracle.com/en/java/javase/25/vm/class-data-sharing.html">Oracle：Class
+Data Sharing</a>。</p>
+<h2 id="jdk-11标准-http-客户端与生产诊断">JDK 11：标准 HTTP
+客户端与生产诊断</h2>
+<h3 id="httpclient-正式进入标准库">HttpClient 正式进入标准库</h3>
+<p>新 HTTP 客户端在 JDK 9、10 中孵化，JDK 11 以
+<code>java.net.http</code> API 正式发布，支持
+HTTP/1.1、HTTP/2，以及同步、异步请求。</p>
+<p><strong>下面示例最低版本：JDK 11。</strong>
+为了可以直接运行，示例先启动一个临时本地 HTTP 服务，再请求它。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> com.sun.net.httpserver.HttpServer;</span><br><span class="line"><span class="keyword">import</span> java.net.InetSocketAddress;</span><br><span class="line"><span class="keyword">import</span> java.net.URI;</span><br><span class="line"><span class="keyword">import</span> java.net.http.HttpClient;</span><br><span class="line"><span class="keyword">import</span> java.net.http.HttpRequest;</span><br><span class="line"><span class="keyword">import</span> java.net.http.HttpResponse;</span><br><span class="line"><span class="keyword">import</span> java.nio.charset.StandardCharsets;</span><br><span class="line"><span class="keyword">import</span> java.time.Duration;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">HttpClientDemo</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        <span class="comment">// 启动临时本地服务，让示例不依赖外网；生产项目通常调用已有服务</span></span><br><span class="line">        <span class="type">HttpServer</span> <span class="variable">server</span> <span class="operator">=</span> HttpServer.create(<span class="keyword">new</span> <span class="title class_">InetSocketAddress</span>(<span class="string">&quot;127.0.0.1&quot;</span>, <span class="number">0</span>), <span class="number">0</span>);</span><br><span class="line">        server.createContext(<span class="string">&quot;/health&quot;</span>, exchange -&gt; &#123;</span><br><span class="line">            <span class="type">byte</span>[] body = <span class="string">&quot;ok&quot;</span>.getBytes(StandardCharsets.UTF_8);</span><br><span class="line">            exchange.sendResponseHeaders(<span class="number">200</span>, body.length);</span><br><span class="line">            <span class="keyword">try</span> (<span class="type">var</span> <span class="variable">output</span> <span class="operator">=</span> exchange.getResponseBody()) &#123;</span><br><span class="line">                output.write(body);</span><br><span class="line">            &#125;</span><br><span class="line">            exchange.close();</span><br><span class="line">        &#125;);</span><br><span class="line">        server.start();</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="type">HttpClient</span> <span class="variable">client</span> <span class="operator">=</span> HttpClient.newBuilder()</span><br><span class="line">                    .connectTimeout(Duration.ofSeconds(<span class="number">2</span>)).build();</span><br><span class="line">            <span class="type">HttpRequest</span> <span class="variable">request</span> <span class="operator">=</span> HttpRequest.newBuilder()</span><br><span class="line">                    .uri(URI.create(<span class="string">&quot;http://127.0.0.1:&quot;</span> + server.getAddress().getPort() + <span class="string">&quot;/health&quot;</span>))</span><br><span class="line">                    .timeout(Duration.ofSeconds(<span class="number">3</span>)).GET().build();</span><br><span class="line">            HttpResponse&lt;String&gt; response = client.send(</span><br><span class="line">                    request, HttpResponse.BodyHandlers.ofString());</span><br><span class="line">            System.out.println(response.statusCode() + <span class="string">&quot; &quot;</span> + response.body());</span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">            server.stop(<span class="number">0</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>输出为 <code>200 ok</code>。</p>
+<p><code>connectTimeout</code> 限制建立连接的等待；请求的
+<code>timeout</code> 约束该请求。两者不是同一个概念。生产中通常复用
+HttpClient，而不是每个请求都创建一个，从而复用连接等资源。</p>
+<p><code>sendAsync()</code> 返回 CompletableFuture，可以继续组合响应。但
+<strong>HTTP 状态码 4xx、5xx
+是收到的响应，不会仅仅因为状态码本身就自动变成 Java
+异常</strong>，业务代码仍需要判断。内置客户端也不等于自动拥有重试、熔断和业务监控。参考
+<a target="_blank" rel="noopener" href="https://docs.oracle.com/en/java/javase/11/docs/api/java.net.http/java/net/http/HttpClient.html">JDK
+11 HttpClient API</a>、<a target="_blank" rel="noopener" href="https://openjdk.org/jeps/321">JEP
+321</a>。</p>
+<h3 id="jfr把运行时行为记录下来">JFR：把运行时行为记录下来</h3>
+<p>JFR（JDK Flight Recorder）并不是到 JDK 11 才第一次诞生；重要变化是
+<strong>JDK 11 通过 JEP 328 将它贡献到
+OpenJDK，成为广泛可用的诊断能力</strong>。</p>
+<p>它可以记录 GC、线程、锁、分配、方法采样和 I/O
+等事件，帮助我们理解“为什么这个时间段变慢了”。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">java -XX:StartFlightRecording=filename=app.jfr,settings=profile,duration=60s -jar app.jar</span><br></pre></td></tr></table></figure>
+<p>也可以对正在运行的进程启动记录：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">jcmd &lt;pid&gt; JFR.start name=incident settings=profile duration=60s filename=incident.jfr</span><br></pre></td></tr></table></figure>
+<p><code>default</code> 配置偏向低开销持续记录，<code>profile</code>
+收集更多分析数据。开销取决于启用的事件和阈值，不能保证对所有应用都固定小于某个百分比。参考
+<a target="_blank" rel="noopener" href="https://docs.oracle.com/en/java/javase/11/troubleshoot/diagnostic-tools.html">Oracle
+JDK 11：Diagnostic Tools</a>和 <a target="_blank" rel="noopener" href="https://docs.oracle.com/en/java/javase/11/troubleshoot/troubleshoot-performance-issues-using-jfr.html">JFR
+性能排查说明</a>。</p>
+<h3 id="tls-1.3-与内置模块移除">TLS 1.3 与内置模块移除</h3>
+<p>JDK 11 支持 TLS 1.3，这是网络安全的重要演进。同时，JDK
+移除了部分过去随 JDK 提供的 Java EE、CORBA 模块，例如 JAXB、JAX-WS。</p>
+<p>如果旧项目默认依赖 <code>javax.xml.bind</code> 这类 JDK 自带
+API，升级后可能出现编译错误或
+<code>ClassNotFoundException</code>。需要显式引入适配的外部依赖。<strong>这也不意味着所有
+<code>javax.*</code> 包都被移除</strong>，例如
+<code>javax.sql</code>、<code>javax.crypto</code> 仍有各自的标准
+API。参考 <a target="_blank" rel="noopener" href="https://docs.oracle.com/en/java/javase/13/migrate/">Oracle JDK
+迁移指南：JDK 11 移除项与 TLS 1.3</a>。</p>
+<h2 id="jdk-14switch-可以产生结果">JDK 14：switch 可以产生结果</h2>
+<h3 id="switch-表达式">switch 表达式</h3>
+<p>以前的 switch
+主要用于执行分支语句。若想计算一个值，常常要提前声明变量，再在每个分支中赋值，而且还要注意是否遗漏
+<code>break</code>。</p>
+<p>JDK 14 正式发布 switch 表达式：<strong>直接让整个 switch
+返回计算结果。</strong> 它在 JDK 12、13 中经历过预览。见 <a target="_blank" rel="noopener" href="https://docs.oracle.com/en/java/javase/24/language/java-language-changes-summary.html">Oracle
+语言变化汇总</a>、<a target="_blank" rel="noopener" href="https://openjdk.org/jeps/361">JEP
+361</a>。</p>
+<p><strong>下面示例最低版本：JDK 14。</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">SwitchDemo</span> &#123;</span><br><span class="line">    <span class="keyword">enum</span> <span class="title class_">OrderStatus</span> &#123; CREATED, PAID, CLOSED &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> String <span class="title function_">label</span><span class="params">(OrderStatus status)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">switch</span> (status) &#123;</span><br><span class="line">            <span class="keyword">case</span> CREATED -&gt; <span class="string">&quot;待支付&quot;</span>;</span><br><span class="line">            <span class="keyword">case</span> PAID -&gt; <span class="string">&quot;已支付&quot;</span>;</span><br><span class="line">            <span class="keyword">case</span> CLOSED -&gt; &#123;</span><br><span class="line">                <span class="type">String</span> <span class="variable">reason</span> <span class="operator">=</span> <span class="string">&quot;订单已经关闭&quot;</span>;</span><br><span class="line">                <span class="keyword">yield</span> reason; <span class="comment">// 为整个 switch 表达式产生结果</span></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        System.out.println(label(OrderStatus.CLOSED));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>可以看到，<code>label</code> 方法直接返回 switch 的结果。</p>
+<ul>
+<li><code>case ... -&gt;</code>
+不会像传统冒号分支那样自动贯穿到下一个分支。</li>
+<li>分支需要多条语句时，用代码块和 <code>yield</code>
+产生该分支的结果。</li>
+<li>表达式需要穷尽可能的输入情况。示例覆盖了枚举全部常量，因此可以省略
+default。</li>
+</ul>
+<p>注意，<strong>这里的普通 switch 表达式，与 JDK 21 的模式匹配 switch
+是两次不同的演进。</strong> 不能因为写了箭头，就认为 JDK 14 已支持
+<code>case SomeType value</code> 这类类型模式。</p>
+<h3 id="cms-被移除">CMS 被移除</h3>
+<p>CMS 在 JDK 9 被标记为废弃，并在 <strong>JDK 14
+移除</strong>。如果旧启动脚本还带着
+<code>-XX:+UseConcMarkSweepGC</code>，升级时必须清理并重新选择 GC
+配置。参考 <a target="_blank" rel="noopener" href="https://openjdk.org/jeps/363">JEP 363：Remove the
+Concurrent Mark Sweep Garbage Collector</a>。</p>
+<p>更换收集器之后要重新观察暂停时间、吞吐量和内存开销，不能把 CMS
+的整套调优参数直接搬给 G1。</p>
+<h2 id="jdk-15文本块与低延迟垃圾收集器">JDK
+15：文本块与低延迟垃圾收集器</h2>
+<h3 id="文本块多行文本不必反复拼接">文本块：多行文本不必反复拼接</h3>
+<p>SQL、JSON、HTML、测试报文经常跨多行。JDK 15
+正式发布文本块，减少换行和引号的转义噪声。</p>
+<p><strong>下面示例最低版本：JDK 15。</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">TextBlockDemo</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">String</span> <span class="variable">sql</span> <span class="operator">=</span> <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">                SELECT id, amount</span></span><br><span class="line"><span class="string">                FROM orders</span></span><br><span class="line"><span class="string">                WHERE user_id = ?</span></span><br><span class="line"><span class="string">                &quot;&quot;&quot;</span>; <span class="comment">// 保留参数占位符，业务中交给 PreparedStatement 绑定</span></span><br><span class="line">        System.out.print(sql);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>输出就是三行 SQL。文本块仍然产生普通 String，可以传给接受 String 的
+API。</p>
+<p><strong>文本块不是原始字符串，也不是自动的字符串插值。</strong>
+它会处理转义、规范化行结束符，并去除附带缩进；关闭分隔符的位置还会影响末尾是否保留换行。需要精确比较报文或签名内容时，要检查最终字符串。参考
+<a target="_blank" rel="noopener" href="https://docs.oracle.com/en/java/javase/18/text-blocks/index.html">Oracle：Programmer’s
+Guide to Text Blocks</a>。</p>
+<p>示例中的 <code>?</code> 特意保留了 SQL
+参数占位符。使用文本块并不会自动防止 SQL 注入，真正的参数仍需要交给
+PreparedStatement 等机制绑定。</p>
+<h3 id="zgcshenandoah-转为生产功能">ZGC、Shenandoah 转为生产功能</h3>
+<p>ZGC 在 JDK 11 引入时是实验性收集器，在 <strong>JDK 15
+转为生产功能</strong>；Shenandoah 在 JDK 12 引入，也在 JDK 15
+转为生产功能。对应 <a target="_blank" rel="noopener" href="https://openjdk.org/jeps/377">JEP
+377：ZGC</a>、<a target="_blank" rel="noopener" href="https://openjdk.org/jeps/379">JEP
+379：Shenandoah</a>。</p>
+<p>它们重点解决低暂停需求。是否适合应用，要结合 CPU
+预算、堆大小、分配速率和吞吐量测试；“转为生产功能”也不表示自动成为默认收集器，发行包和平台还可能影响可用性。</p>
+<p>ZGC 的后续分代演进和启用参数，放在 JDK 21—24 的章节中统一说明。</p>
+<h2 id="jdk-16record-与-instanceof-模式匹配">JDK 16：Record 与
+instanceof 模式匹配</h2>
+<h3 id="record为数据载体减少样板代码">Record：为数据载体减少样板代码</h3>
+<p>一个返回给前端的用户视图，可能只包含
+id、名字和角色。传统类通常需要写字段、构造器、访问器以及
+equals、hashCode、toString。</p>
+<p><strong>Record
+用声明组件的方式表达“这个类型主要承载这些数据”。</strong> 它在 JDK
+14、15 中预览，在 JDK 16 正式发布。</p>
+<p><strong>下面示例最低版本：JDK 16。</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.util.ArrayList;</span><br><span class="line"><span class="keyword">import</span> java.util.List;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">RecordDemo</span> &#123;</span><br><span class="line">    <span class="keyword">record</span> <span class="title class_">UserView</span><span class="params">(<span class="type">long</span> id, String name, List&lt;String&gt; roles)</span> &#123;</span><br><span class="line">        UserView &#123;</span><br><span class="line">            <span class="keyword">if</span> (id &lt;= <span class="number">0</span>) &#123;</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">IllegalArgumentException</span>(<span class="string">&quot;id 必须为正数&quot;</span>);</span><br><span class="line">            &#125;</span><br><span class="line">            roles = List.copyOf(roles); <span class="comment">// 防御性复制，避免外部修改原列表</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        List&lt;String&gt; source = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">        source.add(<span class="string">&quot;USER&quot;</span>);</span><br><span class="line">        <span class="type">UserView</span> <span class="variable">user</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">UserView</span>(<span class="number">1</span>, <span class="string">&quot;张三&quot;</span>, source);</span><br><span class="line">        source.add(<span class="string">&quot;ADMIN&quot;</span>);</span><br><span class="line">        System.out.println(user.name());  <span class="comment">// 访问器是 name()，不是 getName()</span></span><br><span class="line">        System.out.println(user.roles()); <span class="comment">// [USER]，没有跟随原列表变化</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>运行结果：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">张三</span><br><span class="line">[USER]</span><br></pre></td></tr></table></figure>
+<p>编译器为组件生成 private final
+字段、同名访问器，并按规则生成构造器、equals、hashCode、toString。上面的
+<code>UserView &#123; ... &#125;</code>
+是<strong>紧凑规范构造器</strong>：参数与组件对应，构造器结束时，组件字段按规则被初始化。参考
+<a target="_blank" rel="noopener" href="https://docs.oracle.com/en/java/javase/25/language/records.html">Oracle：Record
+Classes</a>、<a target="_blank" rel="noopener" href="https://openjdk.org/jeps/395">JEP 395</a>。</p>
+<p>那么，Record 是不是完全不可变？</p>
+<p><strong>Record
+只保证组件字段的引用不可重新赋值，并不递归冻结被引用对象。</strong>
+如果直接保存外部可变 List，外部修改列表仍可能改变 Record
+表现出的内容。所以示例用了
+<code>List.copyOf(roles)</code>；如果列表元素自身可变，这仍不构成深不可变。</p>
+<pre><code class="highlight mermaid">flowchart LR
+    A[Record 的 final 字段] --&gt; B[引用一个 List]
+    B --&gt; C[列表中的元素]
+    D[final 限制字段重新赋值] -.-&gt; A
+    E[元素是否可变由元素类型决定] -.-&gt; C</code></pre>
+<p>Record 适合 DTO、查询投影、事件、值对象等明确的数据载体。它隐式
+final，不能作为普通可继承实体使用，也不提供可随意 set
+的组件。依赖无参构造、setter、继承代理等机制的框架，需要确认对应版本的适配能力。</p>
+<h3 id="instanceof-模式匹配类型判断后直接使用变量">instanceof
+模式匹配：类型判断后直接使用变量</h3>
+<p>以前通常要先 <code>instanceof</code>，再显式强制类型转换。JDK 16
+把这两步连在一起。</p>
+<p><strong>下面示例最低版本：JDK 16。</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">InstanceofDemo</span> &#123;</span><br><span class="line">    <span class="keyword">static</span> <span class="type">int</span> <span class="title function_">length</span><span class="params">(Object value)</span> &#123;</span><br><span class="line">        <span class="comment">// &amp;&amp; 右侧只有在匹配成功后才执行，因此可以安全使用 text</span></span><br><span class="line">        <span class="keyword">if</span> (value <span class="keyword">instanceof</span> String text &amp;&amp; !text.isBlank()) &#123;</span><br><span class="line">            <span class="keyword">return</span> text.length();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        System.out.println(length(<span class="string">&quot;Java&quot;</span>));</span><br><span class="line">        System.out.println(length(<span class="literal">null</span>)); <span class="comment">// instanceof 对 null 的结果为 false</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>输出为 <code>4</code> 和 <code>0</code>。</p>
+<p><code>text</code>
+只在编译器可以证明匹配成功的路径中可用。<code>&amp;&amp;</code>
+右侧需要左侧为 true，因此可以访问它；简单地改成 <code>||</code>
+后，右侧在类型不匹配时也可能执行，不能照搬同一个变量用法。</p>
+<p>这叫<strong>流作用域（flow
+scoping）</strong>，它根据控制流分析保证变量使用安全。参考 <a target="_blank" rel="noopener" href="https://docs.oracle.com/en/java/javase/25/language/pattern-matching-instanceof.html">Oracle：Pattern
+Matching with instanceof</a>、<a target="_blank" rel="noopener" href="https://openjdk.org/jeps/394">JEP
+394</a>。</p>
+<h2 id="jdk-17限制继承边界与加强封装">JDK
+17：限制继承边界与加强封装</h2>
+<h3 id="sealed明确一种结果只有哪些形式">sealed：明确一种结果只有哪些形式</h3>
+<p>“支付结果”可以是成功，也可以是失败。普通接口默认可以被其他类型任意实现，这对开放扩展有好处，但有时领域模型需要限制结果类型。</p>
+<p><strong>sealed 允许我们声明受控的继承集合。</strong></p>
+<p><strong>下面示例最低版本：JDK 17。</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">SealedDemo</span> &#123;</span><br><span class="line">    <span class="keyword">sealed</span> <span class="keyword">interface</span> <span class="title class_">PaymentResult</span> <span class="keyword">permits</span> Success, Failure &#123;&#125;</span><br><span class="line">    <span class="keyword">record</span> <span class="title class_">Success</span><span class="params">(String tradeNo)</span> <span class="keyword">implements</span> <span class="title class_">PaymentResult</span> &#123;&#125;</span><br><span class="line">    <span class="keyword">record</span> <span class="title class_">Failure</span><span class="params">(String reason)</span> <span class="keyword">implements</span> <span class="title class_">PaymentResult</span> &#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// record 隐式为 final，满足 sealed 对直接子类型的要求</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">PaymentResult</span> <span class="variable">result</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Success</span>(<span class="string">&quot;T20261005001&quot;</span>);</span><br><span class="line">        System.out.println(result);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>permits</code> 列出允许的直接子类型。直接子类型需要是
+<code>final</code>、<code>sealed</code> 或
+<code>non-sealed</code>；Record 隐式 final，因此很适合承载具体结果。</p>
+<p>在具名模块中，允许的直接子类型必须处于同一模块；在未命名模块中，则必须处于同一包。sealed
+在 JDK 15、16 中预览，在 <strong>JDK 17 正式发布</strong>。参考 <a target="_blank" rel="noopener" href="https://docs.oracle.com/en/java/javase/24/migrate/significant-changes-jdk-17.html">Oracle：JDK
+17 重要变化</a>、<a target="_blank" rel="noopener" href="https://openjdk.org/jeps/409">JEP
+409</a>。</p>
+<p>这个特性与 JDK 21 的模式匹配 switch
+配合，可以让编译器检查业务分支是否覆盖全部结果。</p>
+<h3 id="强封装-jdk-内部实现">强封装 JDK 内部实现</h3>
+<p>JDK 16
+已经默认加强了封装，但还能用旧的全局机制放松一部分限制。<strong>JDK 17
+通过 JEP 403
+移除了这种一键放松封装的路径</strong>，<code>--illegal-access=permit</code>
+不再能恢复以前的行为。</p>
+<p>常见现象是老库反射访问 JDK 的 private 成员时抛出
+<code>InaccessibleObjectException</code>。解决路径通常是升级相关库、迁移到受支持
+API；确实需要临时兼容时，可以精确开放某个包，例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">java --add-opens java.base/java.lang=ALL-UNNAMED -jar app.jar</span><br></pre></td></tr></table></figure>
+<p>这个参数允许 classpath 上的代码对 <code>java.lang</code>
+包进行深反射，<strong>不是所有反射异常的通用修复，也不负责恢复已经被移除的
+API</strong>。<code>--add-exports</code> 与 <code>--add-opens</code>
+的职责也不同。参考 <a target="_blank" rel="noopener" href="https://docs.oracle.com/en/java/javase/25/migrate/migrating-jdk-8-later-jdk-releases.html">Oracle：从
+JDK 8 迁移到后续版本</a>、<a target="_blank" rel="noopener" href="https://openjdk.org/jeps/403">JEP
+403</a>。</p>
+<h2 id="jdk-18默认字符集和资源释放的变化">JDK
+18：默认字符集和资源释放的变化</h2>
+<h3 id="默认字符集改为-utf-8">默认字符集改为 UTF-8</h3>
+<p>同一个
+<code>new String(bytes)</code>，在过去不同操作系统或区域配置下可能使用不同字符集。JDK
+18 通过 JEP 400 将标准 API 的默认字符集统一为 UTF-8，<strong>控制台 I/O
+等场景仍需注意其单独的编码规则</strong>。</p>
+<p><strong>下面示例最低版本：JDK 18。</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.nio.charset.Charset;</span><br><span class="line"><span class="keyword">import</span> java.nio.charset.StandardCharsets;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">CharsetDemo</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;默认字符集：&quot;</span> + Charset.defaultCharset());</span><br><span class="line">        <span class="type">byte</span>[] bytes = <span class="string">&quot;订单&quot;</span>.getBytes(StandardCharsets.UTF_8);</span><br><span class="line">        System.out.println(<span class="keyword">new</span> <span class="title class_">String</span>(bytes, StandardCharsets.UTF_8));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>普通默认配置下，第一行输出 UTF-8；第二行显式使用
+UTF-8，避免依赖默认值。</p>
+<p><strong>默认字符集变化不会自动把旧文件转成 UTF-8。</strong>
+如果历史文件是 GBK，升级后仍需要按 GBK 解码。像
+<code>Files.readString(path)</code> 这样的 API 本来就默认
+UTF-8，并不是所有读写方法都到 JDK 18 才改变行为。</p>
+<p>迁移时可以用 <code>-Dfile.encoding=COMPAT</code>
+临时检查旧默认行为，但长期应明确文件、网络和数据库边界上的编码。参考 <a target="_blank" rel="noopener" href="https://docs.oracle.com/en/java/javase/20/migrate/preparing-migration.html">Oracle：Be
+Aware Of The Default Charset</a>、<a target="_blank" rel="noopener" href="https://docs.oracle.com/en/java/javase/18/docs/api/java.base/java/lang/System.html">JDK
+18 System API</a>。</p>
+<h3 id="finalization-被标记为待移除">finalization 被标记为待移除</h3>
+<p><code>finalize()</code> 存在不确定的执行时间、性能与安全问题。JDK 9
+已废弃 <code>Object.finalize()</code>；JDK 18 通过 <strong>JEP 421 将
+finalization 标记为待移除</strong>。</p>
+<p>这不代表 JDK 18 就移除了
+<code>Object.finalize()</code>。关键是：新代码不要再依赖它释放连接、文件等资源。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// try-with-resources 从 JDK 7 就已存在；不是 JDK 18 的新语法</span></span><br><span class="line"><span class="comment">// 代码片段，放在可以处理 IOException 的方法内</span></span><br><span class="line"><span class="keyword">try</span> (<span class="type">var</span> <span class="variable">input</span> <span class="operator">=</span> java.nio.file.Files.newInputStream(java.nio.file.Path.of(<span class="string">&quot;data.txt&quot;</span>))) &#123;</span><br><span class="line">    <span class="comment">// 在作用域内使用资源，退出时确定性地调用 close()</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>首选明确的 <code>close()</code> 与 try-with-resources；Cleaner
+等机制只能作为某些资源的兜底，不能保证在业务期望的时刻执行。参考 <a target="_blank" rel="noopener" href="https://docs.oracle.com/en/java/javase/25/migrate/significant-changes-jdk-18.html">Oracle：JDK
+18 重要变化</a>、<a target="_blank" rel="noopener" href="https://openjdk.org/jeps/421">JEP
+421</a>。</p>
+<h2 id="jdk-21并发与业务建模的重要版本">JDK
+21：并发与业务建模的重要版本</h2>
+<h3 id="虚拟线程让大量等待不必占住大量操作系统线程">虚拟线程：让大量等待不必占住大量操作系统线程</h3>
+<p>一个请求在等数据库响应时，CPU
+通常没有一直计算。如果每个等待请求都占着一个操作系统线程，线程数量和线程栈开销就可能成为并发瓶颈。</p>
+<p><strong>虚拟线程是由 JDK 实现的轻量线程。它运行 Java
+代码时仍需要底层平台线程，但在许多阻塞等待点可以卸载，释放承载线程去运行其他虚拟线程。</strong>
+虚拟线程在 19、20 中预览，在 JDK 21 正式发布。</p>
+<pre><code class="highlight mermaid">flowchart TD
+    A[多个虚拟线程] --&gt; B[JDK 调度器]
+    B --&gt; C[承载线程 1]
+    B --&gt; D[承载线程 2]
+    C --&gt; E[执行任务甲]
+    E --&gt; F[甲等待可卸载的 I/O]
+    F --&gt; G[保存执行状态并卸载甲]
+    G --&gt; H[同一承载线程执行任务乙]
+    F --&gt; I[I/O 就绪后重新调度甲]</code></pre>
+<p>这是一张概念示意图，不表示所有阻塞操作都能够卸载。平台线程通常与操作系统线程关联；虚拟线程与承载线程之间不保持永久的一对一关系。详细模型见
+<a target="_blank" rel="noopener" href="https://openjdk.org/jeps/444">JEP 444</a>、<a target="_blank" rel="noopener" href="https://dev.java/learn/new-features/virtual-threads/">Java
+官方：Virtual Threads</a>。</p>
+<p><strong>下面示例最低版本：JDK 21。</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.util.ArrayList;</span><br><span class="line"><span class="keyword">import</span> java.util.List;</span><br><span class="line"><span class="keyword">import</span> java.util.concurrent.Executors;</span><br><span class="line"><span class="keyword">import</span> java.util.concurrent.Future;</span><br><span class="line"><span class="keyword">import</span> java.util.concurrent.Semaphore;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">VirtualThreadDemo</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        <span class="type">Semaphore</span> <span class="variable">permits</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Semaphore</span>(<span class="number">10</span>); <span class="comment">// 最多 10 个任务同时使用下游资源</span></span><br><span class="line">        List&lt;Future&lt;Boolean&gt;&gt; tasks = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">        <span class="keyword">try</span> (<span class="type">var</span> <span class="variable">executor</span> <span class="operator">=</span> Executors.newVirtualThreadPerTaskExecutor()) &#123;</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; <span class="number">100</span>; i++) &#123;</span><br><span class="line">                tasks.add(executor.submit(() -&gt; &#123;</span><br><span class="line">                    <span class="keyword">permits</span>.acquire();</span><br><span class="line">                    <span class="keyword">try</span> &#123;</span><br><span class="line">                        Thread.sleep(<span class="number">10</span>); <span class="comment">// 模拟等待 I/O，这里不做性能基准</span></span><br><span class="line">                        <span class="keyword">return</span> Thread.currentThread().isVirtual();</span><br><span class="line">                    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">                        <span class="keyword">permits</span>.release();</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;));</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="type">boolean</span> <span class="variable">allVirtual</span> <span class="operator">=</span> <span class="literal">true</span>;</span><br><span class="line">            <span class="keyword">for</span> (Future&lt;Boolean&gt; task : tasks) &#123;</span><br><span class="line">                allVirtual &amp;= task.get();</span><br><span class="line">            &#125;</span><br><span class="line">            System.out.println(<span class="string">&quot;全部使用虚拟线程：&quot;</span> + allVirtual);</span><br><span class="line">        &#125; <span class="comment">// 关闭执行器并等待任务结束</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>输出为 <code>全部使用虚拟线程：true</code>。</p>
+<p>这里为每个任务创建虚拟线程，同时用 Semaphore 把资源使用并发量限制为
+10。两个数字并不矛盾：<strong>虚拟线程便宜，数据库连接、远程服务容量等资源仍然有限。</strong></p>
+<p>我们看一下创建执行器的源码，摘自 <strong>OpenJDK JDK 25 的 Executors
+实现</strong>：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> ExecutorService <span class="title function_">newVirtualThreadPerTaskExecutor</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="type">ThreadFactory</span> <span class="variable">factory</span> <span class="operator">=</span> Thread.ofVirtual().factory();</span><br><span class="line">    <span class="keyword">return</span> newThreadPerTaskExecutor(factory);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>可以看到，它为每个任务使用一个新线程，而不是复用少量虚拟线程。不要通过“把虚拟线程池限制为固定几个线程”来代替资源限流；应该在需要约束的资源入口使用连接池、Semaphore
+等机制。源码见 <a target="_blank" rel="noopener" href="https://github.com/openjdk/jdk/blob/jdk-25%2B36/src/java.base/share/classes/java/util/concurrent/Executors.java">OpenJDK
+Executors.java，jdk-25+36</a>。</p>
+<p>对企业接口来说，需要一起考虑下面几个条件：</p>
+<ul>
+<li>大量时间用于等待可有效卸载的 I/O，才更可能受益。</li>
+<li>CPU 密集计算仍受核心数约束，增加虚拟线程不会凭空增加 CPU。</li>
+<li>虚拟线程数量大时，ThreadLocal 中保存大对象的成本会被放大。</li>
+<li>对任务数量、超时、排队和下游资源仍需施加边界。</li>
+</ul>
+<p>所以，虚拟线程的主要价值是让“按请求执行的顺序代码”更容易扩展到高并发；不是对任何负载都保证降低单次请求耗时。</p>
+<h3 id="模式匹配-switch-与-record-模式">模式匹配 switch 与 Record
+模式</h3>
+<p>在前面的章节中，我们已经有 Record 数据载体和 sealed 结果集合。JDK 21
+进一步允许 switch 按类型和组件模式处理这些结果。</p>
+<p><strong>下面示例最低版本：JDK 21。</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.math.BigDecimal;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">PatternDemo</span> &#123;</span><br><span class="line">    <span class="keyword">sealed</span> <span class="keyword">interface</span> <span class="title class_">PaymentResult</span> <span class="keyword">permits</span> Success, Failure &#123;&#125;</span><br><span class="line">    <span class="keyword">record</span> <span class="title class_">Success</span><span class="params">(BigDecimal amount)</span> <span class="keyword">implements</span> <span class="title class_">PaymentResult</span> &#123;&#125;</span><br><span class="line">    <span class="keyword">record</span> <span class="title class_">Failure</span><span class="params">(String reason)</span> <span class="keyword">implements</span> <span class="title class_">PaymentResult</span> &#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> String <span class="title function_">describe</span><span class="params">(PaymentResult result)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">switch</span> (result) &#123;</span><br><span class="line">            <span class="keyword">case</span> <span class="literal">null</span> -&gt; <span class="string">&quot;没有支付结果&quot;</span>; <span class="comment">// null 必须明确处理</span></span><br><span class="line">            <span class="keyword">case</span> <span class="title function_">Success</span><span class="params">(BigDecimal amount)</span></span><br><span class="line">                    <span class="keyword">when</span> amount.compareTo(<span class="keyword">new</span> <span class="title class_">BigDecimal</span>(<span class="string">&quot;1000&quot;</span>)) &gt;= <span class="number">0</span> -&gt; <span class="string">&quot;大额支付&quot;</span>;</span><br><span class="line">            <span class="keyword">case</span> <span class="title function_">Success</span><span class="params">(BigDecimal amount)</span> -&gt; <span class="string">&quot;支付成功：&quot;</span> + amount;</span><br><span class="line">            <span class="keyword">case</span> <span class="title function_">Failure</span><span class="params">(String reason)</span> -&gt; <span class="string">&quot;支付失败：&quot;</span> + reason;</span><br><span class="line">        &#125;; <span class="comment">// sealed 的全部直接子类型已经覆盖，不需要 default</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        System.out.println(describe(<span class="keyword">new</span> <span class="title class_">Success</span>(<span class="keyword">new</span> <span class="title class_">BigDecimal</span>(<span class="string">&quot;1200&quot;</span>))));</span><br><span class="line">        System.out.println(describe(<span class="keyword">new</span> <span class="title class_">Failure</span>(<span class="string">&quot;余额不足&quot;</span>)));</span><br><span class="line">        System.out.println(describe(<span class="literal">null</span>));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>输出为
+<code>大额支付</code>、<code>支付失败：余额不足</code>、<code>没有支付结果</code>。</p>
+<p>可以看到：</p>
+<ul>
+<li><code>case Success(BigDecimal amount)</code> 同时检查类型并提取
+Record 组件。</li>
+<li><code>when</code> 是守卫条件，用来继续判断这个分支是否适用。</li>
+<li>大额分支放在普通 Success 分支之前，避免被更宽泛的分支支配。</li>
+<li><code>case null</code> 显式处理 null；仅有 default 不等于处理了
+null。</li>
+<li>sealed 的已知结果类型均已覆盖，编译器可以检查穷尽性。</li>
+</ul>
+<p>模式匹配 switch 与 Record 模式分别在 JDK 21 通过 <strong>JEP 441、JEP
+440
+正式发布</strong>。业务层现在可以把“结果有哪些形式”和“每种形式如何处理”联系起来，而不是四处使用
+Object 加强制转换。参考 <a target="_blank" rel="noopener" href="https://docs.oracle.com/en/java/javase/25/language/pattern-matching-switch.html">Oracle：Pattern
+Matching with switch</a>、<a target="_blank" rel="noopener" href="https://docs.oracle.com/en/java/javase/25/language/record-patterns.html">Record
+Patterns</a>。</p>
+<h3 id="sequenced-collections统一有顺序集合的首尾操作">Sequenced
+Collections：统一有顺序集合的首尾操作</h3>
+<p>List、Deque、LinkedHashSet
+都有遇见顺序，但以前访问首尾、得到反向视图的 API 不统一。</p>
+<p>JDK 21 引入
+<code>SequencedCollection</code>、<code>SequencedSet</code>、<code>SequencedMap</code>，为有定义顺序的集合提供统一接口。</p>
+<p><strong>下面示例最低版本：JDK 21。</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.util.ArrayList;</span><br><span class="line"><span class="keyword">import</span> java.util.List;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">SequencedDemo</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        List&lt;String&gt; steps = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;(List.of(<span class="string">&quot;下单&quot;</span>, <span class="string">&quot;支付&quot;</span>, <span class="string">&quot;发货&quot;</span>));</span><br><span class="line">        System.out.println(steps.getFirst());</span><br><span class="line">        List&lt;String&gt; reverse = steps.reversed(); <span class="comment">// 返回反向视图</span></span><br><span class="line">        reverse.addFirst(<span class="string">&quot;签收&quot;</span>);                <span class="comment">// 对原列表表现为尾部添加</span></span><br><span class="line">        System.out.println(steps);</span><br><span class="line">        System.out.println(reverse);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>运行结果：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">下单</span><br><span class="line">[下单, 支付, 发货, 签收]</span><br><span class="line">[签收, 发货, 支付, 下单]</span><br></pre></td></tr></table></figure>
+<p><strong>reversed() 在这里返回的是反向视图，不是独立副本。</strong>
+修改可修改的视图会反映到原集合；若原集合不可修改，不能假定视图可以修改。HashSet、HashMap
+不会仅因为 JDK 升级就拥有稳定遇见顺序。</p>
+<p>这些接口统一了语义，但不保证所有集合的首尾操作都是
+O(1)，也不改变集合原有的线程安全属性。参考 <a target="_blank" rel="noopener" href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/SequencedCollection.html">SequencedCollection
+API</a>、<a target="_blank" rel="noopener" href="https://openjdk.org/jeps/431">JEP 431</a>。</p>
+<h3 id="分代-zgc按对象生命周期进一步优化">分代
+ZGC：按对象生命周期进一步优化</h3>
+<p>原始 ZGC 不分代。JDK 21 引入 Generational
+ZGC，把对象分成年轻对象和老对象，利用“多数对象很快死亡”的特征减少回收工作。</p>
+<p>下面把关键版本和启动方式放在一起，避免混用参数：</p>
+<table>
+<colgroup>
+<col style="width: 21%">
+<col style="width: 32%">
+<col style="width: 46%">
+</colgroup>
+<thead>
+<tr>
+<th>JDK</th>
+<th>ZGC 的状态或模式变化</th>
+<th>典型启用方式</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>11</td>
+<td>实验性、非分代；初期平台支持有限</td>
+<td><code>-XX:+UnlockExperimentalVMOptions -XX:+UseZGC</code></td>
+</tr>
+<tr>
+<td>15</td>
+<td>非分代 ZGC 转为生产功能</td>
+<td><code>-XX:+UseZGC</code></td>
+</tr>
+<tr>
+<td>21、22</td>
+<td>增加分代模式，需要显式选择</td>
+<td><code>-XX:+UseZGC -XX:+ZGenerational</code></td>
+</tr>
+<tr>
+<td>23</td>
+<td>分代成为 ZGC 默认模式</td>
+<td><code>-XX:+UseZGC</code></td>
+</tr>
+<tr>
+<td>24 及后续本文覆盖版本</td>
+<td>非分代模式被移除</td>
+<td><code>-XX:+UseZGC</code></td>
+</tr>
+</tbody>
+</table>
+<p>这些变化分别对应 <a target="_blank" rel="noopener" href="https://openjdk.org/jeps/333">JEP
+333</a>、<a target="_blank" rel="noopener" href="https://openjdk.org/jeps/377">377</a>、<a target="_blank" rel="noopener" href="https://openjdk.org/jeps/439">439</a>、<a target="_blank" rel="noopener" href="https://openjdk.org/jeps/474">474</a>、<a target="_blank" rel="noopener" href="https://openjdk.org/jeps/490">490</a>。JDK 24 的模式移除也可由 <a target="_blank" rel="noopener" href="https://docs.oracle.com/en/java/javase/24/migrate/significant-changes-jdk-24.html">Oracle
+JDK 24 迁移说明</a>交叉核对。</p>
+<p><strong>“分代成为 ZGC 默认模式”，不等于“ZGC 成为 JVM
+默认收集器”。</strong> 我们仍需要 <code>UseZGC</code>
+来选择它；<code>ZGenerational</code>
+到后续版本也不再是切换到非分代模式的手段。</p>
+<p>ZGC 面向很短的 GC
+暂停，但暂停目标不是对所有应用的硬保证，更不能等同于接口延迟保证。CPU
+调度、Safepoint、I/O、资源耗尽等问题仍可能影响应用响应。</p>
+<h3 id="动态加载-agent-开始告警">动态加载 Agent 开始告警</h3>
+<p><strong>这项变化归属 JDK 21，而不是 JDK 23。</strong> JEP 451
+对运行时动态加载 Agent 发出告警，为未来默认限制做准备。启动时通过
+<code>-javaagent</code>、<code>-agentlib</code> 显式加载的 Agent
+不属于同一种情况。</p>
+<p>APM、诊断工具、测试中的动态插桩可能受到影响。升级时要查看工具的使用方式和版本支持，不要简单地把所有告警当成业务错误，也不要忽视它们指出的未来兼容性问题。参考
+<a target="_blank" rel="noopener" href="https://openjdk.org/jeps/451">JEP 451：Prepare to Disallow the
+Dynamic Loading of Agents</a>。</p>
+<h2 id="jdk-22ffm-api-正式发布">JDK 22：FFM API 正式发布</h2>
+<h3 id="更明确地管理堆外内存与本地调用">更明确地管理堆外内存与本地调用</h3>
+<p>传统上，Java 调用本地库常用 JNI，底层框架也可能依赖 Unsafe
+来操作内存。代码复杂，而且容易产生生命周期与边界问题。</p>
+<p><strong>Foreign Function &amp; Memory
+API（FFM）为访问外部内存、调用本地函数提供标准 API。</strong>
+它在多个版本孵化、预览后，于 JDK 22 通过 JEP 454 正式发布。</p>
+<p>先认识三个关键概念：</p>
+<table>
+<thead>
+<tr>
+<th>API</th>
+<th>主要职责</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>MemorySegment</code></td>
+<td>表达一段有边界和生命周期的内存</td>
+</tr>
+<tr>
+<td><code>Arena</code></td>
+<td>控制所分配本地内存的生命周期与线程访问策略</td>
+</tr>
+<tr>
+<td><code>Linker</code></td>
+<td>建立 Java 与本地函数之间的调用链接</td>
+</tr>
+</tbody>
+</table>
+<p><strong>下面示例最低版本：JDK 22。</strong>
+先看内存管理，暂时不依赖操作系统的 C 函数。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.lang.foreign.Arena;</span><br><span class="line"><span class="keyword">import</span> java.lang.foreign.MemorySegment;</span><br><span class="line"><span class="keyword">import</span> java.lang.foreign.ValueLayout;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">FFMDemo</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        MemorySegment segment;</span><br><span class="line">        <span class="keyword">try</span> (<span class="type">Arena</span> <span class="variable">arena</span> <span class="operator">=</span> Arena.ofConfined()) &#123; <span class="comment">// 当前线程使用，生命周期显式管理</span></span><br><span class="line">            segment = arena.allocate(ValueLayout.JAVA_INT);</span><br><span class="line">            segment.set(ValueLayout.JAVA_INT, <span class="number">0</span>, <span class="number">42</span>);</span><br><span class="line">            System.out.println(segment.get(ValueLayout.JAVA_INT, <span class="number">0</span>));</span><br><span class="line">        &#125; <span class="comment">// 关闭 arena，释放它分配的本地内存</span></span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            segment.get(ValueLayout.JAVA_INT, <span class="number">0</span>);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (IllegalStateException e) &#123;</span><br><span class="line">            System.out.println(<span class="string">&quot;Arena 已关闭，不能继续访问该内存段&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>输出为 <code>42</code>，然后提示 Arena 已关闭。</p>
+<pre><code class="highlight mermaid">flowchart LR
+    A[打开 Arena] --&gt; B[分配 MemorySegment]
+    B --&gt; C[按 ValueLayout 读写]
+    C --&gt; D[关闭 Arena]
+    D --&gt; E[内存段失效，后续访问被拒绝]</code></pre>
+<p><code>Arena.ofConfined()</code>
+的显式关闭与访问策略，让“这段内存归谁管理、何时失效”比一个裸地址更清楚。关闭后
+Java 引用还可能存在，但不能继续访问已经失效的本地内存。参考 <a target="_blank" rel="noopener" href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/foreign/Arena.html">JDK
+22 Arena API</a>、<a target="_blank" rel="noopener" href="https://openjdk.org/jeps/454">JEP
+454</a>。</p>
+<p>上面的分配与读写不需要启用预览，也不需要 native-access
+参数。调用受限制的本地链接功能时则要按所属模块显式授权，例如 classpath
+应用可使用：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">java --enable-native-access=ALL-UNNAMED -jar app.jar</span><br></pre></td></tr></table></figure>
+<p><strong>FFM 改善了 Java 侧的内存与调用边界，不会自动让任意 C/C++
+函数变得安全，也没有移除 JNI。</strong>
+网络、存储、压缩等底层库可能逐步受益，普通业务代码不必为了追新而强行改写成堆外内存操作。</p>
+<h2 id="jdk-23重点关注-zgc-默认模式变化">JDK 23：重点关注 ZGC
+默认模式变化</h2>
+<p>本文筛选出的主要正式变化，是 <strong>启用 ZGC
+后默认采用分代模式</strong>，具体参数已经在前面的版本表中说明。</p>
+<p>升级 JVM 时应检查最终生效的参数和启动告警。GC
+相关参数跨版本可能变成默认值、被忽略或被废弃，不能因为复制了旧启动命令就认为行为完全相同。</p>
+<h2 id="jdk-24虚拟线程stream-与工具链继续完善">JDK 24：虚拟线程、Stream
+与工具链继续完善</h2>
+<h3 id="synchronized-不再造成原来的主要固定问题">synchronized
+不再造成原来的主要固定问题</h3>
+<p>在 JDK 21—23 中，虚拟线程持有 <code>synchronized</code>
+监视器时发生阻塞，可能固定在承载线程上，使承载线程也被占住。高频、长时间固定会限制并发扩展。</p>
+<p><strong>JDK 24 的 JEP 491
+改进了监视器实现，让虚拟线程可以在持有监视器、等待进入监视器以及
+Object.wait 等相关场景中卸载。</strong>
+原来最主要的一类固定问题因此被消除。见 <a target="_blank" rel="noopener" href="https://docs.oracle.com/en/java/javase/24/migrate/significant-changes-jdk-24.html">Oracle
+JDK 24 重要变化</a>、<a target="_blank" rel="noopener" href="https://mail.openjdk.org/pipermail/core-libs-dev/2024-November/134177.html">OpenJDK
+实现讨论</a>。</p>
+<p>但这不能理解为“所有固定和阻塞问题都消失了”：本地代码等场景仍需要检查；持有同一个锁的任务仍要互斥执行，<strong>锁的业务串行化不会因为承载线程可释放就自动消失</strong>。</p>
+<p>所以，“为了虚拟线程必须把所有 synchronized 换成
+ReentrantLock”不是跨版本通用结论。JDK 21 项目应测量实际固定问题；JDK 24
+及以后，应根据锁语义和实测选择实现。</p>
+<h3 id="stream-gatherers支持更复杂的中间操作">Stream
+Gatherers：支持更复杂的中间操作</h3>
+<p>JDK 8 的 Stream 已有
+filter、map、flatMap，但“按固定大小分批”“滑动窗口”等处理不容易直接表达。</p>
+<p><strong>Gatherer 为 Stream 提供可扩展的中间操作。</strong> 它在 JDK
+22、23 中预览，在 JDK 24 通过 JEP 485 正式发布。</p>
+<p><strong>下面示例最低版本：JDK 24。</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.util.List;</span><br><span class="line"><span class="keyword">import</span> java.util.stream.Gatherers;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">GathererDemo</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">var</span> <span class="variable">batches</span> <span class="operator">=</span> List.of(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>).stream()</span><br><span class="line">                .gather(Gatherers.windowFixed(<span class="number">2</span>)) <span class="comment">// 每两个元素组成一批</span></span><br><span class="line">                .toList();</span><br><span class="line">        System.out.println(batches);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>输出为：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[[1, 2], [3, 4], [5]]</span><br></pre></td></tr></table></figure>
+<p><code>windowFixed(2)</code>
+把有序元素按每两个一批组织起来，最后不足两个的元素形成末批。</p>
+<p>还可以使用滑动窗口、前缀累计、并发映射等内置
+Gatherer，或者定义自己的中间操作。它与 Collector
+的位置不同：<strong>Gatherer 扩展流水线中的转换；Collector
+常用于终止操作的结果收集。</strong> 参考 <a target="_blank" rel="noopener" href="https://docs.oracle.com/en/java/javase/24/docs/api/java.base/java/util/stream/Gatherer.html">Gatherer
+API</a>、<a target="_blank" rel="noopener" href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/stream/Gatherers.html">Gatherers
+API</a>。</p>
+<p>分批处理适合组织业务数据，但不会自动建立数据库事务、重试与限流规则；上例终止时还会保存全部批次，不等同于一个无限流式且零缓存的处理系统。</p>
+<h3 id="class-file-api标准方式解析生成和转换-class">Class-File
+API：标准方式解析、生成和转换 class</h3>
+<p>框架、Agent、编译工具经常需要操作字节码。过去通常依赖 ASM
+等第三方库；新的 class
+文件版本出现时，需要同步考虑这些库的支持范围。</p>
+<p>JDK 24 通过 JEP 484 正式提供 <strong>Class-File API</strong>，把
+class 文件解析、生成、转换能力放进 JDK，随 JDK 的 class
+格式一起演进。</p>
+<p><strong>下面示例最低版本：JDK 24。</strong> 需要先编译，再读取生成的
+class 文件。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.lang.classfile.ClassFile;</span><br><span class="line"><span class="keyword">import</span> java.nio.file.Files;</span><br><span class="line"><span class="keyword">import</span> java.nio.file.Path;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ClassFileDemo</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        <span class="comment">// 读取自己的 class 文件，示例需要先用 javac 编译</span></span><br><span class="line">        <span class="type">Path</span> <span class="variable">path</span> <span class="operator">=</span> Path.of(args.length == <span class="number">0</span> ? <span class="string">&quot;ClassFileDemo.class&quot;</span> : args[<span class="number">0</span>]);</span><br><span class="line">        <span class="type">var</span> <span class="variable">model</span> <span class="operator">=</span> ClassFile.of().parse(Files.readAllBytes(path));</span><br><span class="line">        System.out.println(model.thisClass().asInternalName());</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">var</span> method : model.methods()) &#123;</span><br><span class="line">            System.out.println(method.methodName().stringValue()</span><br><span class="line">                    + method.methodType().stringValue());</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在示例目录中执行：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">javac -encoding UTF-8 ClassFileDemo.java</span><br><span class="line">java ClassFileDemo</span><br></pre></td></tr></table></figure>
+<p>输出包含类的内部名 <code>ClassFileDemo</code>，以及构造器、main
+方法的名称和 JVM
+方法描述符。这里只读取元数据，没有加载、修改或执行待解析文件中的字节码。</p>
+<p>对普通业务代码，这个 API
+不会天天使用；对框架、监控和工具作者，它可以减少直接依赖非标准 JDK
+内部字节码接口的需求。第三方库不会因为 JDK
+升级而自动迁移，工具链仍需要检查支持的 class 版本。参考 <a target="_blank" rel="noopener" href="https://docs.oracle.com/en/java/javase/24/docs/api/java.base/java/lang/classfile/ClassFile.html">ClassFile
+API</a>。</p>
+<h3 id="aot-类加载与链接把启动工作提前做">AOT
+类加载与链接：把启动工作提前做</h3>
+<p>JDK 24 的 <strong>JEP 483：Ahead-of-Time Class Loading &amp;
+Linking</strong>
+允许将一部分启动时的类加载与链接工作提前处理，并保存到缓存中。</p>
+<p>可以把它理解成：每次开店都要重新准备的一部分固定工作，先整理好，下次开店直接利用准备结果。JDK
+25、26 会继续扩展这个机制，后面统一展示命令。演进路线参考 <a target="_blank" rel="noopener" href="https://openjdk.org/projects/leyden/">OpenJDK Project
+Leyden</a>。</p>
+<h3 id="本地访问unsafe-和-security-manager-的调整">本地访问、Unsafe 和
+Security Manager 的调整</h3>
+<p>JDK 24
+还有几项变化，未必需要业务代码主动使用，却可能影响项目启动：</p>
+<table>
+<colgroup>
+<col style="width: 44%">
+<col style="width: 55%">
+</colgroup>
+<thead>
+<tr>
+<th>变化</th>
+<th>影响</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>JEP 472：JNI / FFM 访问告警策略</td>
+<td>依赖本地库的组件需要核对 native-access 授权</td>
+</tr>
+<tr>
+<td>JEP 498：Unsafe 内存访问方法告警</td>
+<td>旧版网络、存储、序列化组件可能暴露迁移需求</td>
+</tr>
+<tr>
+<td>JEP 486：永久禁用 Security Manager</td>
+<td>依赖旧沙箱与权限策略的程序不能继续启用它</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Unsafe 的部分方法告警，不等于整个 Unsafe
+类已经全部移除；Security Manager 被永久禁用，也不等于它的全部 API
+在同一版本已经删除。</strong> 这些区别对判断兼容性很重要。参考 <a target="_blank" rel="noopener" href="https://docs.oracle.com/en/java/javase/24/migrate/significant-changes-jdk-24.html">Oracle
+JDK 24 重要变化</a>、<a target="_blank" rel="noopener" href="https://docs.oracle.com/en/java/javase/24/security/security-manager-is-permanently-disabled.html">Security
+Manager 永久禁用说明</a>。</p>
+<h2 id="jdk-25上下文内存布局与启动优化">JDK
+25：上下文、内存布局与启动优化</h2>
+<h3 id="scopedvalue在受控作用域中传递请求上下文">ScopedValue：在受控作用域中传递请求上下文</h3>
+<p>请求 id、租户信息等数据，要在
+Controller、Service、底层调用之间传递。除了显式方法参数，也常用
+ThreadLocal。</p>
+<p>ThreadLocal
+能完成这个任务，但需要考虑清理和生命周期。如果把数据放进去后忘记
+remove，线程池复用时可能遗留上下文；大量虚拟线程还会放大每线程保存数据的成本。</p>
+<p><strong>ScopedValue 用受控的动态作用域绑定一个值。</strong>
+在该调用范围内可以读取，调用结束后绑定自动退出。它在 JDK 20 孵化、21—24
+预览，在 JDK 25 通过 JEP 506 正式发布。</p>
+<p><strong>下面示例最低版本：JDK 25。</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ScopedValueDemo</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> ScopedValue&lt;String&gt; TRACE_ID = ScopedValue.newInstance();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">service</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;当前请求：&quot;</span> + TRACE_ID.get());</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        ScopedValue.where(TRACE_ID, <span class="string">&quot;req-001&quot;</span>).run(() -&gt; &#123;</span><br><span class="line">            service();</span><br><span class="line">            ScopedValue.where(TRACE_ID, <span class="string">&quot;req-002&quot;</span>).run(ScopedValueDemo::service);</span><br><span class="line">            service(); <span class="comment">// 离开嵌套作用域，恢复 req-001</span></span><br><span class="line">        &#125;);</span><br><span class="line">        System.out.println(<span class="string">&quot;外层调用结束后是否绑定：&quot;</span> + TRACE_ID.isBound());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>运行结果：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">当前请求：req-001</span><br><span class="line">当前请求：req-002</span><br><span class="line">当前请求：req-001</span><br><span class="line">外层调用结束后是否绑定：false</span><br></pre></td></tr></table></figure>
+<pre><code class="highlight mermaid">flowchart TD
+    A[进入外层绑定 req-001] --&gt; B[service 读取 req-001]
+    B --&gt; C[进入内层绑定 req-002]
+    C --&gt; D[service 读取 req-002]
+    D --&gt; E[离开内层，恢复 req-001]
+    E --&gt; F[离开外层，绑定结束]</code></pre>
+<p>可以看到，内层重新绑定不覆盖外层生命周期；正常返回或抛出异常退出作用域时，外层绑定均会按规则恢复。</p>
+<p>ScopedValue
+更适合<strong>从上游向下游单向传递上下文</strong>，不是任意可变线程状态的完整替代品。绑定不可直接
+set，也不代表值对象内部被深度冻结，因此仍应使用不可变上下文。</p>
+<p><strong>它不会自动把上下文传播到任意线程池任务或 CompletableFuture
+回调。</strong> 跨线程继承与 StructuredTaskScope
+的受控创建方式有关，需要按照 API 的结构化规则使用。参考 <a target="_blank" rel="noopener" href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/ScopedValue.html">JDK
+25 ScopedValue API</a>、<a target="_blank" rel="noopener" href="https://docs.oracle.com/en/java/javase/25/core/scoped-values.html">Oracle：Scoped
+Values</a>。</p>
+<h3 id="紧凑对象头从实验功能变为正式可选功能">紧凑对象头：从实验功能变为正式可选功能</h3>
+<p>一个 Java
+对象除了业务字段，还需要对象头保存运行时信息。对象很多且每个对象很小时，对象头占比就比较明显。</p>
+<p>紧凑对象头在 <strong>JDK 24 作为实验功能引入，在 JDK 25
+转为生产功能</strong>，但 JDK 25 仍需要显式开启：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">java -XX:+UseCompactObjectHeaders -jar app.jar</span><br></pre></td></tr></table></figure>
+<p>JDK 24 的实验启用方式则还需要解锁：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">java -XX:+UnlockExperimentalVMOptions -XX:+UseCompactObjectHeaders -jar app.jar</span><br></pre></td></tr></table></figure>
+<p>对典型启用压缩类指针的 64 位 HotSpot 布局，对象头从 12 字节变为 8
+字节；其他传统配置下也可能是从 16 字节缩到 8
+字节。<strong>数组长度、实例字段和对象对齐仍要另外考虑，不能把对象头减少
+4 字节直接当成每个对象总大小一定减少 4 字节。</strong> 参考 <a target="_blank" rel="noopener" href="https://openjdk.org/jeps/450">JEP 450</a>、<a target="_blank" rel="noopener" href="https://openjdk.org/jeps/519">JEP 519</a>。</p>
+<pre><code class="highlight mermaid">flowchart LR
+    A[传统布局：对象头加字段及对齐] --&gt; B[紧凑布局：更小对象头加字段及对齐]
+    B --&gt; C[实际节省由字段和对齐共同决定]</code></pre>
+<p>比如在常见 8 字节对齐下，一个对象的“头加字段”从 12 变为 8
+字节，可能使总大小从 16 变为 8；若从 16 变为 12，则两者最终都可能对齐为
+16。这里是便于理解的布局算例，并非所有对象的统一实际尺寸。</p>
+<p>该变化适合关注对象数量大、内存预算紧的业务。收益与对象结构有关，应在自己的负载下观察堆占用、GC
+与吞吐量。</p>
+<h3 id="aot-缓存与方法画像启动之后也需要更快进入稳定状态">AOT
+缓存与方法画像：启动之后也需要更快进入稳定状态</h3>
+<p>微服务运行时不仅要“main 开始执行”，还要经历类加载、初始化和 JIT
+预热。频繁扩容的应用尤其在意到达稳定吞吐量需要多久。</p>
+<p>JDK 25 带来两个重要进展：</p>
+<ul>
+<li><strong>JEP 514</strong>：简化 AOT
+缓存命令行，让训练与缓存生成更容易使用。</li>
+<li><strong>JEP
+515</strong>：提前记录方法执行画像，帮助后续运行时更早做出编译优化决策。</li>
+</ul>
+<p>下面用示例包中的 <code>StartupDemo.java</code> 演示 JDK 25
+的流程。在一个独立目录中执行：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">javac -encoding UTF-8 StartupDemo.java</span><br><span class="line">jar --create --file app.jar --main-class StartupDemo StartupDemo.class</span><br><span class="line"></span><br><span class="line"># 训练运行；应用退出后生成 AOT 缓存</span><br><span class="line">java -XX:AOTCacheOutput=app.aot -jar app.jar</span><br><span class="line"></span><br><span class="line"># 再次运行，读取缓存；日志用于确认缓存实际使用情况</span><br><span class="line">java -XX:AOTCache=app.aot -Xlog:aot -jar app.jar</span><br></pre></td></tr></table></figure>
+<p>上面两个带 <code>#</code> 的说明行适用于 PowerShell / 常见 Unix
+shell，使用其他终端时只需执行命令行。</p>
+<pre><code class="highlight mermaid">flowchart LR
+    A[代表性工作负载] --&gt; B[训练运行]
+    B --&gt; C[生成 AOT 缓存]
+    C --&gt; D[后续启动加载缓存]
+    D --&gt; E[减少启动和预热中的部分重复工作]</code></pre>
+<p><strong>缓存与应用、JDK 版本、操作系统及 CPU
+架构等条件相关。</strong> 更换代码或运行环境后需要重新生成，并检查 JVM
+参数和 Agent 是否影响缓存可用性。训练负载也需要覆盖实际运行路径。</p>
+<p>这套机制仍然运行在 HotSpot
+上，不能把它直接等同于生成独立本地可执行文件的 Native
+Image；也不能把“缓存方法画像”误解成“已经把全部业务方法预编译成机器码”。参考
+<a target="_blank" rel="noopener" href="https://openjdk.org/projects/leyden/">OpenJDK Project
+Leyden</a>、<a target="_blank" rel="noopener" href="https://docs.oracle.com/en/java/javase/25/docs/specs/man/java.html">JDK
+25 java 命令：Ahead-of-Time Cache</a>。</p>
+<h3 id="灵活构造器先验证参数再调用父类构造器">灵活构造器：先验证参数，再调用父类构造器</h3>
+<p>过去构造器中显式的 <code>super(...)</code> 或 <code>this(...)</code>
+调用必须处于最前面，复杂参数验证通常只能塞进辅助方法。</p>
+<p>JDK 25 正式允许在构造器调用之前执行符合规则的准备与验证语句。</p>
+<p><strong>下面示例最低版本：JDK 25。</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ConstructorDemo</span> &#123;</span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">BaseOrder</span> &#123;</span><br><span class="line">        <span class="keyword">final</span> <span class="type">long</span> id;</span><br><span class="line">        BaseOrder(<span class="type">long</span> id) &#123; <span class="built_in">this</span>.id = id; &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">Order</span> <span class="keyword">extends</span> <span class="title class_">BaseOrder</span> &#123;</span><br><span class="line">        Order(<span class="type">long</span> id) &#123;</span><br><span class="line">            <span class="keyword">if</span> (id &lt;= <span class="number">0</span>) &#123; <span class="comment">// JDK 25：允许在 super(...) 之前验证参数</span></span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">IllegalArgumentException</span>(<span class="string">&quot;订单 id 必须为正数&quot;</span>);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="built_in">super</span>(id);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        System.out.println(<span class="keyword">new</span> <span class="title class_">Order</span>(<span class="number">1</span>).id);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>可以先确认订单 id
+合法，再调用父类构造器。这个变化能让校验失败更早暴露，也减少为了满足语法顺序而创建的辅助方法。</p>
+<p>不过，构造早期阶段仍有严格限制，不能任意调用当前对象的实例方法或让尚未完成初始化的
+this 逃逸。<strong>顺序限制放宽，不代表初始化规则被取消。</strong> 参考
+<a target="_blank" rel="noopener" href="https://docs.oracle.com/en/java/javase/25/language/flexible-constructor-bodies.html">Oracle：Flexible
+Constructor Bodies</a>、<a target="_blank" rel="noopener" href="https://openjdk.org/jeps/513">JEP
+513</a>。</p>
+<h2 id="jdk-26网络能力和框架兼容性">JDK 26：网络能力和框架兼容性</h2>
+<h3 id="httpclient-支持-http3">HttpClient 支持 HTTP/3</h3>
+<p>JDK 26 的 JEP 517 为标准 HttpClient 增加 HTTP/3。HTTP/3 使用 QUIC，而
+QUIC 基于 UDP；它提供与 TCP 上的 HTTP/2 不同的传输行为。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// JDK 26，代码片段；本机未安装 JDK 26，按官方 API 核对</span></span><br><span class="line">java.net.http.<span class="type">HttpClient</span> <span class="variable">client</span> <span class="operator">=</span> java.net.http.HttpClient.newBuilder()</span><br><span class="line">        .version(java.net.http.HttpClient.Version.HTTP_3)</span><br><span class="line">        .build();</span><br></pre></td></tr></table></figure>
+<p><strong>需要显式选择 HTTP/3；默认偏好仍是 HTTP/2。</strong>
+能否成功使用还取决于服务端支持、协议发现和回退策略，以及代理、防火墙是否允许相关
+UDP 流量。不能只换一个枚举值就认为所有调用都变成
+HTTP/3，也不能保证每种网络条件都更快。</p>
+<p>这个变化针对标准客户端，没有同时把旧 <code>HttpURLConnection</code>
+或服务器 API 都升级为 HTTP/3。参考 <a target="_blank" rel="noopener" href="https://docs.oracle.com/en/java/javase/26/docs/api/java.net.http/java/net/http/HttpClient.Version.html">JDK
+26 HttpClient.Version API</a>、<a target="_blank" rel="noopener" href="https://openjdk.org/jeps/517">JEP 517</a>。</p>
+<h3 id="通过深反射修改-final-字段开始告警">通过深反射修改 final
+字段开始告警</h3>
+<p>一些框架会通过深反射修改 final
+实例字段。这个行为让“构造完成后不再变化”的假设失去可靠性，也妨碍相关优化。</p>
+<p><strong>JDK 26 的 JEP 500
+默认先告警，为未来更严格的限制做准备。</strong> 它不是在 JDK 26
+就全面禁止所有此类修改，也不是所有反射读取都被禁用。</p>
+<p>排查时可以使用：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">java --illegal-final-field-mutation=debug -jar app.jar</span><br></pre></td></tr></table></figure>
+<p>用于提前验证更严格限制下的兼容性：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">java --illegal-final-field-mutation=deny -jar app.jar</span><br></pre></td></tr></table></figure>
+<p>若确实有无法立即替换的依赖，classpath
+上的代码可由部署方显式授权：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">java --enable-final-field-mutation=ALL-UNNAMED -jar app.jar</span><br></pre></td></tr></table></figure>
+<p><strong>允许包的深反射访问，与允许修改 final
+字段，是两项不同的条件。</strong> 仅添加 <code>--add-opens</code>
+不能代替 final 修改授权；具体字段是否可修改仍受反射规则限制。参考 <a target="_blank" rel="noopener" href="https://docs.oracle.com/en/java/javase/26/migrate/preparing-final-field-mutation-restrictions.html">Oracle：Preparing
+for final Field Mutation Restrictions</a>。</p>
+<p>对企业项目，优先定位发出告警的依赖，再检查序列化、依赖注入等组件是否已有更合适的构造与赋值方式。</p>
+<h3 id="aot-对象缓存可以配合所有-gc">AOT 对象缓存可以配合所有 GC</h3>
+<p><strong>JEP 516 让 AOT 对象缓存支持所有垃圾收集器，包括
+ZGC。</strong> 以前直接映射缓存对象的格式会受到 GC
+内存布局限制，新的机制使用更中立的格式加载对象。</p>
+<p>这对希望同时利用启动优化和低延迟 GC 的应用有意义。JDK 26 还通过 JEP
+522 减少 G1
+中的一部分同步开销；它属于运行时优化，实际收益仍需用业务负载测量。参考
+<a target="_blank" rel="noopener" href="https://www.oracle.com/java/technologies/javase/26all-relnotes.html">Oracle
+JDK 26 发布说明</a>。</p>
+<h2 id="jdk-27默认行为变化与安全诊断">JDK
+27：默认行为变化与安全诊断</h2>
+<h3 id="g1-成为所有环境的默认收集器">G1 成为所有环境的默认收集器</h3>
+<p>JDK 9 的变化针对 server 配置；<strong>JDK 27 通过 JEP 523 将 G1
+的默认范围扩展到所有环境</strong>。低资源配置过去可能默认使用
+Serial，因此相同业务在新版 JVM 上的默认 GC 行为可能变化。</p>
+<p>这里说的是没有显式选择收集器时的默认策略。启动命令如果明确指定其他收集器，仍需要按该收集器的支持条件判断。参考
+<a target="_blank" rel="noopener" href="https://blogs.oracle.com/java/the-arrival-of-java-27">Oracle：The
+Arrival of Java 27</a>。</p>
+<h3 id="紧凑对象头默认开启">紧凑对象头默认开启</h3>
+<p>对象头的版本变化，现在可以完整串起来：</p>
+<pre><code class="highlight mermaid">flowchart LR
+    A[JDK 24：实验性、默认关闭] --&gt; B[JDK 25、26：生产功能、默认关闭]
+    B --&gt; C[JDK 27：默认开启]</code></pre>
+<p><strong>JEP 534 把紧凑对象头变为默认布局。</strong>
+因此即使不修改业务代码，对象密集型应用的内存表现也可能变化；依赖对象布局假设的测量工具和底层组件要同步检查。具体收益不能直接拿对象头比例替代整堆比例。参考
+<a target="_blank" rel="noopener" href="https://www.oracle.com/java/technologies/javase/27all-relnotes.html">Oracle
+JDK 27 发布说明</a>。</p>
+<h3 id="tls-1.3-后量子混合密钥交换">TLS 1.3 后量子混合密钥交换</h3>
+<p>JEP 527 为 TLS 1.3
+增加混合密钥交换，把传统算法和抗量子算法结合。默认支持的组中，<code>X25519MLKEM768</code>
+被放到优先位置。</p>
+<p>使用 JDK <code>javax.net.ssl</code>
+实现的应用，可以在对端支持、配置允许并成功协商时受益。<strong>它不等于对任意服务端强制采用新算法，也不代表所有加密功能自动升级成后量子方案。</strong>
+网络设备和互操作兼容性仍要测试。参考 <a target="_blank" rel="noopener" href="https://www.oracle.com/news/announcement/oracle-releases-java-27-and-strengthens-post-quantum-cryptography-support-2026-09-15/">Oracle
+Java 27 发布公告</a>、<a target="_blank" rel="noopener" href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/javax/net/ssl/package-summary.html">JDK
+27 javax.net.ssl API</a>。</p>
+<h3 id="jfr-在进程内处理敏感信息">JFR 在进程内处理敏感信息</h3>
+<p>JEP 536 让 JFR
+对命令行参数，以及环境变量、系统属性的初始值进行脱敏处理，在数据离开进程之前处理匹配的信息。</p>
+<p><strong>默认过滤器并不代表所有业务事件内容都自动脱敏。</strong>
+自定义 JFR 事件中写入的订单信息、Token
+等数据，仍需业务方控制；也应检查默认规则是否覆盖应用特有的参数名称。参考
+<a target="_blank" rel="noopener" href="https://www.oracle.com/java/technologies/javase/27all-relnotes.html">Oracle
+JDK 27 发布说明：JFR In-Process Data Redaction</a>。</p>
+<h2 id="值得关注但还没有正式定型的特性">值得关注，但还没有正式定型的特性</h2>
+<p>截至本文覆盖的 JDK 27，下面这些特性仍需要按其状态评估：</p>
+<table>
+<colgroup>
+<col style="width: 32%">
+<col style="width: 20%">
+<col style="width: 47%">
+</colgroup>
+<thead>
+<tr>
+<th>特性</th>
+<th>JDK 27 状态</th>
+<th>主要方向</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Structured Concurrency，结构化并发</td>
+<td>第七次预览，JEP 533</td>
+<td>把相关子任务作为一个整体，管理生命周期、取消、异常</td>
+</tr>
+<tr>
+<td>Lazy Constants，惰性常量</td>
+<td>第三次预览，JEP 531</td>
+<td>在更灵活的时间初始化不可修改的值</td>
+</tr>
+<tr>
+<td>原始类型的模式匹配等扩展</td>
+<td>第五次预览，JEP 532</td>
+<td>扩展模式、instanceof、switch 对原始类型的能力</td>
+</tr>
+<tr>
+<td>Vector API</td>
+<td>第十二次孵化，JEP 537</td>
+<td>对受支持 CPU 的 SIMD 向量计算进行表达</td>
+</tr>
+</tbody>
+</table>
+<p>状态参考 <a target="_blank" rel="noopener" href="https://www.oracle.com/java/technologies/javase/27all-relnotes.html">Oracle
+JDK 27 主要新功能</a>。其中 Lazy Constants 曾在 JDK 25 以 <strong>Stable
+Values</strong> 的名称预览，阅读旧资料时需要核对名称与 API
+的变化；不能直接把早期示例当作当前接口。</p>
+<p>结构化并发可以帮助表达“请求发起的相关任务应当在请求作用域内结束”，但仍处于预览。本文没有把不同版本的
+StructuredTaskScope 代码混写为稳定示例，也没有因为某项 API
+预览了多次就判定它已经转正。</p>
+<h2 id="企业项目升级时应该一起检查什么">企业项目升级时，应该一起检查什么</h2>
+<h3 id="编译成功只代表完成了其中一步">编译成功，只代表完成了其中一步</h3>
+<p>升级可以分为几个独立维度：</p>
+<pre><code class="highlight mermaid">flowchart LR
+    A[更新运行时 JDK] --&gt; B[检查依赖和 JVM 参数]
+    B --&gt; C[验证业务行为、性能与诊断工具]
+    C --&gt; D[更新编译器和目标版本]
+    D --&gt; E[按需要逐步使用新语言与 API]</code></pre>
+<p>这是一种便于控制变量的升级思路，不是所有项目必须遵循的唯一顺序。先跑通旧业务，再逐步使用新特性，通常更容易定位问题。</p>
+<table>
+<colgroup>
+<col style="width: 20%">
+<col style="width: 79%">
+</colgroup>
+<thead>
+<tr>
+<th>检查项</th>
+<th>重点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>编译与构建</td>
+<td>Maven / Gradle、编译插件、注解处理器是否支持目标 JDK</td>
+</tr>
+<tr>
+<td>字节码工具</td>
+<td>Agent、覆盖率、Mock、ASM 等是否支持新的 class 文件版本</td>
+</tr>
+<tr>
+<td>反射与内部 API</td>
+<td>是否依赖 JDK private 成员、Unsafe、反射修改 final</td>
+</tr>
+<tr>
+<td>依赖与移除项</td>
+<td>JAXB、旧 GC 参数、旧沙箱、被移除的启动选项</td>
+</tr>
+<tr>
+<td>I/O 行为</td>
+<td>默认编码、时区、TLS、证书和协议协商</td>
+</tr>
+<tr>
+<td>容器内存</td>
+<td>堆之外的内存、线程数、连接池、容器资源识别</td>
+</tr>
+<tr>
+<td>运行性能</td>
+<td>冷启动、预热、吞吐量、P95 / P99、GC、CPU 与 RSS</td>
+</tr>
+</tbody>
+</table>
+<p>不要只测“接口有没有报错”。GC
+默认值、对象头、线程模型和编码变化，都可能带来行为或容量差异。官方迁移入口见
+<a target="_blank" rel="noopener" href="https://docs.oracle.com/en/java/javase/26/migrate/">Oracle JDK
+迁移指南</a>。</p>
+<h3 id="release同时约束语言字节码和标准-api">–release：同时约束语言、字节码和标准
+API</h3>
+<p>用新编译器构建老运行时应用时，可以使用：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">javac --release 17 -encoding UTF-8 Demo.java</span><br></pre></td></tr></table></figure>
+<p>与单独使用 <code>-source</code>、<code>-target</code>
+相比，<code>--release</code> 还约束可用的目标版本标准
+API，帮助避免“生成了旧版本字节码，却调用了新版本 JDK 方法”的问题。它从
+JDK 9 引入。</p>
+<p><strong>–release 不能保证第三方依赖也符合目标版本。</strong> 依赖 JAR
+的 class 版本、框架支持范围和运行时行为仍需检查。参考 <a target="_blank" rel="noopener" href="https://openjdk.org/jeps/247">JEP 247：Compile for Older Platform
+Versions</a>。</p>
+<h3 id="同一-jvm也不是一种特性越新就一定越合适">同一
+JVM，也不是一种特性越新就一定越合适</h3>
+<table>
+<thead>
+<tr>
+<th>业务需求</th>
+<th>优先评估的能力</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>集合筛选和聚合</td>
+<td>Lambda、Stream</td>
+</tr>
+<tr>
+<td>不存在的查询结果</td>
+<td>Optional 返回值</td>
+</tr>
+<tr>
+<td>数据载体和受控结果类型</td>
+<td>Record、sealed、模式匹配</td>
+</tr>
+<tr>
+<td>大量阻塞 I/O</td>
+<td>虚拟线程，并配合下游资源限制</td>
+</tr>
+<tr>
+<td>受控请求上下文</td>
+<td>显式参数或 ScopedValue</td>
+</tr>
+<tr>
+<td>本地库、堆外内存</td>
+<td>FFM 与相应访问授权</td>
+</tr>
+<tr>
+<td>低 GC 暂停</td>
+<td>在实际负载下比较 G1、ZGC 等方案</td>
+</tr>
+<tr>
+<td>冷启动与预热</td>
+<td>CDS、AOT 缓存及训练负载</td>
+</tr>
+</tbody>
+</table>
+<p>这些能力解决的问题各不相同。业务代码可以继续保持简单，只有当一个特性确实改善表达、资源使用或运行效果时，再把它引入对应场景。</p>
+<h2 id="官方资料与源码入口">官方资料与源码入口</h2>
+<p>各小节已在相应知识点旁标注来源。下面列出适合继续查阅的官方入口：</p>
+<table>
+<colgroup>
+<col style="width: 58%">
+<col style="width: 41%">
+</colgroup>
+<thead>
+<tr>
+<th>资料</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://openjdk.org/jeps/0">OpenJDK JEP 索引</a></td>
+<td>查特性编号、正式交付版本、动机、限制与历史</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://docs.oracle.com/javase/8/docs/">Oracle Java SE 8
+文档</a></td>
+<td>查询 JDK 8 API 与基础新特性</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://docs.oracle.com/en/java/javase/25/language/java-language-changes-summary.html">Oracle
+Java 语言变化汇总</a></td>
+<td>区分语言特性的正式和预览版本</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://docs.oracle.com/en/java/javase/26/migrate/">Oracle
+JDK 26 迁移指南</a></td>
+<td>检查升级行为变化与兼容性问题</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://www.oracle.com/java/technologies/javase/27all-relnotes.html">Oracle
+JDK 27 发布说明</a></td>
+<td>核对 JDK 27 正式交付的变化</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://openjdk.org/projects/leyden/">OpenJDK Project
+Leyden</a></td>
+<td>查启动、预热与 AOT 演进</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://github.com/openjdk/jdk">OpenJDK JDK
+源码仓库</a></td>
+<td>阅读对应版本的真实实现</td>
+</tr>
+</tbody>
+</table>
+<p>源码片段固定链接到 <code>jdk-25+36</code>
+标签，避免主分支更新后无法对应本文。其余完整 Java
+示例是为讲解编写的独立示例；概念图是说明机制的示意图，不代表完整实现流程或性能保证。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a target="_blank" rel="noopener" href="https://github.com/ergou10086">ErgouTree</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://ergou10086.github.io/posts/54855.html">https://ergou10086.github.io/posts/54855.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://ergou10086.github.io" target="_blank">ErgouTree's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Java%E6%8A%80%E6%9C%AF/">Java技术</a><a class="post-meta__tags" href="/tags/%E5%AE%9E%E7%94%A8%E7%9F%A5%E8%AF%86/">实用知识</a><a class="post-meta__tags" href="/tags/JavaSE/">JavaSE</a><a class="post-meta__tags" href="/tags/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/">Java基础知识</a><a class="post-meta__tags" href="/tags/%E8%AF%AD%E8%A8%80%E5%9F%BA%E7%A1%80/">语言基础</a><a class="post-meta__tags" href="/tags/%E7%9F%A5%E8%AF%86%E6%80%BB%E7%BB%93/">知识总结</a></div><div class="post-share"><div class="addtoany"><div class="a2a_kit a2a_kit_size_32 a2a_default_style"><a class="a2a_button_facebook"></a><a class="a2a_button_twitter"></a><a class="a2a_button_wechat"></a><a class="a2a_button_sina_weibo"></a><a class="a2a_button_facebook_messenger"></a><a class="a2a_button_email"></a><a class="a2a_button_copy_link"></a><a class="a2a_dd" target="_blank" rel="noopener" href="https://www.addtoany.com/share"></a></div></div><script async="async" src="https://static.addtoany.com/menu/page.js"></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width" href="/posts/57538.html" title="详解Java之集合框架 part4—详解Map接口下的集合"><img class="cover" src="/images/posts/cover_theory.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">详解Java之集合框架 part4—详解Map接口下的集合</div></div><div class="info-2"><div class="info-item-1">Map Map 接口概述 前面介绍的 List、Set、Queue 都从 Collection 这条线展开，保存的是一个个成员。Map 则单独定义了映射关系：通过一个键，找到它当前对应的值。 每个键最多对应一个值，但不同的键可以对应相同的值。因此，Map.size() 统计的是映射数量，不是键与值加起来的对象数量。是否允许 null、键怎样判定重复、遍历是否有顺序，都要继续看具体实现。 12345Map&lt;String, Integer&gt; scores = new HashMap&lt;&gt;();System.out.println(scores.put(&quot;Java&quot;, 90)); // null：原来没有映射System.out.println(scores.put(&quot;Java&quot;, 95)); // 90：返回旧值，映射数量不变scores.put(&quot;SQL&quot;, 95);                     //...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/posts/59487.html" title="详解Java之集合框架 part2—详解Set接口下的集合"><img class="cover" src="/images/posts/cover_c.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-05</div><div class="info-item-2">详解Java之集合框架 part2—详解Set接口下的集合</div></div><div class="info-2"><div class="info-item-1">Set Set 接口概述 Set 是 Java 集合框架中的一个接口，它继承了 Collection 接口，并添加了一些独有的方法。 我们通常看作 Set 是没有重复元素的 Collection，或者说，Set是一个不允许重复元素的集合。 Set 源自数学中的 集合 概念——元素唯一、无序（多数情况下）、不可通过索引访问。 Set 接口本身并未定义新的方法，而是通过语义约束对 Collection 的行为进行了强化：任何尝试添加重复元素的操作都会被忽略（add() 返回 false）。这一特性就使得 Set 成为去重、成员存在性判断等场景的首选数据结构。 目前，Java 提供了多个 Set 的常用实现类，下面我会逐一深入分析，尽管这些实现类在底层数据结构、元素顺序和性能特征上各有不同，但它们都严格遵循 Set 接口的三大核心契约  元素唯一性：不允许存储重复元素（依赖 equals() 和 hashCode() 或 compareTo() 判断）； 无索引访问：不支持通过下标获取元素，遍历需依赖迭代器或增强 for 循环； 对...</div></div></div></a><a class="pagination-related" href="/posts/30193.html" title="详解Java之集合框架 part1—集合框架概述及其List接口下的常用容器"><img class="cover" src="/images/posts/cover_math.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-02-05</div><div class="info-item-2">详解Java之集合框架 part1—集合框架概述及其List接口下的常用容器</div></div><div class="info-2"><div class="info-item-1">集合概述 Java 集合框架概述 Java 集合，也叫作容器，主要是由两大接口派生而来：  一个是 Collection接口，主要用于存放单一元素；  对于Collection 接口，下面又有三个主要的子接口：List、Set 、 Queue。  另一个是 Map 接口，主要用于存放键值对。    Java 集合框架概览  如下是更详细的，带上了抽象类的   image-20260204114015885  集合框架的体系如下  接口（Interfaces）：定义集合的行为（如 Collection, List, Set, Queue, Map）。 实现类（Implementations）：提供具体的数据结构（如 ArrayList, HashSet, LinkedList, HashMap）。 算法（Algorithms）：如排序、查找等（通过 Collections 工具类提供）。 迭代器（Iterator）：用于遍历集合元素。  那么，在这里简单说一下 List, Set, Queue,...</div></div></div></a><a class="pagination-related" href="/posts/50731.html" title="详解Java之集合框架 part3—详解Queue和Deque接口下的集合"><img class="cover" src="/images/posts/cover_talk2.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-05</div><div class="info-item-2">详解Java之集合框架 part3—详解Queue和Deque接口下的集合</div></div><div class="info-2"><div class="info-item-1">Queue  本文源码以本机 JDK 21.0.4 为准  Queue 接口概述 前面说到，List 关注的是“按照位置组织元素”，Set 关注的是“保存唯一成员”。Queue 则把重点放在了另一个问题上，新元素怎样进入容器，下一个应该处理哪个元素。 普通排队场景中，先到的先处理，也就是 FIFO；优先队列则按照比较规则选择队首；双端队列还能从两端插入和取出，模拟 LIFO 栈。因此，Queue 不能简单理解为“所有实现都按照插入顺序遍历”。 Queue 继承 Collection，没有公开下标访问方法。它提供两组最常用的操作：    操作 失败时抛异常 正常失败时返回特殊值     添加元素 add(e) offer(e)   移除队首 remove() poll()   查看队首 element() peek()    容量受限时，add() 可能抛 IllegalStateException，offer()...</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="gitalk-container"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/arp.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">ErgouTree</div><div class="author-info-description">I start a brand-new life with you.</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">352</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">214</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">114</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/ergou10086"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/ergou10086" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="/zjm88822201@126.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a><a class="social-icon" href="https://space.bilibili.com/142045656?spm_id_from=333.1007.0.0" target="_blank" title="bilibili"><i class="fas fa-brands fa-bilibili" style="color: #4a72be;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">作者长期陷入galgame和osu!maina4k中 祝他好运吧 对了 如果图片加载过慢 建议科学上网进行使用</div></div><div class="card-widget card-weather"><div class="item-headline"><i class="fas fa-cloud-sun"></i><span>aside.card_weather</span></div><div class="weather-content"><div class="weather-loading"><i class="fas fa-spinner fa-spin"></i><span>加载中...</span></div><div class="weather-main" style="display: none;"><div class="weather-location"><i class="fas fa-map-marker-alt"></i><span id="weather-location">获取中...</span></div><div class="weather-info"><div class="weather-temp"><span id="weather-temp">--</span><span class="unit">°C</span></div><div class="weather-desc"><span id="weather-weather">--</span></div><div class="weather-details"><div class="weather-item"><i class="fas fa-wind"></i><span id="weather-windpower">--</span></div><div class="weather-item"><i class="fas fa-tint"></i><span id="weather-humidity">--</span></div><div class="weather-item"><i class="fas fa-eye"></i><span id="weather-winddir">--</span></div></div></div><div class="weather-update-time"><i class="fas fa-clock"></i><span id="weather-update-time">更新中...</span></div></div></div></div><div class="sticky_layout"></div><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B3%E6%B3%A8-jdk-%E6%96%B0%E7%89%B9%E6%80%A7%E4%B8%AD%E7%9A%84%E4%BB%80%E4%B9%88%E5%86%85%E5%AE%B9"><span class="toc-number">1.1.</span> <span class="toc-text">关注 JDK 新特性中的什么内容</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%90%86%E8%A7%A3%E7%89%88%E6%9C%AC%E5%92%8C%E7%89%B9%E6%80%A7%E7%8A%B6%E6%80%81"><span class="toc-number">1.2.</span> <span class="toc-text">理解版本和特性状态</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#lts-%E6%98%AF%E6%94%AF%E6%8C%81%E7%AD%96%E7%95%A5%E4%B8%8D%E6%98%AF%E4%B8%80%E7%A7%8D%E9%A2%9D%E5%A4%96%E7%9A%84%E8%AF%AD%E8%A8%80%E8%83%BD%E5%8A%9B"><span class="toc-number">1.3.</span> <span class="toc-text">LTS
+是支持策略，不是一种额外的语言能力</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%87%8D%E8%A6%81%E7%89%88%E6%9C%AC%E9%80%9F%E8%A7%88"><span class="toc-number">1.4.</span> <span class="toc-text">重要版本速览</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#jdk-8%E7%8E%B0%E4%BB%A3-java-%E7%BC%96%E7%A8%8B%E6%96%B9%E5%BC%8F%E7%9A%84%E5%9F%BA%E7%A1%80"><span class="toc-number">2.</span> <span class="toc-text">JDK 8：现代 Java
+编程方式的基础</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#lambda-%E4%B8%8E%E5%87%BD%E6%95%B0%E5%BC%8F%E6%8E%A5%E5%8F%A3"><span class="toc-number">2.1.</span> <span class="toc-text">Lambda 与函数式接口</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#stream%E6%8A%8A%E9%9B%86%E5%90%88%E5%A4%84%E7%90%86%E5%86%99%E6%88%90%E6%B5%81%E6%B0%B4%E7%BA%BF"><span class="toc-number">2.2.</span> <span class="toc-text">Stream：把集合处理写成流水线</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#optional%E8%A1%A8%E8%BE%BE%E7%BB%93%E6%9E%9C%E5%8F%AF%E8%83%BD%E4%B8%8D%E5%AD%98%E5%9C%A8"><span class="toc-number">2.3.</span> <span class="toc-text">Optional：表达结果可能不存在</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#java.time%E6%8A%8A%E6%97%B6%E9%97%B4%E7%82%B9%E5%92%8C%E6%9C%AC%E5%9C%B0%E6%97%B6%E9%97%B4%E5%8C%BA%E5%88%86%E5%BC%80"><span class="toc-number">2.4.</span> <span class="toc-text">java.time：把时间点和本地时间区分开</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#completablefuture%E7%BB%84%E5%90%88%E5%BC%82%E6%AD%A5%E4%BB%BB%E5%8A%A1"><span class="toc-number">2.5.</span> <span class="toc-text">CompletableFuture：组合异步任务</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B0%B8%E4%B9%85%E4%BB%A3%E7%A7%BB%E9%99%A4%E7%B1%BB%E5%85%83%E6%95%B0%E6%8D%AE%E8%BF%9B%E5%85%A5%E6%9C%AC%E5%9C%B0%E5%86%85%E5%AD%98"><span class="toc-number">2.6.</span> <span class="toc-text">永久代移除，类元数据进入本地内存</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#jdk-9%E6%A8%A1%E5%9D%97%E5%8C%96%E4%B8%8E%E8%BF%90%E8%A1%8C%E6%97%B6%E7%BB%93%E6%9E%84%E7%9A%84%E5%8F%98%E5%8C%96"><span class="toc-number">3.</span> <span class="toc-text">JDK
+9：模块化与运行时结构的变化</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A8%A1%E5%9D%97%E7%B3%BB%E7%BB%9F%E6%8A%8A%E4%BE%9D%E8%B5%96%E5%92%8C%E5%BC%80%E6%94%BE%E8%BE%B9%E7%95%8C%E5%86%99%E5%87%BA%E6%9D%A5"><span class="toc-number">3.1.</span> <span class="toc-text">模块系统：把依赖和开放边界写出来</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%9B%86%E5%90%88%E5%B7%A5%E5%8E%82%E5%88%9B%E5%BB%BA%E4%B8%8D%E5%8F%AF%E4%BF%AE%E6%94%B9%E9%9B%86%E5%90%88%E6%9B%B4%E7%9B%B4%E6%8E%A5"><span class="toc-number">3.2.</span> <span class="toc-text">集合工厂：创建不可修改集合更直接</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%B4%A7%E5%87%91%E5%AD%97%E7%AC%A6%E4%B8%B2%E4%BB%8E-char-%E5%88%B0-byte-%E5%8A%A0%E7%BC%96%E7%A0%81%E6%A0%87%E8%AE%B0"><span class="toc-number">3.3.</span> <span class="toc-text">紧凑字符串：从 char[] 到
+byte[] 加编码标记</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#g1-%E9%BB%98%E8%AE%A4%E7%AD%96%E7%95%A5%E4%B8%8E%E7%BB%9F%E4%B8%80-jvm-%E6%97%A5%E5%BF%97"><span class="toc-number">3.4.</span> <span class="toc-text">G1 默认策略与统一 JVM 日志</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#jdk-10%E5%B1%80%E9%83%A8%E5%8F%98%E9%87%8F%E6%8E%A8%E6%96%AD%E4%B8%8E%E5%AE%B9%E5%99%A8%E8%BF%90%E8%A1%8C"><span class="toc-number">4.</span> <span class="toc-text">JDK
+10：局部变量推断与容器运行</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#var%E5%87%8F%E5%B0%91%E9%87%8D%E5%A4%8D%E7%B1%BB%E5%9E%8B%E4%BF%A1%E6%81%AF"><span class="toc-number">4.1.</span> <span class="toc-text">var：减少重复类型信息</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%B9%E5%99%A8%E8%B5%84%E6%BA%90%E8%AF%86%E5%88%ABjvm-%E9%9C%80%E8%A6%81%E7%9F%A5%E9%81%93%E8%87%AA%E5%B7%B1%E5%AE%9E%E9%99%85%E8%83%BD%E7%94%A8%E5%A4%9A%E5%B0%91%E8%B5%84%E6%BA%90"><span class="toc-number">4.2.</span> <span class="toc-text">容器资源识别：JVM
+需要知道自己实际能用多少资源</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#jdk-11%E6%A0%87%E5%87%86-http-%E5%AE%A2%E6%88%B7%E7%AB%AF%E4%B8%8E%E7%94%9F%E4%BA%A7%E8%AF%8A%E6%96%AD"><span class="toc-number">5.</span> <span class="toc-text">JDK 11：标准 HTTP
+客户端与生产诊断</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#httpclient-%E6%AD%A3%E5%BC%8F%E8%BF%9B%E5%85%A5%E6%A0%87%E5%87%86%E5%BA%93"><span class="toc-number">5.1.</span> <span class="toc-text">HttpClient 正式进入标准库</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#jfr%E6%8A%8A%E8%BF%90%E8%A1%8C%E6%97%B6%E8%A1%8C%E4%B8%BA%E8%AE%B0%E5%BD%95%E4%B8%8B%E6%9D%A5"><span class="toc-number">5.2.</span> <span class="toc-text">JFR：把运行时行为记录下来</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#tls-1.3-%E4%B8%8E%E5%86%85%E7%BD%AE%E6%A8%A1%E5%9D%97%E7%A7%BB%E9%99%A4"><span class="toc-number">5.3.</span> <span class="toc-text">TLS 1.3 与内置模块移除</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#jdk-14switch-%E5%8F%AF%E4%BB%A5%E4%BA%A7%E7%94%9F%E7%BB%93%E6%9E%9C"><span class="toc-number">6.</span> <span class="toc-text">JDK 14：switch 可以产生结果</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#switch-%E8%A1%A8%E8%BE%BE%E5%BC%8F"><span class="toc-number">6.1.</span> <span class="toc-text">switch 表达式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#cms-%E8%A2%AB%E7%A7%BB%E9%99%A4"><span class="toc-number">6.2.</span> <span class="toc-text">CMS 被移除</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#jdk-15%E6%96%87%E6%9C%AC%E5%9D%97%E4%B8%8E%E4%BD%8E%E5%BB%B6%E8%BF%9F%E5%9E%83%E5%9C%BE%E6%94%B6%E9%9B%86%E5%99%A8"><span class="toc-number">7.</span> <span class="toc-text">JDK
+15：文本块与低延迟垃圾收集器</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%87%E6%9C%AC%E5%9D%97%E5%A4%9A%E8%A1%8C%E6%96%87%E6%9C%AC%E4%B8%8D%E5%BF%85%E5%8F%8D%E5%A4%8D%E6%8B%BC%E6%8E%A5"><span class="toc-number">7.1.</span> <span class="toc-text">文本块：多行文本不必反复拼接</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#zgcshenandoah-%E8%BD%AC%E4%B8%BA%E7%94%9F%E4%BA%A7%E5%8A%9F%E8%83%BD"><span class="toc-number">7.2.</span> <span class="toc-text">ZGC、Shenandoah 转为生产功能</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#jdk-16record-%E4%B8%8E-instanceof-%E6%A8%A1%E5%BC%8F%E5%8C%B9%E9%85%8D"><span class="toc-number">8.</span> <span class="toc-text">JDK 16：Record 与
+instanceof 模式匹配</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#record%E4%B8%BA%E6%95%B0%E6%8D%AE%E8%BD%BD%E4%BD%93%E5%87%8F%E5%B0%91%E6%A0%B7%E6%9D%BF%E4%BB%A3%E7%A0%81"><span class="toc-number">8.1.</span> <span class="toc-text">Record：为数据载体减少样板代码</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#instanceof-%E6%A8%A1%E5%BC%8F%E5%8C%B9%E9%85%8D%E7%B1%BB%E5%9E%8B%E5%88%A4%E6%96%AD%E5%90%8E%E7%9B%B4%E6%8E%A5%E4%BD%BF%E7%94%A8%E5%8F%98%E9%87%8F"><span class="toc-number">8.2.</span> <span class="toc-text">instanceof
+模式匹配：类型判断后直接使用变量</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#jdk-17%E9%99%90%E5%88%B6%E7%BB%A7%E6%89%BF%E8%BE%B9%E7%95%8C%E4%B8%8E%E5%8A%A0%E5%BC%BA%E5%B0%81%E8%A3%85"><span class="toc-number">9.</span> <span class="toc-text">JDK
+17：限制继承边界与加强封装</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#sealed%E6%98%8E%E7%A1%AE%E4%B8%80%E7%A7%8D%E7%BB%93%E6%9E%9C%E5%8F%AA%E6%9C%89%E5%93%AA%E4%BA%9B%E5%BD%A2%E5%BC%8F"><span class="toc-number">9.1.</span> <span class="toc-text">sealed：明确一种结果只有哪些形式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BC%BA%E5%B0%81%E8%A3%85-jdk-%E5%86%85%E9%83%A8%E5%AE%9E%E7%8E%B0"><span class="toc-number">9.2.</span> <span class="toc-text">强封装 JDK 内部实现</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#jdk-18%E9%BB%98%E8%AE%A4%E5%AD%97%E7%AC%A6%E9%9B%86%E5%92%8C%E8%B5%84%E6%BA%90%E9%87%8A%E6%94%BE%E7%9A%84%E5%8F%98%E5%8C%96"><span class="toc-number">10.</span> <span class="toc-text">JDK
+18：默认字符集和资源释放的变化</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%BB%98%E8%AE%A4%E5%AD%97%E7%AC%A6%E9%9B%86%E6%94%B9%E4%B8%BA-utf-8"><span class="toc-number">10.1.</span> <span class="toc-text">默认字符集改为 UTF-8</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#finalization-%E8%A2%AB%E6%A0%87%E8%AE%B0%E4%B8%BA%E5%BE%85%E7%A7%BB%E9%99%A4"><span class="toc-number">10.2.</span> <span class="toc-text">finalization 被标记为待移除</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#jdk-21%E5%B9%B6%E5%8F%91%E4%B8%8E%E4%B8%9A%E5%8A%A1%E5%BB%BA%E6%A8%A1%E7%9A%84%E9%87%8D%E8%A6%81%E7%89%88%E6%9C%AC"><span class="toc-number">11.</span> <span class="toc-text">JDK
+21：并发与业务建模的重要版本</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%99%9A%E6%8B%9F%E7%BA%BF%E7%A8%8B%E8%AE%A9%E5%A4%A7%E9%87%8F%E7%AD%89%E5%BE%85%E4%B8%8D%E5%BF%85%E5%8D%A0%E4%BD%8F%E5%A4%A7%E9%87%8F%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%BA%BF%E7%A8%8B"><span class="toc-number">11.1.</span> <span class="toc-text">虚拟线程：让大量等待不必占住大量操作系统线程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A8%A1%E5%BC%8F%E5%8C%B9%E9%85%8D-switch-%E4%B8%8E-record-%E6%A8%A1%E5%BC%8F"><span class="toc-number">11.2.</span> <span class="toc-text">模式匹配 switch 与 Record
+模式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#sequenced-collections%E7%BB%9F%E4%B8%80%E6%9C%89%E9%A1%BA%E5%BA%8F%E9%9B%86%E5%90%88%E7%9A%84%E9%A6%96%E5%B0%BE%E6%93%8D%E4%BD%9C"><span class="toc-number">11.3.</span> <span class="toc-text">Sequenced
+Collections：统一有顺序集合的首尾操作</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%86%E4%BB%A3-zgc%E6%8C%89%E5%AF%B9%E8%B1%A1%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E8%BF%9B%E4%B8%80%E6%AD%A5%E4%BC%98%E5%8C%96"><span class="toc-number">11.4.</span> <span class="toc-text">分代
+ZGC：按对象生命周期进一步优化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8A%A8%E6%80%81%E5%8A%A0%E8%BD%BD-agent-%E5%BC%80%E5%A7%8B%E5%91%8A%E8%AD%A6"><span class="toc-number">11.5.</span> <span class="toc-text">动态加载 Agent 开始告警</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#jdk-22ffm-api-%E6%AD%A3%E5%BC%8F%E5%8F%91%E5%B8%83"><span class="toc-number">12.</span> <span class="toc-text">JDK 22：FFM API 正式发布</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9B%B4%E6%98%8E%E7%A1%AE%E5%9C%B0%E7%AE%A1%E7%90%86%E5%A0%86%E5%A4%96%E5%86%85%E5%AD%98%E4%B8%8E%E6%9C%AC%E5%9C%B0%E8%B0%83%E7%94%A8"><span class="toc-number">12.1.</span> <span class="toc-text">更明确地管理堆外内存与本地调用</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#jdk-23%E9%87%8D%E7%82%B9%E5%85%B3%E6%B3%A8-zgc-%E9%BB%98%E8%AE%A4%E6%A8%A1%E5%BC%8F%E5%8F%98%E5%8C%96"><span class="toc-number">13.</span> <span class="toc-text">JDK 23：重点关注 ZGC
+默认模式变化</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#jdk-24%E8%99%9A%E6%8B%9F%E7%BA%BF%E7%A8%8Bstream-%E4%B8%8E%E5%B7%A5%E5%85%B7%E9%93%BE%E7%BB%A7%E7%BB%AD%E5%AE%8C%E5%96%84"><span class="toc-number">14.</span> <span class="toc-text">JDK 24：虚拟线程、Stream
+与工具链继续完善</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#synchronized-%E4%B8%8D%E5%86%8D%E9%80%A0%E6%88%90%E5%8E%9F%E6%9D%A5%E7%9A%84%E4%B8%BB%E8%A6%81%E5%9B%BA%E5%AE%9A%E9%97%AE%E9%A2%98"><span class="toc-number">14.1.</span> <span class="toc-text">synchronized
+不再造成原来的主要固定问题</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#stream-gatherers%E6%94%AF%E6%8C%81%E6%9B%B4%E5%A4%8D%E6%9D%82%E7%9A%84%E4%B8%AD%E9%97%B4%E6%93%8D%E4%BD%9C"><span class="toc-number">14.2.</span> <span class="toc-text">Stream
+Gatherers：支持更复杂的中间操作</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#class-file-api%E6%A0%87%E5%87%86%E6%96%B9%E5%BC%8F%E8%A7%A3%E6%9E%90%E7%94%9F%E6%88%90%E5%92%8C%E8%BD%AC%E6%8D%A2-class"><span class="toc-number">14.3.</span> <span class="toc-text">Class-File
+API：标准方式解析、生成和转换 class</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#aot-%E7%B1%BB%E5%8A%A0%E8%BD%BD%E4%B8%8E%E9%93%BE%E6%8E%A5%E6%8A%8A%E5%90%AF%E5%8A%A8%E5%B7%A5%E4%BD%9C%E6%8F%90%E5%89%8D%E5%81%9A"><span class="toc-number">14.4.</span> <span class="toc-text">AOT
+类加载与链接：把启动工作提前做</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9C%AC%E5%9C%B0%E8%AE%BF%E9%97%AEunsafe-%E5%92%8C-security-manager-%E7%9A%84%E8%B0%83%E6%95%B4"><span class="toc-number">14.5.</span> <span class="toc-text">本地访问、Unsafe 和
+Security Manager 的调整</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#jdk-25%E4%B8%8A%E4%B8%8B%E6%96%87%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80%E4%B8%8E%E5%90%AF%E5%8A%A8%E4%BC%98%E5%8C%96"><span class="toc-number">15.</span> <span class="toc-text">JDK
+25：上下文、内存布局与启动优化</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#scopedvalue%E5%9C%A8%E5%8F%97%E6%8E%A7%E4%BD%9C%E7%94%A8%E5%9F%9F%E4%B8%AD%E4%BC%A0%E9%80%92%E8%AF%B7%E6%B1%82%E4%B8%8A%E4%B8%8B%E6%96%87"><span class="toc-number">15.1.</span> <span class="toc-text">ScopedValue：在受控作用域中传递请求上下文</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%B4%A7%E5%87%91%E5%AF%B9%E8%B1%A1%E5%A4%B4%E4%BB%8E%E5%AE%9E%E9%AA%8C%E5%8A%9F%E8%83%BD%E5%8F%98%E4%B8%BA%E6%AD%A3%E5%BC%8F%E5%8F%AF%E9%80%89%E5%8A%9F%E8%83%BD"><span class="toc-number">15.2.</span> <span class="toc-text">紧凑对象头：从实验功能变为正式可选功能</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#aot-%E7%BC%93%E5%AD%98%E4%B8%8E%E6%96%B9%E6%B3%95%E7%94%BB%E5%83%8F%E5%90%AF%E5%8A%A8%E4%B9%8B%E5%90%8E%E4%B9%9F%E9%9C%80%E8%A6%81%E6%9B%B4%E5%BF%AB%E8%BF%9B%E5%85%A5%E7%A8%B3%E5%AE%9A%E7%8A%B6%E6%80%81"><span class="toc-number">15.3.</span> <span class="toc-text">AOT
+缓存与方法画像：启动之后也需要更快进入稳定状态</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%81%B5%E6%B4%BB%E6%9E%84%E9%80%A0%E5%99%A8%E5%85%88%E9%AA%8C%E8%AF%81%E5%8F%82%E6%95%B0%E5%86%8D%E8%B0%83%E7%94%A8%E7%88%B6%E7%B1%BB%E6%9E%84%E9%80%A0%E5%99%A8"><span class="toc-number">15.4.</span> <span class="toc-text">灵活构造器：先验证参数，再调用父类构造器</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#jdk-26%E7%BD%91%E7%BB%9C%E8%83%BD%E5%8A%9B%E5%92%8C%E6%A1%86%E6%9E%B6%E5%85%BC%E5%AE%B9%E6%80%A7"><span class="toc-number">16.</span> <span class="toc-text">JDK 26：网络能力和框架兼容性</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#httpclient-%E6%94%AF%E6%8C%81-http3"><span class="toc-number">16.1.</span> <span class="toc-text">HttpClient 支持 HTTP&#x2F;3</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%80%9A%E8%BF%87%E6%B7%B1%E5%8F%8D%E5%B0%84%E4%BF%AE%E6%94%B9-final-%E5%AD%97%E6%AE%B5%E5%BC%80%E5%A7%8B%E5%91%8A%E8%AD%A6"><span class="toc-number">16.2.</span> <span class="toc-text">通过深反射修改 final
+字段开始告警</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#aot-%E5%AF%B9%E8%B1%A1%E7%BC%93%E5%AD%98%E5%8F%AF%E4%BB%A5%E9%85%8D%E5%90%88%E6%89%80%E6%9C%89-gc"><span class="toc-number">16.3.</span> <span class="toc-text">AOT 对象缓存可以配合所有 GC</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#jdk-27%E9%BB%98%E8%AE%A4%E8%A1%8C%E4%B8%BA%E5%8F%98%E5%8C%96%E4%B8%8E%E5%AE%89%E5%85%A8%E8%AF%8A%E6%96%AD"><span class="toc-number">17.</span> <span class="toc-text">JDK
+27：默认行为变化与安全诊断</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#g1-%E6%88%90%E4%B8%BA%E6%89%80%E6%9C%89%E7%8E%AF%E5%A2%83%E7%9A%84%E9%BB%98%E8%AE%A4%E6%94%B6%E9%9B%86%E5%99%A8"><span class="toc-number">17.1.</span> <span class="toc-text">G1 成为所有环境的默认收集器</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%B4%A7%E5%87%91%E5%AF%B9%E8%B1%A1%E5%A4%B4%E9%BB%98%E8%AE%A4%E5%BC%80%E5%90%AF"><span class="toc-number">17.2.</span> <span class="toc-text">紧凑对象头默认开启</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#tls-1.3-%E5%90%8E%E9%87%8F%E5%AD%90%E6%B7%B7%E5%90%88%E5%AF%86%E9%92%A5%E4%BA%A4%E6%8D%A2"><span class="toc-number">17.3.</span> <span class="toc-text">TLS 1.3 后量子混合密钥交换</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#jfr-%E5%9C%A8%E8%BF%9B%E7%A8%8B%E5%86%85%E5%A4%84%E7%90%86%E6%95%8F%E6%84%9F%E4%BF%A1%E6%81%AF"><span class="toc-number">17.4.</span> <span class="toc-text">JFR 在进程内处理敏感信息</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%80%BC%E5%BE%97%E5%85%B3%E6%B3%A8%E4%BD%86%E8%BF%98%E6%B2%A1%E6%9C%89%E6%AD%A3%E5%BC%8F%E5%AE%9A%E5%9E%8B%E7%9A%84%E7%89%B9%E6%80%A7"><span class="toc-number">18.</span> <span class="toc-text">值得关注，但还没有正式定型的特性</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BC%81%E4%B8%9A%E9%A1%B9%E7%9B%AE%E5%8D%87%E7%BA%A7%E6%97%B6%E5%BA%94%E8%AF%A5%E4%B8%80%E8%B5%B7%E6%A3%80%E6%9F%A5%E4%BB%80%E4%B9%88"><span class="toc-number">19.</span> <span class="toc-text">企业项目升级时，应该一起检查什么</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BC%96%E8%AF%91%E6%88%90%E5%8A%9F%E5%8F%AA%E4%BB%A3%E8%A1%A8%E5%AE%8C%E6%88%90%E4%BA%86%E5%85%B6%E4%B8%AD%E4%B8%80%E6%AD%A5"><span class="toc-number">19.1.</span> <span class="toc-text">编译成功，只代表完成了其中一步</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#release%E5%90%8C%E6%97%B6%E7%BA%A6%E6%9D%9F%E8%AF%AD%E8%A8%80%E5%AD%97%E8%8A%82%E7%A0%81%E5%92%8C%E6%A0%87%E5%87%86-api"><span class="toc-number">19.2.</span> <span class="toc-text">–release：同时约束语言、字节码和标准
+API</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%8C%E4%B8%80-jvm%E4%B9%9F%E4%B8%8D%E6%98%AF%E4%B8%80%E7%A7%8D%E7%89%B9%E6%80%A7%E8%B6%8A%E6%96%B0%E5%B0%B1%E4%B8%80%E5%AE%9A%E8%B6%8A%E5%90%88%E9%80%82"><span class="toc-number">19.3.</span> <span class="toc-text">同一
+JVM，也不是一种特性越新就一定越合适</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%98%E6%96%B9%E8%B5%84%E6%96%99%E4%B8%8E%E6%BA%90%E7%A0%81%E5%85%A5%E5%8F%A3"><span class="toc-number">20.</span> <span class="toc-text">官方资料与源码入口</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/54855.html" title="从JDK8开始各个版本JDK的重要新特性"><div style="background: /images/posts/"></div></a><div class="content"><a class="title" href="/posts/54855.html" title="从JDK8开始各个版本JDK的重要新特性">从JDK8开始各个版本JDK的重要新特性</a><time datetime="2026-10-05T08:30:05.000Z" title="发表于 2026-10-05 16:30:05">2026-10-05</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/57538.html" title="详解Java之集合框架 part4—详解Map接口下的集合"><img src="/images/posts/cover_theory.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="详解Java之集合框架 part4—详解Map接口下的集合"/></a><div class="content"><a class="title" href="/posts/57538.html" title="详解Java之集合框架 part4—详解Map接口下的集合">详解Java之集合框架 part4—详解Map接口下的集合</a><time datetime="2026-10-05T08:07:02.000Z" title="发表于 2026-10-05 16:07:02">2026-10-05</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/50731.html" title="详解Java之集合框架 part3—详解Queue和Deque接口下的集合"><img src="/images/posts/cover_talk2.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="详解Java之集合框架 part3—详解Queue和Deque接口下的集合"/></a><div class="content"><a class="title" href="/posts/50731.html" title="详解Java之集合框架 part3—详解Queue和Deque接口下的集合">详解Java之集合框架 part3—详解Queue和Deque接口下的集合</a><time datetime="2026-10-05T08:05:13.000Z" title="发表于 2026-10-05 16:05:13">2026-10-05</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/59487.html" title="详解Java之集合框架 part2—详解Set接口下的集合"><img src="/images/posts/cover_c.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="详解Java之集合框架 part2—详解Set接口下的集合"/></a><div class="content"><a class="title" href="/posts/59487.html" title="详解Java之集合框架 part2—详解Set接口下的集合">详解Java之集合框架 part2—详解Set接口下的集合</a><time datetime="2026-10-05T08:03:13.000Z" title="发表于 2026-10-05 16:03:13">2026-10-05</time></div></div></div></div></div></main><div class="fps-display"><span id="fps">FPS: 60</span></div><footer id="footer" style="background-image: url(/images/posts/);"><div id="footer-wrap"><div class="copyright">&copy;2024 - 2026 By ErgouTree</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">忘れたくない思い、ありますか？ <br>,<span id="realtime_duration" style="font-family: monospace;"></span>,<br><a href="https://icp.gov.moe/?keyword=20257009" target="_blank">萌ICP备20257009号</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><a class="icon-V hidden" onclick="switchNightMode()" title="日间和夜间模式切换"><svg width="25" height="25" viewBox="0 0 1024 1024"><use id="modeicon" xlink:href="#icon-moon"></use></svg></a><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="chat-btn" type="button" title="聊天" style="display:none"><i class="fas fa-comment"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (true) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script><script>(() => {
+  const applyThemeDefaultsConfig = theme => {
+    if (theme === 'dark-mode') {
+      Chart.defaults.color = "rgba(255, 255, 255, 0.8)"
+      Chart.defaults.borderColor = "rgba(255, 255, 255, 0.2)"
+      Chart.defaults.scale.ticks.backdropColor = "transparent"
+    } else {
+      Chart.defaults.color = "rgba(0, 0, 0, 0.8)"
+      Chart.defaults.borderColor = "rgba(0, 0, 0, 0.1)"
+      Chart.defaults.scale.ticks.backdropColor = "transparent"
+    }
+  }
+
+  // Recursively traverse the config object and automatically apply theme-specific color schemes
+  const applyThemeConfig = (obj, theme) => {
+    if (typeof obj !== 'object' || obj === null) return
+
+    Object.keys(obj).forEach(key => {
+      const value = obj[key]
+      // If the property is an object and has theme-specific options, apply them
+      if (typeof value === 'object' && value !== null) {
+        if (value[theme]) {
+          obj[key] = value[theme] // Apply the value for the current theme
+        } else {
+          // Recursively process child objects
+          applyThemeConfig(value, theme)
+        }
+      }
+    })
+  }
+
+  const runChartJS = ele => {
+    window.loadChartJS = true
+
+    Array.from(ele).forEach((item, index) => {
+      const chartSrc = item.firstElementChild
+      const chartID = item.getAttribute('data-chartjs-id') || ('chartjs-' + index) // Use custom ID or default ID
+      const width = item.getAttribute('data-width')
+      const existingCanvas = document.getElementById(chartID)
+
+      // If a canvas already exists, remove it to avoid rendering duplicates
+      if (existingCanvas) {
+          existingCanvas.parentNode.remove()
+      }
+
+      const chartDefinition = chartSrc.textContent
+      const canvas = document.createElement('canvas')
+      canvas.id = chartID
+
+      const div = document.createElement('div')
+      div.className = 'chartjs-wrap'
+
+      if (width) {
+        div.style.width = width
+      }
+
+      div.appendChild(canvas)
+      chartSrc.insertAdjacentElement('afterend', div)
+
+      const ctx = document.getElementById(chartID).getContext('2d')
+
+      const config = JSON.parse(chartDefinition)
+
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark-mode' : 'light-mode'
+
+      // Set default styles (initial setup)
+      applyThemeDefaultsConfig(theme)
+
+      // Automatically traverse the config and apply dual-mode color schemes
+      applyThemeConfig(config, theme)
+
+      new Chart(ctx, config)
+    })
+  }
+
+  const loadChartJS = () => {
+    const chartJSEle = document.querySelectorAll('#article-container .chartjs-container')
+    if (chartJSEle.length === 0) return
+
+    window.loadChartJS ? runChartJS(chartJSEle) : btf.getScript('https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.min.js').then(() => runChartJS(chartJSEle))
+  }
+
+  // Listen for theme change events
+  btf.addGlobalFn('themeChange', loadChartJS, 'chartjs')
+  btf.addGlobalFn('encrypt', loadChartJS, 'chartjs')
+
+  window.pjax ? loadChartJS() : document.addEventListener('DOMContentLoaded', loadChartJS)
+})()</script><script>(function() {
+  const abcjsInit = function() {
+    const abcjsFn = function() {
+      setTimeout(function() {
+        const sheets = document.querySelectorAll(".abc-music-sheet")
+        for (let i = 0; i < sheets.length; i++) {
+          const ele = sheets[i]
+          if (ele.children.length > 0) continue
+
+          // Parse parameters from data-params attribute
+          let params = {}
+          const dp = ele.getAttribute("data-params")
+          if (dp) {
+            try {
+              params = JSON.parse(dp)
+            } catch (e) {
+              console.error("Failed to parse data-params:", e)
+            }
+          }
+
+          // Merge parsed parameters with the responsive option
+          // Ensures params content appears before responsive
+          const options = { ...params, responsive: "resize" }
+
+          // Render the music score using ABCJS.renderAbc
+          ABCJS.renderAbc(ele, ele.innerHTML, options)
+        }
+      }, 100)
+    }
+
+    if (typeof ABCJS === "object") {
+      abcjsFn()
+    } else {
+      btf.getScript("https://cdn.jsdelivr.net/npm/abcjs/dist/abcjs-basic-min.min.js").then(abcjsFn)
+    }
+  }
+
+  if (window.pjax) {
+    abcjsInit()
+  } else {
+    window.addEventListener("load", abcjsInit)
+  }
+
+  btf.addGlobalFn("encrypt", abcjsInit, "abcjs")
+})()</script><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = {"labels":["Gitalk","Comment"],"createIssueManually":false,"distractionFreeMode":false}
+
+  const commentCount = n => {
+    const isCommentCount = document.querySelector('#post-meta .gitalk-comment-count')
+    if (isCommentCount) {
+      isCommentCount.textContent= n
+    }
+  }
+
+  const initGitalk = (el, path) => {
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGitalk = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+
+    const gitalk = new Gitalk({
+      clientID: 'Ov23li3vDQANiUddL4XB',
+      clientSecret: '5c9a56d02995340fca117809cd414662aadce6ff',
+      repo: 'HexoComment',
+      owner: 'ergou10086',
+      admin: ['ergou10086'],
+      updateCountCallback: commentCount,
+      ...option,
+      id: isShuoshuo ? path : (option && option.id) || '6a3991a59a8f23dcc871e41da685e4bb'
+    })
+
+    gitalk.render('gitalk-container')
+  }
+
+  const loadGitalk = async(el, path) => {
+    if (typeof Gitalk === 'function') initGitalk(el, path)
+    else {
+      await btf.getCSS('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.css')
+      await btf.getScript('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.js')
+      initGitalk(el, path)
+    }
+  }
+
+  if (isShuoshuo) {
+    'Gitalk' === 'Gitalk'
+      ? window.shuoshuoComment = { loadComment: loadGitalk }
+      : window.loadOtherComment = loadGitalk
+    return
+  }
+
+  if ('Gitalk' === 'Gitalk' || !false) {
+    if (false) btf.loadComment(document.getElementById('gitalk-container'), loadGitalk)
+    else loadGitalk()
+  } else {
+    window.loadOtherComment = loadGitalk
+  }
+})()</script></div><div class="aplayer no-destroy" data-id="13587761608" data-server="netease" data-type="playlist" data-fixed="true" data-autoplay="false" data-lrcType="-1"> </div><script src="https://cdn.jsdelivr.net/npm/abcjs@7.1.2/dist/abcjs-basic-min.js"></script><script src="/js/sun_moon.js" async></script><script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.7/dayjs.min.js"></script><script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.7/plugin/duration.min.js"></script><script src="/scripts/realtime.js"></script><script src="/scripts/random.js"></script><script src="/scripts/weather.js"></script><script>if(window.location.pathname.includes('/viewpoint/')){function loadViewpointScripts(){var loadScript=function(src,callback){var s=document.createElement('script');s.src=src;s.async=false;s.defer=false;s.onload=function(){console.log('脚本加载成功:',src);setTimeout(function(){if(callback)callback();},100);};s.onerror=function(){console.error('脚本加载失败:',src);setTimeout(function(){if(callback)callback();},100);};document.body.appendChild(s);};loadScript('/scripts/viewpoint/math.js',function(){console.log('math.js 加载完成, math:',typeof math);loadScript('/scripts/viewpoint/katex.min.js',function(){console.log('katex.min.js 加载完成, katex:',typeof katex);loadScript('/scripts/viewpoint/sweetalert2@11.js',function(){console.log('sweetalert2@11.js 加载完成, Swal:',typeof Swal,'Sweetalert2:',typeof Sweetalert2);if(typeof Swal==='undefined'&&typeof Sweetalert2!=='undefined'){window.Swal=window.Sweetalert2;console.log('已设置 Swal 别名');}loadScript('/scripts/viewpoint/main.js',function(){console.log('Viewpoint 页面所有脚本加载完成');});});});});}if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',loadViewpointScripts);}else{loadViewpointScripts();}}</script><script>if(window.location.pathname.includes('/littleGame/')){function loadLittleGameScripts(){var load=function(src,cb){var s=document.createElement('script');s.src=src;s.async=false;s.defer=false;s.onload=function(){if(cb)cb();};document.body.appendChild(s);};load('/scripts/littleGame/2048.js',function(){load('/scripts/littleGame/extra-games.js');});}if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',loadLittleGameScripts);}else{loadLittleGameScripts();}}</script><script defer="defer" id="ribbon" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-ribbon.min.js" size="150" alpha="0.6" zIndex="-1" mobile="null" data-click="true"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = false;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><script id="click-heart" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/click-heart.min.js" async="async" mobile="false"></script><script>(() => {
+  window.ChatraID = '4bzb546NSBoJcrNyu'
+  window.Chatra = window.Chatra || function() {
+    (window.Chatra.q = window.Chatra.q || []).push(arguments)
+  }
+
+  btf.getScript('https://call.chatra.io/chatra.js').then(() => {
+    const isChatBtn = true
+    const isChatHideShow = true
+
+    if (isChatBtn) {
+      const close = () => {
+        Chatra('minimizeWidget')
+        Chatra('hide')
+      }
+
+      const open = () => {
+        Chatra('openChat', true)
+        Chatra('show')
+      }
+
+      window.ChatraSetup = { startHidden: true }
+    
+      window.chatBtnFn = () => document.getElementById('chatra').classList.contains('chatra--expanded') ? close() : open()
+
+      document.getElementById('chat-btn').style.display = 'block'
+    } else if (isChatHideShow) {
+      window.chatBtn = {
+        hide: () => Chatra('hide'),
+        show: () => Chatra('show')
+      }
+    }
+  })
+})()</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/metingjs/dist/Meting.min.js"></script><script>(() => {
+  const destroyAplayer = () => {
+    if (window.aplayers) {
+      for (let i = 0; i < window.aplayers.length; i++) {
+        if (!window.aplayers[i].options.fixed) {
+          window.aplayers[i].destroy()
+        }
+      }
+    }
+  }
+
+  const runMetingJS = () => {
+    typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+  }
+
+  btf.addGlobalFn('pjaxSend', destroyAplayer, 'destroyAplayer')
+  btf.addGlobalFn('pjaxComplete', loadMeting, 'runMetingJS')
+})()</script><script src="https://cdn.jsdelivr.net/npm/pjax/pjax.min.js"></script><script>(() => {
+  const pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+  window.pjax = new Pjax({
+    elements: 'a:not([target="_blank"]):not([href="/music/"]):not([href="/viewpoint/"])',
+    selectors: pjaxSelectors,
+    cacheBust: false,
+    analytics: false,
+    scrollRestoration: false
+  })
+
+  const triggerPjaxFn = (val) => {
+    if (!val) return
+    Object.values(val).forEach(fn => fn())
+  }
+
+  document.addEventListener('pjax:send', () => {
+    // removeEventListener
+    btf.removeGlobalFnEvent('pjaxSendOnce')
+    btf.removeGlobalFnEvent('themeChange')
+
+    // reset readmode
+    const $bodyClassList = document.body.classList
+    if ($bodyClassList.contains('read-mode')) $bodyClassList.remove('read-mode')
+
+    triggerPjaxFn(window.globalFn.pjaxSend)
+  })
+
+  document.addEventListener('pjax:complete', () => {
+    btf.removeGlobalFnEvent('pjaxCompleteOnce')
+    document.querySelectorAll('script[data-pjax]').forEach(item => {
+      const newScript = document.createElement('script')
+      const content = item.text || item.textContent || item.innerHTML || ""
+      Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+      newScript.appendChild(document.createTextNode(content))
+      item.parentNode.replaceChild(newScript, item)
+    })
+
+    triggerPjaxFn(window.globalFn.pjaxComplete)
+  })
+
+  document.addEventListener('pjax:error', e => {
+    if (e.request.status === 404) {
+      const usePjax = true
+      true 
+        ? (usePjax ? pjax.loadUrl('/404.html') : window.location.href = '/404.html')
+        : window.location.href = e.request.responseURL
+    }
+  })
+})()</script><script src="/js/fps-display.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><!-- hexo injector body_end start --><script data-pjax>
+  function butterfly_swiper_injector_config(){
+    var parent_div_git = document.getElementById('recent-posts');
+    var item_html = '<div class="recent-post-item" style="height: auto;width: 100%"><div class="blog-slider swiper-container-fade swiper-container-horizontal" id="swiper_container"><div class="blog-slider__wrp swiper-wrapper" style="transition-duration: 0ms;"><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_database.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-14</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt="">MySQL part2——结构化查询语言SQL</a><div class="blog-slider__text">SQL基本很常用的语句都在这里了，本质上是当初为了应付数据库考试整理的，后来发现还蛮有用的很方便查常用的语句</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java4.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-22</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt="">SpringBoot part0?INF-SpringBoot这个框架都需要学习什么</a><div class="blog-slider__text">主要围绕Spring Boot中重要知识来简洁或详细的说明，其中部分不够完全，持续更新</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java11.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-15</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt="">关于Lombok在高版本IDEA中注解处理不生效的问题解决</a><div class="blog-slider__text">基本上是彻底的解决了用 IDEA 新建 Spring Boot 项目时候会产生的 Lombok 注解处理失效的各种问题</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_实用.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-05</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt="">个人向galgame原声带或相关音乐整理及其资源</a><div class="blog-slider__text">整理了我喜欢的galgame ost或者衍生的音乐专辑，部分资源是自己扒盘扒下来的，部分来自鸟白岛放映厅</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_math.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-17</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt="">对书上证明样本方差是总体方差的无偏估计量的解析</a><div class="blog-slider__text">对书上证明样本方差是总体方差的无偏估计量的解析，高等教育出版社-华科大版本</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_alog.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-04-24</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt="">第十五届蓝桥杯Java国赛B组D题-园丁题解</a><div class="blog-slider__text">第十五届蓝桥杯Java国赛B组D题-园丁题解，该题解已经发布到洛谷社区中并且被全站推荐</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java4.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-04-29</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt="">操作系统之处理机的死锁部分概述</a><div class="blog-slider__text">对操作系统之处理机的死锁部分知识的总结，包括代码复现</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_lb.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-09</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt="">Little Busters!EX游戏攻略</a><div class="blog-slider__text">整理了一份详细清晰的Little Busters！EX的游戏攻略，因为我自己也在推，就顺手整理了一份方便查阅的md文档</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java9.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-16</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt="">Spring Boot中使用Hibernate框架</a><div class="blog-slider__text">对学习完Hibernate的应用部分，主要围绕Spring Boot中使用Hibernate框架，建议学习完 Hibernate 框架再看</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div></div><div class="blog-slider__pagination swiper-pagination-clickable swiper-pagination-bullets"></div></div></div>';
+    console.log('已挂载butterfly_swiper')
+    parent_div_git.insertAdjacentHTML("afterbegin",item_html)
+    }
+  var elist = 'undefined'.split(',');
+  var cpage = location.pathname;
+  var epage = '/';
+  var flag = 0;
+
+  for (var i=0;i<elist.length;i++){
+    if (cpage.includes(elist[i])){
+      flag++;
+    }
+  }
+
+  if ((epage ==='all')&&(flag == 0)){
+    butterfly_swiper_injector_config();
+  }
+  else if (epage === cpage){
+    butterfly_swiper_injector_config();
+  }
+  </script><script defer src="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper.min.js"></script><script defer data-pjax src="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper_init.js"></script><!-- hexo injector body_end end --></body></html>
