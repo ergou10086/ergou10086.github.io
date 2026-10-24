@@ -1,0 +1,244 @@
+/* ==========================================================================
+   相册瀑布流矩阵（gallery mosaic）
+   适配 Butterfly 5.3.5：页面正文位于 #article-container 内，
+   由 tools/sync_gallery.py 生成
+     <div class="mosaic-gallery" data-album="...">
+       <a class="mosaic-item" href="原图" data-fancybox="..."><img src="缩略图"></a>
+     </div>
+   点击由主题的 Fancybox 接管（utils.js 对已在 <a> 内的图片只做 Fancybox.bind）。
+   ========================================================================== */
+
+.mosaic-gallery {
+  column-count: 3;
+  column-gap: 12px;
+  column-fill: balance;
+  margin: 4px 0 28px;
+  padding: 0;
+  line-height: 0;
+}
+
+.mosaic-gallery .mosaic-item {
+  display: block;
+  margin: 0 0 12px;
+  padding: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  background: rgba(127, 127, 127, 0.08);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  line-height: 0;
+  text-decoration: none !important;
+  /* 多列布局内禁止条目被拆到两列 */
+  break-inside: avoid;
+  -webkit-column-break-inside: avoid;
+  page-break-inside: avoid;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.mosaic-gallery .mosaic-item:hover,
+.mosaic-gallery .mosaic-item:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.16);
+  text-decoration: none !important;
+}
+
+/* 覆盖主题 #article-container（.container）对 img 的默认 margin / 圆角 / 过渡 */
+#article-container .mosaic-gallery .mosaic-item img,
+.mosaic-gallery .mosaic-item img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  transform-origin: center center;
+  transition: transform 0.35s ease, filter 0.35s ease;
+}
+
+.mosaic-gallery .mosaic-item:hover img,
+.mosaic-gallery .mosaic-item:focus-visible img {
+  transform: scale(1.04);
+  filter: brightness(1.06);
+}
+
+/* ==========================================================================
+   深色模式（Butterfly 通过 [data-theme='dark'] 切换 CSS 变量）
+   ========================================================================== */
+
+[data-theme="dark"] .mosaic-gallery .mosaic-item {
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
+}
+
+[data-theme="dark"] .mosaic-gallery .mosaic-item:hover,
+[data-theme="dark"] .mosaic-gallery .mosaic-item:focus-visible {
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6);
+}
+
+[data-theme="dark"] .mosaic-gallery .mosaic-item:hover img,
+[data-theme="dark"] .mosaic-gallery .mosaic-item:focus-visible img {
+  filter: brightness(1.12);
+}
+
+/* ==========================================================================
+   响应式列数：≤900px 两列，≤600px 单列
+   ========================================================================== */
+
+@media screen and (max-width: 900px) {
+  .mosaic-gallery {
+    column-count: 2;
+  }
+}
+
+@media screen and (max-width: 600px) {
+  .mosaic-gallery {
+    column-count: 1;
+    column-gap: 0;
+  }
+
+  .mosaic-gallery .mosaic-item {
+    margin-bottom: 10px;
+    border-radius: 6px;
+  }
+}
+
+/* 极老浏览器不支持多列时退回 flex 网格，保证仍然能看 */
+@supports not (column-count: 3) {
+  .mosaic-gallery {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .mosaic-gallery .mosaic-item {
+    flex: 1 1 30%;
+    margin: 0;
+  }
+}
+
+/* ==========================================================================
+   点击看大图：内置兜底灯箱（Fancybox 不可用时启用）
+   由 source/js/gallery-mosaic.js 动态创建 .mosaic-lightbox 元素
+   ========================================================================== */
+
+body.mosaic-lb-open {
+  overflow: hidden;
+}
+
+.mosaic-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 10060;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 28px;
+  background: rgba(8, 10, 14, 0.9);
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+}
+
+.mosaic-lightbox.is-open {
+  display: flex;
+}
+
+.mosaic-lightbox .mosaic-lb-figure {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  max-width: 92vw;
+  margin: 0;
+  line-height: 0;
+}
+
+.mosaic-lightbox .mosaic-lb-img {
+  display: block;
+  max-width: 92vw;
+  max-height: 86vh;
+  width: auto;
+  height: auto;
+  margin: 0;
+  border-radius: 6px;
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.55);
+  object-fit: contain;
+}
+
+.mosaic-lightbox .mosaic-lb-caption {
+  margin-top: 12px;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 13px;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.mosaic-lightbox button {
+  position: absolute;
+  top: 50%;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  transform: translateY(-50%);
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.mosaic-lightbox button:hover {
+  background: rgba(73, 177, 245, 0.85);
+  color: #fff;
+}
+
+.mosaic-lightbox .mosaic-lb-close {
+  top: 18px;
+  right: 18px;
+  width: 38px;
+  height: 38px;
+  font-size: 22px;
+  transform: none;
+}
+
+.mosaic-lightbox .mosaic-lb-prev {
+  left: 18px;
+}
+
+.mosaic-lightbox .mosaic-lb-next {
+  right: 18px;
+}
+
+@media screen and (max-width: 600px) {
+  .mosaic-lightbox {
+    padding: 12px;
+  }
+
+  .mosaic-lightbox .mosaic-lb-prev,
+  .mosaic-lightbox .mosaic-lb-next {
+    width: 34px;
+    height: 34px;
+    font-size: 14px;
+  }
+
+  .mosaic-lightbox .mosaic-lb-prev {
+    left: 8px;
+  }
+
+  .mosaic-lightbox .mosaic-lb-next {
+    right: 8px;
+  }
+
+  .mosaic-lightbox .mosaic-lb-img {
+    max-width: 94vw;
+    max-height: 80vh;
+  }
+}

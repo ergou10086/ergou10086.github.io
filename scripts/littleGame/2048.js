@@ -1,449 +1,399 @@
-// 2048 游戏逻辑
+// 2048 游戏逻辑（littleGame）
+// 性能要点：默认页立即初始化；只保留 16 个 tile 元素做增量渲染；
+// 键盘/触摸事件只在 2048 面板激活时响应，避免影响其他游戏。
 (function() {
   'use strict';
 
-  // 游戏状态
-  const Game = {
+  var root = null;
+  var panel = null;
+  var boardEl = null;
+  var container = null;
+  var tileEls = [];      // tileEls[row][col] 复用元素池
+  var tileVals = [];     // 上次渲染的数值，用于跳过无变化的格子
+
+  var perf = (window.__lgPerf = window.__lgPerf || { init: {}, tabs: [] });
+
+  var Game = {
     grid: [],
     score: 0,
     best: 0,
     size: 4,
     won: false,
-    over: false
+    over: false,
+    initialized: false
   };
 
-  // 初始化游戏
-  function init() {
-    // 从localStorage加载最高分
-    Game.best = parseInt(localStorage.getItem('2048-best')) || 0;
-    document.getElementById('best').textContent = Game.best;
-
-    // 初始化网格
-    Game.grid = Array(Game.size).fill(null).map(() => Array(Game.size).fill(0));
-    
-    // 添加两个初始方块
-    addRandomTile();
-    addRandomTile();
-    
-    // 渲染游戏
-    render();
-    
-    // 绑定事件
-    bindEvents();
+  function $(id) {
+    return document.getElementById(id);
   }
 
-  // 添加随机方块
+  function now() {
+    return window.performance && performance.now ? performance.now() : Date.now();
+  }
+
+  function readBest() {
+    try {
+      return parseInt(localStorage.getItem('2048-best'), 10) || 0;
+    } catch (e) {
+      return 0;
+    }
+  }
+
+  function saveBest(value) {
+    try {
+      localStorage.setItem('2048-best', String(value));
+    } catch (e) {
+      /* 隐私模式下忽略 */
+    }
+  }
+
+  function isActive() {
+    return !!(panel && panel.classList.contains('is-active'));
+  }
+
+  function emptyGrid() {
+    var grid = [];
+    for (var i = 0; i < Game.size; i++) {
+      var row = [];
+      for (var j = 0; j < Game.size; j++) row.push(0);
+      grid.push(row);
+    }
+    return grid;
+  }
+
   function addRandomTile() {
-    const emptyCells = [];
-    
-    for (let i = 0; i < Game.size; i++) {
-      for (let j = 0; j < Game.size; j++) {
-        if (Game.grid[i][j] === 0) {
-          emptyCells.push({row: i, col: j});
-        }
+    var emptyCells = [];
+    for (var i = 0; i < Game.size; i++) {
+      for (var j = 0; j < Game.size; j++) {
+        if (Game.grid[i][j] === 0) emptyCells.push([i, j]);
       }
     }
-    
-    if (emptyCells.length > 0) {
-      const cell = emptyCells[Math.floor(Math.random() * emptyCells.length)];
-      Game.grid[cell.row][cell.col] = Math.random() < 0.9 ? 2 : 4;
-    }
+    if (emptyCells.length === 0) return;
+    var cell = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+    Game.grid[cell[0]][cell[1]] = Math.random() < 0.9 ? 2 : 4;
   }
 
-  // 移动方向处理
+  // 单行/列合并：line 已经按"移动方向"排好向，返回 { out, gained, moved }
+  function slideLine(line) {
+    var vals = [];
+    var i;
+    for (i = 0; i < line.length; i++) {
+      if (line[i] !== 0) vals.push(line[i]);
+    }
+    var out = [];
+    var gained = 0;
+    for (i = 0; i < vals.length; i++) {
+      if (i + 1 < vals.length && vals[i] === vals[i + 1]) {
+        var merged = vals[i] * 2;
+        out.push(merged);
+        gained += merged;
+        i++;
+      } else {
+        out.push(vals[i]);
+      }
+    }
+    while (out.length < Game.size) out.push(0);
+    var moved = false;
+    for (i = 0; i < Game.size; i++) {
+      if (out[i] !== line[i]) {
+        moved = true;
+        break;
+      }
+    }
+    return { out: out, gained: gained, moved: moved };
+  }
+
+  var DIRS = {
+    left: { reverse: false, vertical: false },
+    right: { reverse: true, vertical: false },
+    up: { reverse: false, vertical: true },
+    down: { reverse: true, vertical: true }
+  };
+
   function move(direction) {
-    if (Game.over) return false;
+    var conf = DIRS[direction];
+    if (!conf || Game.over) return false;
 
-    let moved = false;
-    const oldGrid = JSON.parse(JSON.stringify(Game.grid));
+    var moved = false;
+    var gained = 0;
 
-    switch(direction) {
-      case 'up':
-        moved = moveUp();
-        break;
-      case 'down':
-        moved = moveDown();
-        break;
-      case 'left':
-        moved = moveLeft();
-        break;
-      case 'right':
-        moved = moveRight();
-        break;
+    for (var i = 0; i < Game.size; i++) {
+      var line = [];
+      for (var j = 0; j < Game.size; j++) {
+        var r = conf.vertical ? j : i;
+        var c = conf.vertical ? i : j;
+        line.push(Game.grid[r][c]);
+      }
+      if (conf.reverse) line.reverse();
+      var res = slideLine(line);
+      if (res.moved) moved = true;
+      gained += res.gained;
+      if (conf.reverse) res.out.reverse();
+      for (var k = 0; k < Game.size; k++) {
+        var rr = conf.vertical ? k : i;
+        var cc = conf.vertical ? i : k;
+        Game.grid[rr][cc] = res.out[k];
+      }
     }
 
-    if (moved) {
-      addRandomTile();
-      render();
-      
-      if (checkWin() && !Game.won) {
-        showMessage('恭喜！你达到了2048！');
-        Game.won = true;
-      }
-      
-      if (checkGameOver()) {
-        showMessage('游戏结束！');
-        Game.over = true;
-      }
-      
-      return true;
-    }
-    
-    return false;
-  }
+    if (!moved) return false;
 
-  // 向左移动
-  function moveLeft() {
-    let moved = false;
-    
-    for (let i = 0; i < Game.size; i++) {
-      const row = Game.grid[i].filter(val => val !== 0);
-      const newRow = [];
-      let j = 0;
-      
-      while (j < row.length) {
-        if (j < row.length - 1 && row[j] === row[j + 1]) {
-          const mergedValue = row[j] * 2;
-          newRow.push(mergedValue);
-          Game.score += mergedValue;
-          j += 2;
-          moved = true;
-        } else {
-          newRow.push(row[j]);
-          j++;
-        }
-      }
-      
-      while (newRow.length < Game.size) {
-        newRow.push(0);
-      }
-      
-      if (JSON.stringify(Game.grid[i]) !== JSON.stringify(newRow)) {
-        moved = true;
-      }
-      
-      Game.grid[i] = newRow;
-    }
-    
+    Game.score += gained;
+    addRandomTile();
+    render();
     updateScore();
-    return moved;
-  }
 
-  // 向右移动
-  function moveRight() {
-    let moved = false;
-    
-    for (let i = 0; i < Game.size; i++) {
-      const row = Game.grid[i].filter(val => val !== 0);
-      const newRow = [];
-      let j = row.length - 1;
-      
-      while (j >= 0) {
-        if (j > 0 && row[j] === row[j - 1]) {
-          const mergedValue = row[j] * 2;
-          newRow.unshift(mergedValue);
-          Game.score += mergedValue;
-          j -= 2;
-          moved = true;
-        } else {
-          newRow.unshift(row[j]);
-          j--;
-        }
-      }
-      
-      while (newRow.length < Game.size) {
-        newRow.unshift(0);
-      }
-      
-      if (JSON.stringify(Game.grid[i]) !== JSON.stringify(newRow)) {
-        moved = true;
-      }
-      
-      Game.grid[i] = newRow;
+    if (!Game.won && checkWin()) {
+      Game.won = true;
+      showMessage('恭喜！你达到了 2048！');
     }
-    
-    updateScore();
-    return moved;
-  }
-
-  // 向上移动
-  function moveUp() {
-    let moved = false;
-    
-    for (let j = 0; j < Game.size; j++) {
-      const column = [];
-      for (let i = 0; i < Game.size; i++) {
-        if (Game.grid[i][j] !== 0) {
-          column.push(Game.grid[i][j]);
-        }
-      }
-      
-      const newColumn = [];
-      let i = 0;
-      
-      while (i < column.length) {
-        if (i < column.length - 1 && column[i] === column[i + 1]) {
-          const mergedValue = column[i] * 2;
-          newColumn.push(mergedValue);
-          Game.score += mergedValue;
-          i += 2;
-          moved = true;
-        } else {
-          newColumn.push(column[i]);
-          i++;
-        }
-      }
-      
-      while (newColumn.length < Game.size) {
-        newColumn.push(0);
-      }
-      
-      for (let i = 0; i < Game.size; i++) {
-        if (Game.grid[i][j] !== newColumn[i]) {
-          moved = true;
-        }
-        Game.grid[i][j] = newColumn[i];
-      }
+    if (checkGameOver()) {
+      Game.over = true;
+      showMessage('游戏结束！');
     }
-    
-    updateScore();
-    return moved;
-  }
-
-  // 向下移动
-  function moveDown() {
-    let moved = false;
-    
-    for (let j = 0; j < Game.size; j++) {
-      const column = [];
-      for (let i = 0; i < Game.size; i++) {
-        if (Game.grid[i][j] !== 0) {
-          column.push(Game.grid[i][j]);
-        }
-      }
-      
-      const newColumn = [];
-      let i = column.length - 1;
-      
-      while (i >= 0) {
-        if (i > 0 && column[i] === column[i - 1]) {
-          const mergedValue = column[i] * 2;
-          newColumn.unshift(mergedValue);
-          Game.score += mergedValue;
-          i -= 2;
-          moved = true;
-        } else {
-          newColumn.unshift(column[i]);
-          i--;
-        }
-      }
-      
-      while (newColumn.length < Game.size) {
-        newColumn.unshift(0);
-      }
-      
-      for (let i = 0; i < Game.size; i++) {
-        if (Game.grid[i][j] !== newColumn[i]) {
-          moved = true;
-        }
-        Game.grid[i][j] = newColumn[i];
-      }
-    }
-    
-    updateScore();
-    return moved;
-  }
-
-  // 检查是否获胜
-  function checkWin() {
-    for (let i = 0; i < Game.size; i++) {
-      for (let j = 0; j < Game.size; j++) {
-        if (Game.grid[i][j] === 2048) {
-          return true;
-        }
-      }
-    }
-    return false;
-  }
-
-  // 检查游戏是否结束
-  function checkGameOver() {
-    // 检查是否有空格
-    for (let i = 0; i < Game.size; i++) {
-      for (let j = 0; j < Game.size; j++) {
-        if (Game.grid[i][j] === 0) {
-          return false;
-        }
-      }
-    }
-    
-    // 检查是否可以合并
-    for (let i = 0; i < Game.size; i++) {
-      for (let j = 0; j < Game.size; j++) {
-        const current = Game.grid[i][j];
-        
-        // 检查右侧
-        if (j < Game.size - 1 && Game.grid[i][j + 1] === current) {
-          return false;
-        }
-        
-        // 检查下方
-        if (i < Game.size - 1 && Game.grid[i + 1][j] === current) {
-          return false;
-        }
-      }
-    }
-    
     return true;
   }
 
-  // 更新分数
+  function checkWin() {
+    for (var i = 0; i < Game.size; i++) {
+      for (var j = 0; j < Game.size; j++) {
+        if (Game.grid[i][j] === 2048) return true;
+      }
+    }
+    return false;
+  }
+
+  function checkGameOver() {
+    var i;
+    var j;
+    for (i = 0; i < Game.size; i++) {
+      for (j = 0; j < Game.size; j++) {
+        if (Game.grid[i][j] === 0) return false;
+      }
+    }
+    for (i = 0; i < Game.size; i++) {
+      for (j = 0; j < Game.size; j++) {
+        var current = Game.grid[i][j];
+        if (j < Game.size - 1 && Game.grid[i][j + 1] === current) return false;
+        if (i < Game.size - 1 && Game.grid[i + 1][j] === current) return false;
+      }
+    }
+    return true;
+  }
+
   function updateScore() {
-    document.getElementById('score').textContent = Game.score;
-    
+    var scoreEl = $('score');
+    var bestEl = $('best');
+    if (scoreEl && scoreEl.textContent !== String(Game.score)) {
+      scoreEl.textContent = Game.score;
+    }
     if (Game.score > Game.best) {
       Game.best = Game.score;
-      document.getElementById('best').textContent = Game.best;
-      localStorage.setItem('2048-best', Game.best);
+      saveBest(Game.best);
+    }
+    if (bestEl && bestEl.textContent !== String(Game.best)) {
+      bestEl.textContent = Game.best;
     }
   }
 
-  // 渲染游戏
+  // 一次性建好 16 个 tile 元素，之后只改 class/textContent/display
+  function buildTilePool() {
+    if (tileEls.length || !container) return;
+    for (var i = 0; i < Game.size; i++) {
+      var rowEls = [];
+      var rowVals = [];
+      for (var j = 0; j < Game.size; j++) {
+        var el = document.createElement('div');
+        el.className = 'tile';
+        el.style.gridRow = String(i + 1);
+        el.style.gridColumn = String(j + 1);
+        el.style.display = 'none';
+        container.appendChild(el);
+        rowEls.push(el);
+        rowVals.push(0);
+      }
+      tileEls.push(rowEls);
+      tileVals.push(rowVals);
+    }
+  }
+
   function render() {
-    const container = document.getElementById('tile-container');
-    container.innerHTML = '';
-    
-    for (let i = 0; i < Game.size; i++) {
-      for (let j = 0; j < Game.size; j++) {
-        if (Game.grid[i][j] !== 0) {
-          const tile = document.createElement('div');
-          tile.className = `tile tile-${Game.grid[i][j]}`;
-          tile.textContent = Game.grid[i][j];
-          tile.style.gridRow = i + 1;
-          tile.style.gridColumn = j + 1;
-          container.appendChild(tile);
+    if (!container) return;
+    buildTilePool();
+    for (var i = 0; i < Game.size; i++) {
+      for (var j = 0; j < Game.size; j++) {
+        var value = Game.grid[i][j];
+        var el = tileEls[i] && tileEls[i][j];
+        if (!el) continue;
+        if (value === tileVals[i][j]) continue;
+        tileVals[i][j] = value;
+        if (value === 0) {
+          el.style.display = 'none';
+          if (el.textContent !== '') el.textContent = '';
+          el.className = 'tile';
+        } else {
+          el.className = 'tile tile-' + value;
+          el.textContent = String(value);
+          el.style.display = '';
         }
       }
     }
   }
 
-  // 显示消息
   function showMessage(text) {
-    const message = document.getElementById('game-message');
-    const messageText = document.getElementById('message-text');
+    var message = $('game-message');
+    var messageText = $('message-text');
+    if (!message || !messageText) return;
     messageText.textContent = text;
     message.classList.add('show');
   }
 
-  // 隐藏消息
   function hideMessage() {
-    const message = document.getElementById('game-message');
-    message.classList.remove('show');
+    var message = $('game-message');
+    if (message) message.classList.remove('show');
   }
 
-  // 新游戏
   function newGame() {
-    Game.grid = Array(Game.size).fill(null).map(() => Array(Game.size).fill(0));
+    Game.grid = emptyGrid();
     Game.score = 0;
     Game.won = false;
     Game.over = false;
-    
-    document.getElementById('score').textContent = '0';
     hideMessage();
-    
+    var scoreEl = $('score');
+    if (scoreEl) scoreEl.textContent = '0';
     addRandomTile();
     addRandomTile();
     render();
+    updateScore();
   }
 
-  // 绑定事件
+  function stopIfTyping(e) {
+    var target = e.target;
+    if (!target) return false;
+    var tag = (target.tagName || '').toLowerCase();
+    return tag === 'input' || tag === 'textarea' || tag === 'select' || target.isContentEditable;
+  }
+
   function bindEvents() {
-    // 键盘事件
     document.addEventListener('keydown', function(e) {
-      if (!Game.over) {
-        switch(e.key) {
-          case 'ArrowUp':
-          case 'w':
-          case 'W':
-            e.preventDefault();
-            move('up');
-            break;
-          case 'ArrowDown':
-          case 's':
-          case 'S':
-            e.preventDefault();
-            move('down');
-            break;
-          case 'ArrowLeft':
-          case 'a':
-          case 'A':
-            e.preventDefault();
-            move('left');
-            break;
-          case 'ArrowRight':
-          case 'd':
-          case 'D':
-            e.preventDefault();
-            move('right');
-            break;
-        }
-      }
-    });
-
-    // 新游戏按钮
-    document.getElementById('new-game').addEventListener('click', newGame);
-    
-    // 重新开始按钮
-    document.getElementById('restart-btn').addEventListener('click', function() {
-      hideMessage();
-      newGame();
-    });
-
-    // 触摸事件支持（移动端）
-    let touchStartX = 0;
-    let touchStartY = 0;
-    
-    document.addEventListener('touchstart', function(e) {
-      touchStartX = e.touches[0].clientX;
-      touchStartY = e.touches[0].clientY;
-    });
-    
-    document.addEventListener('touchend', function(e) {
-      if (!touchStartX || !touchStartY) return;
-      
-      const touchEndX = e.changedTouches[0].clientX;
-      const touchEndY = e.changedTouches[0].clientY;
-      
-      const diffX = touchStartX - touchEndX;
-      const diffY = touchStartY - touchEndY;
-      
-      if (Math.abs(diffX) > Math.abs(diffY)) {
-        // 水平滑动
-        if (diffX > 30) {
-          move('left');
-        } else if (diffX < -30) {
-          move('right');
-        }
-      } else {
-        // 垂直滑动
-        if (diffY > 30) {
+      if (!isActive() || stopIfTyping(e)) return;
+      var handled = true;
+      switch (e.key) {
+        case 'ArrowUp':
+        case 'w':
+        case 'W':
           move('up');
-        } else if (diffY < -30) {
+          break;
+        case 'ArrowDown':
+        case 's':
+        case 'S':
           move('down');
-        }
+          break;
+        case 'ArrowLeft':
+        case 'a':
+        case 'A':
+          move('left');
+          break;
+        case 'ArrowRight':
+        case 'd':
+        case 'D':
+          move('right');
+          break;
+        default:
+          handled = false;
       }
-      
-      touchStartX = 0;
-      touchStartY = 0;
+      if (handled) e.preventDefault();
     });
+
+    var newGameBtn = $('new-game');
+    if (newGameBtn) newGameBtn.addEventListener('click', newGame);
+
+    var restartBtn = $('restart-btn');
+    if (restartBtn) {
+      restartBtn.addEventListener('click', function() {
+        hideMessage();
+        newGame();
+      });
+    }
+
+    // 触摸滑动只绑定在棋盘上，并且只在该面板激活时处理
+    var touchStartX = 0;
+    var touchStartY = 0;
+    var touchActive = false;
+
+    if (boardEl) {
+      boardEl.addEventListener('touchstart', function(e) {
+        if (!isActive() || !e.touches.length) return;
+        touchActive = true;
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+      }, { passive: true });
+
+      boardEl.addEventListener('touchend', function(e) {
+        if (!touchActive || !isActive()) return;
+        touchActive = false;
+        if (!e.changedTouches.length) return;
+        var diffX = touchStartX - e.changedTouches[0].clientX;
+        var diffY = touchStartY - e.changedTouches[0].clientY;
+        if (Math.abs(diffX) > Math.abs(diffY)) {
+          if (diffX > 30) move('left');
+          else if (diffX < -30) move('right');
+        } else {
+          if (diffY > 30) move('up');
+          else if (diffY < -30) move('down');
+        }
+      }, { passive: true });
+    }
   }
 
-  // 页面加载完成后初始化
+  function init() {
+    if (Game.initialized) return true;
+    root = document.getElementById('littleGame');
+    if (!root) return false;
+    panel = root.querySelector('.lg-game-panel[data-game="2048"]');
+    container = document.getElementById('tile-container');
+    boardEl = panel && panel.querySelector('.game-board-container');
+    if (!panel || !container) return false;
+
+    var start = now();
+    Game.grid = emptyGrid();
+    Game.best = readBest();
+    var bestEl = $('best');
+    if (bestEl) bestEl.textContent = Game.best;
+
+    addRandomTile();
+    addRandomTile();
+    render();
+    updateScore();
+    bindEvents();
+    Game.initialized = true;
+    perf.init['2048'] = Math.round((now() - start) * 100) / 100;
+    return true;
+  }
+
+  function activate() {
+    // 2048 没有循环/计时器，切回时无需额外处理
+  }
+
+  function deactivate() {
+    // 同上
+  }
+
+  window.__lg2048 = {
+    init: init,
+    activate: activate,
+    deactivate: deactivate,
+    isInitialized: function() {
+      return Game.initialized;
+    },
+    getState: function() {
+      return { grid: Game.grid, score: Game.score, over: Game.over, won: Game.won };
+    }
+  };
+
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {
     init();
   }
-
 })();
-

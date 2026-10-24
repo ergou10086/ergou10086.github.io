@@ -1,0 +1,223 @@
+/* ==========================================================================
+   站点扩展样式：osu! 横幅卡片 / 访客地图 / 访问统计微调
+   全部选择器都限定在对应组件内，不影响主题其他内容。
+   ========================================================================== */
+
+/* ------------------------------ osekai 横幅 ------------------------------ */
+
+.osekai-card {
+  display: block;
+  overflow: hidden;
+  margin-bottom: 20px;
+  border-radius: 10px;
+  line-height: 0;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, filter 0.25s ease;
+}
+
+.osekai-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--card-hover-box-shadow, 0 3px 8px 6px rgba(7, 17, 27, 0.09));
+  filter: brightness(1.03);
+}
+
+.osekai-card:focus-visible {
+  outline: 2px solid var(--default-bg-color, #49b1f5);
+  outline-offset: 2px;
+}
+
+.osekai-card .osekai-banner {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 0;
+  border: 0;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+/* ------------------------------ 访客地图 ------------------------------ */
+
+.card-widget.user-map .item-content {
+  padding-top: 2px;
+}
+
+.visitmap {
+  position: relative;
+  min-height: 158px;
+  color: var(--font-color);
+}
+
+.visitmap-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 158px;
+  color: var(--card-meta);
+  font-size: 0.82em;
+}
+
+.visitmap-loading[hidden] {
+  display: none;
+}
+
+.visitmap-body[hidden] {
+  display: none;
+}
+
+.visitmap-loading i {
+  color: var(--default-bg-color, #49b1f5);
+}
+
+.visitmap-map-link {
+  display: block;
+  overflow: hidden;
+  border-radius: 8px;
+  line-height: 0;
+  background: rgba(125, 125, 125, 0.08);
+}
+
+.visitmap-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 0;
+  border-radius: 8px;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+
+.visitmap-img.is-loaded {
+  opacity: 1;
+}
+
+.visitmap-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  font-size: 0.76em;
+  line-height: 1.4;
+  color: var(--card-meta);
+}
+
+.visitmap-city {
+  color: var(--font-color);
+  font-weight: 500;
+}
+
+.visitmap-local {
+  color: var(--card-meta);
+}
+
+.visitmap-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 4px;
+  font-size: 0.72em;
+  color: var(--card-meta);
+}
+
+.visitmap-total {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.visitmap-refresh {
+  flex: 0 0 auto;
+  padding: 0 2px;
+  border: 0;
+  background: transparent;
+  color: var(--card-meta);
+  font-size: 0.95em;
+  line-height: 1;
+  cursor: pointer;
+  transition: color 0.2s, transform 0.2s;
+}
+
+.visitmap-refresh:hover {
+  color: var(--default-bg-color, #49b1f5);
+  transform: rotate(90deg);
+}
+
+.visitmap-refresh:disabled {
+  cursor: default;
+  opacity: 0.7;
+  transform: none;
+}
+
+.visitmap-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 158px;
+  padding: 12px 8px;
+  text-align: center;
+  color: var(--card-meta);
+  font-size: 0.8em;
+  line-height: 1.5;
+}
+
+.visitmap-error[hidden] {
+  display: none;
+}
+
+.visitmap-error-icon {
+  font-size: 1.5em;
+  color: var(--default-bg-color, #49b1f5);
+  opacity: 0.75;
+}
+
+.visitmap-error-text {
+  margin: 0;
+}
+
+.visitmap-retry {
+  padding: 3px 12px;
+  border: 0;
+  border-radius: 6px;
+  background: var(--default-bg-color, #49b1f5);
+  color: #fff;
+  font-family: inherit;
+  font-size: 0.95em;
+  line-height: 1.6;
+  cursor: pointer;
+  transition: filter 0.2s;
+}
+
+.visitmap-retry:hover {
+  filter: brightness(1.08);
+}
+
+/* ------------------------------ 访问统计 ------------------------------ */
+
+#busuanzi_value_site_uv,
+#busuanzi_value_site_pv {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ------------------------------ 深色模式 ------------------------------ */
+
+[data-theme='dark'] .visitmap-map-link {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+[data-theme='dark'] .osekai-card:hover {
+  box-shadow: 0 3px 10px 4px rgba(0, 0, 0, 0.35);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .osekai-card,
+  .visitmap-img,
+  .visitmap-refresh {
+    transition: none;
+  }
+}
