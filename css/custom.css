@@ -12,3 +12,15 @@
   user-select: none;
   pointer-events: none;
 }
+
+/* 页脚：自定义文本（含站点运行时间） */
+#footer-wrap .footer_custom_text {
+  line-height: 1.9;
+}
+
+#footer-wrap #realtime_duration {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+

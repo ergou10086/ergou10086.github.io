@@ -1,0 +1,446 @@
+/* ==========================================================================
+   侧边栏天气卡片 weather card（Open-Meteo + 手绘 SVG 折线图）
+   --------------------------------------------------------------------------
+   作用域全部限定在 .card-weather 内，不影响主题其它卡片。
+   颜色一律走 Butterfly 主题 CSS 变量（--card-bg / --font-color / --card-meta /
+   --default-bg-color / --card-hover-box-shadow ...），深色模式由
+   [data-theme='dark'] 覆盖，避免硬编码背景色。
+   ========================================================================== */
+
+.card-weather {
+  /* 局部变量：集中管理强调色 / 次要文字 / 网格线，方便深色模式统一覆盖 */
+  --wx-accent: var(--default-bg-color, #49b1f5);
+  --wx-meta: var(--card-meta, #858585);
+  --wx-grid: rgba(125, 125, 125, .18);
+  --wx-track: rgba(125, 125, 125, .12);
+  --wx-hoverline: rgba(125, 125, 125, .38);
+}
+
+.card-weather .weather-widget {
+  position: relative;
+}
+
+/* ---------------------------- 加载 / 错误态 ---------------------------- */
+
+.card-weather .weather-loading,
+.card-weather .weather-error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 104px;
+  color: var(--wx-meta);
+  font-size: .82em;
+  line-height: 1.5;
+}
+
+.card-weather .weather-loading {
+  gap: 7px;
+}
+
+.card-weather .weather-loading i {
+  color: var(--wx-accent);
+}
+
+.card-weather .weather-error {
+  flex-direction: column;
+  gap: 9px;
+  text-align: center;
+}
+
+.card-weather .weather-error i {
+  color: var(--wx-meta);
+  font-size: 1.45em;
+  opacity: .8;
+}
+
+.card-weather .weather-retry {
+  padding: 3px 14px;
+  border: 0;
+  border-radius: 6px;
+  background: var(--wx-accent);
+  color: #fff;
+  font-family: inherit;
+  font-size: .95em;
+  line-height: 1.6;
+  cursor: pointer;
+  transition: filter .2s, transform .2s;
+}
+
+.card-weather .weather-retry:hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+
+.card-weather .weather-retry:active {
+  transform: translateY(0);
+}
+
+/* ------------------------------ 实时天气 ------------------------------ */
+
+.card-weather .weather-main {
+  animation: wx-fade-in .3s ease both;
+}
+
+.card-weather .weather-now {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  line-height: 1.2;
+}
+
+.card-weather .weather-now-left {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  min-width: 0;
+}
+
+.card-weather .weather-now-icon {
+  color: var(--wx-accent);
+  font-size: 1.85em;
+  line-height: 1;
+  transition: transform .4s;
+}
+
+.card-weather .weather-now-temp {
+  display: flex;
+  align-items: flex-start;
+  color: var(--text-highlight-color, var(--font-color));
+  font-weight: 600;
+}
+
+.card-weather .weather-temp-value {
+  font-size: 1.85em;
+  letter-spacing: -.02em;
+  line-height: 1.05;
+}
+
+.card-weather .weather-temp-unit {
+  margin-left: 1px;
+  font-size: .82em;
+  line-height: 1.5;
+}
+
+.card-weather .weather-now-right {
+  min-width: 0;
+  text-align: right;
+}
+
+.card-weather .weather-desc {
+  overflow: hidden;
+  color: var(--font-color);
+  font-size: .9em;
+  font-weight: 500;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.card-weather .weather-city {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 3px;
+  min-width: 0;
+  margin-top: 2px;
+  color: var(--wx-meta);
+  font-size: .74em;
+  line-height: 1.35;
+}
+
+.card-weather .weather-city i {
+  font-size: .9em;
+  color: var(--wx-accent);
+}
+
+.card-weather .weather-city-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 体感 / 湿度 / 风 —— 单行三段式，紧凑不换行 */
+.card-weather .weather-meta {
+  display: flex;
+  align-items: center;
+  margin: 7px 0 4px;
+  line-height: 1.6;
+}
+
+.card-weather .weather-meta-item {
+  display: flex;
+  flex: 1 1 0;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  overflow: hidden;
+  min-width: 0;
+  color: var(--wx-meta);
+  font-size: .74em;
+  white-space: nowrap;
+}
+
+.card-weather .weather-meta-item + .weather-meta-item {
+  border-left: 1px solid var(--wx-track);
+}
+
+.card-weather .weather-meta-item i {
+  flex: 0 0 auto;
+  color: var(--wx-accent);
+  font-size: .92em;
+}
+
+.card-weather .weather-meta-item span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ------------------------------- 图表区 ------------------------------- */
+
+.card-weather .weather-chart {
+  position: relative;
+}
+
+.card-weather .weather-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 1px;
+}
+
+.card-weather .weather-tab {
+  flex: 0 0 auto;
+  padding: 2px 10px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--wx-track);
+  color: var(--wx-meta);
+  font-family: inherit;
+  font-size: .72em;
+  line-height: 1.6;
+  cursor: pointer;
+  transition: background .2s, color .2s;
+}
+
+.card-weather .weather-tab:hover {
+  color: var(--wx-accent);
+}
+
+.card-weather .weather-tab.is-active {
+  background: var(--wx-accent);
+  color: #fff;
+}
+
+.card-weather .weather-tab:focus-visible {
+  outline: 2px solid var(--wx-accent);
+  outline-offset: 1px;
+}
+
+.card-weather .weather-chart-wrap {
+  position: relative;
+  margin-top: 2px;
+  cursor: crosshair;
+  touch-action: pan-y;
+}
+
+.card-weather .weather-chart-canvas {
+  width: 100%;
+}
+
+.card-weather .weather-chart-canvas svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+/* SVG 内部样式：用 class 而不是 presentation attribute，
+   这样 stroke / fill 才能读取 CSS 变量并跟随深色模式 */
+.card-weather .wx-grid-line {
+  stroke: var(--wx-grid);
+  stroke-width: 1;
+  stroke-dasharray: 2 3;
+}
+
+.card-weather .wx-axis-label {
+  fill: var(--wx-meta);
+  font-family: inherit;
+  font-size: 9px;
+}
+
+.card-weather .wx-line-primary {
+  fill: none;
+  stroke: var(--wx-accent);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.card-weather .wx-line-secondary {
+  fill: none;
+  stroke: var(--wx-meta);
+  stroke-width: 1.2;
+  stroke-dasharray: 3 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: .7;
+}
+
+.card-weather .wx-now-dot {
+  fill: var(--wx-accent);
+  stroke: var(--card-bg);
+  stroke-width: 1.5;
+}
+
+.card-weather .wx-hover-line {
+  stroke: var(--wx-hoverline);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+  opacity: 0;
+  transition: opacity .12s;
+}
+
+.card-weather .wx-hover-dot {
+  fill: var(--wx-accent);
+  stroke: var(--card-bg);
+  stroke-width: 1.5;
+  opacity: 0;
+  transition: opacity .12s;
+}
+
+.card-weather .weather-chart-wrap.is-hovering .wx-hover-line,
+.card-weather .weather-chart-wrap.is-hovering .wx-hover-dot {
+  opacity: 1;
+}
+
+/* ------------------------------- tooltip ------------------------------ */
+
+.card-weather .weather-tooltip {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 3;
+  visibility: hidden;
+  padding: 4px 8px;
+  border: 1px solid var(--wx-grid);
+  border-radius: 6px;
+  background: var(--card-bg);
+  box-shadow: var(--card-hover-box-shadow, 0 2px 10px rgba(0, 0, 0, .18));
+  color: var(--font-color);
+  font-size: .72em;
+  line-height: 1.5;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 0);
+  transition: opacity .15s, visibility .15s;
+}
+
+.card-weather .weather-tooltip.is-visible {
+  visibility: visible;
+  opacity: 1;
+}
+
+.card-weather .weather-tip-title {
+  color: var(--wx-meta);
+  font-size: .95em;
+}
+
+.card-weather .weather-tip-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.card-weather .weather-tip-row i {
+  color: var(--wx-accent);
+  font-size: .85em;
+}
+
+.card-weather .weather-tip-temp {
+  color: var(--wx-accent);
+  font-weight: 600;
+}
+
+/* ------------------------------- 底部栏 ------------------------------- */
+
+.card-weather .weather-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  margin-top: 3px;
+  color: var(--wx-meta);
+  font-size: .68em;
+  line-height: 1.5;
+}
+
+.card-weather .weather-update {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.card-weather .weather-refresh {
+  flex: 0 0 auto;
+  padding: 0 2px;
+  border: 0;
+  background: transparent;
+  color: var(--wx-meta);
+  font-size: 1em;
+  line-height: 1;
+  cursor: pointer;
+  transition: color .2s, transform .2s;
+}
+
+.card-weather .weather-refresh:hover {
+  color: var(--wx-accent);
+  transform: rotate(90deg);
+}
+
+/* ------------------------------- 深色模式 ------------------------------ */
+
+[data-theme='dark'] .card-weather {
+  --wx-grid: rgba(255, 255, 255, .14);
+  --wx-track: rgba(255, 255, 255, .09);
+  --wx-hoverline: rgba(255, 255, 255, .34);
+}
+
+[data-theme='dark'] .card-weather .weather-tooltip {
+  box-shadow: 0 2px 12px rgba(0, 0, 0, .5);
+}
+
+/* ------------------------------- 动画 / 适配 --------------------------- */
+
+@keyframes wx-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .card-weather .weather-loading,
+  .card-weather .weather-error {
+    min-height: 88px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card-weather .weather-main {
+    animation: none;
+  }
+
+  .card-weather .weather-tooltip,
+  .card-weather .wx-hover-line,
+  .card-weather .wx-hover-dot,
+  .card-weather .weather-tab,
+  .card-weather .weather-refresh {
+    transition: none;
+  }
+}

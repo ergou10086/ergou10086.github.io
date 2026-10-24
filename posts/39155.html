@@ -1,0 +1,2085 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>RabbitMQ、Kafka等消息队列相关面试题和面试知识点讲解 | ErgouTree's Blog</title><meta name="author" content="ErgouTree"><meta name="copyright" content="ErgouTree"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="消息队列基础 为什么系统里要用消息队列？请结合「跨服务最终一致性」说说，MQ 解决了哪一类问题。引入 MQ 会带来哪些新问题？什么场景不该用 MQ？ 在跨服务场景中，三大价值是这样体现的：  解耦：例如，订单服务不需要在代码里硬编码调用库存、积分、物流的接口。它只管把“订单已创建”这个事件扔进 MQ，谁关心这个事件谁就自己去订阅。以后新增一个相关的业务，订单服务一行代码都不用改。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="RabbitMQ、Kafka等消息队列相关面试题和面试知识点讲解">
+<meta property="og:url" content="https://ergou10086.github.io/posts/39155.html">
+<meta property="og:site_name" content="ErgouTree&#39;s Blog">
+<meta property="og:description" content="消息队列基础 为什么系统里要用消息队列？请结合「跨服务最终一致性」说说，MQ 解决了哪一类问题。引入 MQ 会带来哪些新问题？什么场景不该用 MQ？ 在跨服务场景中，三大价值是这样体现的：  解耦：例如，订单服务不需要在代码里硬编码调用库存、积分、物流的接口。它只管把“订单已创建”这个事件扔进 MQ，谁关心这个事件谁就自己去订阅。以后新增一个相关的业务，订单服务一行代码都不用改。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://ergou10086.github.io/images/posts/cover_mq2.jpg">
+<meta property="article:published_time" content="2026-10-23T11:56:22.000Z">
+<meta property="article:modified_time" content="2026-10-24T10:53:04.725Z">
+<meta property="article:author" content="ErgouTree">
+<meta property="article:tag" content="框架知识">
+<meta property="article:tag" content="中间件">
+<meta property="article:tag" content="实用知识">
+<meta property="article:tag" content="JavaWeb">
+<meta property="article:tag" content="面试向">
+<meta property="article:tag" content="面试题">
+<meta property="article:tag" content="Spring APMQ">
+<meta property="article:tag" content="消息队列">
+<meta property="article:tag" content="RabbitMQ">
+<meta property="article:tag" content="Kafka">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ergou10086.github.io/images/posts/cover_mq2.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "RabbitMQ、Kafka等消息队列相关面试题和面试知识点讲解",
+  "url": "https://ergou10086.github.io/posts/39155.html",
+  "image": "https://ergou10086.github.io/images/posts/cover_mq2.jpg",
+  "datePublished": "2026-10-23T11:56:22.000Z",
+  "dateModified": "2026-10-24T10:53:04.725Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "ErgouTree",
+      "url": "https://github.com/ergou10086"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/pi.ico"><link rel="canonical" href="https://ergou10086.github.io/posts/39155.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//hm.baidu.com"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!true && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?https://hm.baidu.com/hm.js?a6ab1b78e2c6320b664f31e8b9bf0e36";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+btf.addGlobalFn('pjaxComplete', () => {
+  _hmt.push(['_trackPageview',window.location.pathname])
+}, 'baidu_analytics')
+</script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.json","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":true},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: {"chs_to_cht":"已切换为繁体中文","cht_to_chs":"已切换为简体中文","day_to_night":"已切换为深色模式","night_to_day":"已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#1f1f1f","position":"bottom-left"},
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'RabbitMQ、Kafka等消息队列相关面试题和面试知识点讲解',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css"><link rel="stylesheet" href="/css/littleGame.css"><link rel="stylesheet" href="/css/weather.css"><svg aria-hidden="true" style="position:absolute; overflow:hidden; width:0; height:0"><symbol id="icon-sun" viewBox="0 0 1024 1024"><path d="M960 512l-128 128v192h-192l-128 128-128-128H192v-192l-128-128 128-128V192h192l128-128 128 128h192v192z" fill="#FFD878" p-id="8420"></path><path d="M736 512a224 224 0 1 0-448 0 224 224 0 1 0 448 0z" fill="#FFE4A9" p-id="8421"></path><path d="M512 109.248L626.752 224H800v173.248L914.752 512 800 626.752V800h-173.248L512 914.752 397.248 800H224v-173.248L109.248 512 224 397.248V224h173.248L512 109.248M512 64l-128 128H192v192l-128 128 128 128v192h192l128 128 128-128h192v-192l128-128-128-128V192h-192l-128-128z" fill="#4D5152" p-id="8422"></path><path d="M512 320c105.888 0 192 86.112 192 192s-86.112 192-192 192-192-86.112-192-192 86.112-192 192-192m0-32a224 224 0 1 0 0 448 224 224 0 0 0 0-448z" fill="#4D5152" p-id="8423"></path></symbol><symbol id="icon-moon" viewBox="0 0 1024 1024"><path d="M611.370667 167.082667a445.013333 445.013333 0 0 1-38.4 161.834666 477.824 477.824 0 0 1-244.736 244.394667 445.141333 445.141333 0 0 1-161.109334 38.058667 85.077333 85.077333 0 0 0-65.066666 135.722666A462.08 462.08 0 1 0 747.093333 102.058667a85.077333 85.077333 0 0 0-135.722666 65.024z" fill="#FFB531" p-id="11345"></path><path d="M329.728 274.133333l35.157333-35.157333a21.333333 21.333333 0 1 0-30.165333-30.165333l-35.157333 35.157333-35.114667-35.157333a21.333333 21.333333 0 0 0-30.165333 30.165333l35.114666 35.157333-35.114666 35.157334a21.333333 21.333333 0 1 0 30.165333 30.165333l35.114667-35.157333 35.157333 35.157333a21.333333 21.333333 0 1 0 30.165333-30.165333z" fill="#030835" p-id="11346"></path></symbol></svg><link rel="stylesheet" href="/css/custom.css"><!-- hexo injector head_end start --><link rel="stylesheet" href="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiperstyle.css" media="print" onload="this.media='all'"><!-- hexo injector head_end end --><meta name="generator" content="Hexo 7.3.0"></head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js/pace.min.js"></script><div id="web_bg" style="background: linear-gradient(20deg, #0062be, #925696, #cc426e, #fb0347);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/arp.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">359</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">222</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">118</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-images"></i><span> Gallery</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/games/"><i class="fa-fw fas fa-trophy"></i><span> GalGame</span></a></li><li><a class="site-page child" href="/video/"><i class="fa-fw fas fa-video"></i><span> Video</span></a></li><li><a class="site-page child" href="/viewpoint/"><i class="fa-fw fas fa-calculator"></i><span> ViewPoint</span></a></li><li><a class="site-page child" href="/littleGame/"><i class="fa-fw fas fa-thumbs-up"></i><span> littleGame</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div><div class="menus_item"><a class="site-page" href="javascript:randomPost();"><span> Random</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/images/posts/cover_mq2.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">ErgouTree's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">RabbitMQ、Kafka等消息队列相关面试题和面试知识点讲解</span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-images"></i><span> Gallery</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/games/"><i class="fa-fw fas fa-trophy"></i><span> GalGame</span></a></li><li><a class="site-page child" href="/video/"><i class="fa-fw fas fa-video"></i><span> Video</span></a></li><li><a class="site-page child" href="/viewpoint/"><i class="fa-fw fas fa-calculator"></i><span> ViewPoint</span></a></li><li><a class="site-page child" href="/littleGame/"><i class="fa-fw fas fa-thumbs-up"></i><span> littleGame</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div><div class="menus_item"><a class="site-page" href="javascript:randomPost();"><span> Random</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div><div id="randomPost"><a class="site-page social-icon search" href="javascript:;" onclick="randomPost()" title="随机访问一篇文章"><i class="fas fa-circle-notch fa-fw"></i></a></div></nav><div id="post-info"><h1 class="post-title">RabbitMQ、Kafka等消息队列相关面试题和面试知识点讲解<a class="post-edit-link" href="https://github.com/ergou10086/ergou10086.github.io/edit/main/source/_posts/_posts/RabbitMQ、Kafka等消息队列相关面试题和面试知识点讲解.md" title="编辑" target="_blank"><i class="fas fa-pencil-alt"></i></a></h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-10-23T11:56:22.000Z" title="发表于 2026-10-23 19:56:22">2026-10-23</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-10-24T10:53:04.725Z" title="更新于 2026-10-24 18:53:04">2026-10-24</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%AE%9E%E7%94%A8/">实用</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%AE%9E%E7%94%A8/%E9%9D%A2%E8%AF%95%E9%A2%98/">面试题</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%AE%9E%E7%94%A8/%E9%9D%A2%E8%AF%95%E9%A2%98/%E9%9D%A2%E8%AF%95/">面试</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">14k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>45分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span><span class="post-meta-separator">|</span><span class="post-meta-commentcount"><i class="far fa-comments fa-fw post-meta-icon"></i><span class="post-meta-label">评论数:</span><a href="/posts/39155.html#post-comment"><span class="gitalk-comment-count"><i class="fa-solid fa-spinner fa-spin"></i></span></a></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="消息队列基础">消息队列基础</h2>
+<h3 id="为什么系统里要用消息队列请结合跨服务最终一致性说说mq-解决了哪一类问题引入-mq-会带来哪些新问题什么场景不该用-mq">为什么系统里要用消息队列？请结合「跨服务最终一致性」说说，MQ
+解决了哪一类问题。引入 MQ
+会带来哪些新问题？什么场景<strong>不该</strong>用 MQ？</h3>
+<p>在跨服务场景中，三大价值是这样体现的：</p>
+<ul>
+<li><strong>解耦</strong>：例如，订单服务不需要在代码里硬编码调用库存、积分、物流的接口。它只管把“订单已创建”这个事件扔进
+MQ，谁关心这个事件谁就自己去订阅。以后新增一个相关的业务，订单服务一行代码都不用改。</li>
+<li><strong>异步</strong>：同步调用三个下游假设分别耗时
+200ms、300ms、150ms，加上本地写库，用户要等近 1 秒。引入 MQ
+后，订单服务写完本地库、发完消息（假设
+5ms）就直接返回给用户，把服务必须的同步等待变成了最终一致性，用户体验是质变。</li>
+<li><strong>削峰</strong>：如果遇到大促，订单创建 TPS 瞬间飙到
+5000，但库存服务数据库最多只能抗 2000 TPS。MQ 作为缓冲池，把 5000
+个请求先囤起来，库存服务按自己的节奏以 2000 TPS
+慢慢拉取消费，峰值期间系统不会被打死</li>
+</ul>
+<p>当然，这个选择是有代价的。它放弃了强一致性，就必须接受中间状态的存在，并且要额外建设一套机制来保证消息不丢、不重、不乱、而且能够被正确处理。这也就是引入
+MQ 带来的新问题。</p>
+<ul>
+<li>系统可用性下降：原来订单服务只依赖数据库，现在多了一个 MQ
+为强依赖。如果 MQ
+挂了，订单服务发不出消息，下游全部断流，整条业务链路就瘫痪了。所以 MQ
+本身变成了新的<strong>单点</strong>，就需要处理针对 MQ 的高可用</li>
+<li>一致性问题：写库和发 MQ
+消息是两个操作，所以，本地事务与发消息不是原子的。如果写库成功了，但发消息时没发出去，下游就永远不知道有这个订单，数据就不一致了。如果发消息成功了，但写库回滚了，下游就会收到一个不存在的订单</li>
+<li>复杂度上升：MQ需要考虑，重复消费，消息积压，顺序性等问题</li>
+</ul>
+<p>正因为有这些代价，流量小、要求强实时、调用链很短，这种类型的场景不会引入
+MQ。MQ 是解决 高并发、跨服务、可异步 场景的。</p>
+<h3 id="rabbitmqkafkarocketmq这些消息队列有什么区别你在引入mq的时候怎么选rabbitmq-和-kafka-的本质差异是什么">RabbitMQ、Kafka、RocketMQ，这些消息队列有什么区别？你在引入MQ的时候怎么选？RabbitMQ
+和 Kafka 的本质差异是什么？</h3>
+<ul>
+<li><p><strong>RabbitMQ </strong>的核心是 Exchange（交换机）和
+Binding（绑定规则），路由能力非常强，支持直连、主题、扇形、首部等多种模式。而且延迟极低，自带完善的管理控制台，适合<strong>中小型微服务解耦、需要复杂路由规则的业务通知</strong>。但它的队列是状态核心，镜像集群同步成本高，海量堆积时性能会明显下降，<strong>不适合大数据流场景</strong>。</p></li>
+<li><p><strong>Kafka</strong>
+的设计初衷就是海量数据处理和流处理。基于磁盘顺序写和分区日志，吞吐量很高，而且分区内有序，消息保留，消息可回放（消费者可以重置
+offset 重新消费历史数据）。但 Kafka
+不支持延迟消息、死信队列等业务特性，消费失败的重试逻辑要业务自己实现。<strong>适合日志聚合、事件溯源、实时流计算管道</strong>。</p>
+<blockquote>
+<p>日志聚合：把日志本身抽象成一条持续的消息流，生产者把日志发到
+Kafka，下游消费者按需拉取处理（比如实时告警，服务状态分析等）</p>
+<p>事件溯源：把每一次状态变化都作为一条不可变事件追加到日志里。当前状态不直接存，而是通过<strong>重放事件序列</strong>推导出来</p>
+<p>事实流计算：数据从生产者流入
+Kafka，持续消费、聚合、转换，把结果写回另一个 Topic
+或外部系统。一般是实时服务监控，实时推荐，多阶段数据处理等使用。</p>
+</blockquote></li>
+<li><p><strong>RocketMQ</strong>
+原生支持事务消息和延迟消息，事务消息让你不必自己手搓本地消息表，延迟消息可以处理“订单
+30 分钟未支付自动取消”这类场景。吞吐和堆积能力都不错</p></li>
+</ul>
+<p>选型不是看吞吐量排行榜。如果业务有事务和延迟需求，RocketMQ
+最顺手；如果是涉及到分布式日志处理，数据是流的形式而不是任务，需要重放能力的场景，基本需要选择
+Kafka；如果业务是中小规模，而且涉及到路由复杂的业务解耦时，选择
+RabbitMQ</p>
+<p>RabbitMQ 是<strong>消息代理</strong>，Kafka
+是<strong>分布式流式平台</strong></p>
+<table>
+<colgroup>
+<col style="width: 11%">
+<col style="width: 37%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr>
+<th>维度</th>
+<th>RabbitMQ</th>
+<th>Kafka</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>核心模型</strong></td>
+<td>队列模型：消息进入 Queue，被消费后<strong>删除</strong></td>
+<td>日志模型：消息追加到 Partition
+日志尾部，<strong>保留可回放</strong>，消费只是移动 offset</td>
+</tr>
+<tr>
+<td><strong>消费后行为</strong></td>
+<td>Broker 收到 ack 后删除消息</td>
+<td>消息不因消费而删除，按时间/大小策略保留</td>
+</tr>
+<tr>
+<td><strong>消费模式</strong></td>
+<td>推荐 Push（broker 推给消费者），也支持 Pull</td>
+<td>仅 Pull，消费者主动按 offset 拉取</td>
+</tr>
+<tr>
+<td><strong>路由能力</strong></td>
+<td>强：Exchange + Binding 支持复杂路由规则</td>
+<td>弱：只有 Topic/Partition，无业务级路由过滤</td>
+</tr>
+<tr>
+<td><strong>顺序保证</strong></td>
+<td>单消费者单队列时有序，多消费者并发消费即失序</td>
+<td>分区内严格有序，跨分区不保证</td>
+</tr>
+<tr>
+<td><strong>确认粒度</strong></td>
+<td>逐条 ack（或批量 ack），broker 据此删除消息</td>
+<td>offset 提交，消费者维护自己的读取位置</td>
+</tr>
+<tr>
+<td><strong>设计目标</strong></td>
+<td>低延迟、灵活路由、业务消息的可靠投递</td>
+<td>高吞吐、持久化日志、流数据管道</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>RabbitMQ
+把消息当作<strong>待处理的任务</strong>，处理完就消失，核心是<strong>路由和分发</strong>。Kafka
+把消息当作<strong>不可变的事件日志</strong>，写进去就留着，消费者自己决定读到哪，核心是<strong>持久化和回放</strong>。所以
+RabbitMQ 适合‘这件事需要谁来做’，Kafka
+适合‘发生过什么，谁关心谁来读’。</p>
+</blockquote>
+<h3 id="什么是-push-和-pull各有什么问题kafka-为什么坚持-pullrabbitmq-的-push-怎么做背压">什么是
+Push 和 Pull？各有什么问题？Kafka 为什么坚持 Pull？RabbitMQ 的 Push
+怎么做背压？</h3>
+<p>Push 是生产者主动推，节奏由服务端掌握，消费者被动承受；Pull
+是消费者主动拉，节奏由自己掌握，但需要自己解决“没数据时怎么办”的问题。<strong>Push
+适合业务消息的实时投递</strong>，<strong>Pull
+适合流数据的高吞吐消费</strong></p>
+<p>Push 模式下，Broker
+一旦收到消息就立即推给消费者。如果生产速率远大于消费速率，或者消费者处理逻辑本身很慢，Broker
+无法感知消费者的真实负载，导致消费者消息堆积。</p>
+<ul>
+<li><p>RabbitMQ 的解法：信用滑动窗口</p>
+<p>RabbitMQ 通过 <code>basic.qos</code> 的 <code>prefetch_count</code>
+参数，限定一个消费者同时能持有多少条<strong>未确认（unacked）</strong>
+的消息。比如设置 <code>prefetch_count=10</code>，Broker
+最多只会给这个消费者推 10 条还没 ack 的消息，消费者每 ack 一条，Broker
+才会再推一条。</p></li>
+</ul>
+<p>Pull
+模式下，消费者需要自己循环拉取。如果队列里没消息，消费者反复发请求却拿不到数据，这就是<strong>空轮询</strong>，白白消耗
+CPU
+和网络。反过来，如果为了减少空轮询而拉大轮询间隔，新消息到达时消费者可能还在间隔，带来延迟。</p>
+<ul>
+<li><p>Kafka 长轮询</p>
+<p>Kafka 消费者调用 <code>poll()</code> 时，如果 Broker
+端没有足够的数据，请求不会立刻返回空结果，而是<strong>挂起等待</strong>，直到有数据到达或超时。</p></li>
+</ul>
+<p>Kafka 选择 Pull 是与其<strong>日志模型</strong>的设计目标一致</p>
+<ul>
+<li><strong>Pull 天然支持批量化。</strong>消费者一次拉取一批消息，Broker
+不需要为每条消息单独推送，大幅提升吞吐。</li>
+<li><strong>消费速率由消费者完全掌控</strong>。Kafka 的消费者用 offset
+记录自己的位置，拉多少、拉多快、何时提交
+offset，全部由消费者决定。这是消息重放所必要的，而且也避免了 Push 模式下
+Broker 需要感知消费者状态的复杂度。</li>
+<li><strong>Pull 让 Kafka 的存储与消费解耦。</strong>Broker
+不需要维护“哪些消息已经推给谁、推了多少”的状态，它只是一个被动的日志存储，消费者按
+offset 读取即可。</li>
+</ul>
+<h3 id="消息不丢怎么保证请按生产端broker消费端三段回答">消息不丢怎么保证？请按<strong>生产端、Broker、消费端</strong>三段回答。</h3>
+<p>消息经过生产端、Broker、消费端三段，每一段都有丢的可能，每一段都要有对应的确认或持久化机制兜底。</p>
+<ul>
+<li><p>生产端：确认 + 重试</p>
+<p>这种情况下消息丢失的典型场景是，消息发出去了，但网络抖动或 Broker
+暂时不可用，生产者不知道到底成没成功。</p>
+<p>解法是要求 Broker 给确认，没确认就重试。</p>
+<ul>
+<li>Kafka：设置 <code>acks=all</code>，要求 Leader 和所有 ISR
+副本都写入成功才返回确认。配合合理的 <code>retries</code>
+和重试间隔，应对瞬时故障。</li>
+<li>RabbitMQ：开启 Publisher Confirms，Broker 收到消息后回调通知生产者
+ack/nack。</li>
+<li>RocketMQ：使用<strong>同步发送</strong>，并检查
+<code>SendResult</code>
+的状态。发送失败或超时则重试。异步发送需要在回调里检查结果。</li>
+</ul></li>
+<li><p>Broker：持久化 + 多副本</p>
+<p>消息到了 Broker 丢的话一般是 Broker 没来得及落盘就宕机的情况</p>
+<ul>
+<li>持久化：消息先写内存，再异步或同步刷到磁盘。RocketMQ 通过
+<code>flushDiskType=SYNC_FLUSH</code> 开启同步刷盘。RabbitMQ 需要
+Exchange、Queue、Message 三者都设置持久化，缺一不可。</li>
+<li>多副本：单机持久化挡不住磁盘损坏。Kafka 依赖分区副本机制。RocketMQ
+主也有从同步复制</li>
+</ul></li>
+<li><p>消费端：处理成功后再确认</p>
+<p><strong>关闭自动确认</strong>，并且必须在业务逻辑执行成功之后才确认。</p>
+<ul>
+<li><strong>Kafka</strong>：<code>enable.auto.commit=false</code>，在消息处理完成后手动提交
+offset。</li>
+<li><strong>RabbitMQ</strong>：<code>acknowledge-mode=manual</code>，业务成功后调用
+<code>basicAck</code>，失败则 <code>basicNack</code>
+让消息重回队列或入死信。</li>
+<li><strong>RocketMQ</strong>：消费成功后返回
+<code>CONSUME_SUCCESS</code>，失败返回 <code>RECONSUME_LATER</code>
+触发重试。</li>
+</ul>
+<blockquote>
+<p>但这里有一个无法绕开的矛盾：<strong>如果消费者处理完业务、还没来得及
+ack 就崩溃了，Broker
+会认为消息没被消费，重新投递</strong>。这就是重复的来源。所以消费端“不丢”的代价，就是接受重复。</p>
+</blockquote></li>
+</ul>
+<p>三段机制做满，只能保证消息不丢，但代价是可能重复。因此消费端必须做<strong>幂等</strong>，用业务唯一键或
+messageId 去重，让同一条消息处理一次和处理多次的结果一致。</p>
+<h3 id="消息不重怎么保证为什么工程上更常说-至少一次-幂等-而不是追求-exactly-once">消息不重怎么保证？为什么工程上更常说
+至少一次 + 幂等 而不是追求 exactly-once？</h3>
+<p>消息不重”从来不是靠 MQ 本身保证的，而是靠消费端去做业务幂等</p>
+<p>分布式系统中，消息代理（Broker）能控制的只是 消息从生产者到消费者
+这一段。因为消费者收到消息后，要写数据库、调第三方接口、发通知，这些都是外部副作用。所谓的事务消息只是保证消息队列内部的原子性。</p>
+<blockquote>
+<p><strong>在分布式系统中追求 exactly-once
+的投递是不切实际的</strong></p>
+</blockquote>
+<p>消费端幂等的三种常用方式</p>
+<ul>
+<li><strong>去重表 /
+唯一索引</strong>：在数据库中建一张去重表，以业务唯一键为主键或唯一索引。消费前先尝试插入，插入成功说明是首次处理，继续执行业务；插入冲突说明重复，直接跳过或返回已有结果。</li>
+<li><strong>Redis SETNX</strong>：用 <code>SET key value NX</code>
+原子地占位，key
+由业务唯一标识生成。返回成功说明是首次，返回失败说明重复。</li>
+<li><strong>状态机 /
+版本号</strong>：状态机自去重适用于业务本身有状态流转的场景。用版本号就是做乐观锁</li>
+</ul>
+<h3 id="消息的顺序性怎么保证全局有序和局部有序怎么取舍">消息的顺序性怎么保证？全局有序和局部有序怎么取舍？</h3>
+<p>消息从生产者到消费者，顺序可能在三个环节被破坏</p>
+<ul>
+<li><strong>生产端乱序</strong>：异步发送 +
+重试，基本上就会涉及到这个问题。消息 A 发送失败进入重试队列，消息 B
+却发送成功了，Broker 里 B 就排在了 A
+前面。多线程并发发送同一业务的消息也会乱序。</li>
+<li><strong>Broker
+端乱序</strong>：消息被分散到多个队列/分区，天然并行存储。如果同一业务
+Key 的消息被路由到了不同队列，存储顺序就已经无法保证。另外，Topic
+扩容分区时，哈希取模结果变化，同一 Key
+的消息可能漂移到新分区，顺序断裂。</li>
+<li><strong>消费端乱序</strong>：多线程/多实例并发消费同一队列，先拉到的消息可能后处理完；而这样消费重试也会打乱顺序</li>
+</ul>
+<p>各 MQ 是这样保证顺序的</p>
+<ul>
+<li><strong>RabbitMQ</strong>：顺序存储靠
+同一队列的消息在单节点上天然有序，但消费端必须开启
+<code>x-single-active-consumer=true</code>，让队列同时只有一个活跃消费者，但是这样拉低了并发度。</li>
+<li><strong>Kafka</strong>：只保证 <strong>Partition
+内有序</strong>。生产端指定 Key，按
+<code>hash(Key) % partitionNum</code> 把同一 Key 的消息路由到同一
+Partition；消费端保证一个 Partition
+只被一个消费者线程消费。生产端如果开了重试，还要注意
+<code>max.in.flight.requests.per.connection=1</code>
+或开启幂等生产者，避免重试导致乱序。</li>
+<li><strong>RocketMQ</strong>：对顺序消费的支持最完善。生产端用
+<code>MessageQueueSelector</code> 按业务 Key 选队列，消费端用
+<code>MessageListenerOrderly</code>，Broker
+端会对队列加锁，保证同一队列同时只有一个消费者线程在处理。但要注意，顺序消息只支持同步发送，且顺序消息与定时消息、事务消息互斥，不能叠加使用。</li>
+</ul>
+<p><strong>全局有序</strong>：整个 Topic
+只有一个分区/队列，全链路串行。吞吐量断崖式下跌，因为上一条消息没消费完，下一条就一直等着。</p>
+<p><strong>局部有序</strong>：按业务键（订单 ID、用户
+ID）哈希到固定分区，同一键内有序，不同键之间并行。</p>
+<blockquote>
+<p>微软的架构模式文档把这个思路称为“顺序车队模式”（Sequential
+Convoy）：将相关消息按类别键分组，组内严格
+FIFO，不同组并行处理，既保顺序又不牺牲吞吐。</p>
+</blockquote>
+<h3 id="延迟消息和定时消息有哪几种实现各自的问题是什么">延迟消息和定时消息有哪几种实现？各自的问题是什么？</h3>
+<p>延迟消息是“消息在未来的某个时间点才被消费”。</p>
+<p>RabbitMQ 有两种实现</p>
+<ul>
+<li><p><strong>TTL + DLX</strong>：消息发到一个等待队列，设置
+TTL，过期后通过 DLX 转发到真正的消费队列。</p>
+<blockquote>
+<p><strong>问题在于队头阻塞</strong>，RabbitMQ
+只检查队头消息是否过期。如果队头消息 TTL 是 60 秒，后面消息 TTL 是 5
+秒，后面那条必须等队头的过期了才能被检查到，因此后面的就没法被消费。不同延迟时长需要拆成多个队列，管理成本高。</p>
+</blockquote></li>
+<li><p><strong>延迟消息插件</strong>：声明一个
+<code>x-delayed-message</code> 类型的 Exchange，发送时在 header 里设
+<code>x-delay</code>，支持逐消息灵活延迟。</p>
+<blockquote>
+<p><strong>问题在于可靠性</strong>：延迟消息存储在单节点的 Mnesia
+表中，不跨集群复制，节点宕机则待投递的延迟消息丢失；且不适合百万级以上的延迟消息量。</p>
+</blockquote></li>
+</ul>
+<p>Kafka 原生不支持，没有延迟投递的原语。</p>
+<p>RocketMQ 原生延迟等级，简单但有约束</p>
+<ul>
+<li>RocketMQ 开源版内置 18 个延迟等级，从 1s 到 2h，发送时设置
+<code>delayLevel</code>
+即可。问题就是等级固定，不能任意指定延迟时间。</li>
+</ul>
+<p>为什么补偿任务用 <span class="citation" data-cites="Scheduled">@Scheduled</span> 而不用延迟消息</p>
+<ul>
+<li>延迟消息适合 <strong>确定时间点的单次触发</strong>，比如订单 30
+分钟未支付自动关闭。补偿任务是
+<strong>对已经失败的操作做兜底重试</strong>，它的触发时机是不确定的，而且可能涉及到重试，用
+<code>@Scheduled</code> 扫表 + 幂等执行更好一些。</li>
+</ul>
+<h3 id="线上消息积压了怎么排查怎么处理">线上消息积压了，怎么排查、怎么处理？</h3>
+<p><strong>消费位点与最新生产位点的差值</strong>，就代表消息积压的情况。</p>
+<p>看指标</p>
+<ul>
+<li><strong>Kafka</strong>：看 <code>records-lag</code>。Lag
+持续增长说明消费能力不足；Lag 周期性回落后又上涨，可能是消费者频繁触发
+rebalance。</li>
+<li><strong>RocketMQ</strong>：看 Group 的实时消息堆积量，以及客户端的
+<code>consumeRT</code>（消费平均延迟）。</li>
+<li><strong>RabbitMQ</strong>：看队列的 Ready 消息数，以及消费者 IP
+数量和消费时长是否符合预期。</li>
+</ul>
+<p>定位根因</p>
+<ul>
+<li><strong>消费者挂了或变慢</strong></li>
+<li><strong>下游变慢</strong>：消费逻辑依赖的数据库、Redis、第三方接口变慢了，导致整体消费吞吐下降。</li>
+<li><strong>生产者请求突增</strong></li>
+<li><strong>分区/队列数不够</strong></li>
+</ul>
+<p>应急处理</p>
+<ul>
+<li><strong>如果根因是消费端逻辑问题</strong>，一般是降级下游依赖，再考虑扩容和优化</li>
+<li><strong>如果根因是消费能力不足且下游健康</strong>：扩消费者实例。</li>
+<li><strong>如果积压量极大且消息必须处理</strong>：空间换时间。临时新建一个分区数更多的
+Topic，写一个转发消费者把积压 Topic 的消息快速搬运到新
+Topic，再用临时扩容的消费者集群并行消费新 Topic。</li>
+</ul>
+<p>长期预防</p>
+<ul>
+<li><strong>做好监控告警</strong></li>
+<li><strong>死信隔离</strong>：处理失败 N
+次的消息进死信队列，避免卡住整个分区，导致后续消息全部无法消费。</li>
+</ul>
+<h3 id="消息队列的高可用是怎么做的rabbitmq-和-kafka-的副本选举机制有什么不同">消息队列的高可用是怎么做的？RabbitMQ
+和 Kafka 的副本/选举机制有什么不同？</h3>
+<p>消息队列的高可用，核心目标只有一个：<strong>当某个节点挂掉时，消息不丢、服务不停</strong>。</p>
+<p>RabbitMQ 的高可用是队列级别的复制，而 Kafka
+的高可用是分区级别的副本与选举。</p>
+<p>RabbitMQ 的高可用机制，早期依赖<strong>镜像队列（Classic Mirrored
+Queues）</strong>，现在官方推荐的是<strong>仲裁队列（Quorum
+Queues）</strong>。</p>
+<ul>
+<li><p><strong>镜像队列</strong>：镜像队列有一个主队列和多个从队列。生产者发消息给主队列，主队列同步给所有从队列，<strong>所有从队列都保存成功后</strong>，主队列才向生产者确认。</p>
+<blockquote>
+<p>这意味着最慢的那个从节点会拖慢整个队列的写入性能。RabbitMQ 4
+中镜像队列被完全移除</p>
+</blockquote></li>
+<li><p><strong>仲裁队列</strong>：仲裁队列基于 Raft
+共识算法的变种。写入时，主副本把消息同步给从副本，<strong>超过半数的副本确认后</strong>，主副本就向生产者返回成功。主副本的选举也需要超过半数副本同意</p></li>
+</ul>
+<p>Kafka
+的高可用单位是<strong>分区（Partition）</strong>。每个分区有多个副本（Replica），分布在不同
+Broker 上。其中一个副本是 Leader，负责处理所有读写请求；其余是
+Follower，持续从 Leader 拉取消息进行同步。</p>
+<ul>
+<li>ISR：Kafka 维护一个
+<strong>ISR</strong>（同步副本）列表，里面是跟得上 Leader
+进度的副本。生产端设置 <code>acks=all</code> 时，消息必须被 ISR
+中所有副本写入后才算成功。如果 Leader 宕机，Controller 会从 ISR
+中选出一个新 Leader。因为 ISR
+中的副本都拥有完整的数据，切换后不会丢消息。</li>
+<li>如果 ISR 缩小到只有一个副本，此时 Leader 挂了。Kafka
+的默认策略是从非 ISR 副本中选一个新 Leader，牺牲部分消息换取高可用</li>
+</ul>
+<h2 id="rabbitmq">RabbitMQ</h2>
+<h3 id="画一下-rabbitmq-的核心模型producerexchangebindingqueueconsumerchannelvhost-各自是什么讲解一下核心模型和核心角色">画一下
+RabbitMQ
+的核心模型：Producer、Exchange、Binding、Queue、Consumer、Channel、vhost
+各自是什么？讲解一下核心模型和核心角色。</h3>
+<p>RabbitMQ 是一个
+<strong>生产者把消息发给交换机，交换机按绑定规则路由到一个或多个队列，消费者从队列里取</strong>
+这样的一个模型。</p>
+<p>Channel 是复用 TCP 的虚拟连接，vhost 是逻辑隔离单元，Exchange
+交换机本身<strong>不存消息</strong>。</p>
+<ul>
+<li><p><strong>Producer（生产者）</strong>：只负责把消息发给交换机，并带上
+RoutingKey。它<strong>不知道消息最终会进哪个队列</strong>，这是解耦的关键。</p>
+<blockquote>
+<ul>
+<li><strong>RoutingKey</strong>，属于消息，生产者发消息时携带，是消息的”地址标签”</li>
+<li><strong>BindingKey</strong>：属于绑定，是 Exchange 与 Queue
+之间的绑定关系，声明绑定时出现，是队列的”收件规则”</li>
+</ul>
+<p><strong>路由的本质是 Exchange 拿消息的 RoutingKey 去和每条 Binding 的
+BindingKey 做匹配，匹配成功就把消息投到对应的 Queue。</strong></p>
+</blockquote></li>
+<li><p><strong>Exchange（交换机）</strong>：路由组件，收到消息后按类型 +
+Binding 决定投递到哪些
+Queue。<strong>它不持久化消息</strong>，路由不到就丢弃。</p></li>
+<li><p><strong>Binding（绑定）</strong>：Exchange 和 Queue 之间的
+路由规则。BindingKey 和消息的 RoutingKey 匹配，匹配上才投递。一个
+Exchange 可以绑多个 Queue，一个 Queue 也可以被多个 Exchange
+绑定。</p></li>
+<li><p><strong>Queue（队列）</strong>：真正存消息的地方。消息在队列里排队，等消费者来取；消费并
+ack 后才删除。</p></li>
+<li><p><strong>Consumer（消费者）</strong>：从 Queue 拉/被推消息，处理完
+ack。</p></li>
+<li><p><strong>Channel（信道）</strong>：建立在
+Connection（TCP）上的<strong>虚拟连接</strong>。AMQP
+的绝大多数操作（声明队列、发消息、ack）都在 Channel 上完成。一个
+Connection 可以开多个 Channel，避免频繁建 TCP
+连接的开销。<strong>Channel 不是线程安全的</strong>，通常一个线程一个
+Channel。</p></li>
+<li><p><strong>vhost（虚拟主机）</strong>：权限和资源的逻辑隔离，类似
+MySQL 的 database。不同 vhost 的 Exchange/Queue
+名字可以重复，互不影响。多租户系统常用 vhost 做隔离。</p></li>
+</ul>
+<p>一条消息的完整路径如下</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">Producer</span><br><span class="line">  └─ 建立 Connection → 开 Channel</span><br><span class="line">       └─ basic.publish(exchange, routingKey, body)</span><br><span class="line">            └─ Exchange 按类型 + Binding 匹配</span><br><span class="line">                 ├─ 命中 Queue A → 入队</span><br><span class="line">                 ├─ 命中 Queue B → 入队（fanout/topic 可以一对多）</span><br><span class="line">                 └─ 一个都没命中 → 丢弃（除非 mandatory=<span class="literal">true</span> 触发 basic.return）</span><br><span class="line">Consumer</span><br><span class="line">  └─ basic.consume / basic.get</span><br><span class="line">       └─ 处理业务 → basic.ack（或 nack/reject）</span><br><span class="line">            └─ Broker 删除该消息</span><br></pre></td></tr></table></figure>
+<ul>
+<li>Exchange 不存消息：交换机是纯路由，消息落点是 Queue</li>
+<li>Channel 不是连接：连接是 TCP。Channel 是连接上的多路复用；Channel
+关闭不影响连接，但连接断了所有 Channel 都会失效。</li>
+<li>vhost 是隔离不是集群：vhost
+隔离的是命名空间和权限，跟高可用、副本没有关系。</li>
+</ul>
+<h3 id="四种-exchange-类型direct-fanout-topic-headers的区别各自典型场景">四种
+Exchange 类型（direct / fanout / topic /
+headers）的区别？各自典型场景？</h3>
+<p>direct 精确匹配、fanout 广播、topic 通配、headers 按消息头匹配</p>
+<p>生产上 90% 的场景是 direct + topic，fanout 用于广播，headers
+基本不用</p>
+<table>
+<colgroup>
+<col style="width: 6%">
+<col style="width: 35%">
+<col style="width: 28%">
+<col style="width: 30%">
+</colgroup>
+<thead>
+<tr>
+<th>类型</th>
+<th>路由规则</th>
+<th>典型场景</th>
+<th>注意点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>direct</strong></td>
+<td>RoutingKey <strong>完全等于</strong> BindingKey</td>
+<td>点对点任务分发、按日志级别路由（error/info）</td>
+<td>最常用；默认交换机就是 direct，用队列名当 RoutingKey</td>
+</tr>
+<tr>
+<td><strong>fanout</strong></td>
+<td><strong>忽略</strong> RoutingKey，广播给所有绑定的队列</td>
+<td>配置刷新、缓存失效广播、多系统同时感知某个事件</td>
+<td>每个队列都会收到一份；队列多时放大写压力</td>
+</tr>
+<tr>
+<td><strong>topic</strong></td>
+<td>BindingKey 支持通配：<code>*</code>
+匹配<strong>一个</strong>词，<code>#</code>
+匹配<strong>零个或多个</strong>词，用 <code>.</code> 分隔</td>
+<td>按业务维度订阅：<code>order.created.*</code>、<code>log.#.error</code></td>
+<td>最灵活；通配过度会导致路由变慢、误投</td>
+</tr>
+<tr>
+<td><strong>headers</strong></td>
+<td>按消息 header 的键值对匹配（<code>x-match=all/any</code>）</td>
+<td>需要多维度条件路由、RoutingKey 表达不了的场景</td>
+<td>性能比 direct/topic 差，实际项目很少用</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>默认交换机</strong>：名字是空字符串 <code>""</code>，类型是
+direct，<strong>自动绑定所有队列</strong>，RoutingKey 就是队列名。所以
+<code>basic.publish("", "order.queue", body)</code> 可以直接发到
+<code>order.queue</code>。</li>
+<li><strong>topic 的通配示例</strong>：topic 的 <code>*</code> 和
+<code>#</code> 区别很大，<code>order.*</code> 能匹配
+<code>order.created</code>，但匹配不了
+<code>order.created.v2</code>；<code>order.#</code> 两个都能匹配。</li>
+<li><strong>fanout
+的坑</strong>：如果某个队列没人消费，消息会在队列里堆积（每个队列都有一份），广播场景要配合
+TTL / 队列长度上限。</li>
+<li><strong>headers 的坑</strong>：<code>x-match=all</code> 要求所有
+header 都匹配，<code>any</code> 只要一个匹配；header
+值类型要一致，否则匹配不上。</li>
+</ul>
+<h3 id="一条消息从-producer-到-consumer-完整经过哪些步骤哪几步可能出现消息丢失rabbitmq-怎么保证消息不丢生产端broker消费端分别怎么做">一条消息从
+Producer 到 Consumer 完整经过哪些步骤？哪几步可能出现消息丢失？RabbitMQ
+怎么保证消息不丢？生产端、Broker、消费端分别怎么做？</h3>
+<p>消息要经过「生产端 → Exchange 路由 → Queue 持久化 → 推送/拉取 → 消费
+ack」五段，<strong>每一段都可能丢</strong>；RabbitMQ
+的可靠性就是在这五段上分别加确认和持久化。</p>
+<ul>
+<li>Producer 发出，如果 Broker 挂了，连接断了，就会在这里进行丢失</li>
+<li>Exchange
+路由不到任何队列，消息被静默丢弃，而且默认行为不报错，消息就丢了</li>
+<li>Queue 或 Message 没设持久化，Broker
+重启后消息没了；或者设了持久化但还没刷盘就宕机。消息在 Queue
+落盘中丢失了</li>
+<li>投递给 Consumer 但还没 ack，消费者进程崩了，Broker
+会把消息重投给别的消费者</li>
+</ul>
+<p>解决方式如下</p>
+<ul>
+<li><p><strong>开启 Publisher Confirms 发布确认</strong>： 这是解决
+Broker 没收到 的核心。将 Channel 设置为 confirm 模式后，Broker
+会在消息被接收或者持久化后，回传一个 ack 给生产者。如果 Broker
+内部处理失败，会回传
+nack，生产者可以据此重发。注意，它是<strong>异步</strong>的</p></li>
+<li><p><strong>配合 mandatory + ReturnListener</strong>：只开 Confirm
+还不够，因为消息可能到了 Exchange 但没找到匹配的 Queue，这时 Confirm
+可能依然会返回 ack。解决办法是发送时设置
+<code>mandatory=true</code>，并添加
+ReturnListener。当消息无法路由时，Broker 会触发
+<code>basic.return</code> 把消息退回给生产者，可以在 ReturnListener
+中做一些处理</p></li>
+<li><p><strong>持久化三件套</strong>：</p>
+<ul>
+<li><strong>Exchange 持久化</strong>：声明时
+<code>durable=true</code>。</li>
+<li><strong>Queue 持久化</strong>：声明时
+<code>durable=true</code>。</li>
+<li><strong>Message 持久化</strong>：发送时设置
+<code>deliveryMode=2</code>（PERSISTENT）。</li>
+</ul>
+<p>只要其中任何一个没开，重启后消息都可能丢。但是如果全开了，RabbitMQ
+默认是<strong>异步批量刷盘</strong>的，并非逐条实时落盘。所以<strong>必须配合生产端的
+Publisher Confirms</strong>，因为 Confirm 的 ack
+是在持久化消息落盘后才发出的，这样生产者才能真正确认消息安全了。</p></li>
+<li><p><strong>仲裁队列（Quorum
+Queue）</strong>：它由一主多从副本组成，消息必须被<strong>超过半数</strong>的副本确认后才算提交成功，主副本宕机时会自动从副本中选举出新主</p></li>
+<li><p><strong>消费端关闭自动确认，改用手动 ACK</strong>：如果
+<code>autoAck=true</code>，Broker
+把消息一发出去就立刻删除，消费者这时候崩了，消息就真没了。设置
+<code>autoAck=false</code> 后，消息投递出去会处于 Unacked
+状态。只要消费者<strong>连接断开</strong>，RabbitMQ 发现这个 Channel
+关了，就会自动把那条未确认的消息<strong>重新入队</strong>，投给其他消费者。只有在业务代码执行成功后，显式调用
+<code>basicAck</code>，Broker 才会真正删除消息。</p>
+<blockquote>
+<p>因为有了重投机制，消息可能会被<strong>重复消费</strong>。所以消费端必须实现<strong>幂等</strong></p>
+</blockquote></li>
+</ul>
+<h3 id="publisher-confirm-和事务txselecttxcommit有什么区别为什么生产上更推荐-confirm">publisher
+confirm 和事务（txSelect/txCommit）有什么区别？为什么生产上更推荐
+confirm？</h3>
+<p>事务是<strong>同步阻塞</strong>的强一致方案，confirm
+是<strong>异步回调</strong>的轻量方案；confirm 吞吐高得多，生产上默认用
+confirm，事务只在对一致性要求极高、且量很小的场景才考虑。</p>
+<p>对于 AMQP
+事务，语义上也是多条消息要么都成功要么都失败，同步<code>txCommit</code>
+要等 Broker
+返回，期间生产者阻塞，所以吞吐很低，一次事务要等一次网络往返和落盘，但是
+commit 失败要自己回滚、重发。每次 commit 都是一次同步往返，而且事务期间
+Broker 要维护事务状态。吞吐通常只有 confirm 的几分之一。</p>
+<p>对于 Publisher Confirm，它是异步，发完继续干别的，Broker
+回调通知，因此吞吐高，可以批量 confirm，失败的话就是nack
+后超时回调里重发，针对的是单条消息</p>
+<p>confirm 的正确用法</p>
+<ul>
+<li>异步 confirm：注册 <code>ConfirmCallback</code>，在回调里根据
+<code>ack=true/false</code>
+决定是否重发。注意回调是<strong>异步线程</strong>，不要在里面做重业务。</li>
+<li>批量 confirm：一次发一批，等一批的 confirm，吞吐更高，但要维护
+哪些消息还没确认 的映射。</li>
+<li>必须处理 nack 和超时：只处理 ack 等于掩耳盗铃；nack
+要重发或落库补偿，超时要靠定时任务扫 未确认消息表。</li>
+</ul>
+<p>注意，confirm 只保证 Broker
+接管，<strong>不保证消费成功</strong>，消费成功要靠消费端 ack。而且
+confirm 不保证路由成功，路由失败要靠 <code>mandatory + Return</code></p>
+<h3 id="mandatory-和-publish-confirm-是一回事吗消息路由不到队列时你怎么知道"><code>mandatory</code>
+和 <code>publish confirm</code>
+是一回事吗？消息路由不到队列时，你怎么知道？</h3>
+<p>不是一回事</p>
+<p>confirm 回答 Broker 收没收到 ，mandatory 回答
+路由到没到队列；路由失败要靠 <code>mandatory=true</code> +
+<code>ReturnsCallback</code>或备用交换机才能感知。</p>
+<ul>
+<li>备用交换机：给 Exchange 设置 <code>alternate-exchange</code>
+参数，路由失败的消息会被转发到备用交换机，再由它路由到 未路由消息队列
+，这样失败消息不会丢，可以被统一消费和告警。</li>
+</ul>
+<p>怎么配（Spring AMQP）</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">spring:</span></span><br><span class="line">  <span class="attr">rabbitmq:</span></span><br><span class="line">    <span class="attr">publisher-confirm-type:</span> <span class="string">correlated</span>   <span class="comment"># 开 confirm，带 correlation data</span></span><br><span class="line">    <span class="attr">publisher-returns:</span> <span class="literal">true</span>              <span class="comment"># 开 return</span></span><br><span class="line">    <span class="attr">template:</span></span><br><span class="line">      <span class="attr">mandatory:</span> <span class="literal">true</span>                    <span class="comment"># 路由失败时 return 而不是静默丢弃</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">rabbitTemplate.setConfirmCallback((correlationData, ack, cause) -&gt; &#123;</span><br><span class="line">    <span class="keyword">if</span> (!ack) &#123;</span><br><span class="line">        <span class="comment">// Broker 没收到：重发 / 落库补偿 / 告警</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">rabbitTemplate.setReturnsCallback(returned -&gt; &#123;</span><br><span class="line">    <span class="comment">// 路由失败：记录 exchange、routingKey、replyText，转人工或备用交换机</span></span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<h3 id="死信队列dlx的触发条件有哪些死信队列通常用来做什么">死信队列（DLX）的触发条件有哪些？死信队列通常用来做什么？</h3>
+<p>死信队列是<strong>可观测、可重放、可告警的失败出口</strong>。死信也是一个需要被消费和治理的业务队列</p>
+<p>消息变成死信只有三条，<strong>被拒绝且不重回队列；TTL
+过期；队列超长被丢弃</strong>；</p>
+<table>
+<colgroup>
+<col style="width: 26%">
+<col style="width: 44%">
+<col style="width: 29%">
+</colgroup>
+<thead>
+<tr>
+<th>触发条件</th>
+<th>具体行为</th>
+<th>常见原因</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>reject / nack 且 <code>requeue=false</code></strong></td>
+<td>消费者明确拒绝，且不让它回队列</td>
+<td>业务校验失败、消息格式错误、重试次数耗尽</td>
+</tr>
+<tr>
+<td><strong>消息 TTL 过期</strong></td>
+<td>消息在队列里超过 <code>x-message-ttl</code> 或消息级 expiration</td>
+<td>延迟队列（TTL + DLX 的核心机制）</td>
+</tr>
+<tr>
+<td><strong>队列超长</strong></td>
+<td>达到 <code>x-max-length</code> / <code>x-max-length-bytes</code>，按
+overflow 策略丢弃</td>
+<td>生产远大于消费、消费者长时间挂掉</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><code>requeue=true</code> 的 nack
+<strong>不会</strong>进死信，而是回到队列头或尾，这是毒消息无限循环的根源。要配合重试次数上限（Quorum
+Queue 的 <code>delivery-limit</code> 默认 20）使用。</p>
+</blockquote>
+<p>死信队列的典型用途</p>
+<ul>
+<li><strong>失败隔离</strong>：处理失败 N
+次的消息进死信，避免卡住主队列、拖垮整个分区。</li>
+<li><strong>延迟重试</strong>：消息 TTL 到期后经 DLX 转到
+重试队列，实现分级延迟（1s/5s/30s/5min）。</li>
+<li><strong>人工补偿</strong>：死信队列配管理后台，支持查看、重放、丢弃。</li>
+<li><strong>告警</strong>：死信数量突增是最灵敏的故障信号之一。</li>
+</ul>
+<p>注意</p>
+<ul>
+<li>死信队列要持久化 + 有消费者，否则死信会堆积到把 Broker 撑爆。</li>
+<li>死信消息要保留<strong>原始
+exchange、routingKey、失败原因、重试次数</strong></li>
+<li>死信设计<strong>重放工具</strong>，支持按条件批量重放回原队列。</li>
+</ul>
+<h3 id="rabbitmq-实现延迟队列的两种方式ttl-dlx-的队头阻塞是什么">RabbitMQ
+实现延迟队列的两种方式？TTL + DLX 的「队头阻塞」是什么？</h3>
+<p>RabbitMQ
+<strong>原生不支持</strong>延迟消息，必须靠两种方式模拟：<strong>TTL +
+DLX</strong> 或 <strong>延迟插件</strong>。</p>
+<p>TTL + DLX</p>
+<ul>
+<li><p>TTL
+是消息存活时间，可以在<strong>队列级</strong>设置<code>x-message-ttl</code>，也可以在<strong>消息级</strong>设置；DLX
+是死信交换机。把两者接起来，消息先进一个等待队列，设 TTL + 指向 DLX，等
+TTL 到期变成死信，经 DLX 转到真正的消费队列。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Producer ──▶ delay.queue（x-message-ttl=30min, x-dead-letter-exchange=real.exchange）</span><br><span class="line">                   │ 消息在队列里等待 <span class="number">30</span> 分钟</span><br><span class="line">                   ▼ TTL 到期</span><br><span class="line">             DLX ──▶ real.queue ──▶ Consumer</span><br></pre></td></tr></table></figure></li>
+<li><p>只用 RabbitMQ
+原生能力，但是会涉及到队头阻塞问题，而且<strong>不同延迟要拆多个队列</strong>，因为队列级
+TTL 是统一的</p>
+<blockquote>
+<p>队头阻塞是 RabbitMQ 检查 TTL
+过期是<strong>从队头开始、顺序扫描</strong>的，只有队头消息过期被移除后，才会继续检查下一条。它不会跳过队头去检查后面的消息。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">队头：消息 A，TTL = 60s   ← 先进队，长延迟</span><br><span class="line">      消息 B，TTL = 5s    ← 后进队，短延迟</span><br></pre></td></tr></table></figure>
+<p><strong>B 必须等 A 过期（60 秒）之后，才有机会被检查到</strong>。因为
+A 卡在队头没走，扫描就停在 A
+这里。后进队的短延迟消息，被先进队的长延迟消息挡住了。延迟越长、消息越多，阻塞越严重。<strong>只有
+队列内所有消息 TTL 相同
+时，队头阻塞才不会发生</strong>。这也就是为什么不同延迟要拆多个队列</p>
+</blockquote></li>
+</ul>
+<p>延迟插件</p>
+<ul>
+<li><p>装 <code>rabbitmq_delayed_message_exchange</code>
+插件，声明一种新类型交换机 <code>x-delayed-message</code>，发送时在
+header 里设 <code>x-delay</code></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">Map&lt;String, Object&gt; args = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">args.put(<span class="string">&quot;x-delayed-type&quot;</span>, <span class="string">&quot;direct&quot;</span>);</span><br><span class="line">channel.exchangeDeclare(<span class="string">&quot;delay.exchange&quot;</span>, <span class="string">&quot;x-delayed-message&quot;</span>, <span class="literal">true</span>, <span class="literal">false</span>, args);</span><br><span class="line"></span><br><span class="line">AMQP.<span class="type">BasicProperties</span> <span class="variable">props</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">AMQP</span>.BasicProperties.Builder()</span><br><span class="line">        .headers(Map.of(<span class="string">&quot;x-delay&quot;</span>, <span class="number">30</span> * <span class="number">60</span> * <span class="number">1000</span>)) <span class="comment">// 30 分钟</span></span><br><span class="line">        .build();</span><br><span class="line">channel.basicPublish(<span class="string">&quot;delay.exchange&quot;</span>, <span class="string">&quot;order.delay&quot;</span>, props, body);</span><br></pre></td></tr></table></figure>
+<ul>
+<li>延迟消息存在单节点的 Mnesia 表里，不跨集群复制（消息到达 Exchange
+后暂存在 Exchange 内部）</li>
+</ul></li>
+</ul>
+<p>Kafka 原生不支持延迟消息。常见做法是 多级延迟 Topic +
+定时任务把到期消息搬到目标 Topic。本质和 RabbitMQ
+拆队列思路类似，但要自己写搬运逻辑。</p>
+<p>RocketMQ 原生支持延迟等级</p>
+<p>为什么补偿任务用 <span class="citation" data-cites="Scheduled">@Scheduled</span> 而不用延迟消息？</p>
+<ul>
+<li>延迟消息适合确定时间点的单次触发，补偿任务是对<strong>已失败操作</strong>的兜底重试，触发时机不确定、可能多次重试、需要幂等和审计，用
+补偿任务表 + <span class="citation" data-cites="Scheduled">@Scheduled</span> 扫表 + 状态机 能够完全控制</li>
+</ul>
+<h3 id="rabbitmq-能保证顺序吗多个消费者时怎么保证同一业务的消息有序">RabbitMQ
+能保证顺序吗？多个消费者时怎么保证同一业务的消息有序？</h3>
+<p>RabbitMQ <strong>只保证单队列、单消费者、不 requeue
+时的顺序</strong>；多消费者并发消费同一队列必然乱序，要按业务键拆队列或消费端串行化。</p>
+<p><strong>顺序在哪些环节会被破坏</strong></p>
+<table>
+<thead>
+<tr>
+<th>环节</th>
+<th>破坏原因</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>生产端</strong></td>
+<td>多线程并发发同一业务消息；失败重试导致后发的先到</td>
+</tr>
+<tr>
+<td><strong>Broker 端</strong></td>
+<td>同一业务的消息被路由到多个队列；队列在集群节点间迁移</td>
+</tr>
+<tr>
+<td><strong>消费端</strong></td>
+<td>多消费者/多线程并发消费；处理耗时不同；nack 重回队列</td>
+</tr>
+</tbody>
+</table>
+<p><strong>RabbitMQ 的顺序保证边界</strong></p>
+<ul>
+<li>单个 Queue、单个 Consumer、消息不 requeue：<strong>FIFO
+有序</strong>。</li>
+<li>多个 Consumer 消费同一个
+Queue：<strong>无序</strong>，因为消息会被轮询分给不同消费者，谁先处理完谁先
+ack。</li>
+<li><code>x-single-active-consumer=true</code>：队列同时只有一个活跃消费者，能保序但牺牲并发。</li>
+</ul>
+<p>多消费者下保序的方案常用
+按业务键拆队列，每个队列配<strong>一个消费者</strong>。同一订单的消息进同一队列，天然有序；不同订单并行。</p>
+<h3 id="spring-amqp-里-rabbitlistener-的-ack-模式怎么配auto-和-manual-的区别">Spring
+AMQP 里 <code>@RabbitListener</code> 的 ack 模式怎么配？AUTO 和 MANUAL
+的区别？</h3>
+<p>在 Spring AMQP 中，<code>@RabbitListener</code>
+的确认模式由容器工厂的 <code>AcknowledgeMode</code> 控制</p>
+<ul>
+<li><p>全局配置</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">spring:</span></span><br><span class="line">  <span class="attr">rabbitmq:</span></span><br><span class="line">    <span class="attr">listener:</span></span><br><span class="line">      <span class="attr">simple:</span></span><br><span class="line">        <span class="attr">acknowledge-mode:</span> <span class="string">manual</span>  <span class="comment"># 可选 none / auto / manual</span></span><br></pre></td></tr></table></figure></li>
+<li><p>代码中自定义容器工厂</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Bean</span></span><br><span class="line"><span class="keyword">public</span> SimpleRabbitListenerContainerFactory <span class="title function_">myFactory</span><span class="params">(</span></span><br><span class="line"><span class="params">        SimpleRabbitListenerContainerFactoryConfigurer configurer,</span></span><br><span class="line"><span class="params">        ConnectionFactory connectionFactory)</span> &#123;</span><br><span class="line">    <span class="type">SimpleRabbitListenerContainerFactory</span> <span class="variable">factory</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">SimpleRabbitListenerContainerFactory</span>();</span><br><span class="line">    configurer.configure(factory, connectionFactory);</span><br><span class="line">    factory.setAcknowledgeMode(AcknowledgeMode.MANUAL);</span><br><span class="line">    <span class="keyword">return</span> factory;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>然后在
+<code>@RabbitListener(queues = "xxx", containerFactory = "myFactory")</code>
+中指定使用。</p></li>
+</ul>
+<p>AUTO 与 MANUAL 的核心区别</p>
+<table>
+<colgroup>
+<col style="width: 13%">
+<col style="width: 43%">
+<col style="width: 43%">
+</colgroup>
+<thead>
+<tr>
+<th></th>
+<th><strong>AUTO（默认）</strong></th>
+<th><strong>MANUAL</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>谁负责 ack/nack</strong></td>
+<td><strong>容器</strong>（Spring）</td>
+<td><strong>开发者</strong>（你的代码）</td>
+</tr>
+<tr>
+<td><strong>触发时机</strong></td>
+<td>监听方法<strong>正常返回</strong> → 容器自动
+ack；<strong>抛出异常</strong> → 容器自动 nack</td>
+<td>你在业务逻辑中<strong>显式调用</strong>
+<code>channel.basicAck()</code> 或 <code>basicNack()</code></td>
+</tr>
+<tr>
+<td><strong>代码侵入性</strong></td>
+<td>无，业务方法不用关心 Channel</td>
+<td>需要方法签名注入 <code>Channel</code> 和
+<code>deliveryTag</code>，手动写确认代码</td>
+</tr>
+<tr>
+<td><strong>适用场景</strong></td>
+<td>绝大多数常规消费，异常处理交给容器默认策略</td>
+<td>需要<strong>异步处理</strong>、<strong>批量确认</strong>，或希望<strong>精细控制确认时机</strong>（如等数据库事务提交后再
+ack）</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>Spring 的 <code>AUTO</code> <strong>不等于</strong> RabbitMQ
+原生意义上的 <code>autoAck</code>。Spring 的 <code>AUTO</code> 是
+容器帮你判断业务是否成功；而真正的 投递即删除、不管消费结果 在 Spring
+里叫 <strong><code>NONE</code></strong>（对应
+<code>Channel.basicConsume</code> 的
+<code>autoAck=true</code>）。<strong>不要混淆</strong>。</p>
+</blockquote>
+<p>开启 <code>MANUAL</code> 后，监听方法需要接收 <code>Channel</code>
+和消息属性中的
+<code>deliveryTag</code>，然后在业务处理完成后自行决定确认策略：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RabbitListener(queues = &quot;order.queue&quot;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">handle</span><span class="params">(OrderMessage msg, Channel channel,</span></span><br><span class="line"><span class="params">                   <span class="meta">@Header(AmqpHeaders.DELIVERY_TAG)</span> <span class="type">long</span> deliveryTag)</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="comment">// 业务处理（如落库、调外部接口）</span></span><br><span class="line">        processOrder(msg);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 处理成功，手动 ack</span></span><br><span class="line">        channel.basicAck(deliveryTag, <span class="literal">false</span>);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">        <span class="comment">// 处理失败，拒绝消息。第三个参数 true 表示重新入队</span></span><br><span class="line">        channel.basicNack(deliveryTag, <span class="literal">false</span>, <span class="literal">true</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>在 <code>MANUAL</code>
+模式下，<strong>如果业务方法正常返回但你没有调用
+ack</strong>，消息会一直处于 Unacked 状态，直到连接断开后被重新投递</li>
+<li><code>basicAck</code> 的第二个参数 <code>multiple</code> 通常传
+<code>false</code>（只确认当前这一条）；传 <code>true</code>
+会批量确认该 tag 及之前所有未确认的消息。</li>
+<li>如果你使用了<strong>异步返回类型</strong>，如
+<code>CompletableFuture</code>，Spring 会自动将确认模式调整为
+<code>MANUAL</code>，由异步操作的完成情况来触发
+ack/nack，避免异步任务还没跑完，消息就被容器 ack 掉了。</li>
+</ul>
+<h3 id="消息体怎么序列化为什么推荐-json-而不是-java-原生序列化消费端-dto-变更怎么兼容">消息体怎么序列化？为什么推荐
+JSON 而不是 Java 原生序列化？消费端 DTO 变更怎么兼容？</h3>
+<p>在 Spring AMQP 中，消息体默认会走 JDK
+序列化，但这在生产环境基本不可取。要换成
+JSON，只需在配置类里注册一个转换器 Bean：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Bean</span></span><br><span class="line"><span class="keyword">public</span> MessageConverter <span class="title function_">jsonMessageConverter</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Jackson2JsonMessageConverter</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这个 Bean 会被 <code>RabbitTemplate</code>
+和监听容器工厂自动识别并使用。</p>
+<p>JDK 序列化有很多硬伤，在消息队列场景下会被放大：</p>
+<ol type="1">
+<li><strong>体积大</strong>：生成的字节流远大于等价的
+JSON，浪费网络带宽和 Broker 存储。</li>
+<li><strong>可读性差</strong>：二进制流无法在 RabbitMQ
+控制台直接查看，出问题时排查困难。</li>
+<li><strong>安全风险</strong>：反序列化不可信来源的 Java
+对象可能触发远程代码执行漏洞。Spring AMQP 文档也明确建议不要依赖 Java
+序列化。</li>
+</ol>
+<p>AMQP 本身是线路级协议，用 Java 私有序列化等于把消息绑死在 Java
+生态里，失去了跨平台的优势。</p>
+<p>那么消费端 DTO 变更怎么兼容，因为生产者和消费者通常不同步升级，DTO
+的字段增删不可避免，需要从两个层面处理。</p>
+<ul>
+<li><p><strong>让 Jackson 容忍变化</strong></p>
+<p>在 DTO 类上加
+<code>@JsonIgnoreProperties(ignoreUnknown = true)</code>，或者全局配置
+<code>ObjectMapper</code>：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, <span class="literal">false</span>);</span><br></pre></td></tr></table></figure></li>
+<li><p><strong>遵循 只加不改不删 的约定</strong></p></li>
+</ul>
+<h3 id="prefetchqos是什么设大了设小了分别有什么问题quorum-queue-为什么不支持-global-qos">prefetch（QoS）是什么？设大了/设小了分别有什么问题？Quorum
+Queue 为什么不支持 global QoS？</h3>
+<p>Prefetch（QoS）是 RabbitMQ
+的消费端流量控制机制，用来限制单个消费者同时持有 未确认消息
+的上限，<code>basic.qos(prefetch_count=N)</code> 表示 Broker 最多推 N
+条未确认消息；设大了消费者内存高、负载不均，设小了吞吐低。Quorum Queue
+只支持<strong>每消费者</strong>的 prefetch，不支持 channel 级 global
+QoS。</p>
+<blockquote>
+<p>RabbitMQ 的 prefetch 在行为上有一个重要特点：<strong>它默认是
+每消费者 级别，而不是 每信道 级别</strong>。虽然 AMQP 规范里
+<code>basic.qos</code> 的 <code>global</code> 参数本意是信道级，但
+RabbitMQ
+做了偏离规范的解释，<code>global=false</code>（默认）时，限制独立作用于该信道上的<strong>每一个新消费者</strong>。你调用
+<code>basicQos(10)</code>，意思是“这个信道上的每个消费者，各自最多同时持有
+10 条未 ack 的消息”</p>
+<p><strong>RabbitMQ 官方已经将 global QoS
+整体废弃并移除了</strong>，Quorum Queue 只是率先严格执行了这个限制</p>
+</blockquote>
+<h2 id="kafka">Kafka</h2>
+<h3 id="kafka-为什么弃用-zookeeperkraft-是什么算法能讲解一下吗kraft-解决了什么问题">Kafka
+为什么弃用 ZooKeeper？KRaft 是什么算法，能讲解一下吗？KRaft
+解决了什么问题？</h3>
+<p>ZooKeeper 在旧架构中负责 Controller 选举、Broker 注册、Topic
+元数据管理等关键任务。但这带来了几个难以回避的问题，但是它必须独立维护一套
+ZooKeeper 集群，而且 ZooKeeper 的写性能会随节点数增加而下降，限制了
+Kafka 集群的规模。最重要的是，元数据分散在 ZooKeeper 和 Kafka
+两个系统里，它们之间的状态同步并非强一致，在故障切换时容易产生不一致问题。</p>
+<p>KRaft 是 Raft 共识协议的一个变种</p>
+<ul>
+<li>集群中一部分节点被指定为
+<strong>Controller</strong>，专门负责管理元数据；其余节点作为
+<strong>Broker</strong> 处理数据读写。Controller 之间通过 Raft
+协议选举出一个 Leader，只有 Leader 处理元数据写入请求</li>
+<li>所有元数据变更都被写入一个内部 Topic，这个 Topic
+只有一个分区。Controller Leader 将变更作为 事件
+追加到日志中，只有被<strong>多数派 Controller</strong>
+确认后，才认为提交成功。</li>
+</ul>
+<p>KRaft 简化架构与运维，突破扩展性瓶颈，提升一致性与恢复速度。</p>
+<p>从 Kafka 4.0 开始，KRaft 已成为唯一模式，ZooKeeper 被正式移除。</p>
+<h3 id="画一下-kafka-的架构brokertopicpartitionreplicaleaderfollowerisrhwleooffset-的关系讲解一下-kafka-的架构内容">画一下
+Kafka
+的架构：Broker、Topic、Partition、Replica、Leader/Follower、ISR、HW、LEO、Offset
+的关系。讲解一下 Kafka 的架构内容。</h3>
+<p>层级关系可以这样大概概括</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">Cluster</span><br><span class="line"> ├─ Broker <span class="number">0</span>        ← 一个 Kafka 节点</span><br><span class="line"> ├─ Broker <span class="number">1</span></span><br><span class="line"> └─ Broker <span class="number">2</span></span><br><span class="line">      │</span><br><span class="line">      └─ Topic: order-events        ← 逻辑主题</span><br><span class="line">           ├─ Partition <span class="number">0</span>           ← 物理分片，有序、不可变</span><br><span class="line">           │    ├─ Leader   (Broker <span class="number">0</span>)   ← 读写都走它</span><br><span class="line">           │    ├─ Follower (Broker <span class="number">1</span>)   ← 只拉取同步</span><br><span class="line">           │    └─ Follower (Broker <span class="number">2</span>)</span><br><span class="line">           ├─ Partition <span class="number">1</span></span><br><span class="line">           └─ Partition <span class="number">2</span></span><br></pre></td></tr></table></figure>
+<table>
+<colgroup>
+<col style="width: 10%">
+<col style="width: 38%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr>
+<th>概念</th>
+<th>含义</th>
+<th>关键点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Broker</strong></td>
+<td>一个 Kafka 服务节点</td>
+<td>存分区副本、处理生产和消费请求</td>
+</tr>
+<tr>
+<td><strong>Topic</strong></td>
+<td>逻辑上的消息类别</td>
+<td>只是名字，真正的存储和并行单位是 Partition</td>
+</tr>
+<tr>
+<td><strong>Partition</strong></td>
+<td>Topic 的物理分片，一个有序、追加写的日志</td>
+<td><strong>并行和有序的单位</strong>；分区数决定消费并发上限</td>
+</tr>
+<tr>
+<td><strong>Replica</strong></td>
+<td>Partition 的副本，分布在不同 Broker</td>
+<td>副本数决定容错能力，生产建议 3</td>
+</tr>
+<tr>
+<td><strong>Leader</strong></td>
+<td>副本中的主，处理所有读写</td>
+<td>生产者和消费者只和 Leader 交互（老版本）</td>
+</tr>
+<tr>
+<td><strong>Follower</strong></td>
+<td>副本中的从，主动向 Leader 拉数据</td>
+<td>不处理读写，只做同步和故障接管</td>
+</tr>
+<tr>
+<td><strong>ISR</strong></td>
+<td>In-Sync Replicas，与 Leader 保持同步的副本集合</td>
+<td><code>acks=all</code> 要求 ISR 全部写入；Leader 挂了从 ISR 选新
+Leader</td>
+</tr>
+<tr>
+<td><strong>HW</strong></td>
+<td>High Watermark，所有 ISR 都复制到的位置</td>
+<td><strong>消费者只能读到 HW
+之前</strong>，代表大家都写到哪了，保证不读到未提交的数据，取 ISR 的最小
+LEO。</td>
+</tr>
+<tr>
+<td><strong>LEO</strong></td>
+<td>Log End Offset，日志末端位置</td>
+<td>每个副本都有自己的 LEO，代表我写到哪了；Leader 的 LEO
+是下一条消息的写入位置</td>
+</tr>
+<tr>
+<td><strong>Offset</strong></td>
+<td>消息在 Partition 内的唯一递增编号</td>
+<td>消费者用 offset 记录消费进度；<strong>offset
+只在分区内有意义</strong></td>
+</tr>
+</tbody>
+</table>
+<p>消费者和副本的关系</p>
+<ul>
+<li>消费者读 Leader，一个 Partition 分片在同一个 消费者组 内只能被一个
+Consumer 消费，这是并行度的上限</li>
+</ul>
+<p>一条消息的写入流程</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">Producer</span><br><span class="line">  └─ 按 key hash / 轮询选 Partition</span><br><span class="line">       └─ 发给该 Partition 的 Leader</span><br><span class="line">            ├─ Leader 追加到本地日志（LEO+<span class="number">1</span>）</span><br><span class="line">            ├─ Follower 主动 fetch 拉取</span><br><span class="line">            ├─ ISR 全部复制到 → HW 前移</span><br><span class="line">            └─ 按 acks 配置返回确认（<span class="number">0</span> / <span class="number">1</span> / all）</span><br></pre></td></tr></table></figure>
+<h3 id="kafka-为什么吞吐高消息在磁盘上怎么存怎么根据-offset-找到消息">Kafka
+为什么吞吐高？消息在磁盘上怎么存？怎么根据 offset 找到消息？</h3>
+<p>为什么吞吐高</p>
+<ul>
+<li>顺序写磁盘：磁盘顺序写接近内存随机写的速度；Kafka
+只追加，不随机改</li>
+<li>页缓存：读写都先经过操作系统页缓存，避免 JVM 堆内缓存 GC 和
+double-buffer</li>
+<li>零拷贝：消费时数据从页缓存直接送到网卡，<strong>不经过用户态</strong>，省两次拷贝和上下文切换</li>
+<li>批量 + 压缩：Producer 攒批发送、Broker 批量落盘、Consumer
+批量拉取；</li>
+<li>分区并行：一个 Topic 多分区，分布在多 Broker，读写天然水平扩展</li>
+</ul>
+<p>这样，虽然单条消息延迟不低，但是批量再加上分摊，吞吐就上来了，这也是为什么
+Kafka 适合高吞吐流处理，而不适合低延迟的单条业务消息</p>
+<p>磁盘存储结构大概如下</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">kafka-logs/</span><br><span class="line"> └─ order-events-<span class="number">0</span>/                 ← Topic-Partition 目录</span><br><span class="line">     ├─ <span class="number">00000000000000000000.</span>log     ← 数据文件（消息本体）</span><br><span class="line">     ├─ <span class="number">00000000000000000000.</span>index   ← 偏移索引（offset → 物理位置）</span><br><span class="line">     ├─ <span class="number">00000000000000000000.</span>timeindex ← 时间索引（timestamp → offset）</span><br><span class="line">     ├─ <span class="number">00000000000000012345.</span>log     ← 下一个 Segment（按大小/时间滚动）</span><br><span class="line">     └─ ...</span><br></pre></td></tr></table></figure>
+<table>
+<colgroup>
+<col style="width: 29%">
+<col style="width: 70%">
+</colgroup>
+<thead>
+<tr>
+<th>文件</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>.log</code></td>
+<td>实际消息，按 offset 顺序追加</td>
+</tr>
+<tr>
+<td><code>.index</code></td>
+<td><strong>稀疏索引</strong>，记录「每 N 条消息的 offset →
+文件物理位置」，不是每条都记</td>
+</tr>
+<tr>
+<td><code>.timeindex</code></td>
+<td>时间戳 → offset，支持按时间查找消息（如
+<code>offsetsForTimes</code>）</td>
+</tr>
+<tr>
+<td><code>leader-epoch-checkpoint</code></td>
+<td>Leader 任期信息，用于副本截断</td>
+</tr>
+</tbody>
+</table>
+<p>根据 offset 找消息</p>
+<ol type="1">
+<li>用 <code>offset</code> 二分查找 <code>.index</code>，找到 不大于目标
+offset 的最大索引项</li>
+<li>拿到该索引项对应的物理位置</li>
+<li>从 .log 的该位置开始顺序扫描，直到找到目标 offset</li>
+</ol>
+<h3 id="kafka-怎么保证消息不丢acksretriesmin.insync.replicasreplication.factor-怎么配">Kafka
+怎么保证消息不丢？<code>acks</code>、<code>retries</code>、<code>min.insync.replicas</code>、<code>replication.factor</code>
+怎么配？</h3>
+<table>
+<colgroup>
+<col style="width: 11%">
+<col style="width: 38%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr>
+<th>环节</th>
+<th>配置</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Producer</strong></td>
+<td><code>acks=all</code></td>
+<td>要求 ISR 全部副本写入才返回</td>
+</tr>
+<tr>
+<td><strong>Producer</strong></td>
+<td><code>retries=Integer.MAX_VALUE</code>（或较大值）</td>
+<td>瞬时故障自动重试</td>
+</tr>
+<tr>
+<td><strong>Producer</strong></td>
+<td><code>enable.idempotence=true</code></td>
+<td>重试不产生重复（PID + sequence）</td>
+</tr>
+<tr>
+<td><strong>Producer</strong></td>
+<td><code>delivery.timeout.ms</code></td>
+<td>重试总超时，避免无限重试</td>
+</tr>
+<tr>
+<td><strong>Broker</strong></td>
+<td><code>replication.factor=3</code></td>
+<td>每个分区 3 副本，容忍 1 个 Broker 挂</td>
+</tr>
+<tr>
+<td><strong>Broker</strong></td>
+<td><code>min.insync.replicas=2</code></td>
+<td>至少 2 个副本确认才算成功，防止 ISR 缩到 1 时仍写入</td>
+</tr>
+<tr>
+<td><strong>Broker</strong></td>
+<td><code>unclean.leader.election.enable=false</code></td>
+<td>不允许非 ISR 副本当 Leader，避免丢数据</td>
+</tr>
+<tr>
+<td><strong>Consumer</strong></td>
+<td><code>enable.auto.commit=false</code></td>
+<td>手动提交，处理成功后再提交</td>
+</tr>
+</tbody>
+</table>
+<p><strong>ISR 缩到 1 时会发生什么</strong></p>
+<ul>
+<li><code>min.insync.replicas=2</code> 时，ISR 只剩
+Leader，<strong>生产者会收到
+<code>NotEnoughReplicasException</code></strong>，写入失败。</li>
+<li>这是<strong>故意的</strong>，宁可写失败，也不接受可能丢数据的写入。</li>
+<li>如果业务允许丢数据换可用性，才考虑
+<code>min.insync.replicas=1</code> 或开启 unclean 选举。</li>
+</ul>
+<p><strong>消费端不丢</strong></p>
+<ul>
+<li>关闭自动提交，<strong>处理成功后再
+<code>commitSync</code></strong>。</li>
+<li>如果先提交后处理，处理失败就丢了（offset 已前移）。</li>
+<li>处理失败要重试或进死信。</li>
+</ul>
+<h3 id="kafka-的幂等生产者怎么实现的pidepochsequence-number-各是什么它的边界在哪">Kafka
+的幂等生产者怎么实现的？<code>PID</code>、<code>epoch</code>、<code>sequence number</code>
+各是什么？它的边界在哪？</h3>
+<p>幂等生产者用「<strong>PID + epoch + 每个分区的 sequence
+number</strong>」让 Broker
+能识别并丢弃重复写入；它只保证<strong>单分区、单会话</strong>内的不重，跨分区跨会话要靠事务。</p>
+<table>
+<colgroup>
+<col style="width: 20%">
+<col style="width: 40%">
+<col style="width: 39%">
+</colgroup>
+<thead>
+<tr>
+<th>概念</th>
+<th>含义</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>PID（Producer ID）</strong></td>
+<td>Broker 分配给 Producer 的唯一 ID</td>
+<td>标识「哪个生产者」</td>
+</tr>
+<tr>
+<td><strong>Epoch</strong></td>
+<td>PID 的版本号，Producer 重启/重新初始化时递增</td>
+<td>防止旧会话的延迟请求污染新会话</td>
+</tr>
+<tr>
+<td><strong>Sequence Number</strong></td>
+<td>每个 <code>&lt;PID, Partition&gt;</code> 维度独立递增的序号</td>
+<td>Broker 用它判断「这条消息是新的还是重试的」</td>
+</tr>
+</tbody>
+</table>
+<p>开启方式</p>
+<figure class="highlight properties"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">enable.idempotence</span>=<span class="string">true          # 开启幂等（默认 true in 3.0+）</span></span><br><span class="line"><span class="attr">acks</span>=<span class="string">all                         # 幂等要求</span></span><br><span class="line"><span class="attr">retries</span>=<span class="string">Integer.MAX_VALUE        # 幂等要求</span></span><br><span class="line"><span class="attr">max.in.flight.requests.per.connection</span>=<span class="string">5   # 幂等允许的最大值</span></span><br></pre></td></tr></table></figure>
+<p><strong>工作流程</strong></p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">Producer 初始化 → 向 Broker 申请 PID（+ epoch）</span><br><span class="line">  └─ 发消息时带 (PID, epoch, partition, seq)</span><br><span class="line">       └─ Broker 为每个 &lt;PID, Partition&gt; 维护「已收到的最大 seq」</span><br><span class="line">            ├─ seq == 期望值     → 接收，更新最大 seq</span><br><span class="line">            ├─ seq &lt; 期望值      → 重复，丢弃（返回成功）</span><br><span class="line">            └─ seq &gt; 期望值+1    → 有消息丢失，报 OutOfOrderSequenceException</span><br></pre></td></tr></table></figure>
+<p><strong>为什么需要 epoch</strong></p>
+<p>假设 Producer 重启后复用了同一个
+PID，旧会话还有一条延迟的重试请求到达 Broker。如果没有 epoch，Broker
+会把它当成新消息；有了 epoch，Broker 发现 epoch
+是旧的，直接拒绝。<strong>epoch 是「会话代际」的隔离</strong>。</p>
+<p><strong>边界就是</strong></p>
+<ul>
+<li>不能替代消费幂等，因为生产端不重 ≠ 消费端不重</li>
+<li>而且不跨系统，只保证 Kafka 内部不重</li>
+<li>它的幂等是单分区，单会话的，幂等只在单个 Partition
+内生效，跨分区不保证，Producer 重启后 PID
+会变，旧会话的幂等状态失效</li>
+</ul>
+<h3 id="kafka-事务消息怎么实现isolation.levelread_committed-的作用">Kafka
+事务消息怎么实现？<code>isolation.level=read_committed</code>
+的作用？</h3>
+<p>Kafka 事务由「<strong>Transaction Coordinator + transactional.id +
+事务标记（commit/abort marker）</strong>」实现，保证 多分区写入 + offset
+提交 的原子性；消费者设 <code>isolation.level=read_committed</code>
+后，<strong>只能读到已提交事务的消息</strong>，未提交/已中止的消息会被过滤。</p>
+<table>
+<colgroup>
+<col style="width: 31%">
+<col style="width: 68%">
+</colgroup>
+<thead>
+<tr>
+<th>组件</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Transaction Coordinator</strong></td>
+<td>每个 <code>transactional.id</code> 对应一个
+Coordinator，管理事务状态（Ongoing/PrepareCommit/CompleteCommit
+等）</td>
+</tr>
+<tr>
+<td><strong>transactional.id</strong></td>
+<td>生产者配置的稳定
+ID，跨会话标识同一个事务生产者；重启后用它恢复/中止未完成事务</td>
+</tr>
+<tr>
+<td><strong>事务标记（marker）</strong></td>
+<td>写入分区日志的特殊控制消息：<code>COMMIT</code> /
+<code>ABORT</code>，告诉消费者这个事务的边界</td>
+</tr>
+<tr>
+<td><strong><code>__transaction_state</code></strong></td>
+<td>内部 Topic，存事务状态</td>
+</tr>
+</tbody>
+</table>
+<p>消费者端的隔离级别如下</p>
+<table>
+<colgroup>
+<col style="width: 31%">
+<col style="width: 68%">
+</colgroup>
+<thead>
+<tr>
+<th>级别</th>
+<th>行为</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>read_uncommitted</strong>（默认）</td>
+<td>能读到未提交事务的消息（可能读到最终被 abort 的数据）</td>
+</tr>
+<tr>
+<td><strong>read_committed</strong></td>
+<td>只读到 <strong>已 commit</strong>
+的事务消息；遇到未完成事务会阻塞到事务结束，abort 的消息被过滤</td>
+</tr>
+</tbody>
+</table>
+<p>边界</p>
+<ul>
+<li>Kafka 事务只保证 <strong>Kafka 内部</strong>，不保证「业务数据库 +
+Kafka」的原子性</li>
+</ul>
+<h3 id="消费者组的分配机制一个-partition-能被同组几个消费者消费rebalance-的触发条件和危害">消费者组的分配机制？一个
+Partition 能被同组几个消费者消费？Rebalance 的触发条件和危害？</h3>
+<p>同一个 消费者组 内，<strong>一个 Partition 只能被一个 消费者
+消费</strong>，这是并行度上限；Rebalance
+在成员变化、订阅变化、分区数变化时触发，<strong>老协议是
+Stop-The-World</strong>，会造成消费暂停、重复消费和延迟抖动；新协议（KIP-848）改为服务端协调
++ 增量 rebalance。</p>
+<p><strong>消费者组的分配机制</strong></p>
+<ul>
+<li>Consumer Group 里的 Consumer 通过 <strong>Group
+Coordinator</strong>（某个 Broker）协调。</li>
+<li>分配策略（<code>partition.assignment.strategy</code>）：
+<ul>
+<li><strong>RangeAssignor</strong>：按 Topic
+维度平均分，可能出现倾斜。</li>
+<li><strong>RoundRobinAssignor</strong>：所有 Topic
+的分区轮询分配，更均匀。</li>
+<li><strong>StickyAssignor</strong>：尽量均匀，同时尽量保留上次分配，减少
+rebalance 抖动。</li>
+<li><strong>CooperativeStickyAssignor</strong>：配合增量
+rebalance，避免全量撤销。</li>
+</ul></li>
+<li><strong>一个 Partition 在同一 Group 内只会分给一个
+Consumer</strong>；不同 Group 可以各自消费同一个
+Partition（广播语义）。</li>
+</ul>
+<p><strong>Rebalance 的触发条件</strong></p>
+<ol type="1">
+<li>Consumer 加入（启动、扩容）。</li>
+<li>Consumer 离开（宕机、主动 close、心跳超时）。</li>
+<li>订阅的 Topic 变化（正则订阅匹配到新 Topic）。</li>
+<li>Topic 的分区数变化（扩容分区）。</li>
+</ol>
+<h3 id="offset-自动提交和手动提交的区别commitsync-和-commitasync-怎么选怎么避免重复消费-auto.offset.reset-的-earliestlatestnone-分别什么行为消费者组第一次启动offset-过期时会怎样">Offset
+自动提交和手动提交的区别？<code>commitSync</code> 和
+<code>commitAsync</code> 怎么选？怎么避免重复消费？
+<code>auto.offset.reset</code> 的 <code>earliest/latest/none</code>
+分别什么行为？消费者组第一次启动、offset 过期时会怎样？</h3>
+<p>自动提交是「<strong>定时批量提交</strong>」，可能丢也可能重；手动提交是「<strong>处理成功后自己提交</strong>」</p>
+<table>
+<colgroup>
+<col style="width: 56%">
+<col style="width: 43%">
+</colgroup>
+<thead>
+<tr>
+<th>自动提交</th>
+<th>手动提交</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>enable.auto.commit=true</code></td>
+<td><code>enable.auto.commit=false</code></td>
+</tr>
+<tr>
+<td><code>auto.commit.interval.ms</code> 定时提交（默认 5s）</td>
+<td>自己调 <code>commitSync</code> / <code>commitAsync</code></td>
+</tr>
+<tr>
+<td>可能：还没处理完就提交了，宕机后消息不再投递</td>
+<td>不会（处理成功才提交）</td>
+</tr>
+<tr>
+<td>可能：处理完还没到提交时间就宕机</td>
+<td>可能：处理成功、提交前宕机</td>
+</tr>
+<tr>
+<td>允许丢的日志/监控场景</td>
+<td>业务消息</td>
+</tr>
+</tbody>
+</table>
+<p><code>commitSync</code> 可靠但阻塞、<code>commitAsync</code>
+吞吐好但要处理失败；</p>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>commitSync</th>
+<th>commitAsync</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>阻塞</td>
+<td>阻塞，等 Broker 返回</td>
+<td>不阻塞，回调通知</td>
+</tr>
+<tr>
+<td>可靠性</td>
+<td>高，失败会重试（可重试异常）</td>
+<td>失败不会自动重试，要自己处理</td>
+</tr>
+<tr>
+<td>吞吐</td>
+<td>低</td>
+<td>高</td>
+</tr>
+<tr>
+<td>适用</td>
+<td>关闭前、关键 offset</td>
+<td>常规消费循环</td>
+</tr>
+</tbody>
+</table>
+<p><code>auto.offset.reset</code> 只在「没有 offset 或 offset
+越界」时生效：<code>earliest</code> 从头、<code>latest</code>
+从尾、<code>none</code> 直接抛异常。</p>
+<table>
+<colgroup>
+<col style="width: 16%">
+<col style="width: 83%">
+</colgroup>
+<thead>
+<tr>
+<th>值</th>
+<th>行为</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>earliest</strong></td>
+<td>没有 offset 或 offset
+越界时，从<strong>最早</strong>的消息开始读</td>
+</tr>
+<tr>
+<td><strong>latest</strong></td>
+<td>从<strong>最新</strong>（队尾）开始读，只消费新消息</td>
+</tr>
+<tr>
+<td><strong>none</strong></td>
+<td>没有 offset
+时<strong>抛异常</strong>（<code>NoOffsetForPartitionException</code>），由应用自己处理</td>
+</tr>
+</tbody>
+</table>
+<p>避免重复消费的需要 <strong>at-least-once + 消费端幂等</strong>。</p>
+<h3 id="kafka-怎么保证顺序分区数增加会怎样消费端多线程怎么保序">Kafka
+怎么保证顺序？分区数增加会怎样？消费端多线程怎么保序？</h3>
+<p>Kafka <strong>只保证单 Partition 内有序</strong>；生产端用 key
+把同一业务的消息路由到同一 Partition；<strong>增加分区会改变
+<code>hash(key) % partitionNum</code> 的结果</strong>，导致同一 key
+漂到新分区、顺序断裂；消费端多线程要按 key 串行化。</p>
+<p><strong>生产端保序</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 同一个 orderId 永远进同一个 partition</span></span><br><span class="line">ProducerRecord&lt;String, String&gt; record =</span><br><span class="line">        <span class="keyword">new</span> <span class="title class_">ProducerRecord</span>&lt;&gt;(<span class="string">&quot;order-events&quot;</span>, orderId, payload);</span><br></pre></td></tr></table></figure>
+<ul>
+<li>Kafka 默认用 <code>murmur2(key) % numPartitions</code> 选分区；key
+相同 → 分区相同 → 分区内有序。</li>
+<li>不指定 key
+时轮询/粘性分区，消息会散到不同分区，<strong>无序</strong>。</li>
+</ul>
+<p><strong>生产端还会破坏顺序的两个地方</strong></p>
+<ol type="1">
+<li><strong>重试</strong>：消息 A 发送失败进入重试，消息 B 成功，B
+先落盘。解决：<code>max.in.flight.requests.per.connection=1</code>，或开启<strong>幂等生产者</strong>（允许最多
+5 个 in-flight 且保序）。</li>
+<li><strong>多线程发送</strong>：多个线程同时发同一 key
+的消息，顺序取决于谁先拿到锁。解决：同一 key 固定到同一发送线程。</li>
+</ol>
+<p><strong>分区数增加的影响</strong></p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">原来：partition = hash(orderId) % 4</span><br><span class="line">扩容到 8 个分区后：partition = hash(orderId) % 8</span><br><span class="line">→ 同一个 orderId 可能从 partition 2 漂到 partition 6</span><br><span class="line">→ 扩容前后同一订单的消息落在不同分区，顺序断裂</span><br></pre></td></tr></table></figure>
+<ul>
+<li><strong>扩容分区会破坏 key → partition 的映射</strong>，这是 Kafka
+顺序性的一个硬伤。</li>
+<li>缓解：扩容时暂停生产/消费，等积压消费完再扩；或业务上接受扩容窗口内的乱序。</li>
+<li>更好就是<strong>一开始就把分区数规划够</strong>，避免频繁扩容。</li>
+</ul>
+<p><strong>消费端多线程保序</strong></p>
+<table>
+<colgroup>
+<col style="width: 21%">
+<col style="width: 42%">
+<col style="width: 36%">
+</colgroup>
+<thead>
+<tr>
+<th>方案</th>
+<th>做法</th>
+<th>优缺点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>单线程消费</strong></td>
+<td>一个消费者线程处理所有分区</td>
+<td>简单，但吞吐低</td>
+</tr>
+<tr>
+<td><strong>按分区单线程</strong></td>
+<td>每个分区一个消费线程</td>
+<td>分区内有序，分区间并行；线程数 = 分区数</td>
+</tr>
+<tr>
+<td><strong>按 key 哈希到固定线程</strong></td>
+<td>多线程消费，但同一 key 的消息进同一个内存队列/线程</td>
+<td>并行度高，实现复杂，要处理队列满、重启丢内存</td>
+</tr>
+</tbody>
+</table>
+<p>最常见的做法</p>
+<ul>
+<li>一个 Consumer 实例内，<strong>每个分区一个处理线程</strong>或按 key
+哈希到固定线程池。</li>
+<li>配合<strong>幂等</strong>，即使乱序也能保证最终结果正确。</li>
+</ul>
+<h2 id="消息队列实践开发场景相关">消息队列实践、开发场景相关</h2>
+<h3 id="mq-和-线程池异步-async-completablefuture-的边界在哪你项目里已经用了线程池为什么还需要-mq什么情况下你会在有线程池的基础上考虑使用-mq">MQ
+和 线程池异步 / <span class="citation" data-cites="Async">@Async</span>
+/ CompletableFuture 的边界在哪？你项目里已经用了线程池，为什么还需要
+MQ？什么情况下你会在有线程池的基础上考虑使用 MQ？</h3>
+<p>线程池解决的是 进程内、不要求可靠、不跨重启 的异步</p>
+<p>MQ 解决的是 跨进程、要可靠投递、要削峰、要重放 的异步</p>
+<p>所以说，<strong>进程内用线程池，跨服务高可靠才上 MQ</strong>。</p>
+<p>例如对于，外部 API
+调用慢，但调用结果不影响主流程的强一致，的情况，可以引入线程池，它们的任务在同一个
+JVM 内、可以接受丢失、不需要跨服务。线程池是最轻的异步解法。</p>
+<p>如果涉及到跨服务同时高可靠，削峰重放等流量控制，多消费者等，就需要上
+MQ 了</p>
+<h3 id="消息队列的-削峰填谷-容量怎么估算给你一个百万级数据-事件集中上报的场景你怎么定分区数消费者数队列长度">消息队列的
+削峰填谷 容量怎么估算？给你一个「百万级数据 +
+事件集中上报」的场景，你怎么定分区数/消费者数/队列长度？</h3>
+<h3 id="消息重复消费的根因有哪些从-mq-的角度如何解决幂等问题业务唯一键方案和-mq-的幂等是什么关系本地消息表等方案如果改成-mq-方案如何改">消息重复消费的根因有哪些？从
+MQ 的角度如何解决幂等问题？业务唯一键方案和 MQ
+的幂等是什么关系？本地消息表等方案如果改成 MQ 方案，如何改？</h3>
+<h3 id="先写库再发消息和先发消息再写库分别会出什么问题怎么保证数据库和-mq-的一致性">「先写库再发消息」和「先发消息再写库」分别会出什么问题？怎么保证数据库和
+MQ 的一致性？</h3>
+<h3 id="什么是-transactional-outbox它和-本地消息表-是什么关系怎么保证不重复不丢">什么是
+Transactional Outbox？它和 本地消息表
+是什么关系？怎么保证不重复、不丢？</h3>
+<h3 id="消费端幂等怎么设计唯一键去重表redis状态机分别放在哪一层">消费端幂等怎么设计？唯一键、去重表、Redis、状态机分别放在哪一层？</h3>
+<h3 id="消费失败怎么重试重试次数退避死信人工补偿怎么处理死信队列的消息最后怎么处理">消费失败怎么重试？重试次数、退避、死信、人工补偿怎么处理？死信队列的消息最后怎么处理？</h3>
+<h3 id="mq-的消息体设计要注意什么">MQ 的消息体设计要注意什么？</h3>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a target="_blank" rel="noopener" href="https://github.com/ergou10086">ErgouTree</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://ergou10086.github.io/posts/39155.html">https://ergou10086.github.io/posts/39155.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://ergou10086.github.io" target="_blank">ErgouTree's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E6%A1%86%E6%9E%B6%E7%9F%A5%E8%AF%86/">框架知识</a><a class="post-meta__tags" href="/tags/%E4%B8%AD%E9%97%B4%E4%BB%B6/">中间件</a><a class="post-meta__tags" href="/tags/%E5%AE%9E%E7%94%A8%E7%9F%A5%E8%AF%86/">实用知识</a><a class="post-meta__tags" href="/tags/JavaWeb/">JavaWeb</a><a class="post-meta__tags" href="/tags/%E9%9D%A2%E8%AF%95%E5%90%91/">面试向</a><a class="post-meta__tags" href="/tags/%E9%9D%A2%E8%AF%95%E9%A2%98/">面试题</a><a class="post-meta__tags" href="/tags/Spring-APMQ/">Spring APMQ</a><a class="post-meta__tags" href="/tags/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97/">消息队列</a><a class="post-meta__tags" href="/tags/RabbitMQ/">RabbitMQ</a><a class="post-meta__tags" href="/tags/Kafka/">Kafka</a></div><div class="post-share"><div class="addtoany"><div class="a2a_kit a2a_kit_size_32 a2a_default_style"><a class="a2a_button_facebook"></a><a class="a2a_button_twitter"></a><a class="a2a_button_wechat"></a><a class="a2a_button_sina_weibo"></a><a class="a2a_button_facebook_messenger"></a><a class="a2a_button_email"></a><a class="a2a_button_copy_link"></a><a class="a2a_dd" target="_blank" rel="noopener" href="https://www.addtoany.com/share"></a></div></div><script async="async" src="https://static.addtoany.com/menu/page.js"></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/posts/25810.html" title="Web实时消息推送的两种方案—WebSocket和SSE，从原理到落地"><img class="cover" src="/images/posts/cover_websocket.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">Web实时消息推送的两种方案—WebSocket和SSE，从原理到落地</div></div><div class="info-2"><div class="info-item-1">Web 实时消息推送的两种方案：WebSocket 与 SSE 在接触服务端消息主动推送的时候，做业务遇到需要一个”新消息提醒”、“订单状态变化”、“进度条实时更新”这种，其实第一反应是加一个定时器轮询接口。但是很明显，在你的业务压力不是很大的时候，这种方式会白白浪费很多宝贵的系统资源。。。因此，在一个事件完成之后，服务端主动推送消息是很有必要的。  从轮询到推送，实时消息到底难在哪 HTTP 的本质就不支持服务器主动说话 要理解实时推送难在哪，得先接受一个有点反直觉的事实：HTTP 从设计之初就不是为了”服务器主动找客户端”而生的。 在经典的 HTTP 请求响应模型里，通信永远是客户端发起的： 123456客户端                                      服务端  |                                           |  | ----------- 请求 (Request) -------------&gt; |  |                                    ...</div></div></div></a><a class="pagination-related" href="/posts/513.html" title="Netty part1—网络编程基础与Netty入门"><img class="cover" src="/images/posts/cover_netty1.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Netty part1—网络编程基础与Netty入门</div></div><div class="info-2"><div class="info-item-1">网络编程基础 何为网络编程 网络编程的核心，是让运行在不同机器或同一机器的进程能够相互通信、交换数据。Netty 本质上就是一个高度封装、高性能的网络编程框架 从最朴素的定义看，网络编程就是利用网络应用编程接口开发通信应用程序，实现两个或多个设备之间的信息交互。这里的 接口，在绝大多数场景下指的就是 Socket（套接字）。 Socket 可以理解为操作系统提供给应用程序的通信端点。它像文件一样被打开、读取、写入和关闭。应用程序把数据写入 Socket，由操作系统内核负责后续的协议封装和网络发送接收方则从自己的 Socket 中读出内核递上来的数据。 网络协议栈（TCP/IP）的复杂处理由内核完成，应用层只面对 Socket 这个抽象，这正是网络编程得以相对简单地进行的根本原因。 一次网络通信涉及两个基本角色：客户端发起请求，服务端监听并响应。 为了定位通信的双方，需要 IP 地址（找到哪台机器）和端口号（找到机器上的哪个进程）。 了解 Socket 和 Socket 的基本操作 要想解释清楚 Socket，首先要知道 TCP，要想知道...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/posts/1793.html" title="Spring Cloud part24—在微服务项目中实际使用Kafka的基本内容"><img class="cover" src="/images/posts/cover_jwt.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-11-02</div><div class="info-item-2">Spring Cloud part24—在微服务项目中实际使用Kafka的基本内容</div></div><div class="info-2"><div class="info-item-1">微服务项目内如何集成 Kafka 和其他组件要考虑的事情一样，还是涉及到在哪用，用给谁，如何配置的这三个问题 在 Spring Cloud 微服务项目中集成 Kafka，主要涉及生产者（发送消息）和消费者（接收消息）的实现，以及与 Spring Cloud 生态的适配（如服务发现、配置中心等） Spring创建了一个项目Spring-kafka，封装了Apache 的Kafka-client，用于在Spring项目里快速集成kafka。 依赖如下 1234567891011&lt;!-- Spring Kafka核心依赖 --&gt;&lt;dependency&gt;    &lt;groupId&gt;org.springframework.kafka&lt;/groupId&gt;    &lt;artifactId&gt;spring-kafka&lt;/artifactId&gt;&lt;/dependency&gt;&lt;!-- 可选：Spring Cloud Stream（如需通过Stream简化集成）...</div></div></div></a><a class="pagination-related" href="/posts/43512.html" title="Spring Boot 相关面试题整理—相关注解"><img class="cover" src="/images/posts/cover_face6.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-07</div><div class="info-item-2">Spring Boot 相关面试题整理—相关注解</div></div><div class="info-2"><div class="info-item-1">Spring Boot 框架相关注解 @Aspect注解的使用？如何定义切面和通知？结合 Spring 框架聊聊 @Aspect注解是 Spring AOP 中定义切面类的核心注解，需要配合@Component注册为 Bean。一个标准的切面类需要同时使用@Aspect和@Component两个注解  Spring AOP 基于代理机制，所以只有通过 Spring 容器调用的方法才能被拦截，这也是为什么我们要确保被拦截的类要注册为 Spring Bean 的原因。  切面定义通过在类上添加@Aspect实现，切点定义使用@Pointcut注解指定拦截规则，比如@Pointcut("execution(* com.example.service.*.*(..))")表示拦截 service 包下所有方法。  谈到 @Aspect 时，你需要明确 Spring AOP 和 AspectJ 的关系：Spring AOP 实际上借鉴了 AspectJ 的注解体系，包括 @Aspect、@Pointcut、@Before...</div></div></div></a><a class="pagination-related" href="/posts/12335.html" title="Spring Cloud part17—了解消息队列以及剖析消息队列的工作原理"><img class="cover" src="/images/posts/cover_tech1.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-07-30</div><div class="info-item-2">Spring Cloud part17—了解消息队列以及剖析消息队列的工作原理</div></div><div class="info-2"><div class="info-item-1">消息队列相关 什么是消息队列 MQ（Message Queue，消息队列）是一种基于 “存储 - 转发” 模式的通信中间件，核心功能是在...</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="gitalk-container"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/arp.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">ErgouTree</div><div class="author-info-description">I start a brand-new life with you.</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">359</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">222</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">118</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/ergou10086"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/ergou10086" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:zjm88822201@126.com" target="_blank" title="邮箱：zjm88822201@126.com"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a><a class="social-icon" href="https://space.bilibili.com/142045656" target="_blank" title="bilibili"><i class="fab fa-bilibili" style="color: #4a72be;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">作者长期陷入galgame和osu!maina4k中 祝他好运吧 对了 如果图片加载过慢 建议科学上网进行使用</div></div><div class="card-widget card-weather"><div class="item-headline"><i class="fas fa-cloud-sun"></i><span>天气如何？</span></div><div class="weather-widget"><div class="weather-loading"><i class="fas fa-spinner fa-spin"></i><span>正在获取天气…</span></div><div class="weather-error" style="display: none;"><i class="fas fa-triangle-exclamation"></i><span class="weather-error-text">天气加载失败</span><button class="weather-retry" type="button">重试</button></div><div class="weather-main" style="display: none;"><div class="weather-now"><div class="weather-now-left"><i class="weather-now-icon fas fa-cloud-sun"></i><div class="weather-now-temp"><span class="weather-temp-value">--</span><span class="weather-temp-unit">°C</span></div></div><div class="weather-now-right"><div class="weather-desc">--</div><div class="weather-city"><i class="fas fa-location-dot"></i><span class="weather-city-name">定位中</span></div></div></div><div class="weather-meta"><div class="weather-meta-item" title="体感温度"><i class="fas fa-temperature-half"></i><span class="weather-feels">--</span></div><div class="weather-meta-item" title="相对湿度"><i class="fas fa-droplet"></i><span class="weather-humidity">--</span></div><div class="weather-meta-item" title="风向风力"><i class="fas fa-wind"></i><span class="weather-wind">--</span></div></div><div class="weather-chart"><div class="weather-tabs"><button class="weather-tab is-active" type="button" data-range="hourly">未来24小时</button><button class="weather-tab" type="button" data-range="daily">未来7天</button></div><div class="weather-chart-wrap"><div class="weather-chart-canvas"></div><div class="weather-tooltip"></div></div></div><div class="weather-foot"><span class="weather-update" title="数据来源：Open-Meteo">更新中…</span><button class="weather-refresh" type="button" title="刷新天气" aria-label="刷新天气"><i class="fas fa-rotate-right"></i></button></div></div></div></div><div class="sticky_layout"></div><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E5%9F%BA%E7%A1%80"><span class="toc-number">1.</span> <span class="toc-text">消息队列基础</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E7%B3%BB%E7%BB%9F%E9%87%8C%E8%A6%81%E7%94%A8%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E8%AF%B7%E7%BB%93%E5%90%88%E8%B7%A8%E6%9C%8D%E5%8A%A1%E6%9C%80%E7%BB%88%E4%B8%80%E8%87%B4%E6%80%A7%E8%AF%B4%E8%AF%B4mq-%E8%A7%A3%E5%86%B3%E4%BA%86%E5%93%AA%E4%B8%80%E7%B1%BB%E9%97%AE%E9%A2%98%E5%BC%95%E5%85%A5-mq-%E4%BC%9A%E5%B8%A6%E6%9D%A5%E5%93%AA%E4%BA%9B%E6%96%B0%E9%97%AE%E9%A2%98%E4%BB%80%E4%B9%88%E5%9C%BA%E6%99%AF%E4%B8%8D%E8%AF%A5%E7%94%A8-mq"><span class="toc-number">1.1.</span> <span class="toc-text">为什么系统里要用消息队列？请结合「跨服务最终一致性」说说，MQ
+解决了哪一类问题。引入 MQ
+会带来哪些新问题？什么场景不该用 MQ？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#rabbitmqkafkarocketmq%E8%BF%99%E4%BA%9B%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E6%9C%89%E4%BB%80%E4%B9%88%E5%8C%BA%E5%88%AB%E4%BD%A0%E5%9C%A8%E5%BC%95%E5%85%A5mq%E7%9A%84%E6%97%B6%E5%80%99%E6%80%8E%E4%B9%88%E9%80%89rabbitmq-%E5%92%8C-kafka-%E7%9A%84%E6%9C%AC%E8%B4%A8%E5%B7%AE%E5%BC%82%E6%98%AF%E4%BB%80%E4%B9%88"><span class="toc-number">1.2.</span> <span class="toc-text">RabbitMQ、Kafka、RocketMQ，这些消息队列有什么区别？你在引入MQ的时候怎么选？RabbitMQ
+和 Kafka 的本质差异是什么？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF-push-%E5%92%8C-pull%E5%90%84%E6%9C%89%E4%BB%80%E4%B9%88%E9%97%AE%E9%A2%98kafka-%E4%B8%BA%E4%BB%80%E4%B9%88%E5%9D%9A%E6%8C%81-pullrabbitmq-%E7%9A%84-push-%E6%80%8E%E4%B9%88%E5%81%9A%E8%83%8C%E5%8E%8B"><span class="toc-number">1.3.</span> <span class="toc-text">什么是
+Push 和 Pull？各有什么问题？Kafka 为什么坚持 Pull？RabbitMQ 的 Push
+怎么做背压？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B6%88%E6%81%AF%E4%B8%8D%E4%B8%A2%E6%80%8E%E4%B9%88%E4%BF%9D%E8%AF%81%E8%AF%B7%E6%8C%89%E7%94%9F%E4%BA%A7%E7%AB%AFbroker%E6%B6%88%E8%B4%B9%E7%AB%AF%E4%B8%89%E6%AE%B5%E5%9B%9E%E7%AD%94"><span class="toc-number">1.4.</span> <span class="toc-text">消息不丢怎么保证？请按生产端、Broker、消费端三段回答。</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B6%88%E6%81%AF%E4%B8%8D%E9%87%8D%E6%80%8E%E4%B9%88%E4%BF%9D%E8%AF%81%E4%B8%BA%E4%BB%80%E4%B9%88%E5%B7%A5%E7%A8%8B%E4%B8%8A%E6%9B%B4%E5%B8%B8%E8%AF%B4-%E8%87%B3%E5%B0%91%E4%B8%80%E6%AC%A1-%E5%B9%82%E7%AD%89-%E8%80%8C%E4%B8%8D%E6%98%AF%E8%BF%BD%E6%B1%82-exactly-once"><span class="toc-number">1.5.</span> <span class="toc-text">消息不重怎么保证？为什么工程上更常说
+至少一次 + 幂等 而不是追求 exactly-once？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B6%88%E6%81%AF%E7%9A%84%E9%A1%BA%E5%BA%8F%E6%80%A7%E6%80%8E%E4%B9%88%E4%BF%9D%E8%AF%81%E5%85%A8%E5%B1%80%E6%9C%89%E5%BA%8F%E5%92%8C%E5%B1%80%E9%83%A8%E6%9C%89%E5%BA%8F%E6%80%8E%E4%B9%88%E5%8F%96%E8%88%8D"><span class="toc-number">1.6.</span> <span class="toc-text">消息的顺序性怎么保证？全局有序和局部有序怎么取舍？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BB%B6%E8%BF%9F%E6%B6%88%E6%81%AF%E5%92%8C%E5%AE%9A%E6%97%B6%E6%B6%88%E6%81%AF%E6%9C%89%E5%93%AA%E5%87%A0%E7%A7%8D%E5%AE%9E%E7%8E%B0%E5%90%84%E8%87%AA%E7%9A%84%E9%97%AE%E9%A2%98%E6%98%AF%E4%BB%80%E4%B9%88"><span class="toc-number">1.7.</span> <span class="toc-text">延迟消息和定时消息有哪几种实现？各自的问题是什么？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BA%BF%E4%B8%8A%E6%B6%88%E6%81%AF%E7%A7%AF%E5%8E%8B%E4%BA%86%E6%80%8E%E4%B9%88%E6%8E%92%E6%9F%A5%E6%80%8E%E4%B9%88%E5%A4%84%E7%90%86"><span class="toc-number">1.8.</span> <span class="toc-text">线上消息积压了，怎么排查、怎么处理？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E7%9A%84%E9%AB%98%E5%8F%AF%E7%94%A8%E6%98%AF%E6%80%8E%E4%B9%88%E5%81%9A%E7%9A%84rabbitmq-%E5%92%8C-kafka-%E7%9A%84%E5%89%AF%E6%9C%AC%E9%80%89%E4%B8%BE%E6%9C%BA%E5%88%B6%E6%9C%89%E4%BB%80%E4%B9%88%E4%B8%8D%E5%90%8C"><span class="toc-number">1.9.</span> <span class="toc-text">消息队列的高可用是怎么做的？RabbitMQ
+和 Kafka 的副本&#x2F;选举机制有什么不同？</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#rabbitmq"><span class="toc-number">2.</span> <span class="toc-text">RabbitMQ</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%94%BB%E4%B8%80%E4%B8%8B-rabbitmq-%E7%9A%84%E6%A0%B8%E5%BF%83%E6%A8%A1%E5%9E%8Bproducerexchangebindingqueueconsumerchannelvhost-%E5%90%84%E8%87%AA%E6%98%AF%E4%BB%80%E4%B9%88%E8%AE%B2%E8%A7%A3%E4%B8%80%E4%B8%8B%E6%A0%B8%E5%BF%83%E6%A8%A1%E5%9E%8B%E5%92%8C%E6%A0%B8%E5%BF%83%E8%A7%92%E8%89%B2"><span class="toc-number">2.1.</span> <span class="toc-text">画一下
+RabbitMQ
+的核心模型：Producer、Exchange、Binding、Queue、Consumer、Channel、vhost
+各自是什么？讲解一下核心模型和核心角色。</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9B%9B%E7%A7%8D-exchange-%E7%B1%BB%E5%9E%8Bdirect-fanout-topic-headers%E7%9A%84%E5%8C%BA%E5%88%AB%E5%90%84%E8%87%AA%E5%85%B8%E5%9E%8B%E5%9C%BA%E6%99%AF"><span class="toc-number">2.2.</span> <span class="toc-text">四种
+Exchange 类型（direct &#x2F; fanout &#x2F; topic &#x2F;
+headers）的区别？各自典型场景？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80%E6%9D%A1%E6%B6%88%E6%81%AF%E4%BB%8E-producer-%E5%88%B0-consumer-%E5%AE%8C%E6%95%B4%E7%BB%8F%E8%BF%87%E5%93%AA%E4%BA%9B%E6%AD%A5%E9%AA%A4%E5%93%AA%E5%87%A0%E6%AD%A5%E5%8F%AF%E8%83%BD%E5%87%BA%E7%8E%B0%E6%B6%88%E6%81%AF%E4%B8%A2%E5%A4%B1rabbitmq-%E6%80%8E%E4%B9%88%E4%BF%9D%E8%AF%81%E6%B6%88%E6%81%AF%E4%B8%8D%E4%B8%A2%E7%94%9F%E4%BA%A7%E7%AB%AFbroker%E6%B6%88%E8%B4%B9%E7%AB%AF%E5%88%86%E5%88%AB%E6%80%8E%E4%B9%88%E5%81%9A"><span class="toc-number">2.3.</span> <span class="toc-text">一条消息从
+Producer 到 Consumer 完整经过哪些步骤？哪几步可能出现消息丢失？RabbitMQ
+怎么保证消息不丢？生产端、Broker、消费端分别怎么做？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#publisher-confirm-%E5%92%8C%E4%BA%8B%E5%8A%A1txselecttxcommit%E6%9C%89%E4%BB%80%E4%B9%88%E5%8C%BA%E5%88%AB%E4%B8%BA%E4%BB%80%E4%B9%88%E7%94%9F%E4%BA%A7%E4%B8%8A%E6%9B%B4%E6%8E%A8%E8%8D%90-confirm"><span class="toc-number">2.4.</span> <span class="toc-text">publisher
+confirm 和事务（txSelect&#x2F;txCommit）有什么区别？为什么生产上更推荐
+confirm？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#mandatory-%E5%92%8C-publish-confirm-%E6%98%AF%E4%B8%80%E5%9B%9E%E4%BA%8B%E5%90%97%E6%B6%88%E6%81%AF%E8%B7%AF%E7%94%B1%E4%B8%8D%E5%88%B0%E9%98%9F%E5%88%97%E6%97%B6%E4%BD%A0%E6%80%8E%E4%B9%88%E7%9F%A5%E9%81%93"><span class="toc-number">2.5.</span> <span class="toc-text">mandatory
+和 publish confirm
+是一回事吗？消息路由不到队列时，你怎么知道？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%AD%BB%E4%BF%A1%E9%98%9F%E5%88%97dlx%E7%9A%84%E8%A7%A6%E5%8F%91%E6%9D%A1%E4%BB%B6%E6%9C%89%E5%93%AA%E4%BA%9B%E6%AD%BB%E4%BF%A1%E9%98%9F%E5%88%97%E9%80%9A%E5%B8%B8%E7%94%A8%E6%9D%A5%E5%81%9A%E4%BB%80%E4%B9%88"><span class="toc-number">2.6.</span> <span class="toc-text">死信队列（DLX）的触发条件有哪些？死信队列通常用来做什么？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#rabbitmq-%E5%AE%9E%E7%8E%B0%E5%BB%B6%E8%BF%9F%E9%98%9F%E5%88%97%E7%9A%84%E4%B8%A4%E7%A7%8D%E6%96%B9%E5%BC%8Fttl-dlx-%E7%9A%84%E9%98%9F%E5%A4%B4%E9%98%BB%E5%A1%9E%E6%98%AF%E4%BB%80%E4%B9%88"><span class="toc-number">2.7.</span> <span class="toc-text">RabbitMQ
+实现延迟队列的两种方式？TTL + DLX 的「队头阻塞」是什么？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#rabbitmq-%E8%83%BD%E4%BF%9D%E8%AF%81%E9%A1%BA%E5%BA%8F%E5%90%97%E5%A4%9A%E4%B8%AA%E6%B6%88%E8%B4%B9%E8%80%85%E6%97%B6%E6%80%8E%E4%B9%88%E4%BF%9D%E8%AF%81%E5%90%8C%E4%B8%80%E4%B8%9A%E5%8A%A1%E7%9A%84%E6%B6%88%E6%81%AF%E6%9C%89%E5%BA%8F"><span class="toc-number">2.8.</span> <span class="toc-text">RabbitMQ
+能保证顺序吗？多个消费者时怎么保证同一业务的消息有序？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#spring-amqp-%E9%87%8C-rabbitlistener-%E7%9A%84-ack-%E6%A8%A1%E5%BC%8F%E6%80%8E%E4%B9%88%E9%85%8Dauto-%E5%92%8C-manual-%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="toc-number">2.9.</span> <span class="toc-text">Spring
+AMQP 里 @RabbitListener 的 ack 模式怎么配？AUTO 和 MANUAL
+的区别？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B6%88%E6%81%AF%E4%BD%93%E6%80%8E%E4%B9%88%E5%BA%8F%E5%88%97%E5%8C%96%E4%B8%BA%E4%BB%80%E4%B9%88%E6%8E%A8%E8%8D%90-json-%E8%80%8C%E4%B8%8D%E6%98%AF-java-%E5%8E%9F%E7%94%9F%E5%BA%8F%E5%88%97%E5%8C%96%E6%B6%88%E8%B4%B9%E7%AB%AF-dto-%E5%8F%98%E6%9B%B4%E6%80%8E%E4%B9%88%E5%85%BC%E5%AE%B9"><span class="toc-number">2.10.</span> <span class="toc-text">消息体怎么序列化？为什么推荐
+JSON 而不是 Java 原生序列化？消费端 DTO 变更怎么兼容？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#prefetchqos%E6%98%AF%E4%BB%80%E4%B9%88%E8%AE%BE%E5%A4%A7%E4%BA%86%E8%AE%BE%E5%B0%8F%E4%BA%86%E5%88%86%E5%88%AB%E6%9C%89%E4%BB%80%E4%B9%88%E9%97%AE%E9%A2%98quorum-queue-%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%8D%E6%94%AF%E6%8C%81-global-qos"><span class="toc-number">2.11.</span> <span class="toc-text">prefetch（QoS）是什么？设大了&#x2F;设小了分别有什么问题？Quorum
+Queue 为什么不支持 global QoS？</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#kafka"><span class="toc-number">3.</span> <span class="toc-text">Kafka</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#kafka-%E4%B8%BA%E4%BB%80%E4%B9%88%E5%BC%83%E7%94%A8-zookeeperkraft-%E6%98%AF%E4%BB%80%E4%B9%88%E7%AE%97%E6%B3%95%E8%83%BD%E8%AE%B2%E8%A7%A3%E4%B8%80%E4%B8%8B%E5%90%97kraft-%E8%A7%A3%E5%86%B3%E4%BA%86%E4%BB%80%E4%B9%88%E9%97%AE%E9%A2%98"><span class="toc-number">3.1.</span> <span class="toc-text">Kafka
+为什么弃用 ZooKeeper？KRaft 是什么算法，能讲解一下吗？KRaft
+解决了什么问题？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%94%BB%E4%B8%80%E4%B8%8B-kafka-%E7%9A%84%E6%9E%B6%E6%9E%84brokertopicpartitionreplicaleaderfollowerisrhwleooffset-%E7%9A%84%E5%85%B3%E7%B3%BB%E8%AE%B2%E8%A7%A3%E4%B8%80%E4%B8%8B-kafka-%E7%9A%84%E6%9E%B6%E6%9E%84%E5%86%85%E5%AE%B9"><span class="toc-number">3.2.</span> <span class="toc-text">画一下
+Kafka
+的架构：Broker、Topic、Partition、Replica、Leader&#x2F;Follower、ISR、HW、LEO、Offset
+的关系。讲解一下 Kafka 的架构内容。</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#kafka-%E4%B8%BA%E4%BB%80%E4%B9%88%E5%90%9E%E5%90%90%E9%AB%98%E6%B6%88%E6%81%AF%E5%9C%A8%E7%A3%81%E7%9B%98%E4%B8%8A%E6%80%8E%E4%B9%88%E5%AD%98%E6%80%8E%E4%B9%88%E6%A0%B9%E6%8D%AE-offset-%E6%89%BE%E5%88%B0%E6%B6%88%E6%81%AF"><span class="toc-number">3.3.</span> <span class="toc-text">Kafka
+为什么吞吐高？消息在磁盘上怎么存？怎么根据 offset 找到消息？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#kafka-%E6%80%8E%E4%B9%88%E4%BF%9D%E8%AF%81%E6%B6%88%E6%81%AF%E4%B8%8D%E4%B8%A2acksretriesmin.insync.replicasreplication.factor-%E6%80%8E%E4%B9%88%E9%85%8D"><span class="toc-number">3.4.</span> <span class="toc-text">Kafka
+怎么保证消息不丢？acks、retries、min.insync.replicas、replication.factor
+怎么配？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#kafka-%E7%9A%84%E5%B9%82%E7%AD%89%E7%94%9F%E4%BA%A7%E8%80%85%E6%80%8E%E4%B9%88%E5%AE%9E%E7%8E%B0%E7%9A%84pidepochsequence-number-%E5%90%84%E6%98%AF%E4%BB%80%E4%B9%88%E5%AE%83%E7%9A%84%E8%BE%B9%E7%95%8C%E5%9C%A8%E5%93%AA"><span class="toc-number">3.5.</span> <span class="toc-text">Kafka
+的幂等生产者怎么实现的？PID、epoch、sequence number
+各是什么？它的边界在哪？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#kafka-%E4%BA%8B%E5%8A%A1%E6%B6%88%E6%81%AF%E6%80%8E%E4%B9%88%E5%AE%9E%E7%8E%B0isolation.levelread_committed-%E7%9A%84%E4%BD%9C%E7%94%A8"><span class="toc-number">3.6.</span> <span class="toc-text">Kafka
+事务消息怎么实现？isolation.level&#x3D;read_committed
+的作用？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B6%88%E8%B4%B9%E8%80%85%E7%BB%84%E7%9A%84%E5%88%86%E9%85%8D%E6%9C%BA%E5%88%B6%E4%B8%80%E4%B8%AA-partition-%E8%83%BD%E8%A2%AB%E5%90%8C%E7%BB%84%E5%87%A0%E4%B8%AA%E6%B6%88%E8%B4%B9%E8%80%85%E6%B6%88%E8%B4%B9rebalance-%E7%9A%84%E8%A7%A6%E5%8F%91%E6%9D%A1%E4%BB%B6%E5%92%8C%E5%8D%B1%E5%AE%B3"><span class="toc-number">3.7.</span> <span class="toc-text">消费者组的分配机制？一个
+Partition 能被同组几个消费者消费？Rebalance 的触发条件和危害？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#offset-%E8%87%AA%E5%8A%A8%E6%8F%90%E4%BA%A4%E5%92%8C%E6%89%8B%E5%8A%A8%E6%8F%90%E4%BA%A4%E7%9A%84%E5%8C%BA%E5%88%ABcommitsync-%E5%92%8C-commitasync-%E6%80%8E%E4%B9%88%E9%80%89%E6%80%8E%E4%B9%88%E9%81%BF%E5%85%8D%E9%87%8D%E5%A4%8D%E6%B6%88%E8%B4%B9-auto.offset.reset-%E7%9A%84-earliestlatestnone-%E5%88%86%E5%88%AB%E4%BB%80%E4%B9%88%E8%A1%8C%E4%B8%BA%E6%B6%88%E8%B4%B9%E8%80%85%E7%BB%84%E7%AC%AC%E4%B8%80%E6%AC%A1%E5%90%AF%E5%8A%A8offset-%E8%BF%87%E6%9C%9F%E6%97%B6%E4%BC%9A%E6%80%8E%E6%A0%B7"><span class="toc-number">3.8.</span> <span class="toc-text">Offset
+自动提交和手动提交的区别？commitSync 和
+commitAsync 怎么选？怎么避免重复消费？
+auto.offset.reset 的 earliest&#x2F;latest&#x2F;none
+分别什么行为？消费者组第一次启动、offset 过期时会怎样？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#kafka-%E6%80%8E%E4%B9%88%E4%BF%9D%E8%AF%81%E9%A1%BA%E5%BA%8F%E5%88%86%E5%8C%BA%E6%95%B0%E5%A2%9E%E5%8A%A0%E4%BC%9A%E6%80%8E%E6%A0%B7%E6%B6%88%E8%B4%B9%E7%AB%AF%E5%A4%9A%E7%BA%BF%E7%A8%8B%E6%80%8E%E4%B9%88%E4%BF%9D%E5%BA%8F"><span class="toc-number">3.9.</span> <span class="toc-text">Kafka
+怎么保证顺序？分区数增加会怎样？消费端多线程怎么保序？</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E5%AE%9E%E8%B7%B5%E5%BC%80%E5%8F%91%E5%9C%BA%E6%99%AF%E7%9B%B8%E5%85%B3"><span class="toc-number">4.</span> <span class="toc-text">消息队列实践、开发场景相关</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#mq-%E5%92%8C-%E7%BA%BF%E7%A8%8B%E6%B1%A0%E5%BC%82%E6%AD%A5-async-completablefuture-%E7%9A%84%E8%BE%B9%E7%95%8C%E5%9C%A8%E5%93%AA%E4%BD%A0%E9%A1%B9%E7%9B%AE%E9%87%8C%E5%B7%B2%E7%BB%8F%E7%94%A8%E4%BA%86%E7%BA%BF%E7%A8%8B%E6%B1%A0%E4%B8%BA%E4%BB%80%E4%B9%88%E8%BF%98%E9%9C%80%E8%A6%81-mq%E4%BB%80%E4%B9%88%E6%83%85%E5%86%B5%E4%B8%8B%E4%BD%A0%E4%BC%9A%E5%9C%A8%E6%9C%89%E7%BA%BF%E7%A8%8B%E6%B1%A0%E7%9A%84%E5%9F%BA%E7%A1%80%E4%B8%8A%E8%80%83%E8%99%91%E4%BD%BF%E7%94%A8-mq"><span class="toc-number">4.1.</span> <span class="toc-text">MQ
+和 线程池异步 &#x2F; @Async
+&#x2F; CompletableFuture 的边界在哪？你项目里已经用了线程池，为什么还需要
+MQ？什么情况下你会在有线程池的基础上考虑使用 MQ？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E7%9A%84-%E5%89%8A%E5%B3%B0%E5%A1%AB%E8%B0%B7-%E5%AE%B9%E9%87%8F%E6%80%8E%E4%B9%88%E4%BC%B0%E7%AE%97%E7%BB%99%E4%BD%A0%E4%B8%80%E4%B8%AA%E7%99%BE%E4%B8%87%E7%BA%A7%E6%95%B0%E6%8D%AE-%E4%BA%8B%E4%BB%B6%E9%9B%86%E4%B8%AD%E4%B8%8A%E6%8A%A5%E7%9A%84%E5%9C%BA%E6%99%AF%E4%BD%A0%E6%80%8E%E4%B9%88%E5%AE%9A%E5%88%86%E5%8C%BA%E6%95%B0%E6%B6%88%E8%B4%B9%E8%80%85%E6%95%B0%E9%98%9F%E5%88%97%E9%95%BF%E5%BA%A6"><span class="toc-number">4.2.</span> <span class="toc-text">消息队列的
+削峰填谷 容量怎么估算？给你一个「百万级数据 +
+事件集中上报」的场景，你怎么定分区数&#x2F;消费者数&#x2F;队列长度？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B6%88%E6%81%AF%E9%87%8D%E5%A4%8D%E6%B6%88%E8%B4%B9%E7%9A%84%E6%A0%B9%E5%9B%A0%E6%9C%89%E5%93%AA%E4%BA%9B%E4%BB%8E-mq-%E7%9A%84%E8%A7%92%E5%BA%A6%E5%A6%82%E4%BD%95%E8%A7%A3%E5%86%B3%E5%B9%82%E7%AD%89%E9%97%AE%E9%A2%98%E4%B8%9A%E5%8A%A1%E5%94%AF%E4%B8%80%E9%94%AE%E6%96%B9%E6%A1%88%E5%92%8C-mq-%E7%9A%84%E5%B9%82%E7%AD%89%E6%98%AF%E4%BB%80%E4%B9%88%E5%85%B3%E7%B3%BB%E6%9C%AC%E5%9C%B0%E6%B6%88%E6%81%AF%E8%A1%A8%E7%AD%89%E6%96%B9%E6%A1%88%E5%A6%82%E6%9E%9C%E6%94%B9%E6%88%90-mq-%E6%96%B9%E6%A1%88%E5%A6%82%E4%BD%95%E6%94%B9"><span class="toc-number">4.3.</span> <span class="toc-text">消息重复消费的根因有哪些？从
+MQ 的角度如何解决幂等问题？业务唯一键方案和 MQ
+的幂等是什么关系？本地消息表等方案如果改成 MQ 方案，如何改？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%88%E5%86%99%E5%BA%93%E5%86%8D%E5%8F%91%E6%B6%88%E6%81%AF%E5%92%8C%E5%85%88%E5%8F%91%E6%B6%88%E6%81%AF%E5%86%8D%E5%86%99%E5%BA%93%E5%88%86%E5%88%AB%E4%BC%9A%E5%87%BA%E4%BB%80%E4%B9%88%E9%97%AE%E9%A2%98%E6%80%8E%E4%B9%88%E4%BF%9D%E8%AF%81%E6%95%B0%E6%8D%AE%E5%BA%93%E5%92%8C-mq-%E7%9A%84%E4%B8%80%E8%87%B4%E6%80%A7"><span class="toc-number">4.4.</span> <span class="toc-text">「先写库再发消息」和「先发消息再写库」分别会出什么问题？怎么保证数据库和
+MQ 的一致性？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF-transactional-outbox%E5%AE%83%E5%92%8C-%E6%9C%AC%E5%9C%B0%E6%B6%88%E6%81%AF%E8%A1%A8-%E6%98%AF%E4%BB%80%E4%B9%88%E5%85%B3%E7%B3%BB%E6%80%8E%E4%B9%88%E4%BF%9D%E8%AF%81%E4%B8%8D%E9%87%8D%E5%A4%8D%E4%B8%8D%E4%B8%A2"><span class="toc-number">4.5.</span> <span class="toc-text">什么是
+Transactional Outbox？它和 本地消息表
+是什么关系？怎么保证不重复、不丢？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B6%88%E8%B4%B9%E7%AB%AF%E5%B9%82%E7%AD%89%E6%80%8E%E4%B9%88%E8%AE%BE%E8%AE%A1%E5%94%AF%E4%B8%80%E9%94%AE%E5%8E%BB%E9%87%8D%E8%A1%A8redis%E7%8A%B6%E6%80%81%E6%9C%BA%E5%88%86%E5%88%AB%E6%94%BE%E5%9C%A8%E5%93%AA%E4%B8%80%E5%B1%82"><span class="toc-number">4.6.</span> <span class="toc-text">消费端幂等怎么设计？唯一键、去重表、Redis、状态机分别放在哪一层？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B6%88%E8%B4%B9%E5%A4%B1%E8%B4%A5%E6%80%8E%E4%B9%88%E9%87%8D%E8%AF%95%E9%87%8D%E8%AF%95%E6%AC%A1%E6%95%B0%E9%80%80%E9%81%BF%E6%AD%BB%E4%BF%A1%E4%BA%BA%E5%B7%A5%E8%A1%A5%E5%81%BF%E6%80%8E%E4%B9%88%E5%A4%84%E7%90%86%E6%AD%BB%E4%BF%A1%E9%98%9F%E5%88%97%E7%9A%84%E6%B6%88%E6%81%AF%E6%9C%80%E5%90%8E%E6%80%8E%E4%B9%88%E5%A4%84%E7%90%86"><span class="toc-number">4.7.</span> <span class="toc-text">消费失败怎么重试？重试次数、退避、死信、人工补偿怎么处理？死信队列的消息最后怎么处理？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#mq-%E7%9A%84%E6%B6%88%E6%81%AF%E4%BD%93%E8%AE%BE%E8%AE%A1%E8%A6%81%E6%B3%A8%E6%84%8F%E4%BB%80%E4%B9%88"><span class="toc-number">4.8.</span> <span class="toc-text">MQ 的消息体设计要注意什么？</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/513.html" title="Netty part1—网络编程基础与Netty入门"><img src="/images/posts/cover_netty1.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Netty part1—网络编程基础与Netty入门"/></a><div class="content"><a class="title" href="/posts/513.html" title="Netty part1—网络编程基础与Netty入门">Netty part1—网络编程基础与Netty入门</a><time datetime="2026-10-24T10:12:10.000Z" title="发表于 2026-10-24 18:12:10">2026-10-24</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/39155.html" title="RabbitMQ、Kafka等消息队列相关面试题和面试知识点讲解"><img src="/images/posts/cover_mq2.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="RabbitMQ、Kafka等消息队列相关面试题和面试知识点讲解"/></a><div class="content"><a class="title" href="/posts/39155.html" title="RabbitMQ、Kafka等消息队列相关面试题和面试知识点讲解">RabbitMQ、Kafka等消息队列相关面试题和面试知识点讲解</a><time datetime="2026-10-23T11:56:22.000Z" title="发表于 2026-10-23 19:56:22">2026-10-23</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/25810.html" title="Web实时消息推送的两种方案—WebSocket和SSE，从原理到落地"><img src="/images/posts/cover_websocket.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Web实时消息推送的两种方案—WebSocket和SSE，从原理到落地"/></a><div class="content"><a class="title" href="/posts/25810.html" title="Web实时消息推送的两种方案—WebSocket和SSE，从原理到落地">Web实时消息推送的两种方案—WebSocket和SSE，从原理到落地</a><time datetime="2026-10-15T08:23:58.000Z" title="发表于 2026-10-15 16:23:58">2026-10-15</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/24369.html" title="SpringDataJPA，Hibernate，MyBatis常见面试题汇总"><div style="background: /images/posts/"></div></a><div class="content"><a class="title" href="/posts/24369.html" title="SpringDataJPA，Hibernate，MyBatis常见面试题汇总">SpringDataJPA，Hibernate，MyBatis常见面试题汇总</a><time datetime="2026-10-13T11:25:08.000Z" title="发表于 2026-10-13 19:25:08">2026-10-13</time></div></div></div></div></div></main><div class="fps-display"><span id="fps">FPS: 60</span></div><footer id="footer" style="background-image: url(/images/posts/cover_mq2.jpg);"><div id="footer-wrap"><div class="copyright">&copy;2024 - 2026 By ErgouTree</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text" data-runtime-start="2025-03-19T00:00:00+08:00">忘れたくない思い、ありますか？ <br><span id="realtime_duration" style="font-family: monospace;"></span><br><a href="https://icp.gov.moe/?keyword=20257009" target="_blank">萌ICP备20257009号</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><a class="icon-V hidden" onclick="switchNightMode()" title="日间和夜间模式切换"><svg width="25" height="25" viewBox="0 0 1024 1024"><use id="modeicon" xlink:href="#icon-moon"></use></svg></a><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="chat-btn" type="button" title="聊天" style="display:none"><i class="fas fa-comment"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (true) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script><script>(() => {
+  const applyThemeDefaultsConfig = theme => {
+    if (theme === 'dark-mode') {
+      Chart.defaults.color = "rgba(255, 255, 255, 0.8)"
+      Chart.defaults.borderColor = "rgba(255, 255, 255, 0.2)"
+      Chart.defaults.scale.ticks.backdropColor = "transparent"
+    } else {
+      Chart.defaults.color = "rgba(0, 0, 0, 0.8)"
+      Chart.defaults.borderColor = "rgba(0, 0, 0, 0.1)"
+      Chart.defaults.scale.ticks.backdropColor = "transparent"
+    }
+  }
+
+  // Recursively traverse the config object and automatically apply theme-specific color schemes
+  const applyThemeConfig = (obj, theme) => {
+    if (typeof obj !== 'object' || obj === null) return
+
+    Object.keys(obj).forEach(key => {
+      const value = obj[key]
+      // If the property is an object and has theme-specific options, apply them
+      if (typeof value === 'object' && value !== null) {
+        if (value[theme]) {
+          obj[key] = value[theme] // Apply the value for the current theme
+        } else {
+          // Recursively process child objects
+          applyThemeConfig(value, theme)
+        }
+      }
+    })
+  }
+
+  const runChartJS = ele => {
+    window.loadChartJS = true
+
+    Array.from(ele).forEach((item, index) => {
+      const chartSrc = item.firstElementChild
+      const chartID = item.getAttribute('data-chartjs-id') || ('chartjs-' + index) // Use custom ID or default ID
+      const width = item.getAttribute('data-width')
+      const existingCanvas = document.getElementById(chartID)
+
+      // If a canvas already exists, remove it to avoid rendering duplicates
+      if (existingCanvas) {
+          existingCanvas.parentNode.remove()
+      }
+
+      const chartDefinition = chartSrc.textContent
+      const canvas = document.createElement('canvas')
+      canvas.id = chartID
+
+      const div = document.createElement('div')
+      div.className = 'chartjs-wrap'
+
+      if (width) {
+        div.style.width = width
+      }
+
+      div.appendChild(canvas)
+      chartSrc.insertAdjacentElement('afterend', div)
+
+      const ctx = document.getElementById(chartID).getContext('2d')
+
+      const config = JSON.parse(chartDefinition)
+
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark-mode' : 'light-mode'
+
+      // Set default styles (initial setup)
+      applyThemeDefaultsConfig(theme)
+
+      // Automatically traverse the config and apply dual-mode color schemes
+      applyThemeConfig(config, theme)
+
+      new Chart(ctx, config)
+    })
+  }
+
+  const loadChartJS = () => {
+    const chartJSEle = document.querySelectorAll('#article-container .chartjs-container')
+    if (chartJSEle.length === 0) return
+
+    window.loadChartJS ? runChartJS(chartJSEle) : btf.getScript('https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.min.js').then(() => runChartJS(chartJSEle))
+  }
+
+  // Listen for theme change events
+  btf.addGlobalFn('themeChange', loadChartJS, 'chartjs')
+  btf.addGlobalFn('encrypt', loadChartJS, 'chartjs')
+
+  window.pjax ? loadChartJS() : document.addEventListener('DOMContentLoaded', loadChartJS)
+})()</script><script>(function() {
+  const abcjsInit = function() {
+    const abcjsFn = function() {
+      setTimeout(function() {
+        const sheets = document.querySelectorAll(".abc-music-sheet")
+        for (let i = 0; i < sheets.length; i++) {
+          const ele = sheets[i]
+          if (ele.children.length > 0) continue
+
+          // Parse parameters from data-params attribute
+          let params = {}
+          const dp = ele.getAttribute("data-params")
+          if (dp) {
+            try {
+              params = JSON.parse(dp)
+            } catch (e) {
+              console.error("Failed to parse data-params:", e)
+            }
+          }
+
+          // Merge parsed parameters with the responsive option
+          // Ensures params content appears before responsive
+          const options = { ...params, responsive: "resize" }
+
+          // Render the music score using ABCJS.renderAbc
+          ABCJS.renderAbc(ele, ele.innerHTML, options)
+        }
+      }, 100)
+    }
+
+    if (typeof ABCJS === "object") {
+      abcjsFn()
+    } else {
+      btf.getScript("https://cdn.jsdelivr.net/npm/abcjs/dist/abcjs-basic-min.min.js").then(abcjsFn)
+    }
+  }
+
+  if (window.pjax) {
+    abcjsInit()
+  } else {
+    window.addEventListener("load", abcjsInit)
+  }
+
+  btf.addGlobalFn("encrypt", abcjsInit, "abcjs")
+})()</script><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = {"labels":["Gitalk","Comment"],"createIssueManually":false,"distractionFreeMode":false}
+
+  const commentCount = n => {
+    const isCommentCount = document.querySelector('#post-meta .gitalk-comment-count')
+    if (isCommentCount) {
+      isCommentCount.textContent= n
+    }
+  }
+
+  const initGitalk = (el, path) => {
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGitalk = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+
+    const gitalk = new Gitalk({
+      clientID: 'Ov23li3vDQANiUddL4XB',
+      clientSecret: '5c9a56d02995340fca117809cd414662aadce6ff',
+      repo: 'HexoComment',
+      owner: 'ergou10086',
+      admin: ['ergou10086'],
+      updateCountCallback: commentCount,
+      ...option,
+      id: isShuoshuo ? path : (option && option.id) || '23ee7f4607de983d32df77d9f3a1d6e8'
+    })
+
+    gitalk.render('gitalk-container')
+  }
+
+  const loadGitalk = async(el, path) => {
+    if (typeof Gitalk === 'function') initGitalk(el, path)
+    else {
+      await btf.getCSS('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.css')
+      await btf.getScript('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.js')
+      initGitalk(el, path)
+    }
+  }
+
+  if (isShuoshuo) {
+    'Gitalk' === 'Gitalk'
+      ? window.shuoshuoComment = { loadComment: loadGitalk }
+      : window.loadOtherComment = loadGitalk
+    return
+  }
+
+  if ('Gitalk' === 'Gitalk' || !false) {
+    if (false) btf.loadComment(document.getElementById('gitalk-container'), loadGitalk)
+    else loadGitalk()
+  } else {
+    window.loadOtherComment = loadGitalk
+  }
+})()</script></div><div class="aplayer no-destroy" data-id="13587761608" data-server="netease" data-type="playlist" data-fixed="true" data-autoplay="false" data-lrcType="-1"> </div><script src="https://cdn.jsdelivr.net/npm/abcjs@7.1.2/dist/abcjs-basic-min.js"></script><script src="/js/sun_moon.js" async></script><script src="/scripts/realtime.js"></script><script src="/scripts/random.js"></script><script src="/scripts/weather.js"></script><script>if(window.location.pathname.includes('/viewpoint/')){function loadViewpointScripts(){var loadScript=function(src,callback){var s=document.createElement('script');s.src=src;s.async=false;s.defer=false;s.onload=function(){console.log('脚本加载成功:',src);setTimeout(function(){if(callback)callback();},100);};s.onerror=function(){console.error('脚本加载失败:',src);setTimeout(function(){if(callback)callback();},100);};document.body.appendChild(s);};loadScript('/scripts/viewpoint/math.js',function(){console.log('math.js 加载完成, math:',typeof math);loadScript('/scripts/viewpoint/katex.min.js',function(){console.log('katex.min.js 加载完成, katex:',typeof katex);loadScript('/scripts/viewpoint/sweetalert2@11.js',function(){console.log('sweetalert2@11.js 加载完成, Swal:',typeof Swal,'Sweetalert2:',typeof Sweetalert2);if(typeof Swal==='undefined'&&typeof Sweetalert2!=='undefined'){window.Swal=window.Sweetalert2;console.log('已设置 Swal 别名');}loadScript('/scripts/viewpoint/main.js',function(){console.log('Viewpoint 页面所有脚本加载完成');});});});});}if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',loadViewpointScripts);}else{loadViewpointScripts();}}</script><script>if(window.location.pathname.includes('/littleGame/')){function loadLittleGameScripts(){var load=function(src,cb){var s=document.createElement('script');s.src=src;s.async=false;s.defer=false;s.onload=function(){if(cb)cb();};document.body.appendChild(s);};load('/scripts/littleGame/2048.js',function(){load('/scripts/littleGame/extra-games.js');});}if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',loadLittleGameScripts);}else{loadLittleGameScripts();}}</script><script defer="defer" id="ribbon" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-ribbon.min.js" size="150" alpha="0.6" zIndex="-1" mobile="null" data-click="true"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = false;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><script id="click-heart" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/click-heart.min.js" async="async" mobile="false"></script><script>(() => {
+  window.ChatraID = '4bzb546NSBoJcrNyu'
+  window.Chatra = window.Chatra || function() {
+    (window.Chatra.q = window.Chatra.q || []).push(arguments)
+  }
+
+  btf.getScript('https://call.chatra.io/chatra.js').then(() => {
+    const isChatBtn = true
+    const isChatHideShow = true
+
+    if (isChatBtn) {
+      const close = () => {
+        Chatra('minimizeWidget')
+        Chatra('hide')
+      }
+
+      const open = () => {
+        Chatra('openChat', true)
+        Chatra('show')
+      }
+
+      window.ChatraSetup = { startHidden: true }
+    
+      window.chatBtnFn = () => document.getElementById('chatra').classList.contains('chatra--expanded') ? close() : open()
+
+      document.getElementById('chat-btn').style.display = 'block'
+    } else if (isChatHideShow) {
+      window.chatBtn = {
+        hide: () => Chatra('hide'),
+        show: () => Chatra('show')
+      }
+    }
+  })
+})()</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/metingjs/dist/Meting.min.js"></script><script>(() => {
+  const destroyAplayer = () => {
+    if (window.aplayers) {
+      for (let i = 0; i < window.aplayers.length; i++) {
+        if (!window.aplayers[i].options.fixed) {
+          window.aplayers[i].destroy()
+        }
+      }
+    }
+  }
+
+  const runMetingJS = () => {
+    typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+  }
+
+  btf.addGlobalFn('pjaxSend', destroyAplayer, 'destroyAplayer')
+  btf.addGlobalFn('pjaxComplete', loadMeting, 'runMetingJS')
+})()</script><script src="https://cdn.jsdelivr.net/npm/pjax/pjax.min.js"></script><script>(() => {
+  const pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+  window.pjax = new Pjax({
+    elements: 'a:not([target="_blank"]):not([href="/music/"]):not([href="/viewpoint/"])',
+    selectors: pjaxSelectors,
+    cacheBust: false,
+    analytics: false,
+    scrollRestoration: false
+  })
+
+  const triggerPjaxFn = (val) => {
+    if (!val) return
+    Object.values(val).forEach(fn => fn())
+  }
+
+  document.addEventListener('pjax:send', () => {
+    // removeEventListener
+    btf.removeGlobalFnEvent('pjaxSendOnce')
+    btf.removeGlobalFnEvent('themeChange')
+
+    // reset readmode
+    const $bodyClassList = document.body.classList
+    if ($bodyClassList.contains('read-mode')) $bodyClassList.remove('read-mode')
+
+    triggerPjaxFn(window.globalFn.pjaxSend)
+  })
+
+  document.addEventListener('pjax:complete', () => {
+    btf.removeGlobalFnEvent('pjaxCompleteOnce')
+    document.querySelectorAll('script[data-pjax]').forEach(item => {
+      const newScript = document.createElement('script')
+      const content = item.text || item.textContent || item.innerHTML || ""
+      Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+      newScript.appendChild(document.createTextNode(content))
+      item.parentNode.replaceChild(newScript, item)
+    })
+
+    triggerPjaxFn(window.globalFn.pjaxComplete)
+  })
+
+  document.addEventListener('pjax:error', e => {
+    if (e.request.status === 404) {
+      const usePjax = true
+      true 
+        ? (usePjax ? pjax.loadUrl('/404.html') : window.location.href = '/404.html')
+        : window.location.href = e.request.responseURL
+    }
+  })
+})()</script><script src="/js/fps-display.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><!-- hexo injector body_end start --><script data-pjax>
+  function butterfly_swiper_injector_config(){
+    var parent_div_git = document.getElementById('recent-posts');
+    var item_html = '<div class="recent-post-item" style="height: auto;width: 100%"><div class="blog-slider swiper-container-fade swiper-container-horizontal" id="swiper_container"><div class="blog-slider__wrp swiper-wrapper" style="transition-duration: 0ms;"><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_database.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-14</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt="">MySQL part2——结构化查询语言SQL</a><div class="blog-slider__text">SQL基本很常用的语句都在这里了，本质上是当初为了应付数据库考试整理的，后来发现还蛮有用的很方便查常用的语句</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java4.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-22</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt="">SpringBoot part0?INF-SpringBoot这个框架都需要学习什么</a><div class="blog-slider__text">主要围绕Spring Boot中重要知识来简洁或详细的说明，其中部分不够完全，持续更新</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java11.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-15</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt="">关于Lombok在高版本IDEA中注解处理不生效的问题解决</a><div class="blog-slider__text">基本上是彻底的解决了用 IDEA 新建 Spring Boot 项目时候会产生的 Lombok 注解处理失效的各种问题</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_实用.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-05</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt="">个人向galgame原声带或相关音乐整理及其资源</a><div class="blog-slider__text">整理了我喜欢的galgame ost或者衍生的音乐专辑，部分资源是自己扒盘扒下来的，部分来自鸟白岛放映厅</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_math.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-17</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt="">对书上证明样本方差是总体方差的无偏估计量的解析</a><div class="blog-slider__text">对书上证明样本方差是总体方差的无偏估计量的解析，高等教育出版社-华科大版本</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_alog.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-04-24</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt="">第十五届蓝桥杯Java国赛B组D题-园丁题解</a><div class="blog-slider__text">第十五届蓝桥杯Java国赛B组D题-园丁题解，该题解已经发布到洛谷社区中并且被全站推荐</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java4.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-04-29</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt="">操作系统之处理机的死锁部分概述</a><div class="blog-slider__text">对操作系统之处理机的死锁部分知识的总结，包括代码复现</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_lb.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-09</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt="">Little Busters!EX游戏攻略</a><div class="blog-slider__text">整理了一份详细清晰的Little Busters！EX的游戏攻略，因为我自己也在推，就顺手整理了一份方便查阅的md文档</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java9.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-16</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt="">Spring Boot中使用Hibernate框架</a><div class="blog-slider__text">对学习完Hibernate的应用部分，主要围绕Spring Boot中使用Hibernate框架，建议学习完 Hibernate 框架再看</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div></div><div class="blog-slider__pagination swiper-pagination-clickable swiper-pagination-bullets"></div></div></div>';
+    console.log('已挂载butterfly_swiper')
+    parent_div_git.insertAdjacentHTML("afterbegin",item_html)
+    }
+  var elist = 'undefined'.split(',');
+  var cpage = location.pathname;
+  var epage = '/';
+  var flag = 0;
+
+  for (var i=0;i<elist.length;i++){
+    if (cpage.includes(elist[i])){
+      flag++;
+    }
+  }
+
+  if ((epage ==='all')&&(flag == 0)){
+    butterfly_swiper_injector_config();
+  }
+  else if (epage === cpage){
+    butterfly_swiper_injector_config();
+  }
+  </script><script defer src="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper.min.js"></script><script defer data-pjax src="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper_init.js"></script><!-- hexo injector body_end end --></body></html>
