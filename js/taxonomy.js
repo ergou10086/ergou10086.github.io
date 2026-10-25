@@ -72,7 +72,15 @@
         schedule();
       }, 100);
     });
-    const stop = () => { observer?.disconnect(); cancelAnimationFrame(frame); clearTimeout(searchTimer); };
+    const updateMotion = () => page.classList.toggle('tx-motion-paused', document.hidden);
+    const motionObserver = cloud && 'IntersectionObserver' in window ? new IntersectionObserver(entries => {
+      for (const entry of entries) entry.target.classList.toggle('is-floating', entry.isIntersecting);
+    }, { rootMargin: '30px' }) : null;
+    if (cloud) {
+      for (const item of items) { if (motionObserver) motionObserver.observe(item); else item.classList.add('is-floating'); }
+      document.addEventListener('visibilitychange', updateMotion); updateMotion();
+    }
+    const stop = () => { observer?.disconnect(); motionObserver?.disconnect(); document.removeEventListener('visibilitychange', updateMotion); cancelAnimationFrame(frame); clearTimeout(searchTimer); };
     const observer = cloud && 'ResizeObserver' in window ? new ResizeObserver(entries => {
       const width = Math.round(entries[0].contentRect.width);
       if (cloud.dataset.width !== String(width)) { cloud.dataset.width = String(width); schedule(); }

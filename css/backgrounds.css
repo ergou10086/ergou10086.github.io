@@ -1,0 +1,34 @@
+/* One media surface for both Butterfly background modes. */
+#site-wallpaper {
+  position: fixed; inset: 0; z-index: -998; overflow: hidden; pointer-events: none;
+  background: #273446 var(--wallpaper-start, none) center / cover no-repeat;
+}
+#site-wallpaper::after { position: absolute; inset: 0; z-index: 3; content: ''; background: rgba(10, 18, 30, .13); }
+#site-wallpaper .wallpaper-frame { position: absolute; inset: 0; opacity: 0; transition: opacity var(--wallpaper-transition, 800ms) ease; }
+#site-wallpaper .wallpaper-frame.is-current { opacity: 1; }
+#site-wallpaper .wallpaper-media { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: cover; object-position: var(--wallpaper-position, 50% 50%); }
+#site-wallpaper video { opacity: 0; transition: opacity .25s ease; }
+#site-wallpaper .video-ready video { opacity: 1; }
+#site-wallpaper .video-ready img { opacity: 0; }
+html[data-wallpaper-active="false"] #site-wallpaper { display: none; }
+html[data-wallpaper-mode="split"] #site-wallpaper { position: absolute; bottom: auto; height: var(--wallpaper-hero-height, 100svh); }
+html[data-wallpaper-home="true"] #page-header.full_page { background: transparent !important; }
+html[data-wallpaper-mode="split"][data-wallpaper-home="true"] #footer { background-image: var(--wallpaper-footer, none); }
+html[data-wallpaper-mode="unified"] { --card-bg: rgba(255, 255, 255, .92); }
+html[data-wallpaper-mode="unified"][data-theme="dark"] { --card-bg: rgba(20, 23, 30, .93); }
+html[data-wallpaper-mode="unified"] #web_bg { visibility: hidden; }
+html[data-wallpaper-mode="unified"] #page-header,
+html[data-wallpaper-mode="unified"] #footer { background: transparent !important; }
+html[data-wallpaper-mode="unified"] #page-header::before,
+html[data-wallpaper-mode="unified"] #footer::before { background: transparent !important; }
+html[data-wallpaper-mode="unified"] #footer-wrap { text-shadow: 0 1px 5px rgba(0, 0, 0, .7); }
+html[data-wallpaper-mode="unified"] #page-header.not-top-img:not(.nav-fixed) #nav,
+html[data-wallpaper-mode="unified"] #page-header.not-top-img:not(.nav-fixed) #nav .site-name { color: #fff; text-shadow: 0 1px 5px rgba(0, 0, 0, .6); }
+#wallpaper-mode[aria-pressed="true"] { box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .55); }
+#wallpaper-mode:focus-visible { outline: 2px solid var(--font-color); outline-offset: 3px; }
+#wallpaper-mode[aria-busy="true"] i { opacity: .55; }
+html[data-wallpaper-home="true"] #rightside { opacity: .8; transform: translate(-58px, 0); }
+.read-mode #site-wallpaper { display: none; }
+@media (prefers-reduced-motion: reduce) {
+  #site-wallpaper .wallpaper-frame, #site-wallpaper video { transition: none; }
+}
