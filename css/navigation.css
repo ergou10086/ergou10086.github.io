@@ -1,0 +1,36 @@
+/* Frosted acrylic menu; retain an opaque fallback without backdrop-filter. */
+#nav .menus_items .menus_item > .menus_item_child {
+  --menu-tint: rgba(246, 249, 255, .65);
+  background: #f2f5fa;
+  border: 1px solid rgba(255, 255, 255, .65);
+  border-radius: 12px;
+  padding: 6px;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, .18), inset 0 1px 0 rgba(255, 255, 255, .65);
+}
+[data-theme='dark'] #nav .menus_items .menus_item > .menus_item_child {
+  --menu-tint: rgba(25, 31, 44, .68);
+  background: #202735;
+  border-color: rgba(255, 255, 255, .14);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, .35), inset 0 1px 0 rgba(255, 255, 255, .08);
+}
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  #nav .menus_items .menus_item > .menus_item_child,
+  [data-theme='dark'] #nav .menus_items .menus_item > .menus_item_child {
+    background: linear-gradient(135deg, rgba(255, 255, 255, .12), transparent 70%), var(--menu-tint);
+    -webkit-backdrop-filter: blur(22px) saturate(165%);
+    backdrop-filter: blur(22px) saturate(165%);
+  }
+}
+#nav .menus_items .menus_item > .menus_item_child li { border-radius: 7px; transition: background-color .18s; }
+#nav .menus_items .menus_item > .menus_item_child li:hover,
+#nav .menus_items .menus_item > .menus_item_child li:focus-within { background: rgba(73, 177, 245, .22); }
+#nav .menus_items .menus_item > .menus_item_child a { border-radius: inherit; }
+#nav .menus_items .menus_item:focus-within > .menus_item_child { display: block; }
+#nav .menus_items .menus_item > .menus_item_child a:focus-visible { outline: 2px solid var(--theme-color, #49b1f5); outline-offset: -2px; }
+.comment-service-note { margin: 12px 0; font-size: .85em; color: var(--font-color); opacity: .85; }
+#utterances-wrap { min-height: 150px; }
+#utterances-wrap .utterances { max-width: 100%; }
+.comment-loading { padding: 12px 0; color: var(--font-color); font-size: .9em; }
+.comment-loading a { text-decoration: underline; }
+.comment-loading button { margin-left: 8px; padding: 3px 10px; border-radius: 6px; color: var(--btn-color); background: var(--btn-bg); cursor: pointer; }
+.comment-loading button:focus-visible { outline: 2px solid var(--font-color); outline-offset: 2px; }

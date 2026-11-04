@@ -1,0 +1,1208 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light" data-wallpaper-mode="split" data-wallpaper-home="false" data-wallpaper-active="false"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><script>(()=>{const c={"defaultMode":"split","firstImage":"bg4.mp4","intervalSeconds":300,"transitionMs":800,"preloadLeadSeconds":20,"respectReducedMotion":true,"saveDataPosterOnly":true,"isHome":false,"images":[{"id":"bg.png","kind":"image","desktop":"/images/bg/optimized/bg-bd33e3ce30cc86-desktop.webp","mobile":"/images/bg/optimized/bg-bd33e3ce30cc86-mobile.webp","poster":"/images/bg/optimized/bg-bd33e3ce30cc86-desktop.webp","desktopWidth":2560,"mobileWidth":960,"position":"50% 50%","duration":null,"originalBytes":5139739,"desktopBytes":302132,"mobileBytes":88738},{"id":"bg2.jpg","kind":"image","desktop":"/images/bg/optimized/bg2-e4715d5e9daf96-desktop.webp","mobile":"/images/bg/optimized/bg2-e4715d5e9daf96-mobile.webp","poster":"/images/bg/optimized/bg2-e4715d5e9daf96-desktop.webp","desktopWidth":2560,"mobileWidth":960,"position":"50% 50%","duration":null,"originalBytes":10918841,"desktopBytes":266840,"mobileBytes":72478},{"id":"bg3.gif","kind":"video","desktop":"/images/bg/optimized/bg3-61a283eeee6a64-desktop.mp4","mobile":"/images/bg/optimized/bg3-61a283eeee6a64-mobile.mp4","poster":"/images/bg/optimized/bg3-61a283eeee6a64-poster.webp","desktopWidth":1920,"mobileWidth":960,"position":"50% 50%","duration":15,"originalBytes":89164487,"desktopBytes":3931611,"mobileBytes":1077943},{"id":"bg4.mp4","kind":"video","desktop":"/images/bg/optimized/bg4-42e7200c64e75f-desktop.mp4","mobile":"/images/bg/optimized/bg4-42e7200c64e75f-mobile.mp4","poster":"/images/bg/optimized/bg4-42e7200c64e75f-poster.webp","desktopWidth":1920,"mobileWidth":960,"position":"50% 50%","duration":30,"originalBytes":207425782,"desktopBytes":26066067,"mobileBytes":6623490},{"id":"bg5.gif","kind":"video","desktop":"/images/bg/optimized/bg5-5416db4f8c9e72-desktop.mp4","mobile":"/images/bg/optimized/bg5-5416db4f8c9e72-mobile.mp4","poster":"/images/bg/optimized/bg5-5416db4f8c9e72-poster.webp","desktopWidth":1696,"mobileWidth":960,"position":"50% 50%","duration":30,"originalBytes":123463815,"desktopBytes":22249450,"mobileBytes":4111996}]};let p={};try{p=JSON.parse(localStorage.getItem('ergoutree-wallpaper')||'{}')}catch(e){}const h=document.documentElement,m=['split','unified'].includes(p.mode)?p.mode:c.defaultMode;const a=c.images.find(x=>x.id===p.image)||c.images.find(x=>x.id===c.firstImage)||c.images[0];h.dataset.wallpaperMode=m;h.dataset.wallpaperHome=String(c.isHome);h.dataset.wallpaperActive=String(c.isHome||m==='unified');h.style.setProperty('--wallpaper-transition',c.transitionMs+'ms');c.initialId=a.id;c.initialMode=m;window.__SITE_WALLPAPER__=c;if(c.isHome||m==='unified'){const u=a.kind==='video'?a.poster:(matchMedia('(max-width:768px)').matches?a.mobile:a.desktop);h.style.setProperty('--wallpaper-start','url('+JSON.stringify(u)+')');const l=document.createElement('link');l.rel='preload';l.as='image';l.href=u;l.fetchPriority='high';document.head.appendChild(l)}})();</script><link rel="stylesheet" href="/css/backgrounds.css"><script src="/js/backgrounds.js" defer></script><title>Redis part10—集群与分布式下的Redis | ErgouTree's Blog</title><meta name="author" content="ErgouTree"><meta name="copyright" content="ErgouTree"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="集群和分布式的区别 集群 Cluster 是多个相同节点协作处理同一任务以提高并发和可用性，分布式是将业务拆分为多个独立子系统在不同节点协作完成整体任务。 集群指将相同的系统或服务部署在多个节点上，通过负载均衡共同处理同一业务，关注节点的冗余和并发能力，以提升系统的并发能力和高可用性。集群节点功能一致，节点间通常不需要复杂通信协调，主要解决 量 的问题，如高并发访问或单点故障容错 分布式">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Redis part10—集群与分布式下的Redis">
+<meta property="og:url" content="https://ergou10086.github.io/posts/31151.html">
+<meta property="og:site_name" content="ErgouTree&#39;s Blog">
+<meta property="og:description" content="集群和分布式的区别 集群 Cluster 是多个相同节点协作处理同一任务以提高并发和可用性，分布式是将业务拆分为多个独立子系统在不同节点协作完成整体任务。 集群指将相同的系统或服务部署在多个节点上，通过负载均衡共同处理同一业务，关注节点的冗余和并发能力，以提升系统的并发能力和高可用性。集群节点功能一致，节点间通常不需要复杂通信协调，主要解决 量 的问题，如高并发访问或单点故障容错 分布式">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://ergou10086.github.io/images/posts/cover_redis2.jpg">
+<meta property="article:published_time" content="2026-11-04T08:14:39.000Z">
+<meta property="article:modified_time" content="2026-11-04T08:42:05.493Z">
+<meta property="article:author" content="ErgouTree">
+<meta property="article:tag" content="Redis">
+<meta property="article:tag" content="微服务">
+<meta property="article:tag" content="服务治理">
+<meta property="article:tag" content="分布式系统">
+<meta property="article:tag" content="缓存">
+<meta property="article:tag" content="内存管理">
+<meta property="article:tag" content="资源管理">
+<meta property="article:tag" content="NoSQL">
+<meta property="article:tag" content="数据一致性">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ergou10086.github.io/images/posts/cover_redis2.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Redis part10—集群与分布式下的Redis",
+  "url": "https://ergou10086.github.io/posts/31151.html",
+  "image": "https://ergou10086.github.io/images/posts/cover_redis2.jpg",
+  "datePublished": "2026-11-04T08:14:39.000Z",
+  "dateModified": "2026-11-04T08:42:05.493Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "ErgouTree",
+      "url": "https://github.com/ergou10086"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/pi.ico"><link rel="canonical" href="https://ergou10086.github.io/posts/31151.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//hm.baidu.com"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!true && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?https://hm.baidu.com/hm.js?a6ab1b78e2c6320b664f31e8b9bf0e36";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+btf.addGlobalFn('pjaxComplete', () => {
+  _hmt.push(['_trackPageview',window.location.pathname])
+}, 'baidu_analytics')
+</script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.json","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":true},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: {"chs_to_cht":"已切换为繁体中文","cht_to_chs":"已切换为简体中文","day_to_night":"已切换为深色模式","night_to_day":"已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#1f1f1f","position":"bottom-left"},
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Redis part10—集群与分布式下的Redis',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css"><link rel="stylesheet" href="/css/littleGame.css"><link rel="stylesheet" href="/css/weather.css"><link rel="stylesheet" href="/css/sidebar-cards.css"><link rel="stylesheet" href="/css/gallery-mosaic.css"><link rel="stylesheet" href="/css/site-extras.css"><link rel="stylesheet" href="/css/taxonomy.css"><link rel="stylesheet" href="/css/navigation.css"><svg aria-hidden="true" style="position:absolute; overflow:hidden; width:0; height:0"><symbol id="icon-sun" viewBox="0 0 1024 1024"><path d="M960 512l-128 128v192h-192l-128 128-128-128H192v-192l-128-128 128-128V192h192l128-128 128 128h192v192z" fill="#FFD878" p-id="8420"></path><path d="M736 512a224 224 0 1 0-448 0 224 224 0 1 0 448 0z" fill="#FFE4A9" p-id="8421"></path><path d="M512 109.248L626.752 224H800v173.248L914.752 512 800 626.752V800h-173.248L512 914.752 397.248 800H224v-173.248L109.248 512 224 397.248V224h173.248L512 109.248M512 64l-128 128H192v192l-128 128 128 128v192h192l128 128 128-128h192v-192l128-128-128-128V192h-192l-128-128z" fill="#4D5152" p-id="8422"></path><path d="M512 320c105.888 0 192 86.112 192 192s-86.112 192-192 192-192-86.112-192-192 86.112-192 192-192m0-32a224 224 0 1 0 0 448 224 224 0 0 0 0-448z" fill="#4D5152" p-id="8423"></path></symbol><symbol id="icon-moon" viewBox="0 0 1024 1024"><path d="M611.370667 167.082667a445.013333 445.013333 0 0 1-38.4 161.834666 477.824 477.824 0 0 1-244.736 244.394667 445.141333 445.141333 0 0 1-161.109334 38.058667 85.077333 85.077333 0 0 0-65.066666 135.722666A462.08 462.08 0 1 0 747.093333 102.058667a85.077333 85.077333 0 0 0-135.722666 65.024z" fill="#FFB531" p-id="11345"></path><path d="M329.728 274.133333l35.157333-35.157333a21.333333 21.333333 0 1 0-30.165333-30.165333l-35.157333 35.157333-35.114667-35.157333a21.333333 21.333333 0 0 0-30.165333 30.165333l35.114666 35.157333-35.114666 35.157334a21.333333 21.333333 0 1 0 30.165333 30.165333l35.114667-35.157333 35.157333 35.157333a21.333333 21.333333 0 1 0 30.165333-30.165333z" fill="#030835" p-id="11346"></path></symbol></svg><link rel="stylesheet" href="/css/custom.css"><!-- hexo injector head_end start --><link rel="stylesheet" href="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiperstyle.css" media="print" onload="this.media='all'"><!-- hexo injector head_end end --><meta name="generator" content="Hexo 7.3.0"></head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js/pace.min.js"></script><div id="site-wallpaper" aria-hidden="true"><noscript><img class="wallpaper-media" src="/images/bg/optimized/bg4-42e7200c64e75f-poster.webp" alt=""></noscript></div><div id="web_bg" style="background: linear-gradient(20deg, #0062be, #925696, #cc426e, #fb0347);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/arp.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">364</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">242</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">63</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page" href="/series/"><i class="fa-fw fas fa-layer-group"></i><span> Series</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-images"></i><span> Gallery</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/games/"><i class="fa-fw fas fa-trophy"></i><span> GalGame</span></a></li><li><a class="site-page child" href="/video/"><i class="fa-fw fas fa-video"></i><span> Video</span></a></li><li><a class="site-page child" href="/viewpoint/"><i class="fa-fw fas fa-calculator"></i><span> ViewPoint</span></a></li><li><a class="site-page child" href="/littleGame/"><i class="fa-fw fas fa-thumbs-up"></i><span> littleGame</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div><div class="menus_item"><a class="site-page" href="/random/"><i class="fa-fw fas fa-shuffle"></i><span> Random</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/images/posts/cover_redis2.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/" data-wallpaper-next=""><span class="site-name">ErgouTree's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">Redis part10—集群与分布式下的Redis</span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page" href="/series/"><i class="fa-fw fas fa-layer-group"></i><span> Series</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-images"></i><span> Gallery</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/games/"><i class="fa-fw fas fa-trophy"></i><span> GalGame</span></a></li><li><a class="site-page child" href="/video/"><i class="fa-fw fas fa-video"></i><span> Video</span></a></li><li><a class="site-page child" href="/viewpoint/"><i class="fa-fw fas fa-calculator"></i><span> ViewPoint</span></a></li><li><a class="site-page child" href="/littleGame/"><i class="fa-fw fas fa-thumbs-up"></i><span> littleGame</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div><div class="menus_item"><a class="site-page" href="/random/"><i class="fa-fw fas fa-shuffle"></i><span> Random</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">Redis part10—集群与分布式下的Redis<a class="post-edit-link" href="https://github.com/ergou10086/ergou10086.github.io/edit/main/source/_posts/_posts/Redis-part10—集群与分布式下的Redis.md" title="编辑" target="_blank"><i class="fas fa-pencil-alt"></i></a></h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-11-04T08:14:39.000Z" title="发表于 2026-11-04 16:14:39">2026-11-04</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-11-04T08:42:05.493Z" title="更新于 2026-11-04 16:42:05">2026-11-04</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93%E4%B8%8E%E5%AD%98%E5%82%A8/">数据库与存储</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93%E4%B8%8E%E5%AD%98%E5%82%A8/Redis/">Redis</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">7.5k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>25分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="集群和分布式的区别">集群和分布式的区别</h2>
+<p>集群 Cluster
+是多个相同节点协作处理同一任务以提高并发和可用性，分布式是将业务拆分为多个独立子系统在不同节点协作完成整体任务。</p>
+<p>集群指将相同的系统或服务部署在多个节点上，通过负载均衡共同处理同一业务，关注节点的冗余和并发能力，以提升系统的并发能力和高可用性。集群节点功能一致，节点间通常不需要复杂通信协调，主要解决
+量 的问题，如高并发访问或单点故障容错</p>
+<p>分布式（Distributed）则是将一个大业务拆分为多个独立的子业务或子系统，分别部署在不同节点上，各节点协作完成整体任务。分布式系统强调节点间的<strong>通信与协调</strong>，每个节点可能承担不同功能，解决系统复杂性和迭代扩展问题，即“质”的问题</p>
+<p>所以说，在redis中，需要单独的看待。</p>
+<p>Redis 3.0后便多了一个 REDIS CLUSTER
+配置，即Redis集群，他可以突破3.0之前只能一主多从的限制，实现多主多从，这种集群没有中心节点，可水平扩展，据官方文档称可以线性扩展到上万个节点，当前配置性能和高可用都优与哨兵模式，且配置非常简单</p>
+<figure>
+<img src="/posts/31151/289efbc53b9471381806783ec0240003.png" alt="img">
+<figcaption aria-hidden="true">img</figcaption>
+</figure>
+<h2 id="redis-集群">Redis 集群</h2>
+<h3 id="redis三大集群模式">Redis三大集群模式</h3>
+<p>Redis集群是一种通过将多个 Redis
+节点连接在一起以实现高可用性、数据分片和负载均衡的技术。它允许 Redis
+在不同节点上同时提供服务，提高整体性能和可靠性。</p>
+<p>根据搭建的方式和集群的特性，Redis集群主要有三种模式：主从复制模式（Master-Slave）、哨兵模式（Sentinel）和Cluster模式</p>
+<h4 id="主从复制">主从复制</h4>
+<p>主从复制是Redis的一种基本集群模式，它通过将一个Redis节点（主节点）的数据复制到一个或多个其他Redis节点（从节点）来实现数据的冗余和备份。</p>
+<p>主节点负责处理客户端的写操作，同时从节点会实时同步主节点的数据。客户端可以从从节点读取数据，实现读写分离，提高系统性能。</p>
+<figure>
+<img src="/posts/31151/734446-20230423104604712-958561171.png" alt="image">
+<figcaption aria-hidden="true">image</figcaption>
+</figure>
+<p>配置主从复制</p>
+<ul>
+<li><p>配置主节点：在主节点的 redis.conf
+配置文件中，无需进行特殊配置，主节点默认监听所有客户端请求。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 主节点默认端口号6379</span></span><br><span class="line">port 6379</span><br></pre></td></tr></table></figure></li>
+<li><p>配置从节点：在从节点的 redis.conf
+配置文件中，添加如下配置，指定主节点的地址和端口：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 从节点设置端口号6380</span></span><br><span class="line">port 6380</span><br><span class="line"></span><br><span class="line"><span class="comment"># replicaof 主节点IP 主节点端口</span></span><br><span class="line">replicaof 127.0.0.1 6379</span><br></pre></td></tr></table></figure>
+<p>或者，通过Redis命令行在从节点上执行如下命令：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">redis&gt; replicaof 127.0.0.1 6379</span><br></pre></td></tr></table></figure></li>
+<li><p>验证：在主节点上执行写操作，然后在从节点上进行读操作，检查数据是否一致。</p></li>
+</ul>
+<p>主从复制的优缺点</p>
+<p><strong>优点</strong>：</p>
+<ol type="1">
+<li>配置简单，易于实现。</li>
+<li>实现数据冗余，提高数据可靠性。</li>
+<li>读写分离，提高系统性能。</li>
+</ol>
+<p><strong>缺点</strong>：</p>
+<ol type="1">
+<li>主节点故障时，需要手动切换到从节点，故障恢复时间较长。</li>
+<li>主节点承担所有写操作，可能成为性能瓶颈。</li>
+<li>无法实现数据分片，受单节点内存限制</li>
+</ol>
+<p>所以说，一般情况下，主从复制模式适用于数据备份和容灾恢复，或者在线升级和扩展</p>
+<p>总之，主从复制模式适合数据备份、读写分离和在线升级等场景，但在主节点故障时需要手动切换，不能自动实现故障转移。如果对高可用性要求较高，可以考虑使用哨兵模式或Cluster模式。</p>
+<h4 id="哨兵模式">哨兵模式</h4>
+<p>哨兵模式就是所谓的 Sentinel
+模式，哨兵模式是在主从复制基础上加入了哨兵节点，实现了自动故障转移。</p>
+<p>哨兵节点是一种特殊的 Redis
+节点，它会监控主节点和从节点的运行状态。当主节点发生故障时，哨兵节点会自动从从节点中选举出一个新的主节点，并通知其他从节点和客户端，实现故障转移。</p>
+<figure>
+<img src="/posts/31151/734446-20230423104619091-219085123.png" alt="image">
+<figcaption aria-hidden="true">image</figcaption>
+</figure>
+<p>哨兵模式的配置</p>
+<ul>
+<li><p><strong>配置主从复制</strong>：首先按照主从复制模式的配置方法，搭建一个主从复制集群。</p></li>
+<li><p><strong>配置哨兵节点</strong>：在哨兵节点上创建一个新的哨兵配置文件（如：sentinel.conf），并添加如下配置：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># sentinel节点端口号</span></span><br><span class="line">port 26379</span><br><span class="line"></span><br><span class="line"><span class="comment"># sentinel monitor 被监控主节点名称 主节点IP 主节点端口 quorum</span></span><br><span class="line">sentinel monitor mymaster 127.0.0.1 6379 2</span><br><span class="line"></span><br><span class="line"><span class="comment"># sentinel down-after-milliseconds 被监控主节点名称 毫秒数</span></span><br><span class="line">sentinel down-after-milliseconds mymaster 60000</span><br><span class="line"></span><br><span class="line"><span class="comment"># sentinel failover-timeout 被监控主节点名称 毫秒数</span></span><br><span class="line">sentinel failover-timeout mymaster 180000</span><br></pre></td></tr></table></figure>
+<p><code>quorum</code>是指触发故障转移所需的最小哨兵节点数。<code>down-after-milliseconds</code>表示主节点被判断为失效的时间。<code>failover-timeout</code>是故障转移超时时间。</p></li>
+<li><p><strong>启动哨兵节点</strong>：使用如下命令启动哨兵节点：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">redis&gt; redis-sentinel /path/to/sentinel.conf</span><br></pre></td></tr></table></figure></li>
+<li><p><strong>验证哨兵模式</strong>：手动停止主节点，观察哨兵节点是否自动选举出新的主节点，并通知其他从节点和客户端。</p></li>
+</ul>
+<p>优点：</p>
+<ol type="1">
+<li>自动故障转移，提高系统的高可用性。</li>
+<li>具有主从复制模式的所有优点，如数据冗余和读写分离。</li>
+</ol>
+<p>缺点：</p>
+<ol type="1">
+<li>配置和管理相对复杂。</li>
+<li>依然无法实现数据分片，受单节点内存限制。</li>
+</ol>
+<h4 id="cluster模式">Cluster模式</h4>
+<p>一般我们认为前两种模式是集群模式，Cluster
+才是真正的分布式方案。它把数据分片到多个主节点上，每个主节点只负责一部分数据，从而同时解决<strong>容量</strong>和<strong>写吞吐</strong>的扩展问题。在
+Cluster
+中，每个主节点可以带从节点，故障时从节点自动升主，兼顾了高可用。</p>
+<p>Cluster 模式是 Redis
+的一种高级集群模式，它通过数据分片和分布式存储实现了负载均衡和高可用性。在
+Cluster 模式下，Redis
+将所有的键值对数据分散在多个节点上。每个节点负责一部分数据，称为槽位。通过对数据的分片，Cluster
+模式可以突破单节点的内存限制，实现更大规模的数据存储。</p>
+<figure>
+<img src="/posts/31151/734446-20230423104631153-1328078427.png" alt="image">
+<figcaption aria-hidden="true">image</figcaption>
+</figure>
+<p>Redis Cluster
+将数据分为16384个槽位，每个节点负责管理一部分槽位。当客户端向 Redis
+Cluster
+发送请求时，Cluster会根据键的哈希值将请求路由到相应的节点。具体来说，Redis
+Cluster 使用CRC16算法计算键的哈希值，然后对16384取模，得到槽位编号。</p>
+<p>Cluster模式配置和实现</p>
+<ul>
+<li><p><strong>配置Redis节点</strong>：为每个节点创建一个 redis.conf
+配置文件，并添加如下配置：</p>
+<p>如果做一个做一个三主三从的集群，一共需要创建6个像这样的配置</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># cluster节点端口号</span></span><br><span class="line">port 7001</span><br><span class="line"></span><br><span class="line"><span class="comment"># 开启集群模式</span></span><br><span class="line">cluster-enabled <span class="built_in">yes</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 节点超时时间</span></span><br><span class="line">cluster-node-timeout 15000</span><br></pre></td></tr></table></figure></li>
+<li><p><strong>启动Redis节点</strong>：使用如下命令启动6个节点</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">redis&gt; redis-server redis_7001.conf</span><br></pre></td></tr></table></figure></li>
+<li><p><strong>创建Redis
+Cluster</strong>：使用Redis命令行工具执行如下命令创建Cluster</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">redis&gt; redis-cli --cluster create 127.0.0.1:7001 127.0.0.1:7002 127.0.0.1:7003 127.0.0.1:7004 127.0.0.1:7005 127.0.0.1:7006 --cluster-replicas 1</span><br></pre></td></tr></table></figure>
+<p><strong>cluster-replicas</strong>
+表示从节点的数量，1代表每个主节点都有一个从节点。</p></li>
+<li><p><strong>验证Cluster模式</strong>：向Cluster发送请求，观察请求是否正确路由到相应的节点。</p></li>
+</ul>
+<p><strong>优点</strong>：</p>
+<ol type="1">
+<li>数据分片，实现大规模数据存储。</li>
+<li>负载均衡，提高系统性能。</li>
+<li>自动故障转移，提高高可用性。</li>
+</ol>
+<p><strong>缺点</strong>：</p>
+<ol type="1">
+<li>配置和管理较复杂。</li>
+<li>一些复杂的多键操作可能受到限制。</li>
+</ol>
+<p>Cluster模式适用于以下场景：大规模数据存储，因为能通过数据分片，突破单节点内存限制；高性能要求场景，通过负载均衡，提高系统性能；高可用，自动故障转移</p>
+<h3 id="redis三大集群模式的演示">Redis三大集群模式的演示</h3>
+<p>下面在 Ubuntu 26.04.1 中，使用 Redis 8.0.5
+实际搭建三种模式。每个节点都是独立 Redis
+进程，使用不同端口、配置和数据目录。</p>
+<table>
+<colgroup>
+<col style="width: 18%">
+<col style="width: 18%">
+<col style="width: 21%">
+<col style="width: 41%">
+</colgroup>
+<thead>
+<tr>
+<th>实验</th>
+<th>Redis 数据端口</th>
+<th>哨兵或总线端口</th>
+<th>观察重点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>一主两从</td>
+<td>7100、7101、7102</td>
+<td>无</td>
+<td>数据复制、从节点只读、手动提升</td>
+</tr>
+<tr>
+<td>哨兵</td>
+<td>7200、7201、7202</td>
+<td>27200、27201、27202</td>
+<td>多哨兵判断故障、自动选主、旧主回归</td>
+</tr>
+<tr>
+<td>三主三从 Cluster</td>
+<td>7300—7305</td>
+<td>17300—17305</td>
+<td>16384 槽、MOVED、CROSSSLOT、自动接管</td>
+</tr>
+</tbody>
+</table>
+<h4 id="主从复制同步数据但不会自动选主">主从复制：同步数据，但不会自动选主</h4>
+<p>配置模板见 <a href="../demo/RedisOperateDemo/lab/redis-topologies/config/replication/7100.conf">7100.conf</a>、<a href="../demo/RedisOperateDemo/lab/redis-topologies/config/replication/7101.conf">7101.conf</a>、<a href="../demo/RedisOperateDemo/lab/redis-topologies/config/replication/7102.conf">7102.conf</a>。脚本将路径和凭据占位符替换后，在运行目录生成实际配置。关键项如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"># 主节点 7100：所有节点使用独立 dir / pidfile / logfile</span><br><span class="line">port 7100</span><br><span class="line">bind 127.0.0.1</span><br><span class="line">user default off</span><br><span class="line">user ErgouTree on &gt;zjm10086 ~* &amp;* +@all</span><br><span class="line">masteruser ErgouTree</span><br><span class="line">masterauth zjm10086</span><br><span class="line">appendonly yes</span><br><span class="line"></span><br><span class="line"># 7101 和 7102 的配置再分别添加：</span><br><span class="line">replicaof 127.0.0.1 7100</span><br></pre></td></tr></table></figure>
+<p>单独运行：</p>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">.\lab\redis<span class="literal">-topologies</span>\lab.cmd demo replication</span><br></pre></td></tr></table></figure>
+<p>实验先在 7100 执行
+<code>SET lab:replication:message replicated</code>，并在<strong>同一连接</strong>执行
+<code>WAIT 2 5000</code>，本次返回 2；随后从 7101 读到了相同值。向 7101
+写入时返回 <code>READONLY</code>。</p>
+<p>再停止主节点 7100，7101 仍然报告
+<code>role:slave</code>、<code>master_link_status:down</code>，没有自行提升。最后在
+7101 执行 <code>REPLICAOF NO ONE</code>，让 7102 和重启后的 7100 跟随
+7101，完成手动切换。</p>
+<figure>
+<img src="/posts/31151/01-replication.png" alt="主从复制实测：副本同步、只读拒绝与手动升主">
+<figcaption aria-hidden="true">主从复制实测：副本同步、只读拒绝与手动升主</figcaption>
+</figure>
+<p>结论是：主从复制提供数据副本，自动选主需要额外的协调机制，所以说
+有两个从节点 直接等同于 主节点挂了会自动恢复写入 是不对的。</p>
+<h4 id="哨兵主节点故障后自动切换">哨兵：主节点故障后自动切换</h4>
+<p>这里使用 3 个数据节点和 3 个 Sentinel。以 <a href="../demo/RedisOperateDemo/lab/redis-topologies/config/sentinel/27200.conf">27200.conf</a>
+为例：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">port 27200</span><br><span class="line">sentinel monitor labmaster 127.0.0.1 7200 2</span><br><span class="line">sentinel auth-user labmaster ErgouTree</span><br><span class="line">sentinel auth-pass labmaster zjm10086</span><br><span class="line">sentinel sentinel-user ErgouTree</span><br><span class="line">sentinel sentinel-pass zjm10086</span><br><span class="line">sentinel down-after-milliseconds labmaster 3000</span><br><span class="line">sentinel failover-timeout labmaster 15000</span><br><span class="line">sentinel parallel-syncs labmaster 1</span><br></pre></td></tr></table></figure>
+<p>其他哨兵使用 27201、27202；完整文件还包含回环监听、ACL
+与独立日志目录。这里的 3
+秒故障判断用于缩短本机实验等待时间，不是生产环境的通用推荐。</p>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">.\lab\redis<span class="literal">-topologies</span>\lab.cmd demo sentinel</span><br></pre></td></tr></table></figure>
+<p>启动后，<code>SENTINEL CKQUORUM labmaster</code> 返回 3
+个可用哨兵。脚本在写入并等待两份副本确认后停止 7200*没有主动执行
+<code>SENTINEL FAILOVER</code>。</p>
+<p>本次约 <strong>5.35 秒</strong>后，哨兵返回的主节点地址从
+<code>127.0.0.1:7200</code> 变为 <code>127.0.0.1:7201</code>，原来的值
+<code>survives-failover</code> 可以继续读取。旧主 7200 重启后自动成为
+7201 的从节点，复制链路恢复为 <code>up</code>。</p>
+<figure>
+<img src="/posts/31151/02-sentinel.png" alt="Sentinel 实测：自动选主、数据保留与旧主回归">
+<figcaption aria-hidden="true">Sentinel
+实测：自动选主、数据保留与旧主回归</figcaption>
+</figure>
+<p>其中 <code>quorum=2</code> 用于形成客观下线判断。本次恰好是 3
+个哨兵，所以多数也为 2。原始哨兵日志中的
+<code>+odown</code>、<code>+switch-master</code> 可以对应到这次切换。<a target="_blank" rel="noopener" href="https://redis.io/docs/latest/operate/oss_and_stack/management/sentinel/">Redis
+Sentinel 官方说明</a>。</p>
+<h4 id="cluster数据分片重定向与故障接管">Cluster：数据分片、重定向与故障接管</h4>
+<p>六个配置模板位于 <a href="../demo/RedisOperateDemo/lab/redis-topologies/config/cluster/7300.conf">config/cluster</a>。以
+7300 为例，关键配置为：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">port 7300</span><br><span class="line">cluster-enabled yes</span><br><span class="line">cluster-config-file nodes.conf</span><br><span class="line">cluster-node-timeout 3000</span><br><span class="line">cluster-require-full-coverage yes</span><br><span class="line">cluster-announce-ip 127.0.0.1</span><br><span class="line">cluster-announce-port 7300</span><br><span class="line">cluster-announce-bus-port 17300</span><br></pre></td></tr></table></figure>
+<p>脚本对每个节点设置独立运行目录，再调用下面的真实建群命令；认证密码由
+<code>REDISCLI_AUTH</code> 环境变量提供：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">redis-cli --user ErgouTree --cluster create \</span><br><span class="line">  127.0.0.1:7300 127.0.0.1:7301 127.0.0.1:7302 \</span><br><span class="line">  127.0.0.1:7303 127.0.0.1:7304 127.0.0.1:7305 \</span><br><span class="line">  --cluster-replicas 1 --cluster-yes</span><br></pre></td></tr></table></figure>
+<p>复现入口：</p>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">.\lab\redis<span class="literal">-topologies</span>\lab.cmd demo cluster</span><br></pre></td></tr></table></figure>
+<p>本次建群后，<code>CLUSTER INFO</code> 显示
+<code>cluster_state:ok</code>、6 个节点、3 个主节点，全部 16384
+槽已经分配。初始三个主节点分别负责
+<code>0—5460</code>、<code>5461—10922</code>、<code>10923—16383</code>。</p>
+<p><strong>观察 MOVED</strong>：键 <code>lab:route:1001</code> 的槽号为
+11324，初始归 7302。故意连接 7300 读取，得到
+<code>MOVED 11324 127.0.0.1:7302</code>；换用 <code>redis-cli -c</code>
+后可以读到 <code>cluster-routing-ok</code>。这也说明，MOVED
+可以只是客户端连错了节点，并不一定意味着刚发生过迁槽。</p>
+<figure>
+<img src="/posts/31151/03-cluster-routing.png" alt="Cluster 实测：槽位覆盖和 MOVED 自动路由">
+<figcaption aria-hidden="true">Cluster 实测：槽位覆盖和 MOVED
+自动路由</figcaption>
+</figure>
+<p><strong>观察多键约束</strong>：<code>MSET lab:plain:a 1 lab:plain:b 2</code>
+返回 <code>CROSSSLOT</code>。为三个业务键添加相同 Hash Tag：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">lab:stock:&#123;sku-1001&#125;</span><br><span class="line">lab:orders:&#123;sku-1001&#125;</span><br><span class="line">lab:requests:&#123;sku-1001&#125;</span><br></pre></td></tr></table></figure>
+<p>它们的 <code>CLUSTER KEYSLOT</code> 都返回
+<strong>4864</strong>，同槽 MSET 成功。<code>SELECT 1</code> 则返回
+Cluster 不允许切换数据库的错误。</p>
+<figure>
+<img src="/posts/31151/04-cluster-constraints.png" alt="Cluster 实测：CROSSSLOT 与 Hash Tag 修正">
+<figcaption aria-hidden="true">Cluster 实测：CROSSSLOT 与 Hash Tag
+修正</figcaption>
+</figure>
+<p><strong>观察自动接管</strong>：再停止持有测试键的主节点 7302。本次约
+<strong>5.79 秒</strong>后，副本 7303 提升为主节点；集群恢复
+<code>ok</code>，原值仍可读取。重启旧主后，六节点重新恢复健康，旧主成为从节点。</p>
+<figure>
+<img src="/posts/31151/05-cluster-failover.png" alt="Cluster 实测：主节点故障后的槽位接管">
+<figcaption aria-hidden="true">Cluster
+实测：主节点故障后的槽位接管</figcaption>
+</figure>
+<p>这些端口、节点角色和耗时来自本次记录；重新执行实验时，选举结果、节点
+ID 和耗时可能变化。Redis 异步复制并不承诺所有故障下都零丢失。<a target="_blank" rel="noopener" href="https://redis.io/docs/latest/operate/oss_and_stack/management/scaling/">Redis
+Cluster 官方说明</a>。</p>
+<h3 id="深入-cluster">深入 Cluster</h3>
+<p>Redis Cluster 的核心设计围绕 去中心化 与 数据分片
+展开，它没有使用一致性哈希，而是通过<strong>哈希槽</strong>来管理数据分布，并依靠<strong>客户端重定向</strong>机制实现透明访问。</p>
+<h4 id="哈希槽">哈希槽</h4>
+<p>Redis Cluster 中的哈希槽，本质上是介于 键 和 节点
+之间的一层虚拟分片单元。它的核心作用是将整个键空间划分为固定数量的槽位，再把这些槽位分配给不同的主节点，从而实现数据的分布式存储与灵活扩缩容。</p>
+<p>Redis Cluster 将整个键空间划分为 <strong>16384
+个虚拟哈希槽</strong>（编号 0~16383）。每个键通过
+<code>CRC16(key) % 16384</code>
+计算归属槽位，集群中的每个主节点负责维护其中一部分槽。</p>
+<p>计算方式如下</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">slot = CRC16(key) mod 16384</span><br></pre></td></tr></table></figure>
+<p>也就是说，先对键名进行 CRC16 校验和计算，再对 16384
+取模，得到的余数就是该键所在的槽编号。集群中的每个主节点负责维护一部分槽位，键最终就存储在那个拥有对应槽位的主节点上。</p>
+<p>理论上 CRC16 能产生 65536 个值，但 Redis 作者选择了 16384（即
+2^14），主要基于两点</p>
+<ul>
+<li>集群节点间需要定期发送心跳包，其中包含槽位分配信息的
+bitmap。若槽数为 65536，消息头会达到约 8KB；而 16384 个槽时仅约
+2KB，能显著节省带宽。</li>
+<li>Redis Cluster 的主节点数量通常不建议超过 1000
+个。在千节点规模下，16384
+个槽已经足够精细地分配数据，没有必要使用更大的数字。</li>
+</ul>
+<p>相比一致性哈希，哈希槽的设计让运维操作更加可控：</p>
+<ul>
+<li>扩缩容直观：新增节点时，只需从现有节点匀出一部分槽迁移给新节点；移除节点时，将该节点的槽全部迁走即可。槽的迁移粒度是固定的，管理起来很清晰。</li>
+<li>手动控制分布：如果某些节点的硬件配置更好，你可以手动给它们分配更多槽，而不像一致性哈希那样较难干预数据分布。</li>
+</ul>
+<p>默认情况下，每个键独立计算槽位。但如果你需要让多个键落在同一个槽里，可以使用哈希标签。</p>
+<p>如果键名中包含 <code>&#123;...&#125;</code>，Redis
+只会用花括号内的内容来计算槽位。例如 <code>&#123;user:1000&#125;.name</code> 和
+<code>&#123;user:1000&#125;.surname</code> 会落在同一个槽，因为哈希计算只针对
+<code>user:1000</code> 进行。</p>
+<p>槽的归属可以动态改变，迁移过程中客户端可能会遇到两种重定向：</p>
+<ul>
+<li><strong>ASK
+重定向</strong>：发生在槽迁移进行中。如果客户端请求的键已经不在源节点，源节点会返回
+<code>ASK</code>，告诉客户端
+这个键可能已经迁到目标节点了，你去那边试一下，但暂时不要更新你本地的槽映射表。客户端需要先向目标节点发送
+<code>ASKING</code> 命令，才能执行后续请求。</li>
+<li><strong>MOVED
+重定向</strong>：表示槽的归属已经<strong>永久</strong>变更。客户端收到
+<code>MOVED</code> 后，应更新本地的 槽-节点
+映射缓存，后续该槽的请求直接发往新节点。</li>
+</ul>
+<h4 id="客户端路由">客户端路由</h4>
+<p>Redis Cluster 的客户端路由核心在于<strong>客户端本地缓存一份 槽-节点
+映射表</strong>，并自行计算键的归属槽，直接向正确节点发起请求，从而避免每次请求都经过服务端转发。</p>
+<p>这是一个具备集群感知能力的客户端，其典型路由流程如下：</p>
+<ul>
+<li><strong>初始化拓扑</strong>：客户端启动时连接集群中任意一个节点，发送
+<code>CLUSTER SLOTS</code>（或
+<code>CLUSTER NODES</code>）命令，获取完整的哈希槽分配表及对应的主从节点地址，并在本地缓存这份映射。</li>
+<li><strong>计算并直达</strong>：当需要操作某个键时，客户端在本地用
+<code>CRC16(key) mod 16384</code>
+算出槽号，查缓存映射表找到负责该槽的节点，<strong>直接向该节点发送命令</strong>。理想情况下，一次网络往返即可完成。</li>
+<li><strong>处理重定向</strong>：当集群拓扑发生变化时，客户端缓存的映射可能过时。此时目标节点会返回重定向错误：
+<ul>
+<li><strong><code>MOVED</code></strong>：表示槽的归属已<strong>永久</strong>变更。客户端收到后，应触发一次拓扑刷新，更新本地映射，并将请求发往新节点。</li>
+<li><strong><code>ASK</code></strong>：表示槽正在<strong>迁移中</strong>，键可能已临时转移到目标节点。客户端需先向目标节点发送
+<code>ASKING</code>
+命令，再执行原请求，但<strong>不应</strong>因此更新本地槽映射，因为没迁移完</li>
+</ul></li>
+</ul>
+<p>这时候，务必使用支持集群模式的客户端，如
+Jedis，并确保其具备本地槽缓存与重定向处理能力。</p>
+<h4 id="集群规模与防脑裂">集群规模与防脑裂</h4>
+<p>防脑裂机制是防止在节点失联时因错误选举而产生双主节点。</p>
+<p>Redis Cluster
+的故障转移依赖<strong>多数主节点投票</strong>。因此，集群必须拥有<strong>至少
+3 个主节点</strong>，官方推荐的最小生产规模是 <strong>3 主 + 3 从，共 6
+个节点</strong>，以确保任一主节点故障时，剩余主节点仍能构成多数并完成故障转移。</p>
+<p>而 Redis Cluster 的主节点数量通常建议控制在 <strong>1000
+个以内</strong>。这主要受限于 Gossip
+协议的心跳开销：节点数越多，集群总线上的状态交换消息量增长越快，网络与
+CPU 负担相应加重。</p>
+<p>脑裂（Split-Brain）指因网络分区导致集群分裂，出现两个独立运作的
+主节点 子集，各自接受写入，最终造成数据冲突或丢失。Redis Cluster
+通过以下机制防范：</p>
+<ul>
+<li>一个主节点被标记为
+<code>PFAIL</code>（疑似下线）后，需要<strong>集群中多数主节点</strong>也同意将其标记为
+<code>FAIL</code>，故障转移才会启动。选举新主节点时，同样需要获得多数主节点的投票。这意味着，被隔离在少数派分区中的主节点无法被替换，因为少数派凑不够票数来发起选举，从而避免了双主的产生。</li>
+<li>Redis 提供了 <code>min-replicas-to-write</code> 与
+<code>min-replicas-max-lag</code>
+参数，用于在主节点层面进行最后一道防护。当主节点发现自己<strong>可连接的合格从节点数量不足</strong>，或<strong>从节点复制延迟过大</strong>时，会主动拒绝写入。这样，一个因网络分区而与所有从节点失联的旧主节点，即使仍在运行，也无法继续接受写请求，从而大幅降低脑裂导致数据分叉的风险。</li>
+<li>合理配置
+<code>cluster-node-timeout</code>，该参数决定节点多久无响应后被标记为
+<code>PFAIL</code>。</li>
+<li>将主从节点分散部署在不同的物理机、机架或可用区，避免单一物理故障同时影响一个主节点及其所有从节点，从物理层面降低脑裂发生的概率。</li>
+</ul>
+<h4 id="分布式带来的新约束">分布式带来的新约束</h4>
+<p>在 Cluster
+中，所有涉及多个键的命令，都要求这些键必须落在<strong>同一个哈希槽</strong>内。如果客户端尝试操作分属不同槽的键，服务端会直接返回
+<code>CROSSSLOT</code> 错误。</p>
+<p>单机 Redis 里随意使用的多键命令和事务，在 Cluster
+中会受到严格限制。这是实际开发中最容易踩坑的地方。</p>
+<p>这一限制直接波及了开发中最常用的两个特性：</p>
+<ul>
+<li><strong>事务（MULTI/EXEC）</strong>：事务内的所有命令涉及的键必须同槽，否则整个事务无法执行。同时，<code>WATCH</code>
+命令也只能监视同一槽内的键，跨槽监视会导致乐观锁机制失效。</li>
+<li><strong>Lua 脚本</strong>：脚本中通过 <code>KEYS</code>
+数组传入的所有键，也必须属于同一槽。此外，脚本内严禁使用动态生成的键名（必须用
+<code>KEYS[1]</code> 这样的显式声明），否则会报错。</li>
+</ul>
+<p>所以说，这里需要使用上面提到的哈希标签（Hash Tag）。在键名中加入
+<code>&#123;...&#125;</code>，Redis 只会对花括号内的内容计算哈希。例如，将
+<code>user:1001:name</code> 和 <code>user:1001:age</code> 改为
+<code>&#123;user:1001&#125;:name</code> 和
+<code>&#123;user:1001&#125;:age</code>，即可强制它们落入同一槽，从而支持事务或批量操作。但需警惕，过度使用可能引发数据倾斜</p>
+<p>单机 Redis 支持通过 <code>SELECT</code> 命令切换 16
+个逻辑数据库（0-15）。但在 Cluster 模式下，<strong><code>SELECT</code>
+命令被完全禁用</strong>，集群只支持数据库
+<strong>0</strong>。这是因为在分布式分片架构下，维护多数据库的原子操作会带来不必要的复杂性。因此，依赖多数据库隔离业务的旧代码，在迁移到
+Cluster 时必须改造，改用键名前缀等方式来区分不同业务的数据。</p>
+<p>因此，许多在单机下能返回全局信息的命令，在 Cluster
+中语义发生了变化，通常只作用于当前连接所在的单个节点</p>
+<p>Cluster 下的 Pipeline
+行为与单机不同。由于命令必须发往正确的节点，一个 Pipeline
+批次通常只能针对<strong>同一个节点</strong>。如果客户端试图在一个
+Pipeline 中混合发往不同节点或包含跨槽键的命令，现代客户端（如
+Jedis）会直接抛出异常或拒绝执行。这要求开发者在构建批量操作时，需要先按“目标节点”或“哈希槽”对命令进行分组，再分别打包发送。</p>
+<p>所以说，Redis Cluster 的分布式约束本质上是将 全局原子性 和 全局视图
+的成本转移给了应用层**。在设计阶段就需要有意识地通过哈希标签规划键的分布，并避免依赖跨节点的多键事务与全局遍历命令。如果你的业务场景强依赖跨键的复杂原子操作或全局遍历，那么
+Cluster 可能并非最优选，或者需要引入应用层的协调逻辑来弥补这些限制。</p>
+<h2 id="redis-在分布式下的使用">Redis 在分布式下的使用</h2>
+<h3 id="分布式锁">分布式锁</h3>
+<p>之前详细介绍过，不多介绍了</p>
+<h3 id="实际项目中使用redis-cluster模式的案例">实际项目中使用Redis
+Cluster模式的案例</h3>
+<p>下面实现一个可以实际调用的“限量商品库存预占”案例：多名用户并发提交下单请求，库存不能被扣成负数；客户端因超时重试时，相同请求不能再次扣库存；Cluster
+主节点故障后，客户端应在新拓扑上恢复操作。</p>
+<table>
+<colgroup>
+<col style="width: 61%">
+<col style="width: 38%">
+</colgroup>
+<thead>
+<tr>
+<th>文件</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="../demo/RedisOperateDemo/src/main/java/hbnu/project/redisclusterlab/ClusterClientFactory.java">ClusterClientFactory.java</a></td>
+<td>Redisson Cluster 连接、认证与拓扑刷新</td>
+</tr>
+<tr>
+<td><a href="../demo/RedisOperateDemo/src/main/java/hbnu/project/redisclusterlab/ClusterOrderService.java">ClusterOrderService.java</a></td>
+<td>库存初始化、键设计与预占服务</td>
+</tr>
+<tr>
+<td><a href="../demo/RedisOperateDemo/src/main/java/hbnu/project/redisclusterlab/ClusterOrderApplication.java">ClusterOrderApplication.java</a></td>
+<td>独立 HTTP 入口，监听 127.0.0.1:18088</td>
+</tr>
+<tr>
+<td><a href="../demo/RedisOperateDemo/src/main/resources/redis-cluster-lab/place-order.lua">place-order.lua</a></td>
+<td>同槽 Lua：幂等检查、扣减与保存记录</td>
+</tr>
+<tr>
+<td><a href="../demo/RedisOperateDemo/src/test/java/hbnu/project/redisclusterlab/ClusterOrderServiceIntegrationTest.java">ClusterOrderServiceIntegrationTest.java</a></td>
+<td>真实 Cluster 的并发与边界集成测试</td>
+</tr>
+</tbody>
+</table>
+<p>本例复用项目已有 Redisson 依赖，HTTP 适配使用 JDK 21 自带的
+HttpServer</p>
+<h4 id="cluster-连接与键设计">Cluster 连接与键设计</h4>
+<p>客户端使用多个种子节点，启用周期性拓扑扫描；读取走主节点，避免用延迟副本判断刚刚完成的库存变化。实际配置节选：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">config.useClusterServers()</span><br><span class="line">    .addNodeAddress(<span class="string">&quot;redis://127.0.0.1:7300&quot;</span>,</span><br><span class="line">                    <span class="string">&quot;redis://127.0.0.1:7301&quot;</span>,</span><br><span class="line">                    <span class="string">&quot;redis://127.0.0.1:7302&quot;</span>)</span><br><span class="line">    .setUsername(<span class="string">&quot;ErgouTree&quot;</span>)</span><br><span class="line">    .setPassword(<span class="string">&quot;zjm10086&quot;</span>)</span><br><span class="line">    .setReadMode(ReadMode.MASTER)</span><br><span class="line">    .setScanInterval(<span class="number">1000</span>);</span><br></pre></td></tr></table></figure>
+<p>完整源码还设置了连接池、连接/命令超时与有限重试，凭据和节点可以通过环境变量覆盖。<a target="_blank" rel="noopener" href="https://redisson.pro/docs/configuration/">Redisson Cluster
+配置说明</a>。</p>
+<p>每个 SKU 使用三个键：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">lab:stock:&#123;sku-1001&#125;       String：剩余库存</span><br><span class="line">lab:orders:&#123;sku-1001&#125;      Hash：orderId -&gt; 用户与创建时间</span><br><span class="line">lab:requests:&#123;sku-1001&#125;    Hash：requestId -&gt; 用户与已生成的 orderId</span><br></pre></td></tr></table></figure>
+<p>同一 SKU 通过 <code>&#123;sku-1001&#125;</code> 保证三个键同槽，才能在一段 Lua
+中原子处理；不同 SKU 使用不同 Hash
+Tag，仍可分片到不同主节点。不要给全部商品套同一个固定 Hash
+Tag，这样会把业务集中到一个槽。形成重心偏移</p>
+<h4 id="lua-原子预占与幂等">Lua 原子预占与幂等</h4>
+<p>完整 Lua 在源码中留存，核心执行顺序为：</p>
+<ol type="1">
+<li>SKU 尚未初始化：返回 <code>NOT_INITIALIZED</code>。</li>
+<li>requestId 已存在且用户一致：返回 <code>DUPLICATE</code> 和原
+orderId。</li>
+<li>requestId 被另一用户复用：返回 <code>CONFLICT</code>。</li>
+<li>库存为 0：返回 <code>SOLD_OUT</code>。</li>
+<li>否则执行 <code>DECR</code>，写入订单预占和幂等映射，返回
+<code>CREATED</code>。</li>
+</ol>
+<p>核心写入均在同一个 Lua 脚本中完成：</p>
+<figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">local</span> remaining = redis.call(<span class="string">&#x27;DECR&#x27;</span>, KEYS[<span class="number">1</span>])</span><br><span class="line">redis.call(<span class="string">&#x27;HSET&#x27;</span>, KEYS[<span class="number">2</span>], ARGV[<span class="number">2</span>], ARGV[<span class="number">3</span>] .. <span class="string">&#x27;|&#x27;</span> .. ARGV[<span class="number">4</span>])</span><br><span class="line">redis.call(<span class="string">&#x27;HSET&#x27;</span>, KEYS[<span class="number">3</span>], ARGV[<span class="number">1</span>], ARGV[<span class="number">3</span>] .. <span class="string">&#x27;|&#x27;</span> .. ARGV[<span class="number">2</span>])</span><br><span class="line"><span class="keyword">return</span> &#123;<span class="string">&#x27;CREATED&#x27;</span>, ARGV[<span class="number">2</span>], remaining&#125;</span><br></pre></td></tr></table></figure>
+<p>这里的片段前面已经完成库存和幂等判断，不能单独当作完整脚本使用。所有
+Redis 键都由 Java 通过 <code>KEYS</code> 显式传入；SKU、用户、请求 ID
+也限制了字符范围，防止传入花括号破坏 Hash Tag 设计。</p>
+<h4 id="启动并实际调用-api">启动并实际调用 API</h4>
+<p>从项目根目录执行启动</p>
+<p>初始化库存为 3，再提交一次请求：</p>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$api</span> = <span class="string">&#x27;http://127.0.0.1:18088&#x27;</span></span><br><span class="line"><span class="built_in">Invoke-RestMethod</span> <span class="string">&quot;<span class="variable">$api</span>/api/demo/reset&quot;</span> <span class="literal">-Method</span> Post <span class="literal">-ContentType</span> <span class="string">&#x27;application/json&#x27;</span> `</span><br><span class="line">  <span class="literal">-Body</span> <span class="string">&#x27;&#123;&quot;sku&quot;:&quot;sku-1001&quot;,&quot;stock&quot;:3&#125;&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">Invoke-RestMethod</span> <span class="string">&quot;<span class="variable">$api</span>/api/orders&quot;</span> <span class="literal">-Method</span> Post <span class="literal">-ContentType</span> <span class="string">&#x27;application/json&#x27;</span> `</span><br><span class="line">  <span class="literal">-Body</span> <span class="string">&#x27;&#123;&quot;sku&quot;:&quot;sku-1001&quot;,&quot;requestId&quot;:&quot;request-001&quot;,&quot;userId&quot;:&quot;buyer-001&quot;&#125;&#x27;</span></span><br></pre></td></tr></table></figure>
+<p>本次首次调用返回 <code>CREATED</code>，库存从 3 变为
+2。重复发送同一请求，返回 <code>DUPLICATE</code>，orderId
+与第一次完全相同，库存仍为 2。换成另一个用户复用相同 requestId，则返回
+<code>CONFLICT</code>。</p>
+<figure>
+<img src="/posts/31151/06-project-api.png" alt="项目 API 实测：下单、幂等重试与身份冲突">
+<figcaption aria-hidden="true">项目 API
+实测：下单、幂等重试与身份冲突</figcaption>
+</figure>
+<p>再调用 <code>GET /api/stock/sku-1001</code>，结果为
+<code>remainingStock=2</code>、<code>orderCount=1</code>、<code>requestCount=1</code>。演示初始化接口只清理指定
+SKU 的三个案例键，不执行 FLUSHALL。</p>
+<h4 id="并发验证不超卖也不重复扣减">并发验证：不超卖，也不重复扣减</h4>
+<p>本次实验使用 <strong>32 个并发 HTTP 客户端</strong>，让 <strong>300
+个不同请求争抢 100 件库存</strong>，结果是：</p>
+<table>
+<thead>
+<tr>
+<th>指标</th>
+<th>本次实测</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CREATED</td>
+<td>100</td>
+</tr>
+<tr>
+<td>SOLD_OUT</td>
+<td>200</td>
+</tr>
+<tr>
+<td>最终库存</td>
+<td>0</td>
+</tr>
+<tr>
+<td>预占订单数</td>
+<td>100</td>
+</tr>
+</tbody>
+</table>
+<p>然后将另一个 SKU 库存初始化为 1，让 20 个线程使用同一个 requestId 和
+userId 并发调用。结果只创建一次，其他请求返回相同 orderId，最终库存为
+0，订单数为 1。</p>
+<figure>
+<img src="/posts/31151/07-project-concurrency.png" alt="并发实测：300 抢 100 与 20 次重复请求">
+<figcaption aria-hidden="true">并发实测：300 抢 100 与 20
+次重复请求</figcaption>
+</figure>
+<p>这些结果用于验证逻辑正确性。额</p>
+<h4 id="主节点故障时客户端如何恢复">主节点故障时，客户端如何恢复</h4>
+<p>实验继续保持 Java API 进程运行，先为 <code>sku-recovery</code>
+成功预占一件库存，再停止该 SKU 所在的主节点 <strong>7301</strong>。</p>
+<p>本次新主节点为 <strong>7305</strong>，客户端约 <strong>5.58
+秒</strong>恢复；恢复过程中记录到 4
+次暂时失败，没有把故障切换描述为完全无中断。接口遇到 Redis
+暂时不可用时返回 503，调用方保留原 requestId 重试。</p>
+<p>用故障前的 requestId 再次调用，得到 <code>DUPLICATE</code> 和原来的
+orderId，库存保持为 4；再用新的 requestId 下单，库存变为 3，订单总数为
+2。整个过程中 Java API 没有重启。</p>
+<figure>
+<img src="/posts/31151/08-project-failover.png" alt="项目故障恢复实测：原请求重试和新请求继续执行">
+<figcaption aria-hidden="true">项目故障恢复实测：原请求重试和新请求继续执行</figcaption>
+</figure>
+<p>实验在故障前通过同连接写入并执行
+WAIT，确认这次演示数据已复制到副本；这不等于 Redis
+在所有故障下都具备强一致性或零丢失保证。</p>
+<h4 id="验证不同-sku-实际分布到不同主节点">验证不同 SKU
+实际分布到不同主节点</h4>
+<p>最后通过同一个 Java API，分别初始化并下单三个 SKU，实测路由如下：</p>
+<table>
+<thead>
+<tr>
+<th>SKU</th>
+<th>槽号</th>
+<th>当时的主节点</th>
+<th>下单后的库存</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>sku-shard-1</td>
+<td>426</td>
+<td>7300</td>
+<td>1</td>
+</tr>
+<tr>
+<td>sku-shard-2</td>
+<td>12745</td>
+<td>7303</td>
+<td>1</td>
+</tr>
+<tr>
+<td>sku-shard-3</td>
+<td>8680</td>
+<td>7305</td>
+<td>1</td>
+</tr>
+</tbody>
+</table>
+<figure>
+<img src="/posts/31151/09-project-shards.png" alt="多 SKU 分片实测：同一 API 访问三个主节点">
+<figcaption aria-hidden="true">多 SKU 分片实测：同一 API
+访问三个主节点</figcaption>
+</figure>
+<p>业务代码没有按端口硬编码路由，而是把同 SKU 的原子操作留在同槽，由
+Cluster 客户端处理不同 SKU 的分片访问。单个热门 SKU
+仍然落在一个主节点上，Cluster 不会自动把这个 SKU
+的一个库存键拆到多个节点。</p>
+<p>这个案例是可运行的<strong>库存预占原型</strong>：订单预占记录暂存在
+Redis，还没有支付、订单数据库、超时回补和幂等记录清理。真实项目需要结合业务数据库确认正式订单，并处理异步复制、超时重试与库存补偿。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a target="_blank" rel="noopener" href="https://github.com/ergou10086">ErgouTree</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://ergou10086.github.io/posts/31151.html">https://ergou10086.github.io/posts/31151.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://ergou10086.github.io" target="_blank">ErgouTree's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Redis/">Redis</a><a class="post-meta__tags" href="/tags/%E5%BE%AE%E6%9C%8D%E5%8A%A1/">微服务</a><a class="post-meta__tags" href="/tags/%E6%9C%8D%E5%8A%A1%E6%B2%BB%E7%90%86/">服务治理</a><a class="post-meta__tags" href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/">分布式系统</a><a class="post-meta__tags" href="/tags/%E7%BC%93%E5%AD%98/">缓存</a><a class="post-meta__tags" href="/tags/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/">内存管理</a><a class="post-meta__tags" href="/tags/%E8%B5%84%E6%BA%90%E7%AE%A1%E7%90%86/">资源管理</a><a class="post-meta__tags" href="/tags/NoSQL/">NoSQL</a><a class="post-meta__tags" href="/tags/%E6%95%B0%E6%8D%AE%E4%B8%80%E8%87%B4%E6%80%A7/">数据一致性</a></div><div class="post-share"><div class="addtoany"><div class="a2a_kit a2a_kit_size_32 a2a_default_style"><a class="a2a_button_facebook"></a><a class="a2a_button_twitter"></a><a class="a2a_button_wechat"></a><a class="a2a_button_sina_weibo"></a><a class="a2a_button_facebook_messenger"></a><a class="a2a_button_email"></a><a class="a2a_button_copy_link"></a><a class="a2a_dd" target="_blank" rel="noopener" href="https://www.addtoany.com/share"></a></div></div><script async="async" src="https://static.addtoany.com/menu/page.js"></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/posts/22572.html" title="Redis part9—详解Redis的各个数据类型的底层数据结构"><img class="cover" src="/images/posts/cover_face4.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">Redis part9—详解Redis的各个数据类型的底层数据结构</div></div><div class="info-2"><div class="info-item-1">Redis 数据库本身的数据结构 Redis 的键值对中的 key 就是字符串对象，而 value 就是指Redis的数据类型，可以是String，也可以是List、Hash、Set、 Zset 的数据类型。 Redis 底层使用了一个 全局哈希表 保存所有键值对，哈希表的最大好处就是 O(1) 的时间复杂度快速查找到键值对。   img  这个全局哈希表不是孤立存在的，而是嵌套在多层 C 结构体中： 12345678redisServer（服务器）  └── redisDb *db（默认 16 个数据库）        └── dict *dict（每个库一个全局哈希表）              └── dictht ht[2]（两个哈希表，正常用 ht[0]，rehash 时用 ht[1]）                    └── dictEntry **table（哈希桶数组）                          └── dictEntry（每个节点：key + value + next）                   ...</div></div></div></a><a class="pagination-related" href="/posts/5391.html" title="Redis part11—微服务下使用Redis进行缓存设计的实践讲解"><img class="cover" src="/images/posts/cover_redis.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Redis part11—微服务下使用Redis进行缓存设计的实践讲解</div></div><div class="info-2"><div class="info-item-1">前言 单机部署时，给一个查询接口加上 Redis 就够用了：查不到就读库，读完写回缓存，更新时删掉缓存。同样的代码拆成多个实例之后，事情开始变形，本地锁挡不住另一个进程，删掉的缓存可能被一个更早发出的读请求写回来，Redis 一旦变慢又会把压力成倍转给数据库。 这篇文章沿着”一次读请求”和”一次配置更新”两条主线，把一个可以实际运行的项目完整拆开，讲清楚缓存的每个设计决定在解决什么问题、付出了什么代价、边界在哪里。 核心结论  缓存是可重建的副本：数据的角色决定故障策略；配置查询可以降级，安全状态必须回查事实源。 读链路四道关卡：缓存命中 → 布隆三态 → 租约重建与二次检查 → 发布校验。 三类问题三种防御：空值与布隆挡穿透，同键锁挡击穿，抖动、熔断与回源上限挡雪崩。 旧快照用代际协议关闭：“读前取号、发布验号”，失效时原子地推进代际并删除缓存。 失效可靠性交给 Outbox：至少一次执行，副作用必须可重复。  实验边界  同一个 Spring Boot 应用启动两个 JVM，共享一个 Redis 实例和一份...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/posts/5391.html" title="Redis part11—微服务下使用Redis进行缓存设计的实践讲解"><img class="cover" src="/images/posts/cover_redis.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-11-04</div><div class="info-item-2">Redis part11—微服务下使用Redis进行缓存设计的实践讲解</div></div><div class="info-2"><div class="info-item-1">前言 单机部署时，给一个查询接口加上 Redis 就够用了：查不到就读库，读完写回缓存，更新时删掉缓存。同样的代码拆成多个实例之后，事情开始变形，本地锁挡不住另一个进程，删掉的缓存可能被一个更早发出的读请求写回来，Redis 一旦变慢又会把压力成倍转给数据库。 这篇文章沿着”一次读请求”和”一次配置更新”两条主线，把一个可以实际运行的项目完整拆开，讲清楚缓存的每个设计决定在解决什么问题、付出了什么代价、边界在哪里。 核心结论  缓存是可重建的副本：数据的角色决定故障策略；配置查询可以降级，安全状态必须回查事实源。 读链路四道关卡：缓存命中 → 布隆三态 → 租约重建与二次检查 → 发布校验。 三类问题三种防御：空值与布隆挡穿透，同键锁挡击穿，抖动、熔断与回源上限挡雪崩。 旧快照用代际协议关闭：“读前取号、发布验号”，失效时原子地推进代际并删除缓存。 失效可靠性交给 Outbox：至少一次执行，副作用必须可重复。  实验边界  同一个 Spring Boot 应用启动两个 JVM，共享一个 Redis 实例和一份...</div></div></div></a><a class="pagination-related" href="/posts/52876.html" title="Redis part8—Redis性能优化"><img class="cover" src="/images/posts/cover_rabbitmq1.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-02-22</div><div class="info-item-2">Redis part8—Redis性能优化</div></div><div class="info-2"><div class="info-item-1">Redis常见阻塞原因 命令阻塞 首先，Redis 是单线程的内存数据库，所有命令都在主线程中串行执行。而且 Redis 中的大部分命令都是 O(1) 时间复杂度，也有少部分 O(n) 时间复杂度的命令。 这意味着，O (1) 命令不会显著阻塞主线程，O (n) 会明显占用主线程，导致后续所有请求排队等待，这就表现成客户端阻塞，超时，响应慢等问题 那么这种情况就是使用不当的命令导致的阻塞，就好像是在 MySQL 那边 select *联查了所有字段导致了全表扫描一样导致的性能问题，但是你 MySQL 能加索引将 O (n) 降为 O (log n)，所以说，当你API或数据结构使用不合理，肯定也会导致这种情况 首先这种全量遍历类是O(n)肯定会影响性能  keys：获取所有的 key 操作 HGETALL：会返回一个 Hash 中所有的键值对。 SMEMBERS：返回 Set 中的所有元素。  对于集合计算类，也是O (n)，不当的使用也可能会导致问题  SINTER/SUNION/SDIFF：计算多个 Set...</div></div></div></a><a class="pagination-related" href="/posts/36227.html" title="Redis part6—Redis3种常用的缓存读写策略及其缓存问题详解"><img class="cover" src="/images/posts/cover_galgame.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-02-03</div><div class="info-item-2">Redis part6—Redis3种常用的缓存读写策略及其缓存问题详解</div></div><div class="info-2"><div class="info-item-1">介绍Redis的缓存读写策略 前一阵子，我写了个熟练使用 Redis，但是我一想，缓存常用的 3 种读写策略，我却不怎么知道 所以说，今天来系统的介绍一下这些内容，Redis有三种读写策略分别是：  旁路缓存策略 读写穿透策略 异步缓存写入策略  三种缓存读写策略各有优势，需要我们根据实际的业务场景选择最合适的 Cache Aside Pattern 旁路缓存模式 Redis 的 旁路缓存模式（Cache-Aside Pattern），也被称为 懒加载缓存（Lazy Loading）或 旁观者缓存模式，是目前最常用、最经典的缓存使用策略之一，比较适合读请求比较多的场景 旁路缓存模式中服务端需要同时维护DB和Cache，并且是以DB的结果为准。 也就是  缓存是“旁路”的，不是主数据源；数据库才是权威数据源。  那么，整个读写操作的流程大概如下 读：  应用程序在读取数据时，先查 Redis 缓存。  如果缓存命中（cache...</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><p class="comment-service-note">评论使用 GitHub 账号登录。<a href="https://github.com/ergou10086/HexoComment/issues" target="_blank" rel="noopener noreferrer">在 GitHub 查看评论</a></p><div class="comment-wrap"><div><div id="utterances-wrap"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/arp.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">ErgouTree</div><div class="author-info-description">I start a brand-new life with you.</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">364</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">242</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">63</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/ergou10086"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/ergou10086" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:zjm88822201@126.com" target="_blank" title="邮箱：zjm88822201@126.com"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a><a class="social-icon" href="https://space.bilibili.com/142045656" target="_blank" title="bilibili"><i class="fab fa-bilibili" style="color: #4a72be;"></i></a></div></div><div class="card-widget card-announcement" data-aside-collapse="announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span><button class="aside-collapse-btn" type="button" aria-expanded="true" aria-controls="aside-collapse-announcement"><i class="fas fa-chevron-down fa-fw"></i></button></div><div class="aside-collapse-content" id="aside-collapse-announcement"><div class="announcement_content">作者长期陷入galgame和osu!maina4k中 祝他好运吧 对了 如果图片加载过慢 建议科学上网进行使用</div></div></div><div class="card-widget card-weather"><div class="item-headline"><i class="fas fa-cloud-sun"></i><span>天气如何？</span></div><div class="weather-widget"><div class="weather-loading"><i class="fas fa-spinner fa-spin"></i><span>正在获取天气…</span></div><div class="weather-error" style="display: none;"><i class="fas fa-triangle-exclamation"></i><span class="weather-error-text">天气加载失败</span><button class="weather-retry" type="button">重试</button></div><div class="weather-main" style="display: none;"><div class="weather-now"><div class="weather-now-left"><i class="weather-now-icon fas fa-cloud-sun"></i><div class="weather-now-temp"><span class="weather-temp-value">--</span><span class="weather-temp-unit">°C</span></div></div><div class="weather-now-right"><div class="weather-desc">--</div><div class="weather-city"><i class="fas fa-location-dot"></i><span class="weather-city-name">定位中</span></div></div></div><div class="weather-meta"><div class="weather-meta-item" title="体感温度"><i class="fas fa-temperature-half"></i><span class="weather-feels">--</span></div><div class="weather-meta-item" title="相对湿度"><i class="fas fa-droplet"></i><span class="weather-humidity">--</span></div><div class="weather-meta-item" title="风向风力"><i class="fas fa-wind"></i><span class="weather-wind">--</span></div></div><div class="weather-chart"><div class="weather-tabs"><button class="weather-tab is-active" type="button" data-range="hourly">未来24小时</button><button class="weather-tab" type="button" data-range="daily">未来7天</button></div><div class="weather-chart-wrap"><div class="weather-chart-canvas"></div><div class="weather-tooltip"></div></div></div><div class="weather-foot"><span class="weather-update" title="数据来源：Open-Meteo">更新中…</span><button class="weather-refresh" type="button" title="刷新天气" aria-label="刷新天气"><i class="fas fa-rotate-right"></i></button></div></div></div></div><a class="osekai-card" href="https://inex.osekai.net/profiles/34668664" target="_blank" rel="noopener noreferrer" title="osu! profile · ErgouTree"><img class="osekai-banner" src="/images/osekai-banner.png" alt="ErgouTree osu! profile" loading="lazy" decoding="async"/></a><div class="sticky_layout"></div><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9B%86%E7%BE%A4%E5%92%8C%E5%88%86%E5%B8%83%E5%BC%8F%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="toc-number">1.</span> <span class="toc-text">集群和分布式的区别</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#redis-%E9%9B%86%E7%BE%A4"><span class="toc-number">2.</span> <span class="toc-text">Redis 集群</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#redis%E4%B8%89%E5%A4%A7%E9%9B%86%E7%BE%A4%E6%A8%A1%E5%BC%8F"><span class="toc-number">2.1.</span> <span class="toc-text">Redis三大集群模式</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6"><span class="toc-number">2.1.1.</span> <span class="toc-text">主从复制</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%93%A8%E5%85%B5%E6%A8%A1%E5%BC%8F"><span class="toc-number">2.1.2.</span> <span class="toc-text">哨兵模式</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#cluster%E6%A8%A1%E5%BC%8F"><span class="toc-number">2.1.3.</span> <span class="toc-text">Cluster模式</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#redis%E4%B8%89%E5%A4%A7%E9%9B%86%E7%BE%A4%E6%A8%A1%E5%BC%8F%E7%9A%84%E6%BC%94%E7%A4%BA"><span class="toc-number">2.2.</span> <span class="toc-text">Redis三大集群模式的演示</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6%E5%90%8C%E6%AD%A5%E6%95%B0%E6%8D%AE%E4%BD%86%E4%B8%8D%E4%BC%9A%E8%87%AA%E5%8A%A8%E9%80%89%E4%B8%BB"><span class="toc-number">2.2.1.</span> <span class="toc-text">主从复制：同步数据，但不会自动选主</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%93%A8%E5%85%B5%E4%B8%BB%E8%8A%82%E7%82%B9%E6%95%85%E9%9A%9C%E5%90%8E%E8%87%AA%E5%8A%A8%E5%88%87%E6%8D%A2"><span class="toc-number">2.2.2.</span> <span class="toc-text">哨兵：主节点故障后自动切换</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#cluster%E6%95%B0%E6%8D%AE%E5%88%86%E7%89%87%E9%87%8D%E5%AE%9A%E5%90%91%E4%B8%8E%E6%95%85%E9%9A%9C%E6%8E%A5%E7%AE%A1"><span class="toc-number">2.2.3.</span> <span class="toc-text">Cluster：数据分片、重定向与故障接管</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B7%B1%E5%85%A5-cluster"><span class="toc-number">2.3.</span> <span class="toc-text">深入 Cluster</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%93%88%E5%B8%8C%E6%A7%BD"><span class="toc-number">2.3.1.</span> <span class="toc-text">哈希槽</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%A2%E6%88%B7%E7%AB%AF%E8%B7%AF%E7%94%B1"><span class="toc-number">2.3.2.</span> <span class="toc-text">客户端路由</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%9B%86%E7%BE%A4%E8%A7%84%E6%A8%A1%E4%B8%8E%E9%98%B2%E8%84%91%E8%A3%82"><span class="toc-number">2.3.3.</span> <span class="toc-text">集群规模与防脑裂</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F%E5%B8%A6%E6%9D%A5%E7%9A%84%E6%96%B0%E7%BA%A6%E6%9D%9F"><span class="toc-number">2.3.4.</span> <span class="toc-text">分布式带来的新约束</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#redis-%E5%9C%A8%E5%88%86%E5%B8%83%E5%BC%8F%E4%B8%8B%E7%9A%84%E4%BD%BF%E7%94%A8"><span class="toc-number">3.</span> <span class="toc-text">Redis 在分布式下的使用</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81"><span class="toc-number">3.1.</span> <span class="toc-text">分布式锁</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9E%E9%99%85%E9%A1%B9%E7%9B%AE%E4%B8%AD%E4%BD%BF%E7%94%A8redis-cluster%E6%A8%A1%E5%BC%8F%E7%9A%84%E6%A1%88%E4%BE%8B"><span class="toc-number">3.2.</span> <span class="toc-text">实际项目中使用Redis
+Cluster模式的案例</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#cluster-%E8%BF%9E%E6%8E%A5%E4%B8%8E%E9%94%AE%E8%AE%BE%E8%AE%A1"><span class="toc-number">3.2.1.</span> <span class="toc-text">Cluster 连接与键设计</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#lua-%E5%8E%9F%E5%AD%90%E9%A2%84%E5%8D%A0%E4%B8%8E%E5%B9%82%E7%AD%89"><span class="toc-number">3.2.2.</span> <span class="toc-text">Lua 原子预占与幂等</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%90%AF%E5%8A%A8%E5%B9%B6%E5%AE%9E%E9%99%85%E8%B0%83%E7%94%A8-api"><span class="toc-number">3.2.3.</span> <span class="toc-text">启动并实际调用 API</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%B9%B6%E5%8F%91%E9%AA%8C%E8%AF%81%E4%B8%8D%E8%B6%85%E5%8D%96%E4%B9%9F%E4%B8%8D%E9%87%8D%E5%A4%8D%E6%89%A3%E5%87%8F"><span class="toc-number">3.2.4.</span> <span class="toc-text">并发验证：不超卖，也不重复扣减</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%BB%E8%8A%82%E7%82%B9%E6%95%85%E9%9A%9C%E6%97%B6%E5%AE%A2%E6%88%B7%E7%AB%AF%E5%A6%82%E4%BD%95%E6%81%A2%E5%A4%8D"><span class="toc-number">3.2.5.</span> <span class="toc-text">主节点故障时，客户端如何恢复</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%AA%8C%E8%AF%81%E4%B8%8D%E5%90%8C-sku-%E5%AE%9E%E9%99%85%E5%88%86%E5%B8%83%E5%88%B0%E4%B8%8D%E5%90%8C%E4%B8%BB%E8%8A%82%E7%82%B9"><span class="toc-number">3.2.6.</span> <span class="toc-text">验证不同 SKU
+实际分布到不同主节点</span></a></li></ol></li></ol></li></ol></div></div><div class="card-widget card-post-series"><div class="item-headline"><i class="fa-solid fa-layer-group"></i><span>Redis 入门与进阶</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/32715.html" title="Redis part1—介绍NoSQL和缓存技术"><img src="/images/posts/cover_config.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis part1—介绍NoSQL和缓存技术"></a><div class="content"><a class="title" href="/posts/32715.html" title="Redis part1—介绍NoSQL和缓存技术">Redis part1—介绍NoSQL和缓存技术</a><time datetime="2025-09-24T07:07:06.000Z" title="发表于 2025-09-24 15:07:06">2025-09-24</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/51940.html" title="Redis part2—Redis的基本命令和数据结构"><img src="/images/posts/cover_redis.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis part2—Redis的基本命令和数据结构"></a><div class="content"><a class="title" href="/posts/51940.html" title="Redis part2—Redis的基本命令和数据结构">Redis part2—Redis的基本命令和数据结构</a><time datetime="2025-09-24T12:08:57.000Z" title="发表于 2025-09-24 20:08:57">2025-09-24</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/20685.html" title="Redis part3—Redis在Spring框架下的开发使用"><img src="/images/posts/cover_redis.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis part3—Redis在Spring框架下的开发使用"></a><div class="content"><a class="title" href="/posts/20685.html" title="Redis part3—Redis在Spring框架下的开发使用">Redis part3—Redis在Spring框架下的开发使用</a><time datetime="2025-09-26T13:27:30.000Z" title="发表于 2025-09-26 21:27:30">2025-09-26</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/44679.html" title="Redis part4—Redis布隆过滤器"><img src="/images/posts/cover_database4.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis part4—Redis布隆过滤器"></a><div class="content"><a class="title" href="/posts/44679.html" title="Redis part4—Redis布隆过滤器">Redis part4—Redis布隆过滤器</a><time datetime="2025-10-31T09:51:12.000Z" title="发表于 2025-10-31 17:51:12">2025-10-31</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/1472.html" title="Redis part5—RDB持久化和AOF持久化"><img src="/images/posts/cover_springcloud.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis part5—RDB持久化和AOF持久化"></a><div class="content"><a class="title" href="/posts/1472.html" title="Redis part5—RDB持久化和AOF持久化">Redis part5—RDB持久化和AOF持久化</a><time datetime="2025-10-31T12:23:01.000Z" title="发表于 2025-10-31 20:23:01">2025-10-31</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/36227.html" title="Redis part6—Redis3种常用的缓存读写策略及其缓存问题详解"><img src="/images/posts/cover_galgame.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis part6—Redis3种常用的缓存读写策略及其缓存问题详解"></a><div class="content"><a class="title" href="/posts/36227.html" title="Redis part6—Redis3种常用的缓存读写策略及其缓存问题详解">Redis part6—Redis3种常用的缓存读写策略及其缓存问题详解</a><time datetime="2026-02-03T09:33:57.000Z" title="发表于 2026-02-03 17:33:57">2026-02-03</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/63126.html" title="Redis part7—基于Redis和Redisson的分布式锁"><img src="/images/posts/cover_java20.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis part7—基于Redis和Redisson的分布式锁"></a><div class="content"><a class="title" href="/posts/63126.html" title="Redis part7—基于Redis和Redisson的分布式锁">Redis part7—基于Redis和Redisson的分布式锁</a><time datetime="2026-02-20T13:05:02.000Z" title="发表于 2026-02-20 21:05:02">2026-02-20</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/52876.html" title="Redis part8—Redis性能优化"><img src="/images/posts/cover_rabbitmq1.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis part8—Redis性能优化"></a><div class="content"><a class="title" href="/posts/52876.html" title="Redis part8—Redis性能优化">Redis part8—Redis性能优化</a><time datetime="2026-02-21T16:24:30.000Z" title="发表于 2026-02-22 00:24:30">2026-02-22</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/22572.html" title="Redis part9—详解Redis的各个数据类型的底层数据结构"><img src="/images/posts/cover_face4.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis part9—详解Redis的各个数据类型的底层数据结构"></a><div class="content"><a class="title" href="/posts/22572.html" title="Redis part9—详解Redis的各个数据类型的底层数据结构">Redis part9—详解Redis的各个数据类型的底层数据结构</a><time datetime="2026-11-04T08:08:49.000Z" title="发表于 2026-11-04 16:08:49">2026-11-04</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/31151.html" title="Redis part10—集群与分布式下的Redis"><img src="/images/posts/cover_redis2.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis part10—集群与分布式下的Redis"></a><div class="content"><a class="title" href="/posts/31151.html" title="Redis part10—集群与分布式下的Redis">Redis part10—集群与分布式下的Redis</a><time datetime="2026-11-04T08:14:39.000Z" title="发表于 2026-11-04 16:14:39">2026-11-04</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/5391.html" title="Redis part11—微服务下使用Redis进行缓存设计的实践讲解"><img src="/images/posts/cover_redis.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis part11—微服务下使用Redis进行缓存设计的实践讲解"></a><div class="content"><a class="title" href="/posts/5391.html" title="Redis part11—微服务下使用Redis进行缓存设计的实践讲解">Redis part11—微服务下使用Redis进行缓存设计的实践讲解</a><time datetime="2026-11-04T08:18:05.000Z" title="发表于 2026-11-04 16:18:05">2026-11-04</time></div></div></div></div><div class="card-widget card-recent-post" data-aside-collapse="recent-post" data-aside-per-page="5"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span><button class="aside-collapse-btn" type="button" aria-expanded="true" aria-controls="aside-collapse-recent-post"><i class="fas fa-chevron-down fa-fw"></i></button></div><div class="aside-collapse-content" id="aside-collapse-recent-post"><div class="aside-list"><div class="aside-list-item" data-post-index="0" data-post-page="1"><a class="thumbnail" href="/posts/5391.html" title="Redis part11—微服务下使用Redis进行缓存设计的实践讲解"><img src="/images/posts/cover_redis.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis part11—微服务下使用Redis进行缓存设计的实践讲解"/></a><div class="content"><a class="title" href="/posts/5391.html" title="Redis part11—微服务下使用Redis进行缓存设计的实践讲解">Redis part11—微服务下使用Redis进行缓存设计的实践讲解</a><time datetime="2026-11-04T08:18:05.000Z" title="发表于 2026-11-04 16:18:05">2026-11-04</time></div></div><div class="aside-list-item" data-post-index="1" data-post-page="1"><a class="thumbnail" href="/posts/31151.html" title="Redis part10—集群与分布式下的Redis"><img src="/images/posts/cover_redis2.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis part10—集群与分布式下的Redis"/></a><div class="content"><a class="title" href="/posts/31151.html" title="Redis part10—集群与分布式下的Redis">Redis part10—集群与分布式下的Redis</a><time datetime="2026-11-04T08:14:39.000Z" title="发表于 2026-11-04 16:14:39">2026-11-04</time></div></div><div class="aside-list-item" data-post-index="2" data-post-page="1"><a class="thumbnail" href="/posts/22572.html" title="Redis part9—详解Redis的各个数据类型的底层数据结构"><img src="/images/posts/cover_face4.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis part9—详解Redis的各个数据类型的底层数据结构"/></a><div class="content"><a class="title" href="/posts/22572.html" title="Redis part9—详解Redis的各个数据类型的底层数据结构">Redis part9—详解Redis的各个数据类型的底层数据结构</a><time datetime="2026-11-04T08:08:49.000Z" title="发表于 2026-11-04 16:08:49">2026-11-04</time></div></div><div class="aside-list-item" data-post-index="3" data-post-page="1"><a class="thumbnail" href="/posts/17950.html" title="大模型基础和Agent基础面试题"><img src="/images/posts/cover_7x.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="大模型基础和Agent基础面试题"/></a><div class="content"><a class="title" href="/posts/17950.html" title="大模型基础和Agent基础面试题">大模型基础和Agent基础面试题</a><time datetime="2026-11-04T07:59:47.000Z" title="发表于 2026-11-04 15:59:47">2026-11-04</time></div></div><div class="aside-list-item" data-post-index="4" data-post-page="1"><a class="thumbnail" href="/posts/10062.html" title="Netty part2—Netty核心机制和事件编程"><img src="/images/posts/cover_netty2.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Netty part2—Netty核心机制和事件编程"/></a><div class="content"><a class="title" href="/posts/10062.html" title="Netty part2—Netty核心机制和事件编程">Netty part2—Netty核心机制和事件编程</a><time datetime="2026-10-25T13:27:30.000Z" title="发表于 2026-10-25 21:27:30">2026-10-25</time></div></div><div class="aside-list-item is-hidden" data-post-index="5" data-post-page="2"><a class="thumbnail" href="/posts/513.html" title="Netty part1—网络编程基础与Netty入门"><img src="/images/posts/cover_netty1.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Netty part1—网络编程基础与Netty入门"/></a><div class="content"><a class="title" href="/posts/513.html" title="Netty part1—网络编程基础与Netty入门">Netty part1—网络编程基础与Netty入门</a><time datetime="2026-10-24T10:12:10.000Z" title="发表于 2026-10-24 18:12:10">2026-10-24</time></div></div><div class="aside-list-item is-hidden" data-post-index="6" data-post-page="2"><a class="thumbnail" href="/posts/39155.html" title="RabbitMQ、Kafka等消息队列相关面试题和面试知识点讲解"><img src="/images/posts/cover_mq2.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="RabbitMQ、Kafka等消息队列相关面试题和面试知识点讲解"/></a><div class="content"><a class="title" href="/posts/39155.html" title="RabbitMQ、Kafka等消息队列相关面试题和面试知识点讲解">RabbitMQ、Kafka等消息队列相关面试题和面试知识点讲解</a><time datetime="2026-10-23T11:56:22.000Z" title="发表于 2026-10-23 19:56:22">2026-10-23</time></div></div><div class="aside-list-item is-hidden" data-post-index="7" data-post-page="2"><a class="thumbnail" href="/posts/25810.html" title="Web实时消息推送的两种方案—WebSocket和SSE，从原理到落地"><img src="/images/posts/cover_websocket.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Web实时消息推送的两种方案—WebSocket和SSE，从原理到落地"/></a><div class="content"><a class="title" href="/posts/25810.html" title="Web实时消息推送的两种方案—WebSocket和SSE，从原理到落地">Web实时消息推送的两种方案—WebSocket和SSE，从原理到落地</a><time datetime="2026-10-15T08:23:58.000Z" title="发表于 2026-10-15 16:23:58">2026-10-15</time></div></div><div class="aside-list-item is-hidden" data-post-index="8" data-post-page="2"><a class="thumbnail" href="/posts/24369.html" title="SpringDataJPA，Hibernate，MyBatis常见面试题汇总"><img src="/images/posts/cover_database3.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="SpringDataJPA，Hibernate，MyBatis常见面试题汇总"/></a><div class="content"><a class="title" href="/posts/24369.html" title="SpringDataJPA，Hibernate，MyBatis常见面试题汇总">SpringDataJPA，Hibernate，MyBatis常见面试题汇总</a><time datetime="2026-10-13T11:25:08.000Z" title="发表于 2026-10-13 19:25:08">2026-10-13</time></div></div><div class="aside-list-item is-hidden" data-post-index="9" data-post-page="2"><a class="thumbnail" href="/posts/55921.html" title="Spring Security及网络安全相关内容面试题汇总"><img src="/images/posts/cover_rabbitmq2.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Spring Security及网络安全相关内容面试题汇总"/></a><div class="content"><a class="title" href="/posts/55921.html" title="Spring Security及网络安全相关内容面试题汇总">Spring Security及网络安全相关内容面试题汇总</a><time datetime="2026-10-13T09:37:52.000Z" title="发表于 2026-10-13 17:37:52">2026-10-13</time></div></div><div class="aside-list-item is-hidden" data-post-index="10" data-post-page="3"><a class="thumbnail" href="/posts/43512.html" title="Spring Boot 相关面试题整理—相关注解"><img src="/images/posts/cover_face6.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Spring Boot 相关面试题整理—相关注解"/></a><div class="content"><a class="title" href="/posts/43512.html" title="Spring Boot 相关面试题整理—相关注解">Spring Boot 相关面试题整理—相关注解</a><time datetime="2026-10-07T09:26:09.000Z" title="发表于 2026-10-07 17:26:09">2026-10-07</time></div></div><div class="aside-list-item is-hidden" data-post-index="11" data-post-page="3"><a class="thumbnail" href="/posts/42735.html" title="Redis面试题汇总和面试知识讲解"><img src="/images/posts/cover_redis2.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis面试题汇总和面试知识讲解"/></a><div class="content"><a class="title" href="/posts/42735.html" title="Redis面试题汇总和面试知识讲解">Redis面试题汇总和面试知识讲解</a><time datetime="2026-10-06T09:12:51.000Z" title="发表于 2026-10-06 17:12:51">2026-10-06</time></div></div><div class="aside-list-item is-hidden" data-post-index="12" data-post-page="3"><a class="thumbnail" href="/posts/54855.html" title="从JDK8开始各个版本JDK的重要新特性"><img src="/images/posts/cover_java22.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="从JDK8开始各个版本JDK的重要新特性"/></a><div class="content"><a class="title" href="/posts/54855.html" title="从JDK8开始各个版本JDK的重要新特性">从JDK8开始各个版本JDK的重要新特性</a><time datetime="2026-10-05T08:30:05.000Z" title="发表于 2026-10-05 16:30:05">2026-10-05</time></div></div><div class="aside-list-item is-hidden" data-post-index="13" data-post-page="3"><a class="thumbnail" href="/posts/57538.html" title="详解Java之集合框架 part4—详解Map接口下的集合"><img src="/images/posts/cover_theory.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="详解Java之集合框架 part4—详解Map接口下的集合"/></a><div class="content"><a class="title" href="/posts/57538.html" title="详解Java之集合框架 part4—详解Map接口下的集合">详解Java之集合框架 part4—详解Map接口下的集合</a><time datetime="2026-10-05T08:07:02.000Z" title="发表于 2026-10-05 16:07:02">2026-10-05</time></div></div><div class="aside-list-item is-hidden" data-post-index="14" data-post-page="3"><a class="thumbnail" href="/posts/50731.html" title="详解Java之集合框架 part3—详解Queue和Deque接口下的集合"><img src="/images/posts/cover_talk2.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="详解Java之集合框架 part3—详解Queue和Deque接口下的集合"/></a><div class="content"><a class="title" href="/posts/50731.html" title="详解Java之集合框架 part3—详解Queue和Deque接口下的集合">详解Java之集合框架 part3—详解Queue和Deque接口下的集合</a><time datetime="2026-10-05T08:05:13.000Z" title="发表于 2026-10-05 16:05:13">2026-10-05</time></div></div><div class="aside-list-item is-hidden" data-post-index="15" data-post-page="4"><a class="thumbnail" href="/posts/59487.html" title="详解Java之集合框架 part2—详解Set接口下的集合"><img src="/images/posts/cover_c.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="详解Java之集合框架 part2—详解Set接口下的集合"/></a><div class="content"><a class="title" href="/posts/59487.html" title="详解Java之集合框架 part2—详解Set接口下的集合">详解Java之集合框架 part2—详解Set接口下的集合</a><time datetime="2026-10-05T08:03:13.000Z" title="发表于 2026-10-05 16:03:13">2026-10-05</time></div></div><div class="aside-list-item is-hidden" data-post-index="16" data-post-page="4"><a class="thumbnail" href="/posts/47445.html" title="数学物理方程之三类典型模型的建立"><img src="/images/posts/cover_teach2.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="数学物理方程之三类典型模型的建立"/></a><div class="content"><a class="title" href="/posts/47445.html" title="数学物理方程之三类典型模型的建立">数学物理方程之三类典型模型的建立</a><time datetime="2026-10-02T09:03:43.000Z" title="发表于 2026-10-02 17:03:43">2026-10-02</time></div></div><div class="aside-list-item is-hidden" data-post-index="17" data-post-page="4"><a class="thumbnail" href="/posts/35817.html" title="Linux常用命令总结"><div style="background: /images/posts/cover_linux1"></div></a><div class="content"><a class="title" href="/posts/35817.html" title="Linux常用命令总结">Linux常用命令总结</a><time datetime="2026-10-02T08:33:32.000Z" title="发表于 2026-10-02 16:33:32">2026-10-02</time></div></div><div class="aside-list-item is-hidden" data-post-index="18" data-post-page="4"><a class="thumbnail" href="/posts/9971.html" title="Linux常用知识总结"><div style="background: /images/posts/cover_linux3"></div></a><div class="content"><a class="title" href="/posts/9971.html" title="Linux常用知识总结">Linux常用知识总结</a><time datetime="2026-10-02T08:23:39.000Z" title="发表于 2026-10-02 16:23:39">2026-10-02</time></div></div><div class="aside-list-item is-hidden" data-post-index="19" data-post-page="4"><a class="thumbnail" href="/posts/16607.html" title="LangChain4j part9—MCP、可观测性、护栏机制"><img src="/images/posts/cover_wish.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="LangChain4j part9—MCP、可观测性、护栏机制"/></a><div class="content"><a class="title" href="/posts/16607.html" title="LangChain4j part9—MCP、可观测性、护栏机制">LangChain4j part9—MCP、可观测性、护栏机制</a><time datetime="2026-08-05T09:30:52.000Z" title="发表于 2026-08-05 17:30:52">2026-08-05</time></div></div><div class="aside-list-item is-hidden" data-post-index="20" data-post-page="5"><a class="thumbnail" href="/posts/35721.html" title="LangChain4j part8—ToolCalling 和 FunctionCalling"><img src="/images/posts/cover_java24.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="LangChain4j part8—ToolCalling 和 FunctionCalling"/></a><div class="content"><a class="title" href="/posts/35721.html" title="LangChain4j part8—ToolCalling 和 FunctionCalling">LangChain4j part8—ToolCalling 和 FunctionCalling</a><time datetime="2026-07-29T09:59:48.000Z" title="发表于 2026-07-29 17:59:48">2026-07-29</time></div></div><div class="aside-list-item is-hidden" data-post-index="21" data-post-page="5"><a class="thumbnail" href="/posts/28448.html" title="以一个真实的项目架构窥探实用性领域驱动设计的核心内容"><img src="/images/posts/cover_dubbo2.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="以一个真实的项目架构窥探实用性领域驱动设计的核心内容"/></a><div class="content"><a class="title" href="/posts/28448.html" title="以一个真实的项目架构窥探实用性领域驱动设计的核心内容">以一个真实的项目架构窥探实用性领域驱动设计的核心内容</a><time datetime="2026-07-07T03:53:38.000Z" title="发表于 2026-07-07 11:53:38">2026-07-07</time></div></div><div class="aside-list-item is-hidden" data-post-index="22" data-post-page="5"><a class="thumbnail" href="/posts/63551.html" title="LangChain4j part7—RAG和向量嵌入的使用"><img src="/images/posts/cover_langchain4.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="LangChain4j part7—RAG和向量嵌入的使用"/></a><div class="content"><a class="title" href="/posts/63551.html" title="LangChain4j part7—RAG和向量嵌入的使用">LangChain4j part7—RAG和向量嵌入的使用</a><time datetime="2026-07-02T00:50:52.000Z" title="发表于 2026-07-02 08:50:52">2026-07-02</time></div></div><div class="aside-list-item is-hidden" data-post-index="23" data-post-page="5"><a class="thumbnail" href="/posts/19440.html" title="LangChain4j part6—链和AI Agent"><img src="/images/posts/cover_langchain4j3.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="LangChain4j part6—链和AI Agent"/></a><div class="content"><a class="title" href="/posts/19440.html" title="LangChain4j part6—链和AI Agent">LangChain4j part6—链和AI Agent</a><time datetime="2026-06-14T12:42:44.000Z" title="发表于 2026-06-14 20:42:44">2026-06-14</time></div></div><div class="aside-list-item is-hidden" data-post-index="24" data-post-page="5"><a class="thumbnail" href="/posts/12276.html" title="LangChain4j part5—了解LangChain4j关于提示词的更多内容"><img src="/images/posts/cover_config.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="LangChain4j part5—了解LangChain4j关于提示词的更多内容"/></a><div class="content"><a class="title" href="/posts/12276.html" title="LangChain4j part5—了解LangChain4j关于提示词的更多内容">LangChain4j part5—了解LangChain4j关于提示词的更多内容</a><time datetime="2026-06-12T08:21:21.000Z" title="发表于 2026-06-12 16:21:21">2026-06-12</time></div></div></div><nav class="aside-recent-pagination" aria-label="最新文章"><button class="aside-recent-page current" type="button" data-page="1" aria-current="page">1</button><button class="aside-recent-page" type="button" data-page="2">2</button><button class="aside-recent-page" type="button" data-page="3">3</button><button class="aside-recent-page" type="button" data-page="4">4</button><button class="aside-recent-page" type="button" data-page="5">5</button></nav></div></div></div></main><div class="fps-display"><span id="fps">FPS: 60</span></div><footer id="footer" style="background-image: url(/images/posts/cover_redis2.jpg);"><div id="footer-wrap"><div class="copyright">&copy;2024 - 2026 By ErgouTree</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text" data-runtime-start="2025-03-19T00:00:00+08:00">忘れたくない思い、ありますか？ <br><span id="realtime_duration" style="font-family: monospace;"></span><br><a href="https://icp.gov.moe/?keyword=20257009" target="_blank">萌ICP备20257009号</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><button id="theme-toggle" type="button" title="切换到深色模式" aria-label="切换到深色模式" aria-pressed="false"><svg class="theme-icon theme-icon-sun" width="25" height="25" viewBox="0 0 1024 1024" aria-hidden="true"><use href="#icon-sun"></use></svg><svg class="theme-icon theme-icon-moon" width="25" height="25" viewBox="0 0 1024 1024" aria-hidden="true"><use href="#icon-moon"></use></svg></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button><button id="wallpaper-mode" type="button" title="切换为一图流背景" aria-label="切换为一图流背景" aria-pressed="false"><i class="fas fa-panorama" aria-hidden="true"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="chat-btn" type="button" title="聊天" style="display:none"><i class="fas fa-comment"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (true) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script><script>(() => {
+  const applyThemeDefaultsConfig = theme => {
+    if (theme === 'dark-mode') {
+      Chart.defaults.color = "rgba(255, 255, 255, 0.8)"
+      Chart.defaults.borderColor = "rgba(255, 255, 255, 0.2)"
+      Chart.defaults.scale.ticks.backdropColor = "transparent"
+    } else {
+      Chart.defaults.color = "rgba(0, 0, 0, 0.8)"
+      Chart.defaults.borderColor = "rgba(0, 0, 0, 0.1)"
+      Chart.defaults.scale.ticks.backdropColor = "transparent"
+    }
+  }
+
+  // Recursively traverse the config object and automatically apply theme-specific color schemes
+  const applyThemeConfig = (obj, theme) => {
+    if (typeof obj !== 'object' || obj === null) return
+
+    Object.keys(obj).forEach(key => {
+      const value = obj[key]
+      // If the property is an object and has theme-specific options, apply them
+      if (typeof value === 'object' && value !== null) {
+        if (value[theme]) {
+          obj[key] = value[theme] // Apply the value for the current theme
+        } else {
+          // Recursively process child objects
+          applyThemeConfig(value, theme)
+        }
+      }
+    })
+  }
+
+  const runChartJS = ele => {
+    window.loadChartJS = true
+
+    Array.from(ele).forEach((item, index) => {
+      const chartSrc = item.firstElementChild
+      const chartID = item.getAttribute('data-chartjs-id') || ('chartjs-' + index) // Use custom ID or default ID
+      const width = item.getAttribute('data-width')
+      const existingCanvas = document.getElementById(chartID)
+
+      // If a canvas already exists, remove it to avoid rendering duplicates
+      if (existingCanvas) {
+          existingCanvas.parentNode.remove()
+      }
+
+      const chartDefinition = chartSrc.textContent
+      const canvas = document.createElement('canvas')
+      canvas.id = chartID
+
+      const div = document.createElement('div')
+      div.className = 'chartjs-wrap'
+
+      if (width) {
+        div.style.width = width
+      }
+
+      div.appendChild(canvas)
+      chartSrc.insertAdjacentElement('afterend', div)
+
+      const ctx = document.getElementById(chartID).getContext('2d')
+
+      const config = JSON.parse(chartDefinition)
+
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark-mode' : 'light-mode'
+
+      // Set default styles (initial setup)
+      applyThemeDefaultsConfig(theme)
+
+      // Automatically traverse the config and apply dual-mode color schemes
+      applyThemeConfig(config, theme)
+
+      new Chart(ctx, config)
+    })
+  }
+
+  const loadChartJS = () => {
+    const chartJSEle = document.querySelectorAll('#article-container .chartjs-container')
+    if (chartJSEle.length === 0) return
+
+    window.loadChartJS ? runChartJS(chartJSEle) : btf.getScript('https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.min.js').then(() => runChartJS(chartJSEle))
+  }
+
+  // Listen for theme change events
+  btf.addGlobalFn('themeChange', loadChartJS, 'chartjs')
+  btf.addGlobalFn('encrypt', loadChartJS, 'chartjs')
+
+  window.pjax ? loadChartJS() : document.addEventListener('DOMContentLoaded', loadChartJS)
+})()</script><script>(function() {
+  const abcjsInit = function() {
+    const abcjsFn = function() {
+      setTimeout(function() {
+        const sheets = document.querySelectorAll(".abc-music-sheet")
+        for (let i = 0; i < sheets.length; i++) {
+          const ele = sheets[i]
+          if (ele.children.length > 0) continue
+
+          // Parse parameters from data-params attribute
+          let params = {}
+          const dp = ele.getAttribute("data-params")
+          if (dp) {
+            try {
+              params = JSON.parse(dp)
+            } catch (e) {
+              console.error("Failed to parse data-params:", e)
+            }
+          }
+
+          // Merge parsed parameters with the responsive option
+          // Ensures params content appears before responsive
+          const options = { ...params, responsive: "resize" }
+
+          // Render the music score using ABCJS.renderAbc
+          ABCJS.renderAbc(ele, ele.innerHTML, options)
+        }
+      }, 100)
+    }
+
+    if (typeof ABCJS === "object") {
+      abcjsFn()
+    } else {
+      btf.getScript("https://cdn.jsdelivr.net/npm/abcjs/dist/abcjs-basic-min.min.js").then(abcjsFn)
+    }
+  }
+
+  if (window.pjax) {
+    abcjsInit()
+  } else {
+    window.addEventListener("load", abcjsInit)
+  }
+
+  btf.addGlobalFn("encrypt", abcjsInit, "abcjs")
+})()</script><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = null
+  // Render per page: a cached partial would reuse another page's Issue number.
+  const legacyIssue = null
+  const getUtterancesTheme = theme => theme === 'dark' ? 'github-dark' : 'github-light'
+
+  const loadUtterances = (el = document, key) => {
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyUtterances = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+
+    const config = {
+      src: 'https://utteranc.es/client.js',
+      repo: 'ergou10086/HexoComment',
+      theme: getUtterancesTheme(document.documentElement.getAttribute('data-theme')),
+      crossorigin: 'anonymous',
+      async: true,
+      ...option,
+      ...(legacyIssue && !isShuoshuo
+        ? { 'issue-number': legacyIssue }
+        : { 'issue-term': isShuoshuo ? key : (option && option['issue-term']) || 'pathname' })
+    }
+
+    const ele = document.createElement('script')
+    Object.entries(config).forEach(([key, value]) => ele.setAttribute(key, value))
+    const wrap = el.querySelector('#utterances-wrap')
+    wrap.replaceChildren()
+    if (!isShuoshuo) {
+      const status = document.createElement('p')
+      status.className = 'comment-loading'
+      status.setAttribute('role', 'status')
+      status.textContent = '正在加载评论……'
+      wrap.appendChild(status)
+      let timer
+      const cleanup = () => {
+        clearTimeout(timer)
+        window.removeEventListener('message', ready)
+      }
+      const ready = event => {
+        if (event.origin !== 'https://utteranc.es' || event.source !== wrap.querySelector('iframe')?.contentWindow) return
+        if (event.data?.type !== 'resize' || !(event.data.height > 0)) return
+        cleanup()
+        status.remove()
+      }
+      const failed = () => {
+        if (!wrap.isConnected || !status.isConnected) return
+        status.textContent = '评论暂时无法加载。你可以 '
+        const direct = document.createElement('a')
+        direct.href = 'https://github.com/ergou10086/HexoComment/issues' + (legacyIssue ? '/' + legacyIssue : '')
+        direct.textContent = '在 GitHub 阅读或发表评论'
+        direct.target = '_blank'
+        direct.rel = 'noopener noreferrer'
+        const login = document.createElement('a')
+        login.href = 'https://api.utteranc.es/authorize?' + new URLSearchParams({ redirect_uri: location.href })
+        login.textContent = '登录 GitHub 后重试'
+        const retry = document.createElement('button')
+        retry.type = 'button'
+        retry.textContent = '重新加载'
+        retry.addEventListener('click', () => { cleanup(); loadUtterances(el, key) }, { once: true })
+        status.append(direct, document.createTextNode('，或 '), login, document.createTextNode('。'), retry)
+      }
+      window.addEventListener('message', ready)
+      timer = setTimeout(failed, 15000)
+      ele.onerror = failed
+      btf.addGlobalFn('pjaxSend', cleanup, 'utterances-loading')
+    }
+    wrap.appendChild(ele)
+  }
+
+  const changeUtterancesTheme = theme => {
+    const iframe = document.querySelector('#utterances-wrap iframe')
+    if (iframe) {
+      const message = {
+        type: 'set-theme',
+        theme: getUtterancesTheme(theme)
+      };
+      iframe.contentWindow.postMessage(message, 'https://utteranc.es')
+    }
+  }
+
+  btf.addGlobalFn('themeChange', changeUtterancesTheme, 'utterances')
+
+  if (isShuoshuo) {
+    'Utterances' === 'Utterances'
+      ? window.shuoshuoComment = { loadComment: loadUtterances }
+      : window.loadOtherComment = loadUtterances
+    return
+  }
+  
+  if ('Utterances' === 'Utterances' || !false) {
+    if (false) btf.loadComment(document.getElementById('utterances-wrap'), loadUtterances)
+    else loadUtterances()
+  } else {
+    window.loadOtherComment = loadUtterances
+  }
+})()</script></div><div class="aplayer no-destroy" data-id="13587761608" data-server="netease" data-type="playlist" data-fixed="true" data-autoplay="false" data-lrcType="-1"> </div><script src="https://cdn.jsdelivr.net/npm/abcjs@7.1.2/dist/abcjs-basic-min.js"></script><script src="/js/sun_moon.js" defer></script><script src="/scripts/realtime.js"></script><script src="/scripts/random.js"></script><script src="/scripts/weather.js"></script><script src="/js/site-stats.js"></script><script src="/js/sidebar-cards.js"></script><script src="/js/visitmap.js"></script><script src="/js/gallery-mosaic.js"></script><script src="/js/taxonomy.js"></script><script>if(window.location.pathname.includes('/viewpoint/')){function loadViewpointScripts(){var loadScript=function(src,callback){var s=document.createElement('script');s.src=src;s.async=false;s.defer=false;s.onload=function(){console.log('脚本加载成功:',src);setTimeout(function(){if(callback)callback();},100);};s.onerror=function(){console.error('脚本加载失败:',src);setTimeout(function(){if(callback)callback();},100);};document.body.appendChild(s);};loadScript('/scripts/viewpoint/math.js',function(){console.log('math.js 加载完成, math:',typeof math);loadScript('/scripts/viewpoint/katex.min.js',function(){console.log('katex.min.js 加载完成, katex:',typeof katex);loadScript('/scripts/viewpoint/sweetalert2@11.js',function(){console.log('sweetalert2@11.js 加载完成, Swal:',typeof Swal,'Sweetalert2:',typeof Sweetalert2);if(typeof Swal==='undefined'&&typeof Sweetalert2!=='undefined'){window.Swal=window.Sweetalert2;console.log('已设置 Swal 别名');}loadScript('/scripts/viewpoint/main.js',function(){console.log('Viewpoint 页面所有脚本加载完成');});});});});}if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',loadViewpointScripts);}else{loadViewpointScripts();}}</script><script>if(window.location.pathname.includes('/littleGame/')){function loadLittleGameScripts(){var load=function(src,cb){var s=document.createElement('script');s.src=src;s.async=false;s.defer=false;s.onload=function(){if(cb)cb();};document.body.appendChild(s);};load('/scripts/littleGame/2048.js',function(){load('/scripts/littleGame/extra-games.js');});}if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',loadLittleGameScripts);}else{loadLittleGameScripts();}}</script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = false;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><script id="click-heart" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/click-heart.min.js" async="async" mobile="false"></script><script>(() => {
+  window.ChatraID = '4bzb546NSBoJcrNyu'
+  window.Chatra = window.Chatra || function() {
+    (window.Chatra.q = window.Chatra.q || []).push(arguments)
+  }
+
+  btf.getScript('https://call.chatra.io/chatra.js').then(() => {
+    const isChatBtn = true
+    const isChatHideShow = true
+
+    if (isChatBtn) {
+      const close = () => {
+        Chatra('minimizeWidget')
+        Chatra('hide')
+      }
+
+      const open = () => {
+        Chatra('openChat', true)
+        Chatra('show')
+      }
+
+      window.ChatraSetup = { startHidden: true }
+    
+      window.chatBtnFn = () => document.getElementById('chatra').classList.contains('chatra--expanded') ? close() : open()
+
+      document.getElementById('chat-btn').style.display = 'block'
+    } else if (isChatHideShow) {
+      window.chatBtn = {
+        hide: () => Chatra('hide'),
+        show: () => Chatra('show')
+      }
+    }
+  })
+})()</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/metingjs/dist/Meting.min.js"></script><script>(() => {
+  const destroyAplayer = () => {
+    if (window.aplayers) {
+      for (let i = 0; i < window.aplayers.length; i++) {
+        if (!window.aplayers[i].options.fixed) {
+          window.aplayers[i].destroy()
+        }
+      }
+    }
+  }
+
+  const runMetingJS = () => {
+    typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+  }
+
+  btf.addGlobalFn('pjaxSend', destroyAplayer, 'destroyAplayer')
+  btf.addGlobalFn('pjaxComplete', loadMeting, 'runMetingJS')
+})()</script><script src="https://cdn.jsdelivr.net/npm/pjax/pjax.min.js"></script><script>(() => {
+  const pjaxSelectors = ["meta[property=\"og:image\"]","meta[property=\"og:title\"]","meta[property=\"og:url\"]","meta[property=\"og:description\"]","link[rel=\"canonical\"]","meta[name=\"description\"]","head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+  window.pjax = new Pjax({
+    elements: 'a:not([target="_blank"]):not([href="/music/"]):not([href="/viewpoint/"])',
+    selectors: pjaxSelectors,
+    cacheBust: false,
+    analytics: false,
+    scrollRestoration: false
+  })
+
+  const triggerPjaxFn = (val) => {
+    if (!val) return
+    Object.values(val).forEach(fn => fn())
+  }
+
+  document.addEventListener('pjax:send', () => {
+    // removeEventListener
+    btf.removeGlobalFnEvent('pjaxSendOnce')
+    btf.removeGlobalFnEvent('themeChange')
+
+    // reset readmode
+    const $bodyClassList = document.body.classList
+    if ($bodyClassList.contains('read-mode')) $bodyClassList.remove('read-mode')
+
+    triggerPjaxFn(window.globalFn.pjaxSend)
+  })
+
+  document.addEventListener('pjax:complete', () => {
+    btf.removeGlobalFnEvent('pjaxCompleteOnce')
+    document.querySelectorAll('script[data-pjax]').forEach(item => {
+      const newScript = document.createElement('script')
+      const content = item.text || item.textContent || item.innerHTML || ""
+      Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+      newScript.appendChild(document.createTextNode(content))
+      item.parentNode.replaceChild(newScript, item)
+    })
+
+    triggerPjaxFn(window.globalFn.pjaxComplete)
+  })
+
+  document.addEventListener('pjax:error', e => {
+    if (e.request.status === 404) {
+      const usePjax = true
+      true 
+        ? (usePjax ? pjax.loadUrl('/404.html') : window.location.href = '/404.html')
+        : window.location.href = e.request.responseURL
+    }
+  })
+})()</script><script src="/js/fps-display.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><!-- hexo injector body_end start --><script data-pjax>
+  function butterfly_swiper_injector_config(){
+    var parent_div_git = document.getElementById('recent-posts');
+    var item_html = '<div class="recent-post-item" style="height: auto;width: 100%"><div class="blog-slider swiper-container-fade swiper-container-horizontal" id="swiper_container"><div class="blog-slider__wrp swiper-wrapper" style="transition-duration: 0ms;"><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_database.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-14</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt="">MySQL part2——结构化查询语言SQL</a><div class="blog-slider__text">SQL基本很常用的语句都在这里了，本质上是当初为了应付数据库考试整理的，后来发现还蛮有用的很方便查常用的语句</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/7844.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java4.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-22</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt="">SpringBoot part0?INF-SpringBoot这个框架都需要学习什么</a><div class="blog-slider__text">主要围绕Spring Boot中重要知识来简洁或详细的说明，其中部分不够完全，持续更新</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/39918.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java11.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-15</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt="">关于Lombok在高版本IDEA中注解处理不生效的问题解决</a><div class="blog-slider__text">基本上是彻底的解决了用 IDEA 新建 Spring Boot 项目时候会产生的 Lombok 注解处理失效的各种问题</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/42179.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_实用.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-05</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt="">个人向galgame原声带或相关音乐整理及其资源</a><div class="blog-slider__text">整理了我喜欢的galgame ost或者衍生的音乐专辑，部分资源是自己扒盘扒下来的，部分来自鸟白岛放映厅</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/40344.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_math.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-17</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt="">对书上证明样本方差是总体方差的无偏估计量的解析</a><div class="blog-slider__text">对书上证明样本方差是总体方差的无偏估计量的解析，高等教育出版社-华科大版本</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/6458.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_alog.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-04-24</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt="">第十五届蓝桥杯Java国赛B组D题-园丁题解</a><div class="blog-slider__text">第十五届蓝桥杯Java国赛B组D题-园丁题解，该题解已经发布到洛谷社区中并且被全站推荐</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/12811.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java4.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-04-29</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt="">操作系统之处理机的死锁部分概述</a><div class="blog-slider__text">对操作系统之处理机的死锁部分知识的总结，包括代码复现</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/27893.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_lb.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-09</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt="">Little Busters!EX游戏攻略</a><div class="blog-slider__text">整理了一份详细清晰的Little Busters！EX的游戏攻略，因为我自己也在推，就顺手整理了一份方便查阅的md文档</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/28134.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt=""><img width="48" height="48" src="/images/posts/cover_java9.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2025-05-16</span><a class="blog-slider__title" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt="">Spring Boot中使用Hibernate框架</a><div class="blog-slider__text">对学习完Hibernate的应用部分，主要围绕Spring Boot中使用Hibernate框架，建议学习完 Hibernate 框架再看</div><a class="blog-slider__button" onclick="pjax.loadUrl(&quot;posts/9323.html&quot;);" href="javascript:void(0);" alt="">详情       </a></div></div></div><div class="blog-slider__pagination swiper-pagination-clickable swiper-pagination-bullets"></div></div></div>';
+    console.log('已挂载butterfly_swiper')
+    parent_div_git.insertAdjacentHTML("afterbegin",item_html)
+    }
+  var elist = 'undefined'.split(',');
+  var cpage = location.pathname;
+  var epage = '/';
+  var flag = 0;
+
+  for (var i=0;i<elist.length;i++){
+    if (cpage.includes(elist[i])){
+      flag++;
+    }
+  }
+
+  if ((epage ==='all')&&(flag == 0)){
+    butterfly_swiper_injector_config();
+  }
+  else if (epage === cpage){
+    butterfly_swiper_injector_config();
+  }
+  </script><script defer src="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper.min.js"></script><script defer data-pjax src="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper_init.js"></script><!-- hexo injector body_end end --></body></html>

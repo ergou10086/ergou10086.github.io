@@ -1,55 +1,58 @@
-function switchNightMode() {
-  // 添加动画效果
-  document.querySelector('body').insertAdjacentHTML('beforeend', '<div class="Cuteen_DarkSky"><div class="Cuteen_DarkPlanet"></div></div>')
-  
-  // 获取当前模式
-  const nowMode = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light'
-  const willChangeMode = nowMode === 'light' ? 'dark' : 'light'
-  
-  // 延迟执行模式切换，配合动画效果
-  setTimeout(function() {
-    // 切换主题模式
-    if (willChangeMode === 'dark') {
-      btf.activateDarkMode()
-      btf.saveToLocal.set('theme', 'dark', 2)
-      GLOBAL_CONFIG.Snackbar !== undefined && btf.snackbarShow(GLOBAL_CONFIG.Snackbar.day_to_night)
-      document.getElementById('modeicon').setAttribute('xlink:href', '#icon-sun')
-    } else {
-      btf.activateLightMode()
-      btf.saveToLocal.set('theme', 'light', 2)
-      GLOBAL_CONFIG.Snackbar !== undefined && btf.snackbarShow(GLOBAL_CONFIG.Snackbar.night_to_day)
-      document.getElementById('modeicon').setAttribute('xlink:href', '#icon-moon')
-    }
-    
-    // 处理主题变化相关的回调
-    const globalFn = window.globalFn || {}
-    const themeChange = globalFn.themeChange || {}
-    if (themeChange) {
-      Object.keys(themeChange).forEach(key => {
-        const themeChangeFn = themeChange[key]
-        if (['disqus', 'disqusjs'].includes(key)) {
-          setTimeout(() => themeChangeFn(willChangeMode), 300)
-        } else {
-          themeChangeFn(willChangeMode)
-        }
-      })
-    }
-    
-    // 处理其他评论系统
-    typeof utterancesTheme === 'function' && utterancesTheme()
-    typeof FB === 'object' && window.loadFBComment()
-    window.DISQUS && document.getElementById('disqus_thread') && document.getElementById('disqus_thread').children.length && setTimeout(() => window.disqusReset(), 200)
-    
-    // 淡出动画效果
-    setTimeout(function() {
-      const darkSky = document.getElementsByClassName('Cuteen_DarkSky')[0]
-      if (darkSky) {
-        darkSky.style.transition = 'opacity 3s'
-        darkSky.style.opacity = '0'
-        setTimeout(function() {
-          darkSky.remove()
-        }, 1000)
-      }
-    }, 2000)
-  }, 0)
-}
+/* Follow Butterfly's data-theme across reloads, system changes and PJAX. */
+(() => {
+  'use strict';
+  if (window.SiteThemeToggle) return;
+  const html = document.documentElement;
+  const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+  let busy = false;
+  const current = () => html.dataset.theme === 'dark' ? 'dark' : 'light';
+  function syncButton() {
+    const button = document.getElementById('theme-toggle');
+    if (!button) return;
+    const dark = current() === 'dark';
+    button.title = dark ? '切换到浅色模式' : '切换到深色模式';
+    button.setAttribute('aria-label', button.title);
+    button.setAttribute('aria-pressed', String(dark));
+    button.disabled = busy;
+  }
+  function applyTheme(theme) {
+    theme === 'dark' ? btf.activateDarkMode() : btf.activateLightMode();
+    btf.saveToLocal.set('theme', theme, 2);
+    const message = typeof GLOBAL_CONFIG !== 'undefined' && GLOBAL_CONFIG.Snackbar;
+    if (message) btf.snackbarShow(theme === 'dark' ? message.day_to_night : message.night_to_day);
+    Object.entries(window.globalFn?.themeChange || {}).forEach(([name, callback]) => {
+      const run = () => {
+        try { callback(theme); } catch (error) { console.warn('[theme]', name, error); }
+      };
+      if (['disqus', 'disqusjs'].includes(name)) setTimeout(run, 300);
+      else run();
+    });
+    syncButton();
+  }
+  function toggle() {
+    if (busy) return;
+    const from = current(), to = from === 'light' ? 'dark' : 'light';
+    if (reducedMotion.matches) { applyTheme(to); return; }
+    busy = true;
+    syncButton();
+    const sky = document.createElement('div');
+    sky.className = 'theme-transition';
+    sky.dataset.to = to;
+    sky.setAttribute('aria-hidden', 'true');
+    sky.innerHTML = '<div class="theme-orbit"><svg class="theme-planet theme-sun" viewBox="0 0 1024 1024"><use href="#icon-sun"/></svg><svg class="theme-planet theme-moon" viewBox="0 0 1024 1024"><use href="#icon-moon"/></svg></div>';
+    document.body.appendChild(sky);
+    setTimeout(() => applyTheme(to), 380);
+    setTimeout(() => { sky.remove(); busy = false; syncButton(); }, 1050);
+  }
+  new MutationObserver(syncButton).observe(html, { attributes: true, attributeFilter: ['data-theme'] });
+  document.addEventListener('click', event => {
+    if (!event.target.closest('#theme-toggle')) return;
+    event.preventDefault();
+    toggle();
+  });
+  document.addEventListener('pjax:complete', syncButton);
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', syncButton, { once: true });
+  else syncButton();
+  window.switchNightMode = toggle;
+  window.SiteThemeToggle = Object.freeze({ toggle });
+})();
