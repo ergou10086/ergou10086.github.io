@@ -1,0 +1,84 @@
+{
+  "Version": 3,
+  "FileReferences": {
+    "Moc": "ichigoori-layout.moc3",
+    "Textures": [
+      "ichigoori-layout.2048/texture_00.png"
+    ],
+    "Physics": "ichigoori-layout.physics3.json",
+    "DisplayInfo": "ichigoori-layout.cdi3.json",
+    "Expressions": [
+      {
+        "Name": "微笑",
+        "File": "ichigoori-layout.smile.exp3.json"
+      },
+      {
+        "Name": "sad",
+        "File": "ichigoori-layout.sad.exp3.json"
+      },
+      {
+        "Name": "生气",
+        "File": "ichigoori-layout.angry.exp3.json"
+      },
+      {
+        "Name": "surprised",
+        "File": "ichigoori-layout.surprised.exp3.json"
+      },
+      {
+        "Name": "neutral",
+        "File": "ichigoori-layout.neutral.exp3.json"
+      },
+      {
+        "Name": "happy",
+        "File": "ichigoori-layout.happy.exp3.json"
+      },
+      {
+        "Name": "crying",
+        "File": "ichigoori-layout.crying.exp3.json"
+      },
+      {
+        "Name": "shy",
+        "File": "ichigoori-layout.shy.exp3.json"
+      }
+    ],
+    "Motions": {
+      "Idle": [
+        {
+          "File": "ichigoori-layout.idle.motion3.json"
+        }
+      ],
+      "Blink": [
+        {
+          "File": "ichigoori-layout.blink.motion3.json"
+        }
+      ],
+      "Nod": [
+        {
+          "File": "ichigoori-layout.nod.motion3.json"
+        }
+      ],
+      "Shake": [
+        {
+          "File": "ichigoori-layout.shake.motion3.json"
+        }
+      ]
+    }
+  },
+  "Groups": [
+    {
+      "Target": "Parameter",
+      "Name": "EyeBlink",
+      "Ids": [
+        "ParamEyeLOpen",
+        "ParamEyeROpen"
+      ]
+    },
+    {
+      "Target": "Parameter",
+      "Name": "LipSync",
+      "Ids": [
+        "ParamMouthOpenY"
+      ]
+    }
+  ]
+}

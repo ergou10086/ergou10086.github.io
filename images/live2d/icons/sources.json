@@ -1,0 +1,107 @@
+{
+  "library": "Lucide",
+  "version": "0.468.0",
+  "website": "https://lucide.dev",
+  "records": [
+    {
+      "name": "cat",
+      "url": "https://unpkg.com/lucide-static@0.468.0/icons/cat.svg",
+      "sha256": "0a3c20114a2bd6e8d3e0359b886faa4c29fc0c56473a63114c1e73c319197769"
+    },
+    {
+      "name": "message-circle",
+      "url": "https://unpkg.com/lucide-static@0.468.0/icons/message-circle.svg",
+      "sha256": "f62830d9fbbbf697e53555398d31a342ddec8dd008d707f21cd90bb19befcc87"
+    },
+    {
+      "name": "smile",
+      "url": "https://unpkg.com/lucide-static@0.468.0/icons/smile.svg",
+      "sha256": "3ea206130acd9f2b442edb9cb9c987d684a0b3b146d62619e72eb842f29389e3"
+    },
+    {
+      "name": "meh",
+      "url": "https://unpkg.com/lucide-static@0.468.0/icons/meh.svg",
+      "sha256": "51d7fbe04715c7ffcab9d1c46e40fe308ea4c5860073d72ebce25a7b8cb9551f"
+    },
+    {
+      "name": "frown",
+      "url": "https://unpkg.com/lucide-static@0.468.0/icons/frown.svg",
+      "sha256": "f956a15dd5fe92da93a56a7c86d2405e79069602648e1ce4ff97717c69f78d14"
+    },
+    {
+      "name": "heart",
+      "url": "https://unpkg.com/lucide-static@0.468.0/icons/heart.svg",
+      "sha256": "3e0ea938f896725eb5d9f1440bec881671761a6864f8d0eb1948065f3de99aae"
+    },
+    {
+      "name": "droplet",
+      "url": "https://unpkg.com/lucide-static@0.468.0/icons/droplet.svg",
+      "sha256": "7afc772f788680739e7e26a0924fabebc5fa316dc090f6eeaedba5d748159e8d"
+    },
+    {
+      "name": "circle-alert",
+      "url": "https://unpkg.com/lucide-static@0.468.0/icons/circle-alert.svg",
+      "sha256": "2c65a5c03a73d3115ce493779f82af98d94f0d72facf1d97c61ea08566bb401c"
+    },
+    {
+      "name": "activity",
+      "url": "https://unpkg.com/lucide-static@0.468.0/icons/activity.svg",
+      "sha256": "df8e413c714521cc3d424bd7af3c1644d63409f7e0a7dec75ff0fa48aa6daedb"
+    },
+    {
+      "name": "eye",
+      "url": "https://unpkg.com/lucide-static@0.468.0/icons/eye.svg",
+      "sha256": "7a23c549710b70c9eb1324540260943190190ef309e9f3604726a42c85f9b552"
+    },
+    {
+      "name": "move-vertical",
+      "url": "https://unpkg.com/lucide-static@0.468.0/icons/move-vertical.svg",
+      "sha256": "0a42bcffa9f5037081e0baf92b3e4d903fbcdc90df0b458fce31abfdd03020f9"
+    },
+    {
+      "name": "move-horizontal",
+      "url": "https://unpkg.com/lucide-static@0.468.0/icons/move-horizontal.svg",
+      "sha256": "7e5abe1c6875d343426aecf18af5c98a42cea1231e96b5d061193b11a0ddeca6"
+    },
+    {
+      "name": "pause",
+      "url": "https://unpkg.com/lucide-static@0.468.0/icons/pause.svg",
+      "sha256": "7babb01e85dae42b66c9b1e399cd1c50380d3d9a586ff025685bcc45e726fea9"
+    },
+    {
+      "name": "play",
+      "url": "https://unpkg.com/lucide-static@0.468.0/icons/play.svg",
+      "sha256": "f0cab5b458fdf5e5d5d1a8aeb3d368ccab337cc578b1f8081807b8e39f68f1a1"
+    },
+    {
+      "name": "x",
+      "url": "https://unpkg.com/lucide-static@0.468.0/icons/x.svg",
+      "sha256": "0f38855d9d5775c10960ae53e46b745f77914b43f78c43bf8abc39f4d5e06de1"
+    },
+    {
+      "name": "trash-2",
+      "url": "https://unpkg.com/lucide-static@0.468.0/icons/trash-2.svg",
+      "sha256": "9268a35cfb4f9d852c3d13f2c91476dd067c21c20e2bcdb0093fd93fd0bf34b7"
+    },
+    {
+      "name": "send",
+      "url": "https://unpkg.com/lucide-static@0.468.0/icons/send.svg",
+      "sha256": "c12c313d7409cb0e3c98aa07562e6e49dd5359dbcfe54692a0263a7eb57a8194"
+    },
+    {
+      "name": "globe",
+      "url": "https://unpkg.com/lucide-static@0.468.0/icons/globe.svg",
+      "sha256": "c3543ac3883a0841aa5d37ff974708fbc37d9c6afe64e14b03d56ed798b0b788"
+    },
+    {
+      "name": "zoom-in",
+      "url": "https://unpkg.com/lucide-static@0.468.0/icons/zoom-in.svg",
+      "sha256": "65813791afc5163534b46f2c06404bff7ab0cc2aaecd40908855c690ff480a5d"
+    },
+    {
+      "name": "zoom-out",
+      "url": "https://unpkg.com/lucide-static@0.468.0/icons/zoom-out.svg",
+      "sha256": "62b79a749404222a0553c43c3bf98235e96102ab437063588b0b1b86bcfffd21"
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+#ichigoori-widget{--mascot-ink:#574654;--mascot-surface:rgba(255,250,253,.97);--mascot-border:#edcedc;position:fixed;right:62px;bottom:0;z-index:98;width:var(--mascot-width,220px);color:var(--mascot-ink);font-family:inherit;font-size:13px;line-height:1.6;transition:opacity .25s,visibility .25s}
+#ichigoori-widget.is-collapsed{opacity:0;visibility:hidden;pointer-events:none}
+#ichigoori-widget [hidden]{display:none!important}
+#ichigoori-widget button{font:inherit;color:inherit;cursor:pointer}
+#ichigoori-widget button:disabled{opacity:.35;cursor:default}
+#ichigoori-widget :focus-visible{outline:2px solid #b05b85;outline-offset:3px}
+#ichigoori-widget .ichigoori-stage{width:100%;height:var(--mascot-height,360px);position:relative;cursor:pointer;-webkit-tap-highlight-color:transparent}
+#ichigoori-widget .ichigoori-portrait,#ichigoori-widget #live2d{display:block;position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+#ichigoori-widget #live2d{animation:none!important;transition:none;opacity:1}
+#ichigoori-widget .ichigoori-portrait{pointer-events:none}
+#ichigoori-widget .ichigoori-icon{display:grid;place-items:center;width:36px;height:36px;flex-shrink:0;padding:8px;border:1px solid var(--mascot-border);border-radius:11px;background:var(--mascot-surface);box-shadow:0 3px 12px #744b6412;transition:background .2s,transform .2s}
+#ichigoori-widget .ichigoori-icon svg{display:block;width:21px;height:21px;pointer-events:none}
+#ichigoori-widget .ichigoori-icon:hover{background:#f2dce9;transform:translateY(-1px)}
+#ichigoori-widget .ichigoori-icon[aria-pressed=true]{background:#b6678c;color:#fff;border-color:#b6678c}
+#ichigoori-widget .ichigoori-tools{position:absolute;right:calc(100% + 5px);bottom:18px;max-height:calc(100dvh - 30px);overflow-y:auto;display:flex;flex-direction:column;gap:8px;opacity:0;visibility:hidden;transform:translateX(8px);pointer-events:none;transition:opacity .3s,transform .3s,visibility .3s}
+#ichigoori-widget .ichigoori-tools.is-active{opacity:1;visibility:visible;transform:none;pointer-events:auto}
+#ichigoori-widget .ichigoori-poses{position:absolute;right:calc(100% + 48px);bottom:110px;display:grid;grid-template-columns:repeat(2,36px);gap:8px;padding:10px;border-radius:15px;background:var(--mascot-surface);border:1px solid var(--mascot-border)}
+#ichigoori-widget .ichigoori-chat{position:absolute;right:calc(100% + 55px);bottom:8px;width:350px;max-height:min(560px,calc(100dvh - 40px));display:flex;flex-direction:column;background:var(--mascot-surface);border:1px solid var(--mascot-border);border-radius:18px;box-shadow:0 12px 40px #59344926;overflow:hidden}
+#ichigoori-widget .ichigoori-chat header{display:flex;gap:8px;align-items:center;padding:8px 12px;border-bottom:1px solid var(--mascot-border)}
+#ichigoori-widget .ichigoori-header-space{flex:1}
+#ichigoori-widget .ichigoori-chat header .ichigoori-icon{width:30px;height:30px;padding:6px;box-shadow:none;border-color:transparent;background:transparent}
+#ichigoori-widget .ichigoori-chat header .ichigoori-icon[aria-pressed=true]{background:#b6678c}
+#ichigoori-widget .ichigoori-messages{min-height:150px;height:320px;overflow-y:auto;overscroll-behavior:contain;display:flex;flex-direction:column;align-items:flex-start;gap:10px;padding:14px}
+#ichigoori-widget .ichigoori-message{margin:0;padding:9px 12px;max-width:94%;flex-shrink:0;white-space:pre-wrap;overflow-wrap:anywhere;font-size:14px;line-height:1.7;background:#f7e7ef;border-radius:12px 12px 12px 3px}
+#ichigoori-widget .ichigoori-message.user{align-self:flex-end;background:#dceef3;border-radius:12px 12px 3px 12px}
+#ichigoori-widget .ichigoori-message.error{color:#a3335a}
+#ichigoori-widget .ichigoori-message a{color:#976080;text-decoration:underline;text-underline-offset:3px}
+#ichigoori-widget .ichigoori-sources{display:grid;gap:5px;margin-top:10px;padding-top:8px;border-top:1px solid var(--mascot-border);font-size:12px;white-space:normal}
+#ichigoori-widget .ichigoori-notice{font-size:11px;line-height:1.6;margin:0;padding:0 14px 8px;opacity:.8}
+#ichigoori-widget .ichigoori-notice:empty{display:none}
+#ichigoori-widget .ichigoori-form{display:flex;align-items:center;gap:8px;padding:12px;border-top:1px solid var(--mascot-border)}
+#ichigoori-widget textarea{min-width:0;flex:1;resize:vertical;max-height:120px;padding:8px;font:inherit;line-height:1.5;border-radius:9px;border:1px solid var(--mascot-border);background:var(--mascot-surface);color:inherit}
+#ichigoori-widget .ichigoori-form button{background:#b6678c;color:#fff}
+#ichigoori-toggle[aria-pressed=true]{background-color:#b6678c!important;color:#fff!important}
+[data-theme=dark] #ichigoori-widget{--mascot-ink:#f4e5ee;--mascot-surface:rgba(43,34,43,.98);--mascot-border:#705064}
+[data-theme=dark] #ichigoori-widget .ichigoori-message{background:#513648}
+[data-theme=dark] #ichigoori-widget .ichigoori-message.user{background:#2f4d59}
+[data-theme=dark] #ichigoori-widget .ichigoori-icon:hover{background:#705064}
+[data-theme=dark] #ichigoori-widget .ichigoori-message a{color:#e9a9ca}
+@media(max-height:650px){#ichigoori-widget .ichigoori-messages{height:200px}}
+@media(max-width:899px){#ichigoori-widget,#rightside #ichigoori-toggle{display:none}}
+@media(prefers-reduced-motion:reduce){#ichigoori-widget,#ichigoori-widget .ichigoori-tools{transition:none}}

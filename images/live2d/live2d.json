@@ -1,0 +1,32 @@
+{
+  "enabled": true,
+  "desktopMinWidth": 900,
+  "name": "苺氷",
+  "portrait": "assets/ichigoori-static-selected.png",
+  "toolbarTimeoutMs": 5000,
+  "model": {
+    "enabled": true,
+    "directory": "model/ichigoori/",
+    "loadTimeoutMs": 20000
+  },
+  "chat": {
+    "apiUrl": "https://ergoutree-live2d-chat.ergoutree-hexo.workers.dev/api/chat",
+    "searchIndex": "/search.json",
+    "pageSelector": "#article-container",
+    "maxHistory": 12,
+    "welcome": "你好呀，我是苺氷ena。可以陪你聊聊，也可以帮你找博客里的文章。"
+  },
+  "expressions": {
+    "neutral": "平常",
+    "happy": "高兴",
+    "crying": "哭泣",
+    "shy": "害羞",
+    "sad": "委屈",
+    "surprised": "惊讶"
+  },
+  "motions": {
+    "Blink": "眨眼",
+    "Nod": "点头",
+    "Shake": "摇头"
+  }
+}

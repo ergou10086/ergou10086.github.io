@@ -1,10 +1,4 @@
-// 坦克动荡（Tank Trouble 风格）—— littleGame 内的俯视迷宫坦克对战
-// 参考 Tank Trouble（BANANAPEEL202）：随机迷宫、子弹撞墙反弹、一炮淘汰、
-// 回合制计分（先到 5 分）、极简 Canvas 美术、2 个 AI、三种地面道具。
-// 性能要点：
-//  1. 脚本由 extra-games.js 首次点击 tab 时才动态加载；
-//  2. 只在面板激活且游戏运行时跑 requestAnimationFrame，切换 tab / 页面隐藏即暂停；
-//  3. 静态墙体预渲染到离屏 canvas，每帧只 drawImage + 少量动态对象。
+// Tank Trouble: lazy-loaded Canvas engine; no external runtime dependencies.
 (function() {
   'use strict';
 
@@ -17,8 +11,8 @@
     tile: 32,
     cellCols: 13,         // 迷宫单元 13 x 9（每单元间隔 1 格墙）
     cellRows: 9,
-    mapCount: 13,         // 13 张程序化大地图
-    targetScore: 5
+    mapCount: 30,         // 大/中/小各 10 张，按需生成
+    targetScore: 8
   };
   var W = CFG.cols * CFG.tile;      // 896
   var H = CFG.rows * CFG.tile;      // 640
@@ -36,7 +30,57 @@
   var BULLET_LIFE = 7;
   var RAPID_LIFE = 4.5;
   var LASER_MAX_BOUNCE = 2;
-  var POWERUP_TYPES = ['mine', 'laser', 'rapid'];
+  var POWERUP_TYPES = ['laser', 'double', 'shotgun', 'homing', 'mine', 'shield', 'rapid', 'frag', 'deathray', 'rc'];
+  var POWER = {
+    laser: ['L', '激光', '#e91e63'], double: ['D', '双管炮', '#3f8efc'],
+    shotgun: ['S', '霰弹枪', '#ef8c00'], homing: ['H', '追踪导弹', '#ec5252'],
+    mine: ['M', '地雷', '#c49000'], shield: ['B', '护盾', '#39a5db'],
+    rapid: ['G', '加特林', '#26a69a'], frag: ['F', '碎片炸弹', '#a45ac7'],
+    deathray: ['R', '死亡射线', '#cf316b'], rc: ['C', '遥控导弹', '#7373e1']
+  };
+  // Decision rates and search budgets differ; all tiers use the same projectile physics.
+  var PROFILES = {
+    normal: { think: 0.27, steer: 0.12, error: 0.075, fire: 1.15, horizon: 0.6, directions: 8, banks: 12, bounces: 1, lead: 0.8 },
+    original: { think: 0.14, steer: 0.075, error: 0.025, fire: 0.62, horizon: 1.0, directions: 16, banks: 32, bounces: 2, lead: 1 },
+    nightmare: { think: 0.085, steer: 0.05, error: 0.003, fire: 0.5, horizon: 1.5, directions: 24, banks: 64, bounces: 3, lead: 1 }
+  };
+  var settings = { difficulty: 'normal', aiCount: 2, allies: [], friendlyFire: true, targetScore: 8, roundTime: 120 };
+  var settingsOpen = false;
+  var scoreNodes = {};
+  var AI_COLORS = ['#ef5350', '#ef8c00', '#a26bea', '#26a69a', '#d45f9c'];
+  var forecast = [];
+  var forecastTimer = 0;
+  var roundElapsed = 0;
+  var clockKey = '';
+  var cachedTanks = [];
+
+  function normalizeSettings(value) {
+    value = value || {};
+    var count = clamp(Math.round(Number(value.aiCount) || 2), 1, 5);
+    var allies = Array.isArray(value.allies) ? value.allies : [];
+    return {
+      difficulty: PROFILES[value.difficulty] ? value.difficulty : 'normal',
+      aiCount: count,
+      allies: allies.filter(function(n, i) { return Number.isInteger(n) && n >= 1 && n <= count && allies.indexOf(n) === i; }).slice(0, Math.min(2, count - 1)),
+      friendlyFire: value.friendlyFire !== false,
+      targetScore: clamp(Math.round(Number(value.targetScore) || 8), 5, 20),
+      roundTime: clamp(Math.round(Number(value.roundTime) || 120), 30, 300)
+    };
+  }
+
+  function teamOf(tank) { return tank ? tank.team : null; }
+  function canDamage(owner, tank) { return settings.friendlyFire || !owner || owner.team !== tank.team; }
+  function enemies(a, b) { return a && b && a.team !== b.team; }
+  function profile(tank) { return PROFILES[tank.ai && tank.ai.level || settings.difficulty]; }
+  function tankColor(tank) { return tank.key === 'player' ? '#49b1f5' : tank.team === 'player' ? '#36b8cb' : AI_COLORS[Number(tank.key.slice(2)) - 1]; }
+
+  function configure(value, save) {
+    settings = normalizeSettings(value);
+    CFG.targetScore = settings.targetScore;
+    if (save) { try { localStorage.setItem('littleTank.settings.v2', JSON.stringify(settings)); } catch (_) {} }
+    return settings;
+  }
+
   var MAX_BULLETS = 180;
 
   var PALETTES = {
@@ -212,124 +256,123 @@
   }
 
   function canRun() {
-    return initialized && State.active && !document.hidden;
+    return initialized && State.active && !document.hidden && !settingsOpen;
   }
 
   // ---------------- 地图 ----------------
-  function createMaze(seed) {
+  function createMaze(seed, spec) {
+    spec = spec || { cols: 28, rows: 20, tile: 32, label: '大' };
     var rnd = mulberry32(seed * 1103515245 + 12345);
-    var cw = CFG.cellCols;
-    var ch = CFG.cellRows;
-    var cols = CFG.cols;
-    var rows = CFG.rows;
-    var walls = new Uint8Array(cols * rows);
-    var i;
-    var j;
-    for (i = 0; i < walls.length; i++) walls[i] = 1;
-
-    var visited = new Uint8Array(cw * ch);
-    var stack = [];
-    var startX = 0;
-    var startY = 0;
-    visited[startY * cw + startX] = 1;
-    openCellTile(walls, cols, startX, startY);
-    stack.push([startX, startY]);
-
+    var cols = spec.cols, rows = spec.rows, tile = spec.tile;
+    var cw = Math.floor((cols - 1) / 2), ch = Math.floor((rows - 1) / 2);
+    var walls = new Uint8Array(cols * rows); walls.fill(1);
+    function carve(x, y) { if (x > 0 && y > 0 && x < cols - 1 && y < rows - 1) walls[y * cols + x] = 0; }
+    var visited = new Uint8Array(cw * ch), stack = [[0, 0]];
     var dirs = [[0, -1], [0, 1], [-1, 0], [1, 0]];
+    visited[0] = 1; carve(1, 1);
     while (stack.length) {
-      var cur = stack[stack.length - 1];
-      var candidates = [];
-      for (i = 0; i < dirs.length; i++) {
-        var nx = cur[0] + dirs[i][0];
-        var ny = cur[1] + dirs[i][1];
-        if (nx < 0 || ny < 0 || nx >= cw || ny >= ch) continue;
-        if (visited[ny * cw + nx]) continue;
-        candidates.push([nx, ny]);
+      var cur = stack[stack.length - 1], candidates = [];
+      for (var i = 0; i < 4; i++) {
+        var nx = cur[0] + dirs[i][0], ny = cur[1] + dirs[i][1];
+        if (nx >= 0 && ny >= 0 && nx < cw && ny < ch && !visited[ny * cw + nx]) candidates.push([nx, ny]);
       }
-      if (!candidates.length) {
-        stack.pop();
-        continue;
-      }
+      if (!candidates.length) { stack.pop(); continue; }
       var next = candidates[Math.floor(rnd() * candidates.length)];
       visited[next[1] * cw + next[0]] = 1;
-      // 打通两个单元之间的墙
-      var midX = cur[0] * 2 + 1 + (next[0] - cur[0]);
-      var midY = cur[1] * 2 + 1 + (next[1] - cur[1]);
-      openTile(walls, cols, midX, midY);
-      openCellTile(walls, cols, next[0], next[1]);
-      stack.push(next);
+      carve(cur[0] * 2 + 1 + next[0] - cur[0], cur[1] * 2 + 1 + next[1] - cur[1]);
+      carve(next[0] * 2 + 1, next[1] * 2 + 1); stack.push(next);
     }
-
-    // 增加环路：随机打通额外的墙，让绕行通道更多（不打通最外圈）
-    var loops = 10 + Math.floor(rnd() * 9);
+    // The ten large maps retain the original generator/seeds (including seed 1).
+    var loops = spec.label === '大' ? 10 + Math.floor(rnd() * 9) : Math.max(4, Math.floor(cw * ch * 0.14));
     for (i = 0; i < loops; i++) {
-      var wx = 1 + Math.floor(rnd() * (cols - 2));
-      var wy = 1 + Math.floor(rnd() * (rows - 2));
-      if (!walls[wy * cols + wx]) continue;
-      var leftOpen = wx > 0 && !walls[wy * cols + wx - 1];
-      var rightOpen = wx < cols - 1 && !walls[wy * cols + wx + 1];
-      var topOpen = wy > 0 && !walls[(wy - 1) * cols + wx];
-      var bottomOpen = wy < rows - 1 && !walls[(wy + 1) * cols + wx];
-      if ((leftOpen && rightOpen) || (topOpen && bottomOpen)) {
-        walls[wy * cols + wx] = 0;
-      }
+      var wx = 1 + Math.floor(rnd() * (cols - 2)), wy = 1 + Math.floor(rnd() * (rows - 2));
+      if ((!walls[wy * cols + wx - 1] && !walls[wy * cols + wx + 1]) || (!walls[(wy - 1) * cols + wx] && !walls[(wy + 1) * cols + wx])) carve(wx, wy);
     }
-
-    // 随机开 1~2 个小广场，增加对枪空间
     var plazas = 1 + Math.floor(rnd() * 2);
     for (i = 0; i < plazas; i++) {
-      var px = 2 + Math.floor(rnd() * (cols - 6));
-      var py = 2 + Math.floor(rnd() * (rows - 6));
-      for (var oy = 0; oy < 3; oy++) {
-        for (var ox = 0; ox < 3; ox++) {
-          openTile(walls, cols, px + ox, py + oy);
-        }
+      var px = 2 + Math.floor(rnd() * (cols - 6)), py = 2 + Math.floor(rnd() * (rows - 6));
+      for (var oy = 0; oy < 3; oy++) for (var ox = 0; ox < 3; ox++) carve(px + ox, py + oy);
+    }
+    var map = { walls: walls, cols: cols, rows: rows, tile: tile, label: spec.label, seed: seed, spawns: [], fields: new Map(), reachable: [] };
+    // Flood-fill the actual tile graph. Discard any isolated plaza tiles.
+    var queue = [cols + 1], seen = new Uint8Array(walls.length); seen[cols + 1] = 1;
+    for (var head = 0; head < queue.length; head++) {
+      var k = queue[head]; map.reachable.push(k);
+      var adjacent = [k - cols, k + cols, k - 1, k + 1];
+      for (i = 0; i < 4; i++) {
+        var n = adjacent[i];
+        if (n >= 0 && n < walls.length && !walls[n] && !seen[n]) { seen[n] = 1; queue.push(n); }
       }
     }
-
-    // 出生点：玩家左下，AI-1 同侧偏中（较快接敌），AI-2 右上远处包抄
-    var spawnCells = [
-      [0, ch - 1],
-      [7, ch - 1],
-      [11, 1]
-    ];
-    var spawns = [];
-    for (i = 0; i < spawnCells.length; i++) {
-      var spawn = cellToWorld(spawnCells[i][0], spawnCells[i][1]);
-      spawns.push(spawn);
-      var sx = Math.floor(spawn.x / TILE);
-      var sy = Math.floor(spawn.y / TILE);
-      walls[sy * cols + sx] = 0;
+    for (i = 0; i < walls.length; i++) if (!seen[i]) walls[i] = 1;
+    map.surfaces = [];
+    for (var y = 1; y < rows - 1; y++) for (var x = 1; x < cols - 1; x++) {
+      if (walls[y * cols + x]) continue;
+      if (walls[y * cols + x - 1]) map.surfaces.push({ axis: 'x', at: x * tile + BULLET_RADIUS });
+      if (walls[y * cols + x + 1]) map.surfaces.push({ axis: 'x', at: (x + 1) * tile - BULLET_RADIUS });
+      if (walls[(y - 1) * cols + x]) map.surfaces.push({ axis: 'y', at: y * tile + BULLET_RADIUS });
+      if (walls[(y + 1) * cols + x]) map.surfaces.push({ axis: 'y', at: (y + 1) * tile - BULLET_RADIUS });
     }
-
-    return { walls: walls, cols: cols, rows: rows, spawns: spawns, seed: seed };
+    map.surfaces = map.surfaces.filter(function(v, index, all) { return all.findIndex(function(a) { return a.axis === v.axis && a.at === v.at; }) === index; });
+    return map;
   }
 
-  function openTile(walls, cols, x, y) {
-    if (x <= 0 || y <= 0 || x >= CFG.cols - 1 || y >= CFG.rows - 1) return;
-    walls[y * cols + x] = 0;
-  }
 
-  function openCellTile(walls, cols, cx, cy) {
-    openTile(walls, cols, cx * 2 + 1, cy * 2 + 1);
-  }
 
-  function cellToWorld(cx, cy) {
-    return { x: (cx * 2 + 1.5) * TILE, y: (cy * 2 + 1.5) * TILE };
-  }
 
-  function worldToCell(x, y) {
-    var cx = clamp(Math.round((x / TILE - 1.5) / 2), 0, CFG.cellCols - 1);
-    var cy = clamp(Math.round((y / TILE - 1.5) / 2), 0, CFG.cellRows - 1);
-    return { cx: cx, cy: cy };
-  }
 
   function buildMapPool() {
+    var specs = [
+      { cols: 28, rows: 20, tile: 32, label: '大' },
+      { cols: 21, rows: 15, tile: W / 21, label: '中' },
+      { cols: 14, rows: 10, tile: 64, label: '小' }
+    ];
     var pool = [];
-    for (var i = 0; i < CFG.mapCount; i++) {
-      pool.push(createMaze(i + 1));
-    }
+    specs.forEach(function(spec, tier) {
+      for (var i = 0; i < 10; i++) pool.push({ spec: spec, seed: tier * 100 + i + 1, map: null });
+    });
     return pool;
+  }
+
+  function loadMap(index) {
+    var entry = mapPool[index];
+    if (!entry.map) entry.map = createMaze(entry.seed, entry.spec);
+    return entry.map;
+  }
+
+  function useMap(map) {
+    State.map = map; TILE = map.tile;
+    CFG.cols = map.cols; CFG.rows = map.rows;
+    CFG.cellCols = Math.floor((map.cols - 1) / 2); CFG.cellRows = Math.floor((map.rows - 1) / 2);
+  }
+
+  function tileCenter(map, k) { return { x: (k % map.cols + 0.5) * map.tile, y: (Math.floor(k / map.cols) + 0.5) * map.tile }; }
+
+  function allocateSpawns(map, count) {
+    var selected = [];
+    for (var i = 0; i < count; i++) {
+      var best = null, bestScore = -1;
+      // Soft spread, not fixed corners: some rolls accept nearby (non-overlapping) starts.
+      var spread = rand() > 0.18;
+      for (var n = 0; n < 32; n++) {
+        var p = tileCenter(map, map.reachable[Math.floor(rand() * map.reachable.length)]);
+        var jitter = Math.max(0, map.tile / 2 - TANK_RADIUS - 2);
+        p.x += randRange(-jitter, jitter); p.y += randRange(-jitter, jitter);
+        var nearest = W;
+        selected.forEach(function(q) { nearest = Math.min(nearest, dist(p.x, p.y, q.x, q.y)); });
+        if (nearest < TANK_RADIUS * 3 || !spotIsFree(map, p.x, p.y, TANK_RADIUS)) continue;
+        var score = spread ? Math.min(nearest, W * 0.34) * randRange(0.55, 1.4) : rand() * W;
+        if (score > bestScore) { best = p; bestScore = score; }
+      }
+      if (!best) {
+        for (n = 0; n < map.reachable.length; n++) {
+          var fallback = tileCenter(map, map.reachable[n]);
+          if (selected.every(function(q) { return dist(q.x, q.y, fallback.x, fallback.y) > TANK_RADIUS * 3; })) { best = fallback; break; }
+        }
+      }
+      selected.push(best);
+    }
+    return selected;
   }
 
   function tileIsWall(map, tx, ty) {
@@ -339,17 +382,18 @@
 
   // 圆与墙格 AABB 的碰撞检测
   function circleHitsWall(map, x, y, r) {
-    var minTx = Math.floor((x - r) / TILE);
-    var maxTx = Math.floor((x + r) / TILE);
-    var minTy = Math.floor((y - r) / TILE);
-    var maxTy = Math.floor((y + r) / TILE);
+    var tile = map.tile;
+    var minTx = Math.floor((x - r) / tile);
+    var maxTx = Math.floor((x + r) / tile);
+    var minTy = Math.floor((y - r) / tile);
+    var maxTy = Math.floor((y + r) / tile);
     for (var ty = minTy; ty <= maxTy; ty++) {
       for (var tx = minTx; tx <= maxTx; tx++) {
         if (!tileIsWall(map, tx, ty)) continue;
-        var left = tx * TILE;
-        var top = ty * TILE;
-        var cx = clamp(x, left, left + TILE);
-        var cy = clamp(y, top, top + TILE);
+        var left = tx * tile;
+        var top = ty * tile;
+        var cx = clamp(x, left, left + tile);
+        var cy = clamp(y, top, top + tile);
         if (dist2(x, y, cx, cy) < r * r) return true;
       }
     }
@@ -375,55 +419,106 @@
   }
 
   // 射线追踪（激光 / AI 反弹射击预判），返回折线与命中的坦克
-  function traceRay(map, sx, sy, angle, maxBounces, maxDist, ignoreTank, hitRadius) {
-    var dx = Math.cos(angle);
-    var dy = Math.sin(angle);
-    var x = sx;
-    var y = sy;
-    var points = [{ x: x, y: y }];
-    var bounces = 0;
-    var travelled = 0;
-    var step = 4;
-    var hitTank = null;
-    var tanks = [State.player].concat(State.ais);
-    var guard = 0;
-
-    while (travelled < maxDist && guard < 1200) {
-      guard++;
-      var nx = x + dx * step;
-      var ny = y + dy * step;
-      if (circleHitsWall(map, nx, ny, 0.8)) {
-        var hitX = circleHitsWall(map, nx, y, 0.8);
-        var hitY = circleHitsWall(map, x, ny, 0.8);
-        if (hitX && !hitY) dx = -dx;
-        else if (hitY && !hitX) dy = -dy;
-        else {
-          dx = -dx;
-          dy = -dy;
+  function traceRay(map, sx, sy, angle, maxBounces, maxDist, owner, hitRadius, prediction) {
+    var dx = Math.cos(angle), dy = Math.sin(angle), x = sx, y = sy, travelled = 0, bounces = 0;
+    if (owner && dist2(x, y, owner.x, owner.y) < owner.r * owner.r) { x += dx * (owner.r + 4); y += dy * (owner.r + 4); }
+    var points = [{ x: x, y: y }], hitTank = null;
+    for (var bounce = 0; bounce <= maxBounces && travelled < maxDist; bounce++) {
+      var wall = castWall(map, x, y, dx, dy, maxDist - travelled, BULLET_RADIUS);
+      var length = wall.distance, nearest = length;
+      for (var i = 0; i < cachedTanks.length; i++) {
+        var tank = cachedTanks[i]; if (!tank.alive || !canDamage(owner, tank)) continue;
+        var tx = tank.x, ty = tank.y;
+        if (prediction && tank !== owner) {
+          var time = Math.min((travelled + dist(x, y, tx, ty)) / BULLET_SPEED, 1.5);
+          var target = predictTarget(tank, time); tx = target.x; ty = target.y;
         }
-        points.push({ x: x, y: y, bounce: true });
-        bounces++;
-        if (bounces > maxBounces) break;
-        continue;
+        var rx = x - tx, ry = y - ty, dot = rx * dx + ry * dy;
+        var radius = tank.r + hitRadius, disc = dot * dot - (rx * rx + ry * ry - radius * radius);
+        if (disc < 0) continue;
+        var distance = -dot - Math.sqrt(disc);
+        if (distance < 0 && rx * rx + ry * ry < radius * radius) distance = 0;
+        if (distance >= 0 && distance <= nearest) { nearest = distance; hitTank = tank; }
       }
-      x = nx;
-      y = ny;
-      travelled += step;
-
-      for (var i = 0; i < tanks.length; i++) {
-        var tank = tanks[i];
-        if (!tank || !tank.alive) continue;
-        // 自己的子弹/激光不会打到自己，避免反弹自伤（也让 AI 的盲射不会自杀送分）
-        if (tank === ignoreTank) continue;
-        if (dist2(x, y, tank.x, tank.y) < (tank.r + hitRadius) * (tank.r + hitRadius)) {
-          hitTank = tank;
-          break;
-        }
-      }
-      if (hitTank) break;
+      x += dx * nearest; y += dy * nearest; travelled += nearest;
+      points.push({ x: x, y: y });
+      if (hitTank || !wall.hit) break;
+      bounces++;
+      if (bounce === maxBounces) break;
+      if (wall.flipX) dx = -dx; if (wall.flipY) dy = -dy;
+      x += dx * 0.02; y += dy * 0.02;
     }
-    points.push({ x: x, y: y });
-    return { points: points, hitTank: hitTank, bounces: bounces, end: { x: x, y: y } };
+    return { points: points, hitTank: hitTank, bounces: bounces, distance: travelled, end: { x: x, y: y } };
+  }
+
+  // Grid DDA visits crossed cells instead of taking hundreds of 4px ray steps.
+  // Nearby wall boxes are expanded by projectile radius, with exact circular corners.
+  function shotIsSafe(tank, angle) {
+    if (tank.weapon === 'deathray' || tank.weapon === 'laser' || tank.weapon === 'rc' || tank.weapon === 'homing' || tank.weapon === 'frag') return true;
+    var angles = tank.weapon === 'shotgun' ? [angle - 0.24, angle, angle + 0.24] : [angle];
+    var speed = tank.weapon === 'rapid' ? RAPID_SPEED : tank.weapon === 'shotgun' ? 580 : BULLET_SPEED;
+    var friends = cachedTanks.filter(function(t) { return t.alive && t.team === tank.team; });
+    for (var a = 0; a < angles.length; a++) {
+      var dx = Math.cos(angles[a]), dy = Math.sin(angles[a]), x = tank.x + dx * (tank.r + 5), y = tank.y + dy * (tank.r + 5);
+      if (circleHitsWall(State.map, x, y, BULLET_RADIUS)) return false;
+      for (var time = 0.025; time <= (tank.weapon === 'shotgun' ? 0.65 : 2.2); time += 0.025) {
+        var distance = speed * 0.025;
+        while (distance > 0) {
+          var step = Math.min(4, distance); distance -= step;
+          var nx = x + dx * step, ny = y + dy * step;
+          if (circleHitsWall(State.map, nx, ny, BULLET_RADIUS)) {
+            var hitX = circleHitsWall(State.map, nx, y, BULLET_RADIUS), hitY = circleHitsWall(State.map, x, ny, BULLET_RADIUS);
+            if (hitX || !hitY) dx = -dx; if (hitY || !hitX) dy = -dy;
+          } else { x = nx; y = ny; }
+        }
+        for (var i = 0; i < friends.length; i++) {
+          var future = predictTarget(friends[i], time);
+          if (dist2(x, y, future.x, future.y) < (friends[i].r + 5) * (friends[i].r + 5)) return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  function castWall(map, x, y, dx, dy, maxDist, radius) {
+    var tile = map.tile, tx = Math.floor(x / tile), ty = Math.floor(y / tile);
+    var sx = dx < 0 ? -1 : 1, sy = dy < 0 ? -1 : 1;
+    var deltaX = Math.abs(dx) < 1e-9 ? Infinity : tile / Math.abs(dx), deltaY = Math.abs(dy) < 1e-9 ? Infinity : tile / Math.abs(dy);
+    var nextX = Math.abs(dx) < 1e-9 ? Infinity : ((dx > 0 ? tx + 1 : tx) * tile - x) / dx;
+    var nextY = Math.abs(dy) < 1e-9 ? Infinity : ((dy > 0 ? ty + 1 : ty) * tile - y) / dy;
+    var best = maxDist, flipX = false, flipY = false, hit = false;
+    for (var guard = 0; guard < map.cols + map.rows + 4; guard++) {
+      for (var oy = -1; oy <= 1; oy++) for (var ox = -1; ox <= 1; ox++) {
+        var wx = tx + ox, wy = ty + oy;
+        if (!tileIsWall(map, wx, wy)) continue;
+        var left = wx * tile, top = wy * tile, right = left + tile, bottom = top + tile;
+        var ax = Math.abs(dx) < 1e-9 ? -Infinity : (left - radius - x) / dx;
+        var bx = Math.abs(dx) < 1e-9 ? Infinity : (right + radius - x) / dx;
+        var ay = Math.abs(dy) < 1e-9 ? -Infinity : (top - radius - y) / dy;
+        var by = Math.abs(dy) < 1e-9 ? Infinity : (bottom + radius - y) / dy;
+        if (Math.abs(dx) < 1e-9 && (x < left - radius || x > right + radius)) continue;
+        if (Math.abs(dy) < 1e-9 && (y < top - radius || y > bottom + radius)) continue;
+        var near = Math.max(Math.min(ax, bx), Math.min(ay, by)), far = Math.min(Math.max(ax, bx), Math.max(ay, by));
+        if (near > far || far < 0 || near > best) continue;
+        near = Math.max(near, 0);
+        var px = x + dx * near, py = y + dy * near;
+        var nx = px < left ? -1 : px > right ? 1 : 0, ny = py < top ? -1 : py > bottom ? 1 : 0;
+        if (nx && ny) {
+          var cx = nx < 0 ? left : right, cy = ny < 0 ? top : bottom;
+          var rx = x - cx, ry = y - cy, dot = rx * dx + ry * dy;
+          var disc = dot * dot - (rx * rx + ry * ry - radius * radius);
+          if (disc < 0) continue;
+          near = -dot - Math.sqrt(disc);
+          if (near < -0.001 || near > best) continue;
+        }
+        if (near < best - 0.001) { best = near; flipX = !!nx; flipY = !!ny; hit = true; }
+        else if (hit && Math.abs(near - best) < 0.001) { flipX = flipX || !!nx; flipY = flipY || !!ny; }
+      }
+      var boundary = Math.min(nextX, nextY);
+      if (best <= boundary || boundary > maxDist) break;
+      if (nextX < nextY) { tx += sx; nextX += deltaX; } else { ty += sy; nextY += deltaY; }
+    }
+    return { distance: best, hit: hit, flipX: flipX, flipY: flipY };
   }
 
   // ---------------- 坦克 ----------------
@@ -432,6 +527,8 @@
       key: key,
       name: name,
       colorKey: colorKey,
+      team: key === 'player' || settings.allies.indexOf(Number(key.slice(2))) >= 0 ? 'player' : key,
+      weapon: null, ammo: 0, shieldUntil: 0, remote: null, frag: null,
       x: x,
       y: y,
       r: TANK_RADIUS,
@@ -450,7 +547,9 @@
     };
     if (key !== 'player') {
       tank.ai = {
-        think: randRange(0.1, 0.3),
+        level: settings.difficulty,
+        steerTimer: randRange(0, 0.05), moveX: 0, moveY: 0,
+        think: randRange(0.02, 0.2),
         path: [],
         pathTimer: 0,
         targetKey: null,
@@ -473,15 +572,13 @@
     return tank;
   }
 
-  function tanksList() {
-    return [State.player].concat(State.ais);
-  }
+  function tanksList() { return cachedTanks; }
 
   function livingEnemies(tank) {
     var result = [];
     var list = tanksList();
     for (var i = 0; i < list.length; i++) {
-      if (list[i] && list[i] !== tank && list[i].alive) result.push(list[i]);
+      if (list[i] && enemies(tank, list[i]) && list[i].alive) result.push(list[i]);
     }
     return result;
   }
@@ -501,32 +598,15 @@
   }
 
   function moveTank(tank, dirX, dirY, speed, dt) {
-    var len = Math.sqrt(dirX * dirX + dirY * dirY);
-    if (len < 0.0001) {
-      tank.moving = false;
-      tank.vx = 0;
-      tank.vy = 0;
-      return;
+    var length = Math.hypot(dirX, dirY), oldX = tank.x, oldY = tank.y;
+    if (length > 0.001) {
+      dirX /= length; dirY /= length;
+      if (!circleHitsWall(State.map, tank.x + dirX * speed * dt, tank.y, tank.r)) tank.x += dirX * speed * dt;
+      if (!circleHitsWall(State.map, tank.x, tank.y + dirY * speed * dt, tank.r)) tank.y += dirY * speed * dt;
     }
-    dirX /= len;
-    dirY /= len;
-    var dx = dirX * speed * dt;
-    var dy = dirY * speed * dt;
-    var moved = false;
-    if (!circleHitsWall(State.map, tank.x + dx, tank.y, tank.r)) {
-      tank.x += dx;
-      moved = true;
-    }
-    if (!circleHitsWall(State.map, tank.x, tank.y + dy, tank.r)) {
-      tank.y += dy;
-      moved = true;
-    }
-    tank.moving = moved;
-    tank.vx = moved ? dirX * speed : 0;
-    tank.vy = moved ? dirY * speed : 0;
-    if (moved) {
-      tank.body = angleLerp(tank.body, Math.atan2(dirY, dirX), 14 * dt);
-    }
+    tank.vx = dt ? (tank.x - oldX) / dt : 0; tank.vy = dt ? (tank.y - oldY) / dt : 0;
+    tank.moving = Math.hypot(tank.vx, tank.vy) > 0.1;
+    if (tank.moving) tank.body = angleLerp(tank.body, Math.atan2(tank.vy, tank.vx), 14 * dt);
   }
 
   function separateTanks() {
@@ -556,109 +636,151 @@
   }
 
   // ---------------- 子弹 ----------------
-  function spawnBullet(tank, angle, rapid) {
-    if (!tank.alive || State.bullets.length >= MAX_BULLETS) return false;
-    var speed = rapid ? RAPID_SPEED : BULLET_SPEED;
-    var radius = rapid ? RAPID_RADIUS : BULLET_RADIUS;
-    var bx = tank.x + Math.cos(angle) * (tank.r + 4);
-    var by = tank.y + Math.sin(angle) * (tank.r + 4);
-    State.bullets.push({
-      x: bx,
-      y: by,
-      vx: Math.cos(angle) * speed,
-      vy: Math.sin(angle) * speed,
-      r: radius,
-      owner: tank,
-      life: rapid ? RAPID_LIFE : BULLET_LIFE,
-      age: 0,
-      bounces: 0,
-      rapid: !!rapid
-    });
-    if (tank === State.player) State.stats.playerShots++;
-    else State.stats.aiShots++;
-    spawnParticle(bx, by, palette().player, 3, 40, 0.18);
-    return true;
+  function spawnBullet(tank, angle, rapid, kind, lateral) {
+    if (!tank.alive || State.bullets.length >= MAX_BULLETS) return null;
+    kind = kind || (rapid ? 'rapid' : 'normal');
+    var speed = rapid ? RAPID_SPEED : BULLET_SPEED, radius = rapid ? RAPID_RADIUS : BULLET_RADIUS, life = rapid ? RAPID_LIFE : BULLET_LIFE;
+    if (kind === 'homing' || kind === 'rc') { speed = 225; radius = 4; life = 9; }
+    if (kind === 'frag') { speed = 240; radius = 5; life = 3; }
+    if (kind === 'shard') { speed = 470; radius = 2; life = 1.1; }
+    if (kind === 'shotgun') { speed = 580; radius = 1.9; life = 0.65; }
+    if (kind === 'double') { speed = 460; life = 2.3; }
+    var bx = tank.x + Math.cos(angle) * (tank.r + radius + 2) - Math.sin(angle) * (lateral || 0);
+    var by = tank.y + Math.sin(angle) * (tank.r + radius + 2) + Math.cos(angle) * (lateral || 0);
+    if (circleHitsWall(State.map, bx, by, radius)) return null;
+    var bullet = { x: bx, y: by, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed, r: radius, owner: tank, life: life, age: 0, bounces: 0, rapid: !!rapid, kind: kind };
+    State.bullets.push(bullet);
+    if (tank === State.player) State.stats.playerShots++; else State.stats.aiShots++;
+    return bullet;
+  }
+
+  function releaseProjectile(b) {
+    if (b.owner.remote === b) b.owner.remote = null;
+    if (b.owner.frag === b) b.owner.frag = null;
+  }
+
+  function explodeProjectile(b) {
+    releaseProjectile(b);
+    if (b.kind === 'frag') {
+      // Real fragments travel through corridors and bounce; walls block the blast.
+      for (var i = 0; i < 24 && State.bullets.length < MAX_BULLETS; i++) {
+        var a = i * Math.PI * 2 / 24;
+        State.bullets.push({ x: b.x, y: b.y, vx: Math.cos(a) * 470, vy: Math.sin(a) * 470, r: 2, owner: b.owner, life: 1.1, age: 0, bounces: 0, kind: 'shard' });
+      }
+    } else {
+      cachedTanks.forEach(function(tank) {
+        if (tank.alive && canDamage(b.owner, tank) && dist(tank.x, tank.y, b.x, b.y) < 34 && hasLineOfSight(State.map, b.x, b.y, tank.x, tank.y)) killTank(tank, b.owner);
+      });
+    }
+    for (var p = 0; p < 12; p++) spawnParticle(b.x, b.y, '#ffb74d', 100, 100, 0.4);
+  }
+
+  function steerMissile(b, dt) {
+    if (b.kind !== 'rc' && (b.kind !== 'homing' || b.age < 2)) return;
+    var target = null, nearest = Infinity, angle = Math.atan2(b.vy, b.vx);
+    if (b.kind === 'rc' && b.owner.alive) {
+      if (b.owner === State.player && State.aim.touch) {
+        var dx = Number(State.input.right) - Number(State.input.left), dy = Number(State.input.down) - Number(State.input.up);
+        if (dx || dy) angle = Math.atan2(dy, dx);
+      } else angle = b.owner.turret;
+    } else {
+      cachedTanks.forEach(function(tank) {
+        if (!tank.alive || !canDamage(b.owner, tank)) return;
+        var d = dist2(tank.x, tank.y, b.x, b.y);
+        if (d < nearest) { nearest = d; target = tank; }
+      });
+      if (target) {
+        var point = target;
+        if (!hasLineOfSight(State.map, b.x, b.y, target.x, target.y)) {
+          var path = findPath(State.map, b.x, b.y, target.x, target.y);
+          if (path.length) point = path[0];
+        }
+        angle = Math.atan2(point.y - b.y, point.x - b.x);
+      }
+    }
+    var current = Math.atan2(b.vy, b.vx), turn = clamp(angleDelta(current, angle), -3.8 * dt, 3.8 * dt);
+    b.vx = Math.cos(current + turn) * 225; b.vy = Math.sin(current + turn) * 225;
   }
 
   function updateBullets(dt) {
-    var map = State.map;
     var bullets = State.bullets;
     for (var i = bullets.length - 1; i >= 0; i--) {
-      var b = bullets[i];
-      b.life -= dt;
-      b.age += dt;
+      var b = bullets[i]; b.life -= dt; b.age += dt;
       if (b.life <= 0) {
         bullets.splice(i, 1);
+        if (b.kind === 'frag') explodeProjectile(b); else releaseProjectile(b);
         continue;
       }
-      var speed = Math.sqrt(b.vx * b.vx + b.vy * b.vy) || 1;
-      var dx = b.vx / speed;
-      var dy = b.vy / speed;
-      var remaining = speed * dt;
-      var dead = false;
+      steerMissile(b, dt);
+      var speed = Math.hypot(b.vx, b.vy) || 1, dx = b.vx / speed, dy = b.vy / speed, remaining = speed * dt, dead = false;
       while (remaining > 0 && !dead) {
-        var step = Math.min(6, remaining);
-        remaining -= step;
-        var nx = b.x + dx * step;
-        var ny = b.y + dy * step;
-        if (circleHitsWall(map, nx, ny, b.r)) {
-          var hitX = circleHitsWall(map, nx, b.y, b.r);
-          var hitY = circleHitsWall(map, b.x, ny, b.r);
-          if (hitX && !hitY) dx = -dx;
-          else if (hitY && !hitX) dy = -dy;
-          else {
-            dx = -dx;
-            dy = -dy;
-          }
-          b.bounces++;
-          spawnParticle(b.x, b.y, palette().wallTop, 2, 34, 0.22);
-          b.vx = dx * speed;
-          b.vy = dy * speed;
+        var step = Math.min(4, remaining); remaining -= step;
+        var nx = b.x + dx * step, ny = b.y + dy * step;
+        if (circleHitsWall(State.map, nx, ny, b.r)) {
+          if (b.kind === 'rc' || b.kind === 'homing') { dead = true; break; }
+          var hitX = circleHitsWall(State.map, nx, b.y, b.r), hitY = circleHitsWall(State.map, b.x, ny, b.r);
+          if (hitX || !hitY) dx = -dx;
+          if (hitY || !hitX) dy = -dy;
+          b.vx = dx * speed; b.vy = dy * speed; b.bounces++;
           continue;
         }
-        b.x = nx;
-        b.y = ny;
-        // 命中坦克
-        var list = tanksList();
-        for (var t = 0; t < list.length; t++) {
-          var tank = list[t];
-          if (!tank || !tank.alive) continue;
-          if (tank === b.owner) continue;
-          var rr = tank.r + b.r;
-          if (dist2(b.x, b.y, tank.x, tank.y) < rr * rr) {
-            killTank(tank, b.owner);
-            dead = true;
+        b.x = nx; b.y = ny;
+        for (var t = 0; t < cachedTanks.length; t++) {
+          var tank = cachedTanks[t];
+          if (!tank.alive || !canDamage(b.owner, tank)) continue;
+          var shield = tank.shieldUntil > gameTime, rr = tank.r + b.r + (shield ? 8 : 0);
+          if (dist2(b.x, b.y, tank.x, tank.y) >= rr * rr) continue;
+          if (shield) {
+            var normalX = (b.x - tank.x) / rr, normalY = (b.y - tank.y) / rr, dot = dx * normalX + dy * normalY;
+            if (dot >= 0) continue;
+            var length = Math.hypot(normalX, normalY) || 1; normalX /= length; normalY /= length;
+            dot = dx * normalX + dy * normalY;
+            dx -= 2 * dot * normalX; dy -= 2 * dot * normalY;
+            b.vx = dx * speed; b.vy = dy * speed; b.bounces++;
+            b.x = tank.x + normalX * (rr + 0.2); b.y = tank.y + normalY * (rr + 0.2);
             break;
           }
+          killTank(tank, b.owner); dead = true; break;
         }
       }
       if (dead) {
         bullets.splice(i, 1);
-        if (State.state !== 'playing') return;
+        if (b.kind === 'frag' || b.kind === 'rc' || b.kind === 'homing') explodeProjectile(b); else releaseProjectile(b);
       }
     }
   }
 
   // ---------------- 激光 ----------------
-  function fireLaser(tank, angle) {
-    var map = State.map;
-    if (tank === State.player) State.stats.playerLaserShots++;
-    else State.stats.aiLaserShots++;
-    var trace = traceRay(map, tank.x, tank.y, angle, LASER_MAX_BOUNCE, 1500, tank, 2.5);
-    State.lasers.push({
-      points: trace.points,
-      life: 0.32,
-      maxLife: 0.32
-    });
-    spawnParticle(
-      tank.x + Math.cos(angle) * (tank.r + 4),
-      tank.y + Math.sin(angle) * (tank.r + 4),
-      palette().laser,
-      6,
-      90,
-      0.3
-    );
-    if (trace.hitTank) killTank(trace.hitTank, tank);
+  function fireLaser(tank, angle, deathray) {
+    if (tank === State.player) State.stats.playerLaserShots++; else State.stats.aiLaserShots++;
+    var trace;
+    if (deathray) {
+      var dx = Math.cos(angle), dy = Math.sin(angle), x = tank.x, y = tank.y;
+      var points = [{ x: x, y: y }];
+      // Pierce internal walls only. Explicitly stop at the outer maze border.
+      for (var d = tank.r + 5; d < W + H; d += 3) {
+        x = tank.x + dx * d; y = tank.y + dy * d;
+        if (x <= TILE || y <= TILE || x >= (State.map.cols - 1) * TILE || y >= (State.map.rows - 1) * TILE) break;
+        cachedTanks.forEach(function(other) {
+          if (other.alive && canDamage(tank, other) && dist2(x, y, other.x, other.y) < (other.r + 4) * (other.r + 4)) killTank(other, tank);
+        });
+      }
+      points.push({ x: x, y: y }); trace = { points: points };
+    } else {
+      trace = traceRay(State.map, tank.x, tank.y, angle, LASER_MAX_BOUNCE, 1500, tank, 2.5);
+      if (trace.hitTank) {
+        var victim = trace.hitTank;
+        if (victim.shieldUntil > gameTime) {
+          // A shield reflects the incoming laser back along its traced path.
+          var previous = trace.points[trace.points.length - 2];
+          var returnAngle = Math.atan2(previous.y - trace.end.y, previous.x - trace.end.x);
+          var returnTrace = traceRay(State.map, trace.end.x + Math.cos(returnAngle) * 0.2, trace.end.y + Math.sin(returnAngle) * 0.2, returnAngle, LASER_MAX_BOUNCE, 1500, tank, 2.5);
+          if (returnTrace.hitTank && returnTrace.hitTank.shieldUntil <= gameTime && canDamage(tank, returnTrace.hitTank)) killTank(returnTrace.hitTank, tank);
+          State.lasers.push({ points: returnTrace.points, life: 0.25, maxLife: 0.25 });
+        } else killTank(victim, tank);
+      }
+    }
+    State.lasers.push({ points: trace.points, life: deathray ? 0.45 : 0.3, maxLife: deathray ? 0.45 : 0.3, deathray: !!deathray });
     return true;
   }
 
@@ -676,6 +798,7 @@
     for (var i = 0; i < candidates.length; i++) {
       var c = candidates[i];
       if (spotIsFree(map, c.x, c.y, 8)) {
+        if (State.mines.length >= 24) return false;
         State.mines.push({
           x: c.x,
           y: c.y,
@@ -684,7 +807,7 @@
           arm: 0.7,
           life: 22,
           armed: false,
-          phase: 0
+          phase: 0, triggered: false, hidden: false
         });
         tank.mines--;
         tank.mineCd = 0;
@@ -696,110 +819,67 @@
   }
 
   function explodeMine(mine) {
-    var pal = palette();
     State.stats.mineExplosions++;
-    for (var i = 0; i < 22; i++) {
-      spawnParticle(
-        mine.x,
-        mine.y,
-        i % 2 ? pal.danger : '#ffb74d',
-        randRange(40, 180),
-        randRange(30, 150),
-        randRange(0.3, 0.7)
-      );
-    }
-    var list = tanksList();
-    for (var t = 0; t < list.length; t++) {
-      var tank = list[t];
-      // 地雷只伤害敌人，布雷者本人不会踩到自己的雷
-      if (tank && tank.alive && tank !== mine.owner && dist(tank.x, tank.y, mine.x, mine.y) < 44) {
-        killTank(tank, mine.owner);
-        return;
-      }
-    }
+    for (var i = 0; i < 16; i++) spawnParticle(mine.x, mine.y, '#ffb74d', 120, 100, 0.5);
+    cachedTanks.forEach(function(tank) {
+      if (tank.alive && canDamage(mine.owner, tank) && dist(tank.x, tank.y, mine.x, mine.y) < 44 && hasLineOfSight(State.map, mine.x, mine.y, tank.x, tank.y)) killTank(tank, mine.owner);
+    });
   }
 
   function updateMines(dt) {
-    var list = State.mines;
-    for (var i = list.length - 1; i >= 0; i--) {
-      var mine = list[i];
-      mine.life -= dt;
-      mine.phase += dt;
-      if (mine.life <= 0) {
-        list.splice(i, 1);
-        continue;
-      }
+    for (var i = State.mines.length - 1; i >= 0; i--) {
+      var mine = State.mines[i]; mine.life -= dt; mine.phase += dt;
+      if (mine.life <= 0) { State.mines.splice(i, 1); continue; }
       if (!mine.armed) {
         mine.arm -= dt;
-        if (mine.arm <= 0) mine.armed = true;
+        // Arm after the placer leaves, avoiding an unavoidable birth collision.
+        if (mine.arm <= 0 && dist(mine.x, mine.y, mine.owner.x, mine.owner.y) > 21) { mine.armed = true; mine.hidden = true; }
         continue;
       }
-      var listTanks = tanksList();
-      for (var t = 0; t < listTanks.length; t++) {
-        var tank = listTanks[t];
-        if (!tank || !tank.alive || tank === mine.owner) continue;
-        if (dist(tank.x, tank.y, mine.x, mine.y) < 15) {
-          explodeMine(mine);
-          list.splice(i, 1);
-          return;
-        }
-      }
+      var touching = cachedTanks.some(function(tank) { return tank.alive && canDamage(mine.owner, tank) && dist(tank.x, tank.y, mine.x, mine.y) < tank.r + mine.r; });
+      if (touching) mine.triggered = true;
+      if (mine.triggered && !touching) { explodeMine(mine); State.mines.splice(i, 1); }
     }
   }
 
   // ---------------- 道具 ----------------
   function spawnPowerup(type, x, y) {
+    if (State.powerups.length >= 3 || !POWER[type] || !spotIsFree(State.map, x, y, 9)) return false;
     State.powerups.push({
       type: type,
       x: x,
       y: y,
-      r: 11,
-      life: 24,
+      r: 9,
+      life: randRange(12, 16),
       phase: rand() * Math.PI * 2
     });
     State.stats.powerupsSpawned++;
   }
 
-  function randomPowerupSpot(map, avoidTanks) {
-    for (var attempt = 0; attempt < 60; attempt++) {
-      var cx = Math.floor(rand() * CFG.cellCols);
-      var cy = Math.floor(rand() * CFG.cellRows);
-      var pos = cellToWorld(cx, cy);
-      if (!spotIsFree(map, pos.x, pos.y, 14)) continue;
-      var ok = true;
-      if (avoidTanks) {
-        var list = tanksList();
-        for (var i = 0; i < list.length; i++) {
-          if (list[i] && list[i].alive && dist(list[i].x, list[i].y, pos.x, pos.y) < 90) {
-            ok = false;
-            break;
-          }
-        }
-      }
-      for (var p = 0; p < State.powerups.length; p++) {
-        if (dist(State.powerups[p].x, State.powerups[p].y, pos.x, pos.y) < 80) {
-          ok = false;
-          break;
-        }
-      }
-      if (ok) return pos;
+  function randomPowerupSpot(map) {
+    // Uniformly sample reachable floor tiles, with uniform within-tile jitter.
+    for (var attempt = 0; attempt < 80; attempt++) {
+      var pos = tileCenter(map, map.reachable[Math.floor(rand() * map.reachable.length)]);
+      var jitter = Math.max(0, map.tile / 2 - 10);
+      pos.x += randRange(-jitter, jitter); pos.y += randRange(-jitter, jitter);
+      if (!spotIsFree(map, pos.x, pos.y, 9)) continue;
+      if (State.powerups.some(function(p) { return dist(p.x, p.y, pos.x, pos.y) < 25; })) continue;
+      return pos;
     }
     return null;
   }
 
   function applyPowerup(tank, type) {
-    if (!tank || !tank.alive) return;
-    if (type === 'mine') {
-      tank.mines = Math.min(3, tank.mines + 2);
-    } else if (type === 'laser') {
-      tank.laserCharges = 1;
-    } else if (type === 'rapid') {
-      tank.rapidUntil = Math.max(tank.rapidUntil, gameTime) + 5;
+    if (!tank || !tank.alive || !POWER[type]) return;
+    if (type === 'mine') tank.mines = 3;
+    else if (type === 'shield') tank.shieldUntil = gameTime + 6;
+    else {
+      tank.weapon = type;
+      tank.ammo = type === 'double' ? 10 : type === 'shotgun' ? 3 : type === 'rapid' ? 40 : 1;
+      tank.rapidUntil = type === 'rapid' ? gameTime + 5 : 0;
+      tank.laserCharges = type === 'laser' ? 1 : 0;
     }
-    if (tank === State.player) {
-      var labels = { mine: '获得地雷 ×2（E / 右键放置）', laser: '获得激光（下一次射击）', rapid: '获得速射子弹 5 秒' };
-      showMessage(labels[type] || '获得道具', 1.4);
-    }
+    if (tank === State.player) showMessage('获得' + POWER[type][1] + (type === 'mine' ? ' ×3（E / 右键）' : ''), 1.4);
     State.hudTimer = 0;
   }
 
@@ -828,7 +908,7 @@
 
     State.powerSpawnTimer -= dt;
     if (State.powerSpawnTimer <= 0) {
-      State.powerSpawnTimer = randRange(5, 8);
+      State.powerSpawnTimer = randRange(4, 7);
       if (State.powerups.length < 3) {
         var spot = randomPowerupSpot(State.map, true);
         if (spot) spawnPowerup(POWERUP_TYPES[Math.floor(rand() * POWERUP_TYPES.length)], spot.x, spot.y);
@@ -875,392 +955,361 @@
   }
 
   function tryFire(tank, angle) {
-    if (!canFire(tank)) return false;
-    var pal = palette();
-    var fireAngle = angle == null ? tank.turret : angle;
-    if (tank.laserCharges > 0) {
-      tank.laserCharges--;
-      fireLaser(tank, fireAngle);
-      tank.fireCd = 0.9;
-    } else {
-      var rapid = tank.rapidUntil > gameTime;
-      spawnBullet(tank, fireAngle, rapid);
-      if (tank.ai) {
-        // AI 的射击间隔故意留余量，避免"枪枪锁头"
-        tank.fireCd = rapid ? randRange(0.26, 0.4) : randRange(1.05, 1.75);
-      } else {
-        tank.fireCd = rapid ? RAPID_INTERVAL : FIRE_INTERVAL;
-      }
+    if (!canFire(tank) || tank.remote) return false;
+    if (tank.ai && profile(tank) === PROFILES.nightmare && settings.friendlyFire && !tank.frag && !shotIsSafe(tank, angle == null ? tank.turret : angle)) {
+      tank.ai.think = Math.min(tank.ai.think, 0.05); tank.fireCd = 0.1; return false;
     }
-    State.hudTimer = 0;
+    var fireAngle = angle == null ? tank.turret : angle;
+    if (tank.frag) {
+      if (tank.frag.age < 0.35 || (tank === State.player && !tank.frag.inputReleased)) return false;
+      var frag = tank.frag, index = State.bullets.indexOf(frag);
+      if (index >= 0) State.bullets.splice(index, 1);
+      explodeProjectile(frag); tank.fireCd = 0.5; return true;
+    }
+    if (tank.weapon === 'rapid' && tank.rapidUntil <= gameTime) { tank.weapon = null; tank.ammo = 0; }
+    var weapon = tank.weapon, fired = false;
+    if (weapon === 'laser' || weapon === 'deathray') fired = fireLaser(tank, fireAngle, weapon === 'deathray');
+    else if (weapon === 'shotgun') {
+      for (var i = 0; i < 20; i++) if (spawnBullet(tank, fireAngle + (i - 9.5) * 0.025, false, 'shotgun')) fired = true;
+    } else {
+      var b = spawnBullet(tank, fireAngle, weapon === 'rapid', weapon || 'normal', weapon === 'double' ? (tank.ammo % 2 ? 3 : -3) : 0);
+      fired = !!b;
+      if (b && weapon === 'frag') tank.frag = b;
+      if (b && weapon === 'rc') tank.remote = b;
+    }
+    if (!fired) { tank.fireCd = 0.12; return false; }
+    if (weapon) { tank.ammo--; if (tank.ammo <= 0) { tank.weapon = null; tank.laserCharges = 0; } }
+    var interval = weapon === 'rapid' ? RAPID_INTERVAL : weapon === 'double' ? 0.22 : weapon === 'shotgun' ? 0.7 : FIRE_INTERVAL;
+    tank.fireCd = tank.ai ? Math.max(interval, profile(tank).fire * (weapon === 'rapid' || weapon === 'double' ? 0.26 : 1) * randRange(1, 1.15)) : interval;
+    State.hudTimer = 0; forecastTimer = 0;
     return true;
   }
 
   // ---------------- 击杀 / 计分 ----------------
   function scoreOf(key) {
-    return State.scores[key] || 0;
+    var tank = cachedTanks.find(function(t) { return t.key === key; });
+    return State.scores[tank ? tank.team : key] || 0;
   }
 
-  function pickOpponentAI(forTank) {
-    var best = null;
-    var bestScore = -1;
-    for (var i = 0; i < State.ais.length; i++) {
-      var ai = State.ais[i];
-      if (!ai) continue;
-      var s = scoreOf(ai.key);
-      if (s > bestScore) {
-        bestScore = s;
-        best = ai;
-      }
-    }
-    return best;
-  }
 
   function killTank(tank, killer) {
     if (!tank || !tank.alive) return;
-    tank.alive = false;
-    tank.vx = 0;
-    tank.vy = 0;
-    var pal = palette();
-    var color = tank.key === 'player' ? pal.player : tank.key === 'ai1' ? pal.ai1 : pal.ai2;
-    for (var i = 0; i < 26; i++) {
-      spawnParticle(tank.x, tank.y, i % 3 ? color : '#ffb74d', randRange(50, 200), randRange(40, 160), randRange(0.35, 0.8));
-    }
-
-    var scorer = killer;
-    if (!scorer || scorer === tank || !scorer.key) {
-      scorer = tank.key === 'player' ? pickOpponentAI(tank) : State.player;
-    }
-    if (scorer && scorer.key) {
-      State.scores[scorer.key] = scoreOf(scorer.key) + 1;
-    }
-
-    var victimName = tank.key === 'player' ? '玩家' : tank.name;
-    var killerName = scorer ? (scorer.key === 'player' ? '玩家' : scorer.name) : '未知';
-    var text;
-    if (tank.key === 'player') text = '你被击毁了';
-    else text = '击毁 ' + victimName;
-    State.killInfo = {
-      text: text,
-      sub: killerName + ' +1 分'
-    };
-    State.state = 'roundEnd';
-    State.roundTimer = 1.9;
+    tank.alive = false; tank.vx = tank.vy = 0;
+    for (var i = 0; i < 18; i++) spawnParticle(tank.x, tank.y, tankColor(tank), 130, 120, 0.55);
+    var validKill = killer && enemies(tank, killer);
+    if (validKill) State.scores[killer.team] = (State.scores[killer.team] || 0) + 1;
+    State.killInfo = { text: tank.name + ' 被击毁', sub: validKill ? killer.name + ' +1 分' : '自伤 / 友伤，不计分' };
+    showMessage(State.killInfo.text + ' · ' + State.killInfo.sub, 1.5);
     State.hudTimer = 0;
+  }
 
-    var winner = null;
-    if (scoreOf('player') >= CFG.targetScore) winner = 'player';
-    else {
-      for (var a = 0; a < State.ais.length; a++) {
-        if (State.ais[a] && scoreOf(State.ais[a].key) >= CFG.targetScore) {
-          winner = State.ais[a].key;
-          break;
-        }
-      }
-    }
-    if (winner) {
-      State.matchWinner = winner;
-      State.freezeTimer = 2.4;
+  function resolveRound() {
+    if (State.state !== 'playing') return;
+    var teams = [], leaders = [], top = 0;
+    cachedTanks.forEach(function(t) { if (t.alive && teams.indexOf(t.team) < 0) teams.push(t.team); });
+    Object.keys(State.scores).forEach(function(team) {
+      var score = State.scores[team];
+      if (score > top) { top = score; leaders = [team]; } else if (score === top) leaders.push(team);
+    });
+    if (top >= settings.targetScore && leaders.length === 1) State.matchWinner = leaders[0];
+    var timedOut = roundElapsed + 1e-9 >= settings.roundTime;
+    if (timedOut) roundElapsed = settings.roundTime;
+    if (teams.length <= 1 || State.matchWinner || timedOut) {
+      State.state = 'roundEnd'; State.roundTimer = 1.9;
+      if (timedOut && !State.matchWinner && teams.length > 1) State.killInfo = { text: '时间到', sub: '保留当前比分，下一回合重新开战' };
+      else if (!teams.length) State.killInfo = { text: '本回合结束', sub: '全员被击毁，保留比分' };
+      else if (!State.killInfo) State.killInfo = { text: '回合结束', sub: '' };
+      State.hudTimer = 0;
     }
   }
 
   // ---------------- AI ----------------
-  function cellCenter(cx, cy) {
-    return cellToWorld(cx, cy);
-  }
 
-  function passageOpen(map, cx, cy, dx, dy) {
-    var tx = cx * 2 + 1 + dx;
-    var ty = cy * 2 + 1 + dy;
-    return !tileIsWall(map, tx, ty);
-  }
 
-  // A* 在迷宫单元图上寻路
+  // 在真实可行走地板图上寻路（包含广场和全部通道）
   function findPath(map, fromX, fromY, toX, toY) {
-    var start = worldToCell(fromX, fromY);
-    var goal = worldToCell(toX, toY);
-    var cw = CFG.cellCols;
-    var ch = CFG.cellRows;
-    var sk = start.cy * cw + start.cx;
-    var gk = goal.cy * cw + goal.cx;
-    if (sk === gk) return [];
-
-    var open = [];
-    var gScore = {};
-    var came = {};
-    var closed = {};
-    gScore[sk] = 0;
-    open.push({ key: sk, cx: start.cx, cy: start.cy, f: 0 });
-
-    var dirs = [[0, -1], [0, 1], [-1, 0], [1, 0]];
-    var guard = 0;
-    while (open.length && guard < 800) {
-      guard++;
-      // 取 f 最小的节点
-      var bestIdx = 0;
-      for (var i = 1; i < open.length; i++) {
-        if (open[i].f < open[bestIdx].f) bestIdx = i;
-      }
-      var current = open.splice(bestIdx, 1)[0];
-      if (current.key === gk) {
-        // 回溯
-        var path = [];
-        var k = current.key;
-        while (k !== undefined && k !== sk) {
-          var cx2 = k % cw;
-          var cy2 = Math.floor(k / cw);
-          path.push(cellCenter(cx2, cy2));
-          k = came[k];
+    var cols = map.cols, tile = map.tile;
+    var start = Math.floor(fromY / tile) * cols + Math.floor(fromX / tile);
+    var goal = Math.floor(toY / tile) * cols + Math.floor(toX / tile);
+    if (map.walls[start] || goal < 0 || goal >= map.walls.length || map.walls[goal]) return [];
+    if (clearTankPath(map, fromX, fromY, toX, toY)) return [{ x: toX, y: toY }];
+    // Shared, bounded reverse BFS fields: at most one traversal per distinct goal tile.
+    var field = map.fields.get(goal);
+    if (!field) {
+      field = new Int16Array(map.walls.length); field.fill(-1); field[goal] = 0;
+      var queue = new Int16Array(map.walls.length), head = 0, tail = 1; queue[0] = goal;
+      while (head < tail) {
+        var k = queue[head++], neighbors = [k - cols, k + cols, k - 1, k + 1];
+        for (var i = 0; i < 4; i++) {
+          var n = neighbors[i];
+          if (n >= 0 && n < field.length && !map.walls[n] && field[n] < 0) { field[n] = field[k] + 1; queue[tail++] = n; }
         }
-        path.reverse();
-        return path;
       }
-      if (closed[current.key]) continue;
-      closed[current.key] = true;
-
-      for (var d = 0; d < dirs.length; d++) {
-        var nx = current.cx + dirs[d][0];
-        var ny = current.cy + dirs[d][1];
-        if (nx < 0 || ny < 0 || nx >= cw || ny >= ch) continue;
-        if (!passageOpen(map, current.cx, current.cy, dirs[d][0], dirs[d][1])) continue;
-        var nk = ny * cw + nx;
-        if (closed[nk]) continue;
-        var tentative = gScore[current.key] + 1;
-        if (gScore[nk] !== undefined && tentative >= gScore[nk]) continue;
-        gScore[nk] = tentative;
-        came[nk] = current.key;
-        var h = Math.abs(nx - goal.cx) + Math.abs(ny - goal.cy);
-        open.push({ key: nk, cx: nx, cy: ny, f: tentative + h });
-      }
+      if (map.fields.size >= 12) map.fields.delete(map.fields.keys().next().value);
+      map.fields.set(goal, field);
     }
-    return [];
+    var path = [], current = start;
+    for (var guard = 0; current !== goal && guard < map.walls.length; guard++) {
+      var adjacent = [current - cols, current + cols, current - 1, current + 1], next = current;
+      for (var j = 0; j < 4; j++) if (field[adjacent[j]] >= 0 && field[adjacent[j]] < field[next]) next = adjacent[j];
+      if (next === current) return [];
+      path.push(tileCenter(map, next)); current = next;
+    }
+    if (path.length && !clearTankPath(map, fromX, fromY, path[0].x, path[0].y)) path.unshift(tileCenter(map, start));
+    return path;
+  }
+
+  function clearTankPath(map, ax, ay, bx, by) {
+    var steps = Math.ceil(dist(ax, ay, bx, by) / 6);
+    for (var i = 1; i <= steps; i++) if (circleHitsWall(map, ax + (bx - ax) * i / steps, ay + (by - ay) * i / steps, TANK_RADIUS + 0.5)) return false;
+    return true;
+  }
+
+  function predictTarget(tank, time) {
+    var x = tank.x, y = tank.y, count = Math.ceil(time / 0.06);
+    if (!count) return { x: x, y: y };
+    var dt = time / count;
+    for (var i = 0; i < count; i++) {
+      if (!circleHitsWall(State.map, x + tank.vx * dt, y, tank.r)) x += tank.vx * dt;
+      if (!circleHitsWall(State.map, x, y + tank.vy * dt, tank.r)) y += tank.vy * dt;
+    }
+    return { x: x, y: y };
   }
 
   function predictiveAngle(tank, target) {
-    var d = dist(tank.x, tank.y, target.x, target.y);
-    var flight = d / BULLET_SPEED;
-    var lead = 0.75;
-    var px = target.x + target.vx * flight * lead;
-    var py = target.y + target.vy * flight * lead;
-    return Math.atan2(py - tank.y, px - tank.x) + tank.ai.aimError;
+    var speed = tank.weapon === 'homing' || tank.weapon === 'rc' ? 225 : BULLET_SPEED;
+    var rx = target.x - tank.x, ry = target.y - tank.y;
+    var a = target.vx * target.vx + target.vy * target.vy - speed * speed;
+    var b = 2 * (rx * target.vx + ry * target.vy), c = rx * rx + ry * ry, time = Math.sqrt(c) / speed;
+    var discriminant = b * b - 4 * a * c;
+    if (Math.abs(a) > 0.001 && discriminant >= 0) {
+      var t1 = (-b + Math.sqrt(discriminant)) / (2 * a), t2 = (-b - Math.sqrt(discriminant)) / (2 * a);
+      time = t1 > 0 && t2 > 0 ? Math.min(t1, t2) : Math.max(t1, t2, 0);
+    }
+    if (tank.weapon === 'laser' || tank.weapon === 'deathray') time = 0;
+    var predicted = predictTarget(target, Math.min(time, 1.6) * profile(tank).lead);
+    return Math.atan2(predicted.y - tank.y, predicted.x - tank.x);
   }
 
   // 无视线时尝试找一/二次反弹的可行角度（AI 的"高难度"表现）
   function findBankShot(tank, target) {
-    var base = Math.atan2(target.y - tank.y, target.x - tank.x);
-    for (var i = -8; i <= 8; i++) {
-      var angle = base + i * (Math.PI / 24);
-      var trace = traceRay(State.map, tank.x, tank.y, angle, 2, 720, tank, 9);
-      if (trace.hitTank === target) return angle;
+    var p = profile(tank), base = predictiveAngle(tank, target), candidates = [base];
+    var predicted = predictTarget(target, Math.min(dist(tank.x, tank.y, target.x, target.y) / BULLET_SPEED, 0.8));
+    var surfaces = State.map.surfaces.slice().sort(function(a, b) { return Math.abs(a.at - tank[a.axis]) - Math.abs(b.at - tank[b.axis]); });
+    var limit = p === PROFILES.normal ? 6 : p === PROFILES.original ? 14 : 24;
+    for (var i = 0; i < Math.min(limit, surfaces.length); i++) {
+      var surface = surfaces[i], image = { x: predicted.x, y: predicted.y };
+      image[surface.axis] = 2 * surface.at - image[surface.axis];
+      candidates.push(Math.atan2(image.y - tank.y, image.x - tank.x));
+      if (p.bounces >= 2 && i < 8) for (var j = 0; j < Math.min(8, surfaces.length); j++) {
+        if (surfaces[j].axis === surface.axis) continue;
+        var second = { x: image.x, y: image.y };
+        second[surfaces[j].axis] = 2 * surfaces[j].at - second[surfaces[j].axis];
+        candidates.push(Math.atan2(second.y - tank.y, second.x - tank.x));
+      }
     }
-    return null;
+    for (i = 0; i < p.banks; i++) candidates.push(base + (i / p.banks) * Math.PI * 2);
+    var best = null, bestScore = Infinity;
+    for (i = 0; i < candidates.length; i++) {
+      var trace = traceRay(State.map, tank.x, tank.y, candidates[i], p.bounces, p === PROFILES.normal ? 650 : 1100, tank, 2.5, tank.weapon !== 'laser');
+      if (!trace.hitTank || !enemies(tank, trace.hitTank) || trace.hitTank.shieldUntil > gameTime) continue;
+      var score = trace.distance + trace.bounces * 70;
+      if (score < bestScore) { best = candidates[i]; bestScore = score; }
+      // Prefer a valid direct intercept, leaving the remaining ray budget unused.
+      if (i === 0 && trace.bounces === 0) break;
+    }
+    return best;
+  }
+
+  function buildForecast() {
+    forecast = [];
+    var horizon = PROFILES[settings.difficulty].horizon;
+    for (var i = 0; i < State.bullets.length; i++) {
+      var b = State.bullets[i];
+      if (!State.ais.some(function(t) { return t.alive && canDamage(b.owner, t) && dist2(t.x, t.y, b.x, b.y) < 850 * 850; })) continue;
+      var x = b.x, y = b.y, vx = b.vx, vy = b.vy, missile = b.kind === 'rc' || b.kind === 'homing';
+      for (var time = 0; time < Math.min(horizon, b.life); time += 0.05) {
+        var ax = x, ay = y, remaining = Math.hypot(vx, vy) * 0.05, speed = Math.hypot(vx, vy), ended = false;
+        while (remaining > 0) {
+          var step = Math.min(4, remaining); remaining -= step;
+          var nx = x + vx / speed * step, ny = y + vy / speed * step;
+          if (circleHitsWall(State.map, nx, ny, b.r)) {
+            if (missile) { ended = true; break; }
+            var hitX = circleHitsWall(State.map, nx, y, b.r), hitY = circleHitsWall(State.map, x, ny, b.r);
+            if (hitX || !hitY) vx = -vx;
+            if (hitY || !hitX) vy = -vy;
+          } else { x = nx; y = ny; }
+        }
+        forecast.push({ ax: ax, ay: ay, bx: x, by: y, t0: time, t1: time + 0.05, r: b.r + (missile ? 9 : 0), owner: b.owner });
+        if (ended) break;
+      }
+    }
+  }
+
+  function segmentDistance2(ax, ay, bx, by) {
+    var vx = bx - ax, vy = by - ay, t = clamp(-(ax * vx + ay * vy) / (vx * vx + vy * vy || 1), 0, 1);
+    return (ax + vx * t) * (ax + vx * t) + (ay + vy * t) * (ay + vy * t);
+  }
+
+  // Sample short movement trajectories, score goal progress and future relative collisions.
+  // Inspired by DWA/velocity obstacles; this is a bounded game-specific planner, not full ORCA.
+  function planMovement(tank, preferredX, preferredY) {
+    var p = profile(tank), horizon = p.horizon, samples = Math.ceil(horizon / 0.1), dt = horizon / samples;
+    var range = tank.speed * horizon + 40, range2 = range * range;
+    var danger = forecast.filter(function(f) { return canDamage(f.owner, tank) && f.t0 <= horizon && segmentDistance2(f.ax - tank.x, f.ay - tank.y, f.bx - tank.x, f.by - tank.y) < range2; });
+    if (p === PROFILES.nightmare) {
+      cachedTanks.forEach(function(enemy) {
+        if (!enemy.alive || !enemies(tank, enemy) || enemy.fireCd > 0.25 || enemy.remote || dist2(tank.x, tank.y, enemy.x, enemy.y) > 420 * 420) return;
+        if (!hasLineOfSight(State.map, tank.x, tank.y, enemy.x, enemy.y)) return;
+        var delay = Math.max(0.05, enemy.fireCd), dx = Math.cos(enemy.turret), dy = Math.sin(enemy.turret);
+        var wall = castWall(State.map, enemy.x, enemy.y, dx, dy, 500, BULLET_RADIUS);
+        for (var t = delay; t < Math.min(horizon, delay + wall.distance / BULLET_SPEED); t += 0.05) {
+          var d0 = (t - delay) * BULLET_SPEED + enemy.r + 4, d1 = d0 + BULLET_SPEED * 0.05;
+          danger.push({ax:enemy.x+dx*d0,ay:enemy.y+dy*d0,bx:enemy.x+dx*d1,by:enemy.y+dy*d1,t0:t,t1:t+0.05,r:3,owner:enemy,anticipated:true});
+        }
+      });
+    }
+    var nearMine = State.mines.some(function(m) { return m.armed && canDamage(m.owner, tank) && dist2(tank.x, tank.y, m.x, m.y) < range2; });
+    if (!danger.length && !nearMine) return { x: preferredX, y: preferredY };
+    var node = tank.ai.path[0], goalDistance = node ? Math.max(8, dist(tank.x, tank.y, node.x, node.y)) : 80;
+    var goalX = tank.x + preferredX * goalDistance, goalY = tank.y + preferredY * goalDistance;
+    var choices = [{ x: preferredX, y: preferredY }, { x: 0, y: 0 }];
+    for (var c = 0; c < p.directions; c++) choices.push({ x: Math.cos(c * Math.PI * 2 / p.directions), y: Math.sin(c * Math.PI * 2 / p.directions) });
+    var best = choices[0], bestScore = -Infinity;
+    for (c = 0; c < choices.length; c++) {
+      var choice = choices[c], length = Math.hypot(choice.x, choice.y) || 1;
+      var vx = choice.x / length * tank.speed, vy = choice.y / length * tank.speed, x = tank.x, y = tank.y;
+      var positions = [{ x: x, y: y }], score = 0, blocked = 0;
+      for (var step = 1; step <= samples; step++) {
+        var movingDt = Math.max(0, Math.min(dt, goalDistance / tank.speed - (step - 1) * dt));
+        if (!circleHitsWall(State.map, x + vx * movingDt, y, tank.r + 0.5)) x += vx * movingDt; else blocked++;
+        if (!circleHitsWall(State.map, x, y + vy * movingDt, tank.r + 0.5)) y += vy * movingDt; else blocked++;
+        positions.push({ x: x, y: y });
+      }
+      score += (goalDistance - dist(x, y, goalX, goalY)) * 3 - blocked * 0.2;
+      score -= Math.hypot(vx - tank.vx, vy - tank.vy) * 0.018;
+      for (var f = 0; f < danger.length; f++) {
+        var hazard = danger[f], index0 = Math.min(samples, Math.floor(hazard.t0 / dt)), index1 = Math.min(samples, Math.ceil(hazard.t1 / dt));
+        // Interpolate tank positions at the projectile segment's exact time interval.
+        var t0 = hazard.t0 / dt - index0, t1 = hazard.t1 / dt - Math.floor(hazard.t1 / dt);
+        var a0 = positions[index0], a1 = positions[Math.min(samples, index0 + 1)];
+        var b0 = positions[Math.max(0, index1 - 1)], b1 = positions[index1];
+        if (t1 < 0.0001) t1 = 1;
+        var tx0 = a0.x + (a1.x - a0.x) * t0, ty0 = a0.y + (a1.y - a0.y) * t0;
+        var tx1 = b0.x + (b1.x - b0.x) * t1, ty1 = b0.y + (b1.y - b0.y) * t1;
+        var d2 = segmentDistance2(hazard.ax - tx0, hazard.ay - ty0, hazard.bx - tx1, hazard.by - ty1);
+        var rr = tank.r + hazard.r + 2;
+        if (d2 < rr * rr) score -= (hazard.anticipated ? 4000 : 18000) / (0.35 + hazard.t0);
+        else if (d2 < (rr + 18) * (rr + 18)) score -= 250 / (0.4 + hazard.t0);
+      }
+      for (var m = 0; m < State.mines.length; m++) {
+        var mine = State.mines[m];
+        if (mine.armed && canDamage(mine.owner, tank) && dist2(x, y, mine.x, mine.y) < 45 * 45) score -= 20000;
+      }
+      for (var j = 0; j < cachedTanks.length; j++) {
+        var other = cachedTanks[j];
+        if (other !== tank && other.alive && dist2(x, y, other.x, other.y) < 23 * 23) score -= 350;
+      }
+      if (score > bestScore) { best = choice; bestScore = score; }
+    }
+    return best;
   }
 
   // AI 选目标：有一定概率优先追玩家，避免两个 AI 全程互相打而忽略玩家
   function chooseAITarget(tank) {
-    var enemies = livingEnemies(tank);
-    if (!enemies.length) return null;
-    var player = State.player;
-    if (player && player.alive && Math.random() < 0.65) return player;
-    var best = enemies[0];
-    var bestD = dist2(tank.x, tank.y, best.x, best.y);
-    for (var i = 1; i < enemies.length; i++) {
-      var d = dist2(tank.x, tank.y, enemies[i].x, enemies[i].y);
-      if (d < bestD) {
-        bestD = d;
-        best = enemies[i];
+    var list = livingEnemies(tank), best = null, score = Infinity;
+    for (var i = 0; i < list.length; i++) {
+      var target = list[i], distance = dist(tank.x, tank.y, target.x, target.y);
+      var visible = hasLineOfSight(State.map, tank.x, tank.y, target.x, target.y);
+      var cost = visible ? distance * 0.55 : distance;
+      var protectedTarget = target.shieldUntil > gameTime;
+      if (protectedTarget) cost += 130;
+      // Independent factions still fight each other. Apply only a mild preference
+      // for the player's entire faction, with extra weight for a good engagement.
+      if (tank.team !== 'player' && target.team === 'player') {
+        cost *= 0.94;
+        if (visible && distance < 450 && !protectedTarget) cost *= 0.84;
       }
+      if (cost < score) { best = target; score = cost; }
     }
     return best;
   }
 
   function updateAI(tank, dt) {
-    var ai = tank.ai;
     if (!tank.alive) return;
-    ai.think -= dt;
-    ai.pathTimer -= dt;
-    ai.dodgeCd -= dt;
-    ai.mineCd -= dt;
-    ai.bankCd -= dt;
-    ai.blindCd -= dt;
-    ai.targetTimer -= dt;
-
-    if (!ai.targetTank || !ai.targetTank.alive || ai.targetTimer <= 0) {
-      ai.targetTank = chooseAITarget(tank);
-      ai.targetTimer = randRange(2.6, 4.6);
-      ai.targetKey = ai.targetTank ? ai.targetTank.key : null;
-    }
+    var ai = tank.ai, p = profile(tank);
+    ai.think -= dt; ai.steerTimer -= dt; ai.mineCd -= dt;
+    if (!ai.targetTank || !ai.targetTank.alive || ai.think <= 0) ai.targetTank = chooseAITarget(tank);
     var target = ai.targetTank;
-    if (!target) return;
-
-    // 定期重新决策：选目标 / 追道具 / 重新寻路
+    if (!target) { moveTank(tank, 0, 0, tank.speed, dt); return; }
+    ai.targetKey = target.key;
     if (ai.think <= 0) {
-      ai.think = randRange(0.22, 0.42);
-      State.stats.aiDecisions++;
-      ai.aimError = randRange(-0.1, 0.1);
-
-      var wantPowerup = null;
-      var nearestPowerD = Infinity;
-      for (var p = 0; p < State.powerups.length; p++) {
-        var pu = State.powerups[p];
-        var pd = dist(tank.x, tank.y, pu.x, pu.y);
-        if (pd < nearestPowerD) {
-          nearestPowerD = pd;
-          wantPowerup = pu;
+      ai.think = p.think * randRange(0.9, 1.12); State.stats.aiDecisions++;
+      var goal = target;
+      if (!tank.weapon) {
+        var nearest = 340;
+        for (var i = 0; i < State.powerups.length; i++) {
+          var powerup = State.powerups[i], distance = dist(tank.x, tank.y, powerup.x, powerup.y);
+          // Respect travel distance/lifetime, rather than chasing an expiring pickup.
+          var powerPath = findPath(State.map, tank.x, tank.y, powerup.x, powerup.y);
+          if (distance < nearest && powerPath.length * TILE / tank.speed < powerup.life - 0.6) { goal = powerup; nearest = distance; }
         }
       }
-      var chasePowerup = wantPowerup && nearestPowerD < 300 && rand() < 0.45;
-      var goalX = chasePowerup ? wantPowerup.x : target.x;
-      var goalY = chasePowerup ? wantPowerup.y : target.y;
-
-      // 被追得太近时偶尔后撤，避免贴脸送人头
-      var dTarget = dist(tank.x, tank.y, target.x, target.y);
-      if (dTarget < 70 && rand() < 0.25) {
-        goalX = tank.x - (target.x - tank.x);
-        goalY = tank.y - (target.y - tank.y);
-      }
-
-      ai.path = findPath(State.map, tank.x, tank.y, goalX, goalY);
-      ai.pathTimer = randRange(0.6, 1.1);
-      ai.pauseTimer = rand() < 0.08 ? randRange(0.1, 0.25) : 0;
-    }
-
-    if (ai.pathTimer <= 0) {
-      ai.pathTimer = randRange(0.6, 1.0);
-      ai.path = findPath(State.map, tank.x, tank.y, target.x, target.y);
-    }
-
-    var moveX = 0;
-    var moveY = 0;
-    if (ai.pauseTimer > 0) {
-      ai.pauseTimer -= dt;
-    } else if (ai.dodgeTimer > 0) {
-      ai.dodgeTimer -= dt;
-      moveX = ai.dodgeDir.x;
-      moveY = ai.dodgeDir.y;
-    } else if (ai.path.length) {
-      var node = ai.path[0];
-      var nd = dist(tank.x, tank.y, node.x, node.y);
-      if (nd < 9) {
-        ai.path.shift();
-        if (!ai.path.length) {
-          ai.path = findPath(State.map, tank.x, tank.y, target.x, target.y);
-        }
-      } else {
-        moveX = (node.x - tank.x) / nd;
-        moveY = (node.y - tank.y) / nd;
-      }
-    }
-
-    // 卡住检测：几乎没动就抖动一下重新寻路
-    var movedDist = dist(tank.x, tank.y, ai.lastX, ai.lastY);
-    if (movedDist < 0.8 && (moveX || moveY)) {
-      ai.stuckTimer += dt;
-      if (ai.stuckTimer > 0.45) {
-        ai.stuckTimer = 0;
-        ai.path = findPath(State.map, tank.x, tank.y, target.x, target.y);
-        ai.think = 0;
-      }
-    } else {
-      ai.stuckTimer = 0;
-    }
-    ai.lastX = tank.x;
-    ai.lastY = tank.y;
-
-    moveTank(tank, moveX, moveY, tank.speed, dt);
-
-    // 瞄准：有视线时预判，无视线时尝试反弹射击
-    var los = hasLineOfSight(State.map, tank.x, tank.y, target.x, target.y);
-    var aim = predictiveAngle(tank, target);
-    tank.turret = angleLerp(tank.turret, aim, 4.5 * dt);
-
-    if (tank.fireCd <= 0) {
-      if (los) {
-        if (Math.abs(angleDelta(tank.turret, aim)) < 0.16) {
-          tryFire(tank, tank.turret + randRange(-0.05, 0.05));
-        }
-      } else if (ai.bankCd <= 0) {
-        ai.bankCd = randRange(0.9, 1.6);
-        var bankAngle = findBankShot(tank, target);
-        if (bankAngle !== null) {
-          tank.turret = bankAngle;
-          tryFire(tank, bankAngle);
-        }
-        // 盲射骚扰：没有视线时朝预判方向打一发，靠迷宫反弹碰运气
-        if (tank.fireCd <= 0 && ai.blindCd <= 0 && dist(tank.x, tank.y, target.x, target.y) < 520) {
-          var blind = predictiveAngle(tank, target) + randRange(-0.22, 0.22);
-          tank.turret = blind;
-          tryFire(tank, blind);
-          ai.blindCd = randRange(2.2, 3.4);
+      ai.path = findPath(State.map, tank.x, tank.y, goal.x, goal.y);
+      ai.goal = goal; ai.aimError = randRange(-p.error, p.error);
+      if (tank.weapon === 'deathray') {
+        ai.shot = predictiveAngle(tank, target);
+        if (settings.friendlyFire) {
+          var rayX = Math.cos(ai.shot), rayY = Math.sin(ai.shot);
+          if (cachedTanks.some(function(friend) {
+            if (!friend.alive || friend === tank || enemies(tank, friend)) return false;
+            var fx = friend.x - tank.x, fy = friend.y - tank.y;
+            return fx * rayX + fy * rayY > 0 && Math.abs(fx * rayY - fy * rayX) < friend.r + 7;
+          })) ai.shot = null;
         }
       }
+      else if (tank.fireCd < p.think * 1.5) ai.shot = findBankShot(tank, target);
+      else ai.shot = null;
+      // No targetable ray? Follow the enemy with the turret; missile guidance uses it too.
+      ai.aim = ai.shot === null ? predictiveAngle(tank, target) : ai.shot;
     }
-
-    // 走位躲子弹
-    if (ai.dodgeTimer <= 0 && ai.dodgeCd <= 0) {
-      var threat = detectBulletThreat(tank);
-      if (threat && rand() < 0.62) {
-        ai.dodgeTimer = 0.32;
-        ai.dodgeCd = 0.9;
-        // 垂直于子弹方向侧移
-        var perp = { x: -threat.vy, y: threat.vx };
-        var plen = Math.sqrt(perp.x * perp.x + perp.y * perp.y) || 1;
-        perp.x /= plen;
-        perp.y /= plen;
-        // 选择远离子弹路径的一侧
-        var cross = (tank.x - threat.x) * perp.x + (tank.y - threat.y) * perp.y;
-        if (cross > 0) {
-          perp.x = -perp.x;
-          perp.y = -perp.y;
-        }
-        ai.dodgeDir = perp;
-      }
+    while (ai.path.length && dist(tank.x, tank.y, ai.path[0].x, ai.path[0].y) < 5) ai.path.shift();
+    var moveX = 0, moveY = 0, node = ai.path[0];
+    if (node) { var nd = dist(tank.x, tank.y, node.x, node.y) || 1; moveX = (node.x - tank.x) / nd; moveY = (node.y - tank.y) / nd; }
+    // Strafe at close engagement distance rather than repeatedly ramming the target.
+    if (ai.goal === target && hasLineOfSight(State.map, tank.x, tank.y, target.x, target.y) && dist(tank.x, tank.y, target.x, target.y) < (p === PROFILES.nightmare ? 240 : 120)) {
+      var a = Math.atan2(target.y - tank.y, target.x - tank.x) + (Number(tank.key.slice(2)) % 2 ? 1 : -1) * Math.PI / 2;
+      moveX = Math.cos(a); moveY = Math.sin(a);
     }
-
-    // 附近有已布置的地雷也躲一下
-    if (ai.dodgeTimer <= 0 && ai.dodgeCd <= 0) {
-      for (var m = 0; m < State.mines.length; m++) {
-        var mine = State.mines[m];
-        if (mine.owner === tank) continue;
-        var md = dist(tank.x, tank.y, mine.x, mine.y);
-        if (mine.armed && md < 55) {
-          ai.dodgeTimer = 0.3;
-          ai.dodgeCd = 1.0;
-          ai.dodgeDir = {
-            x: (tank.x - mine.x) / (md || 1),
-            y: (tank.y - mine.y) / (md || 1)
-          };
-          break;
-        }
-      }
+    if (p === PROFILES.nightmare && ai.goal === target && dist(tank.x, tank.y, target.x, target.y) < 110) {
+      var away = Math.atan2(tank.y - target.y, tank.x - target.x); moveX = Math.cos(away); moveY = Math.sin(away);
     }
-
-    // 有地雷时在追人路上布雷
-    if (tank.mines > 0 && ai.mineCd <= 0 && dist(tank.x, tank.y, target.x, target.y) < 170 && rand() < dt * 0.9) {
-      if (placeMine(tank)) ai.mineCd = 2.4;
+    if (ai.steerTimer <= 0) {
+      ai.steerTimer = p.steer;
+      var movement = planMovement(tank, moveX, moveY); ai.moveX = movement.x; ai.moveY = movement.y;
     }
+    moveTank(tank, tank.remote ? 0 : ai.moveX, tank.remote ? 0 : ai.moveY, tank.speed, dt);
+    var aim = ai.aim == null ? predictiveAngle(tank, target) : ai.aim;
+    if (tank.remote) {
+      var remotePath = findPath(State.map, tank.remote.x, tank.remote.y, target.x, target.y);
+      var remoteGoal = remotePath[0] || target;
+      aim = Math.atan2(remoteGoal.y - tank.remote.y, remoteGoal.x - tank.remote.x);
+    }
+    if (p === PROFILES.nightmare && !tank.remote && hasLineOfSight(State.map, tank.x, tank.y, target.x, target.y)) {
+      aim = predictiveAngle(tank, target); ai.shot = aim;
+    }
+    // Mouse-controlled players can rotate their turret instantly too.
+    tank.turret = p === PROFILES.nightmare ? aim + ai.aimError : angleLerp(tank.turret, aim + ai.aimError, (p === PROFILES.normal ? 6 : 18) * dt);
+    if (tank.frag && tank.fireCd <= 0) {
+      var b = tank.frag;
+      if (b.age > 1.3 && livingEnemies(tank).some(function(t) { return dist(t.x, t.y, b.x, b.y) < 180; }) && (!settings.friendlyFire || dist(tank.x, tank.y, b.x, b.y) > 95)) tryFire(tank, tank.turret);
+    } else if (ai.shot !== null && tank.fireCd <= 0 && Math.abs(angleDelta(tank.turret, aim)) < (p === PROFILES.normal ? 0.1 : 0.035)) {
+      var check = tank.weapon === 'deathray' ? null : traceRay(State.map, tank.x, tank.y, tank.turret, p.bounces, 1100, tank, 2.5, tank.weapon !== 'laser');
+      if (tank.weapon === 'deathray' || (check.hitTank && enemies(tank, check.hitTank))) tryFire(tank, tank.turret);
+    }
+    if (tank.mines > 0 && ai.mineCd <= 0 && dist(tank.x, tank.y, target.x, target.y) < 220) { if (placeMine(tank)) ai.mineCd = 2.5; }
   }
 
-  function detectBulletThreat(tank) {
-    for (var i = 0; i < State.bullets.length; i++) {
-      var b = State.bullets[i];
-      if (b.owner === tank && b.bounces === 0) continue;
-      var rx = b.x - tank.x;
-      var ry = b.y - tank.y;
-      var d2 = rx * rx + ry * ry;
-      if (d2 > 150 * 150) continue;
-      var rvx = b.vx;
-      var rvy = b.vy;
-      var v2 = rvx * rvx + rvy * rvy;
-      if (v2 < 1) continue;
-      var t = -(rx * rvx + ry * rvy) / v2;
-      if (t < 0 || t > 0.65) continue;
-      var closestX = rx + rvx * t;
-      var closestY = ry + rvy * t;
-      if (closestX * closestX + closestY * closestY < 34 * 34) return b;
-    }
-    return null;
-  }
 
   // ---------------- 玩家操作 ----------------
   function playerAimTarget() {
@@ -1278,9 +1327,10 @@
     var input = State.input;
     var dirX = (input.right ? 1 : 0) - (input.left ? 1 : 0);
     var dirY = (input.down ? 1 : 0) - (input.up ? 1 : 0);
-    moveTank(player, dirX, dirY, player.speed, dt);
+    moveTank(player, player.remote ? 0 : dirX, player.remote ? 0 : dirY, player.speed, dt);
 
     var autoTarget = playerAimTarget();
+    if (State.aim.touch && player.remote && (dirX || dirY)) { player.turret = Math.atan2(dirY, dirX); autoTarget = null; }
     if (autoTarget) {
       player.turret = angleLerp(player.turret, Math.atan2(autoTarget.y - player.y, autoTarget.x - player.x), 12 * dt);
     } else if (State.aim.has) {
@@ -1294,50 +1344,37 @@
 
   // ---------------- 回合流程 ----------------
   function chooseMap() {
-    var idx = Math.floor(rand() * mapPool.length);
-    if (mapPool.length > 1 && idx === State.lastMapIndex) {
-      idx = (idx + 1 + Math.floor(rand() * (mapPool.length - 1))) % mapPool.length;
-    }
-    State.lastMapIndex = idx;
-    return { map: mapPool[idx], index: idx };
+    // Independent uniform draws: every map has probability 1/30 each round.
+    var index = Math.floor(rand() * mapPool.length);
+    State.lastMapIndex = index;
+    return { map: loadMap(index), index: index };
   }
 
   function startRound() {
-    var chosen = chooseMap();
-    State.map = chosen.map;
-    State.mapIndex = chosen.index;
-    State.state = 'countdown';
-    State.roundTimer = 1.15;
-    State.killInfo = null;
-    State.message = null;
-    State.messageTimer = 0;
-    State.bullets.length = 0;
-    State.mines.length = 0;
-    State.powerups.length = 0;
-    State.particles.length = 0;
-    State.lasers.length = 0;
-    State.powerSpawnTimer = randRange(2.2, 3.4);
-    State.stats.rounds++;
-
-    var spawns = State.map.spawns;
-    var center = { x: W / 2, y: H / 2 };
-    function faceTo(spawn) {
-      return Math.atan2(center.y - spawn.y, center.x - spawn.x);
-    }
+    var chosen = chooseMap(); useMap(chosen.map); State.mapIndex = chosen.index;
+    State.state = 'countdown'; State.roundTimer = 1.15; roundElapsed = 0;
+    State.killInfo = null; State.message = null; State.messageTimer = 0;
+    State.bullets.length = State.mines.length = State.powerups.length = State.particles.length = State.lasers.length = 0;
+    State.powerSpawnTimer = randRange(2.5, 4); State.stats.rounds++;
+    forecast = []; forecastTimer = 0;
+    var spawns = allocateSpawns(State.map, settings.aiCount + 1); State.map.spawns = spawns;
+    function faceTo(spawn) { return Math.atan2(H / 2 - spawn.y, W / 2 - spawn.x); }
     State.player = createTank('player', '玩家', 'player', spawns[0].x, spawns[0].y, faceTo(spawns[0]));
-    State.ais = [
-      createTank('ai1', 'AI-1', 'ai1', spawns[1].x, spawns[1].y, faceTo(spawns[1])),
-      createTank('ai2', 'AI-2', 'ai2', spawns[2].x, spawns[2].y, faceTo(spawns[2]))
-    ];
-    State.aim.has = false;
-    State.input.firing = false;
-    bakeMap();
-    updateHud(true);
+    State.ais = [];
+    for (var i = 1; i <= settings.aiCount; i++) State.ais.push(createTank('ai' + i, 'AI-' + i, 'ai' + i, spawns[i].x, spawns[i].y, faceTo(spawns[i])));
+    cachedTanks = [State.player].concat(State.ais);
+    cachedTanks.forEach(function(t) { if (State.scores[t.team] == null) State.scores[t.team] = 0; });
+    State.aim.has = false; clearInput();
+    rebuildScoreboard(); bakeMap(); updateHud(true);
+  }
+
+  function clearInput() {
+    State.input.up = State.input.down = State.input.left = State.input.right = State.input.firing = false;
   }
 
   function startMatch() {
     if (!State.ready) return;
-    State.scores = { player: 0, ai1: 0, ai2: 0 };
+    State.scores = {};
     State.matchWinner = null;
     State.round = 1;
     State.killInfo = null;
@@ -1396,6 +1433,9 @@
       }
       updateParticles(dt);
     } else if (State.state === 'playing') {
+      roundElapsed += dt;
+      forecastTimer -= dt;
+      if (forecastTimer <= 0) { buildForecast(); forecastTimer = 0.05; }
       updatePlayer(dt);
       for (var i = 0; i < State.ais.length; i++) {
         updateAI(State.ais[i], dt);
@@ -1404,6 +1444,7 @@
       updateBullets(dt);
       if (State.state === 'playing') updateMines(dt);
       if (State.state === 'playing') updatePowerups(dt);
+      resolveRound();
 
       var list = tanksList();
       for (var t = 0; t < list.length; t++) {
@@ -1425,6 +1466,7 @@
       }
     }
 
+    updateRoundClock();
     // 激光与粒子通用倒计时
     for (var l = State.lasers.length - 1; l >= 0; l--) {
       State.lasers[l].life -= dt;
@@ -1446,20 +1488,99 @@
     if (el && el.textContent !== text) el.textContent = text;
   }
 
-  function updateHud(force) {
+  function updateHud() {
     if (!hudEls) return;
-    setText(hudEls.playerScore, String(scoreOf('player')));
-    setText(hudEls.ai1Score, String(scoreOf('ai1')));
-    setText(hudEls.ai2Score, String(scoreOf('ai2')));
+    Object.keys(scoreNodes).forEach(function(team) {
+      var node = scoreNodes[team];
+      setText(node.score, String(State.scores[team] || 0));
+      node.chip.classList.toggle('is-dead', State.state === 'playing' && !cachedTanks.some(function(t) { return t.team === team && t.alive; }));
+    });
     setText(hudEls.round, '第 ' + State.round + ' 回合');
-    var power = '无道具';
-    var player = State.player;
+    setText(hudEls.first, '先到 ' + settings.targetScore + ' 分');
+    updateRoundClock();
+    setText(hudEls.map, State.map ? State.map.label + '地图 ' + (State.mapIndex % 10 + 1) + '/10' : '30 张地图');
+    var player = State.player, parts = [];
     if (player && player.alive) {
-      if (player.laserCharges > 0) power = '激光就绪（射击时发射）';
-      else if (player.rapidUntil > gameTime) power = '速射子弹 ' + Math.ceil(player.rapidUntil - gameTime) + 's';
-      else if (player.mines > 0) power = '地雷 ×' + player.mines + '（E / 右键）';
+      if (player.remote) parts.push('遥控导弹飞行中');
+      if (player.frag) parts.push('再次开火引爆炸弹');
+      if (player.weapon && (player.weapon !== 'rapid' || player.rapidUntil > gameTime)) parts.push(POWER[player.weapon][1] + ' ×' + player.ammo);
+      if (player.mines) parts.push('地雷 ×' + player.mines);
+      if (player.shieldUntil > gameTime) parts.push('护盾 ' + Math.ceil(player.shieldUntil - gameTime) + 's');
+    } else if (player) parts.push('观战中');
+    setText(hudEls.power, parts.join(' · ') || '无道具');
+  }
+
+  function roundRemaining() {
+    return Math.max(0, Math.ceil(settings.roundTime - (State.state === 'idle' ? 0 : roundElapsed) - 1e-9));
+  }
+
+  function updateRoundClock() {
+    if (!hudEls || !hudEls.time) return;
+    var remaining = roundRemaining();
+    var low = State.state === 'playing' && remaining > 0 && remaining <= 10;
+    var key = remaining + ':' + low;
+    if (clockKey === key) return;
+    clockKey = key;
+    setText(hudEls.time, '剩余 ' + String(Math.floor(remaining / 60)).padStart(2, '0') + ':' + String(remaining % 60).padStart(2, '0'));
+    hudEls.time.classList.toggle('is-low', low);
+  }
+
+  function rebuildScoreboard() {
+    var container = panel.querySelector('#tk-scores'); if (!container) return;
+    container.replaceChildren(); scoreNodes = {};
+    cachedTanks.forEach(function(tank) {
+      if (scoreNodes[tank.team]) return;
+      var chip = document.createElement('div'), label = document.createElement('span'), score = document.createElement('strong');
+      chip.className = 'tk-hud-score'; label.className = 'tk-hud-label';
+      chip.style.setProperty('--tank-color', tankColor(tank));
+      label.textContent = tank.team === 'player' && settings.allies.length ? '我方' : tank.name;
+      chip.title = cachedTanks.filter(function(t) { return t.team === tank.team; }).map(function(t) { return t.name; }).join('、');
+      score.textContent = String(State.scores[tank.team] || 0);
+      chip.append(label, score); container.append(chip); scoreNodes[tank.team] = { chip: chip, score: score };
+    });
+  }
+
+  function bindSettings() {
+    var dialog = panel.querySelector('#tk-settings'), form = panel.querySelector('#tk-settings-form');
+    var difficulty = panel.querySelector('#tk-difficulty'), count = panel.querySelector('#tk-ai-count');
+    var allyOptions = panel.querySelector('#tk-ally-options'), friendly = panel.querySelector('#tk-friendly-fire'), score = panel.querySelector('#tk-target-score');
+    var roundTime = panel.querySelector('#tk-round-time');
+    var opener = panel.querySelector('#tk-settings-btn');
+    var notes = { normal: '普通：略有增强，适合轻松对战。', original: '原版：快速反应、预判拦截与反弹攻击，体验高压对战。', nightmare: '吓哭了：多次反弹搜索、长时域弹道预测和密集避弹规划。' };
+    function selectedAllies() { return Array.from(allyOptions.querySelectorAll('input:checked')).map(function(input) { return Number(input.value); }); }
+    function limitAllies() {
+      var selected = selectedAllies(), limit = Math.min(2, Number(count.value) - 1);
+      allyOptions.querySelectorAll('input').forEach(function(input) { input.disabled = !input.checked && selected.length >= limit; });
     }
-    setText(hudEls.power, power);
+    function renderAllies(selected) {
+      var limit = Math.min(2, Number(count.value) - 1);
+      selected = selected.filter(function(n) { return n <= Number(count.value); }).slice(0, limit);
+      allyOptions.replaceChildren();
+      for (var i = 1; i <= Number(count.value); i++) {
+        var label = document.createElement('label'), input = document.createElement('input');
+        input.type = 'checkbox'; input.value = String(i); input.checked = selected.indexOf(i) >= 0;
+        input.addEventListener('change', limitAllies); label.append(input, document.createTextNode('AI-' + i)); allyOptions.append(label);
+      }
+      limitAllies();
+    }
+    function close() { if (dialog.open) dialog.close(); }
+    opener.addEventListener('click', function() {
+      difficulty.value = settings.difficulty; count.value = String(settings.aiCount);
+      friendly.value = settings.friendlyFire ? 'on' : 'off'; score.value = String(settings.targetScore);
+      roundTime.value = String(settings.roundTime);
+      setText(panel.querySelector('#tk-difficulty-note'), notes[difficulty.value]); renderAllies(settings.allies);
+      settingsOpen = true; clearInput(); pause(); dialog.showModal();
+    });
+    difficulty.addEventListener('change', function() { setText(panel.querySelector('#tk-difficulty-note'), notes[difficulty.value]); });
+    count.addEventListener('change', function() { renderAllies(selectedAllies()); });
+    panel.querySelector('#tk-settings-cancel').addEventListener('click', close);
+    dialog.addEventListener('close', function() { settingsOpen = false; clearInput(); opener.focus(); resume(); });
+    form.addEventListener('submit', function(event) {
+      event.preventDefault();
+      if (!form.reportValidity()) return;
+      configure({ difficulty: difficulty.value, aiCount: Number(count.value), allies: selectedAllies(), friendlyFire: friendly.value === 'on', targetScore: Number(score.value), roundTime: Number(roundTime.value) }, true);
+      close(); settingsOpen = false; startMatch();
+    });
   }
 
   function hideOverlay() {
@@ -1468,26 +1589,20 @@
 
   function showStartOverlay() {
     if (!overlayEl) return;
-    overlayEl.classList.remove('is-hidden');
-    setText(overlayTitle, '坦克动荡');
-    setText(
-      overlayDesc,
-      '俯视迷宫坦克对战 · 子弹撞墙反弹 · 一炮淘汰 · 先到 5 分获胜'
-    );
-    setText(startBtn, '开始对局');
-    startBtn.dataset.mode = 'start';
+    overlayEl.classList.remove('is-hidden'); setText(overlayTitle, '坦克动荡');
+    setText(overlayDesc, '准备好出发了吗？'); setText(startBtn, '开始对局'); startBtn.dataset.mode = 'start';
   }
 
   function showMatchEndOverlay() {
     if (!overlayEl) return;
-    var win = State.matchWinner === 'player';
     overlayEl.classList.remove('is-hidden');
-    setText(overlayTitle, win ? '你赢了！' : '憾负');
-    var ai1 = scoreOf('ai1');
-    var ai2 = scoreOf('ai2');
-    setText(overlayDesc, '最终比分 — 玩家 ' + scoreOf('player') + ' : AI-1 ' + ai1 + ' : AI-2 ' + ai2);
-    setText(startBtn, '再来一局');
-    startBtn.dataset.mode = 'restart';
+    setText(overlayTitle, State.matchWinner === 'player' ? '你赢了！' : '再挑战一次');
+    var result = Object.keys(State.scores).map(function(team) {
+      var tank = cachedTanks.find(function(t) { return t.team === team; });
+      var name = team === 'player' && settings.allies.length ? '我方' : tank ? tank.name : team;
+      return name + ' ' + State.scores[team];
+    }).join(' : ');
+    setText(overlayDesc, '最终比分 · ' + result); setText(startBtn, '再来一局'); startBtn.dataset.mode = 'restart';
   }
 
   // ---------------- 绘制 ----------------
@@ -1556,8 +1671,8 @@
 
   function drawTank(tank) {
     var pal = palette();
-    var main = tank.key === 'player' ? pal.player : tank.key === 'ai1' ? pal.ai1 : pal.ai2;
-    var dark = tank.key === 'player' ? pal.playerDark : tank.key === 'ai1' ? pal.ai1Dark : pal.ai2Dark;
+    var main = tankColor(tank);
+    var dark = main;
     var r = tank.r;
 
     ctx.save();
@@ -1590,6 +1705,12 @@
     ctx.fill();
     ctx.restore();
 
+    ctx.fillStyle = main; ctx.font = 'bold 11px system-ui'; ctx.textAlign = 'center';
+    ctx.fillText(tank.key === 'player' ? '你' : tank.name + (tank.team === 'player' ? ' 友' : ''), tank.x, tank.y - 19);
+    if (tank.shieldUntil > gameTime) {
+      ctx.strokeStyle = '#39a5db'; ctx.lineWidth = 2.5; ctx.globalAlpha = 0.55 + 0.3 * Math.sin(gameTime * 9);
+      ctx.beginPath(); ctx.arc(tank.x, tank.y, tank.r + 9, 0, Math.PI * 2); ctx.stroke(); ctx.globalAlpha = 1;
+    }
     // 玩家标识
     if (tank.key === 'player') {
       ctx.strokeStyle = 'rgba(73,177,245,0.55)';
@@ -1613,55 +1734,21 @@
   }
 
   function drawPowerup(p) {
-    var pal = palette();
-    var colors = { mine: '#ffb300', laser: pal.laser, rapid: pal.rapid };
-    var color = colors[p.type] || pal.player;
-    var bob = Math.sin(p.phase) * 2;
-    ctx.save();
-    ctx.translate(p.x, p.y + bob);
-    ctx.fillStyle = pal.powerBg;
-    ctx.strokeStyle = color;
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.arc(0, 0, p.r, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.stroke();
-    ctx.fillStyle = color;
-    if (p.type === 'mine') {
-      ctx.beginPath();
-      ctx.arc(0, 0, 4.2, 0, Math.PI * 2);
-      ctx.fill();
-      for (var i = 0; i < 6; i++) {
-        var a = (Math.PI * 2 * i) / 6 + p.phase * 0.5;
-        ctx.save();
-        ctx.rotate(a);
-        ctx.fillRect(5, -1, 3.4, 2);
-        ctx.restore();
-      }
-    } else if (p.type === 'laser') {
-      ctx.beginPath();
-      ctx.moveTo(-2.5, -6);
-      ctx.lineTo(2.5, -1);
-      ctx.lineTo(-0.5, -1);
-      ctx.lineTo(2.5, 6);
-      ctx.lineTo(-2.5, 0.5);
-      ctx.lineTo(0.8, 0.5);
-      ctx.closePath();
-      ctx.fill();
-    } else {
-      ctx.beginPath();
-      ctx.arc(-3.4, 0, 2.1, 0, Math.PI * 2);
-      ctx.arc(0, 0, 2.1, 0, Math.PI * 2);
-      ctx.arc(3.4, 0, 2.1, 0, Math.PI * 2);
-      ctx.fill();
-    }
+    var def = POWER[p.type], pal = palette();
+    ctx.save(); ctx.translate(p.x, p.y + Math.sin(p.phase) * 1.5);
+    if (p.life < 3) ctx.globalAlpha = 0.4 + 0.6 * Math.abs(Math.sin(p.life * 7));
+    ctx.fillStyle = pal.powerBg; ctx.strokeStyle = def[2]; ctx.lineWidth = 2;
+    roundRect(-p.r, -p.r, p.r * 2, p.r * 2, 4); ctx.stroke();
+    ctx.fillStyle = def[2]; ctx.font = 'bold 12px system-ui'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(def[0], 0, 0.5);
     ctx.restore();
   }
 
   function drawMine(mine) {
+    if (mine.hidden && mine.owner.team !== 'player' && !mine.triggered) return;
     var pal = palette();
     ctx.save();
     ctx.translate(mine.x, mine.y);
+    if (mine.hidden && !mine.triggered) ctx.globalAlpha = 0.25;
     ctx.fillStyle = pal.mine;
     ctx.beginPath();
     ctx.arc(0, 0, mine.r * 0.72, 0, Math.PI * 2);
@@ -1699,6 +1786,11 @@
     for (i = 0; i < State.powerups.length; i++) drawPowerup(State.powerups[i]);
     for (i = 0; i < State.mines.length; i++) drawMine(State.mines[i]);
 
+    if (State.player && State.player.alive && State.player.weapon === 'laser') {
+      var guide = traceRay(State.map, State.player.x, State.player.y, State.player.turret, LASER_MAX_BOUNCE, 1500, State.player, 2.5);
+      ctx.save(); ctx.strokeStyle = pal.laser; ctx.globalAlpha = 0.35; ctx.lineWidth = 1;
+      ctx.setLineDash([7, 5]); strokePolyline(guide.points); ctx.restore();
+    }
     // 子弹
     for (i = 0; i < State.bullets.length; i++) {
       var b = State.bullets[i];
@@ -1710,7 +1802,7 @@
       ctx.lineTo(b.x, b.y);
       ctx.stroke();
       ctx.globalAlpha = 1;
-      ctx.fillStyle = pal.bullet;
+      ctx.fillStyle = b.kind === 'frag' ? POWER.frag[2] : b.kind === 'rc' || b.kind === 'homing' ? '#ef8c00' : pal.bullet;
       ctx.beginPath();
       ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
       ctx.fill();
@@ -1720,7 +1812,7 @@
     for (i = 0; i < State.lasers.length; i++) {
       var laser = State.lasers[i];
       var alpha = laser.life / laser.maxLife;
-      ctx.strokeStyle = pal.laser;
+      ctx.strokeStyle = laser.deathray ? '#a26bea' : pal.laser;
       ctx.globalAlpha = 0.22 * alpha;
       ctx.lineWidth = 14;
       strokePolyline(laser.points);
@@ -1796,7 +1888,8 @@
     if (dt > 0.05) dt = 0.05;
     if (dt < 0) dt = 0;
     State.frames++;
-    update(dt);
+    State.accumulator = Math.min((State.accumulator || 0) + dt, 0.067);
+    while (State.accumulator >= 1 / 60) { update(1 / 60); State.accumulator -= 1 / 60; }
     draw();
     if (canRun() && State.running) {
       State.raf = window.requestAnimationFrame(loop);
@@ -1812,7 +1905,7 @@
     }
     if (State.running) return;
     State.running = true;
-    State.lastTime = 0;
+    State.lastTime = 0; State.accumulator = 0;
     State.raf = window.requestAnimationFrame(loop);
   }
 
@@ -1825,12 +1918,13 @@
   }
 
   function pause() {
+    clearInput();
     stopLoop();
   }
 
   function resume() {
     if (!initialized || !State.active) return;
-    if (State.state === 'idle') {
+    if (State.state === 'idle' || State.state === 'matchEnd' || settingsOpen) {
       draw();
       return;
     }
@@ -1909,7 +2003,7 @@
 
   function bindInput() {
     document.addEventListener('keydown', function(e) {
-      if (!isActivePanel() || stopTyping(e)) return;
+      if (!isActivePanel() || settingsOpen || stopTyping(e)) return;
       if (setKey(e.code, true)) e.preventDefault();
     });
     document.addEventListener('keyup', function(e) {
@@ -1959,6 +2053,11 @@
       });
     }
 
+    function releaseFire() { State.input.firing = false; if (State.player && State.player.frag) State.player.frag.inputReleased = true; }
+    document.addEventListener('mouseup', releaseFire);
+    document.addEventListener('keyup', function(e) { if (e.code === 'Space') releaseFire(); });
+    var touchFire = panel.querySelector('#tk-fire-btn');
+    if (touchFire) { touchFire.addEventListener('pointerup', releaseFire); touchFire.addEventListener('pointercancel', releaseFire); }
     bindTouch();
   }
 
@@ -2064,9 +2163,9 @@
     overlayDesc = panel.querySelector('#tk-overlay-desc');
     startBtn = panel.querySelector('#tk-start-btn');
     hudEls = {
-      playerScore: panel.querySelector('#tk-score-player'),
-      ai1Score: panel.querySelector('#tk-score-ai1'),
-      ai2Score: panel.querySelector('#tk-score-ai2'),
+      first: panel.querySelector('#tk-first'),
+      time: panel.querySelector('#tk-time'),
+      map: panel.querySelector('#tk-map'),
       round: panel.querySelector('#tk-round'),
       power: panel.querySelector('#tk-power')
     };
@@ -2084,12 +2183,16 @@
     if (!cacheDom()) return false;
     var start = nowMs();
 
+    try { configure(JSON.parse(localStorage.getItem('littleTank.settings.v2') || '{}')); } catch (_) { configure({}); }
     mapPool = buildMapPool();
     State.ready = true;
     State.state = 'idle';
-    State.map = mapPool[Math.floor(Math.random() * mapPool.length)];
+    State.mapIndex = Math.floor(rand() * mapPool.length);
+    useMap(loadMap(State.mapIndex));
 
+    bindSettings();
     bindInput();
+    updateHud();
     if (window.ResizeObserver) {
       resizeObserver = new ResizeObserver(function() {
         resize();
@@ -2109,7 +2212,7 @@
     // 首帧：先画地图预览，再等用户点击开始
     requestAnimationFrame(function() {
       resize();
-      showStartOverlay();
+      if (State.state === 'idle') showStartOverlay();
       draw();
     });
     State.initMs = Math.round((nowMs() - start) * 100) / 100;
@@ -2134,6 +2237,7 @@
   }
 
   function deactivate() {
+    clearInput();
     State.active = false;
     pause();
   }
@@ -2146,7 +2250,7 @@
         key: t.key,
         x: Math.round(t.x * 10) / 10,
         y: Math.round(t.y * 10) / 10,
-        alive: t.alive,
+        alive: t.alive, team: t.team, weapon: t.weapon, ammo: t.ammo, shield: t.shieldUntil > gameTime,
         turret: Math.round(t.turret * 100) / 100,
         fireCd: Math.round(t.fireCd * 100) / 100,
         mines: t.mines,
@@ -2166,7 +2270,10 @@
       running: State.running,
       state: State.state,
       round: State.round,
-      scores: { player: scoreOf('player'), ai1: scoreOf('ai1'), ai2: scoreOf('ai2') },
+      scores: Object.assign({}, State.scores),
+      settings: Object.assign({}, settings, { allies: settings.allies.slice() }),
+      roundRemaining: roundRemaining(),
+      mapSize: State.map ? State.map.label : null, tile: TILE,
       mapIndex: State.mapIndex,
       mapCount: mapPool ? mapPool.length : 0,
       player: tankInfo(State.player),
@@ -2245,7 +2352,28 @@
       return initialized;
     },
     getState: snapshot,
+    getSettings: function() { return Object.assign({}, settings, { allies: settings.allies.slice() }); },
     __test: {
+      configure: function(value) { configure(value); },
+      loadMap: function(index) { return loadMap(index); },
+      selectMap: function(index) { useMap(loadMap(index)); State.mapIndex = index; },
+      spawns: allocateSpawns,
+      path: findPath,
+      tanks: tanksList,
+      physics: updateBullets,
+      releaseFire: function() { if (State.player && State.player.frag) State.player.frag.inputReleased = true; },
+      mines: updateMines,
+      powers: updatePowerups,
+      shoot: tryFire,
+      applyPowerup: applyPowerup,
+      canDamage: canDamage,
+      chooseTarget: chooseAITarget,
+      trace: traceRay,
+      plan: planMovement,
+      forecast: buildForecast,
+      resolve: resolveRound,
+      rawState: function() { return State; },
+
       start: startMatch,
       simulate: testSimulate,
       draw: draw,
