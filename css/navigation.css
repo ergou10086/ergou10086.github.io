@@ -1,5 +1,14 @@
 /* Frosted acrylic menu; retain an opaque fallback without backdrop-filter. */
 #nav .menus_items .menus_item > .menus_item_child {
+  /* Keep the hover bridge stationary: sub_menus moves it 10px away from
+     the trigger and repeatedly restarts the backdrop surface on re-entry. */
+  display: block;
+  visibility: hidden;
+  pointer-events: none;
+  animation: none;
+  transform: none;
+  transition: none;
+  will-change: auto;
   --menu-tint: rgba(246, 249, 255, .65);
   background: #f2f5fa;
   border: 1px solid rgba(255, 255, 255, .65);
@@ -25,7 +34,15 @@
 #nav .menus_items .menus_item > .menus_item_child li:hover,
 #nav .menus_items .menus_item > .menus_item_child li:focus-within { background: rgba(73, 177, 245, .22); }
 #nav .menus_items .menus_item > .menus_item_child a { border-radius: inherit; }
-#nav .menus_items .menus_item:focus-within > .menus_item_child { display: block; }
+#nav .menus_items .menus_item:hover > .menus_item_child,
+#nav .menus_items .menus_item:focus-within > .menus_item_child {
+  visibility: visible;
+  pointer-events: auto;
+}
+#nav .menus_items .menus_item > .menus_item_child::before {
+  top: -10px;
+  height: 10px;
+}
 #nav .menus_items .menus_item > .menus_item_child a:focus-visible { outline: 2px solid var(--theme-color, #49b1f5); outline-offset: -2px; }
 .comment-service-note { margin: 12px 0; font-size: .85em; color: var(--font-color); opacity: .85; }
 #utterances-wrap { min-height: 150px; }
