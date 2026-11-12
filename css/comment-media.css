@@ -60,3 +60,16 @@
 .cc [hidden], .cc-picker [hidden] { display: none !important; }
 [data-theme='dark'] .cc-picker { background: #202833; border-color: rgba(170, 190, 210, .18); box-shadow: 0 15px 45px rgba(0, 0, 0, .45); }
 @media (max-width: 600px) { .cc-session { font-size: 12px; gap: 6px; } .cc-counter { display: none; } .cc-send { margin-left: auto; } .cc-comment { gap: 9px; } .cc-comment-head time { width: 100%; margin-left: 0; } }
+
+/* Thread metadata stays separate from the comment text and wraps on phones. */
+.cc-comment-meta { margin-left:auto; display:flex; flex-wrap:wrap; justify-content:flex-end; gap:4px 10px; color:#84929f; font-size:11px; }
+.cc-comment-meta time { margin-left:0; font-size:inherit; }
+.cc-comment-actions { display:flex; justify-content:flex-end; gap:4px; }
+.cc-target, .cc-reference { padding:9px 12px; border-left:3px solid var(--cc-accent); background:var(--cc-soft); overflow-wrap:anywhere; white-space:pre-wrap; }
+.cc-target { display:flex; align-items:center; gap:12px; border-radius:12px 12px 0 0; }
+.cc-target span { flex:1; max-height:100px; overflow:auto; }
+.cc-target button, .cc-more-replies { color:var(--cc-accent); background:transparent; border:0; padding:7px; }
+.cc-replies { border-left:2px solid var(--cc-line); padding-left:14px; }
+.cc-replies:empty { display:none; }
+.cc-replies .cc-comment:last-child { border-bottom:0; }
+@media(max-width:600px) { .cc-comment-meta { width:100%; margin-left:0; justify-content:flex-start; } .cc-comment-meta time { width:auto; } .cc-replies { padding-left:8px; } }

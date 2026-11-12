@@ -6,7 +6,7 @@
   "toolbarTimeoutMs": 5000,
   "model": {
     "enabled": true,
-    "directory": "model/ichigoori/",
+    "directory": "model/ichigoori-v4/",
     "loadTimeoutMs": 20000
   },
   "chat": {

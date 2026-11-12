@@ -46,7 +46,7 @@
     return response.json();
   }
   async function start() {
-    const config=await json(asset('live2d.json'));
+    const config=await json(asset('live2d.json?v=secondary-v4'));
     if (!config.enabled) {api.state='disabled';return;}
     await resource('widget.css','css');
     const root=el('aside','no-destroy');root.id='ichigoori-widget';root.setAttribute('aria-label',`${config.name}看板娘`);
@@ -123,7 +123,12 @@
     function setHidden(value){hidden=value;root.classList.toggle('is-collapsed',hidden);root.inert=hidden||!desktop.matches;storage.set('ergoutree-ichigoori-hidden-v2',String(hidden));syncGear();if(hidden){toggleChat(false);fadeTools();}else if(mode==='dynamic'&&desktop.matches)loadModel();updateMode();api.hidden=hidden;}
     document.addEventListener('click',event=>{if(event.target.closest('#ichigoori-toggle'))setHidden(!hidden);});
     document.addEventListener('pjax:complete',syncGear);
-    stage.addEventListener('click',()=>touch(true));stage.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();touch(true);chatButton.focus();}});
+    function petHead(){
+      if(!ready||hidden||mode!=='dynamic'||!window.live2d?.petHead?.())return;
+      stage.dataset.headPats=String(Number(stage.dataset.headPats||0)+1);
+    }
+    stage.addEventListener('click',event=>{touch(true);if(window.live2d?.hitTestHead?.(event.clientX,event.clientY))petHead();});
+    stage.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();touch(true);petHead();chatButton.focus();}});
     for(const name of ['pointerdown','pointermove','keydown','focusin'])root.addEventListener(name,()=>touch());
     chatButton.addEventListener('click',()=>toggleChat(panel.hidden));closeButton.addEventListener('click',()=>toggleChat(false));hideButton.addEventListener('click',()=>setHidden(true));
     poseButton.addEventListener('click',()=>{toggleChat(false);poses.hidden=!poses.hidden;motions.hidden=true;poseButton.setAttribute('aria-expanded',String(!poses.hidden));});
@@ -164,7 +169,7 @@
       modelLoad=(async()=>{
         try {
           if(!canvas.getContext('webgl2'))throw Error('WebGL2 不可用');
-          await resource('Core/live2dcubismcore.js','js');await resource('Core/live2d-sdk.js','js');
+          await resource('dynamics.js?v=secondary-v4','js');await resource('Core/live2dcubismcore.js','js');await resource('Core/live2d-sdk.js?v=secondary-v4','js');
           canvas.hidden=false;canvas.style.visibility='hidden';window.live2d.anchorBottom=true;window.live2d.init();window.live2d.paused=false;window.live2d.loadModel(asset(config.model.directory));
           await new Promise((resolve,reject)=>{const deadline=Date.now()+(config.model.loadTimeoutMs||20000);const poll=()=>{if(window.live2d.isReady())return resolve();if(Date.now()>deadline)return reject(Error('模型加载超时'));setTimeout(poll,100);};poll();});
           ready=true;canvas.style.visibility='visible';api.state='model';window.live2d.setExpression('neutral');

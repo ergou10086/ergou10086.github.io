@@ -157,7 +157,7 @@
 
   class Comments {
     constructor(root, config) {
-      this.root = root; this.config = config; this.user = null; this.files = []; this.stickers = []; this.busy = false; this.destroyed = false; this.requestId = crypto.randomUUID(); this.seen = new Set(); this.nextPage = null;
+      this.root = root; this.config = config; this.user = null; this.files = []; this.stickers = []; this.busy = false; this.destroyed = false; this.requestId = crypto.randomUUID(); this.seen = new Set(); this.threads = new Map(); this.relation = null; this.nextPage = null;
       this.abort = new AbortController(); this.draftKey = 'comment-draft:' + config.page; this.cursor = [0, 0];
       root.className = 'cc';
       const header = $('div', 'cc-session'); this.identity = $('span', '', '用 GitHub 登录后参与讨论');
@@ -175,7 +175,8 @@
       this.input = $('input', 'cc-file'); this.input.type = 'file'; this.input.multiple = true; this.input.accept = 'image/png,image/jpeg,image/gif,image/webp'; this.input.hidden = true; this.input.addEventListener('change', () => { this.addFiles([...this.input.files]); this.input.value = ''; });
       actions.append(this.face, this.upload, this.input);
       this.counter = $('span', 'cc-counter'); this.send = $('button', 'cc-send'); this.send.type = 'submit'; this.send.innerHTML = ICONS.send + '<span>发送</span>';
-      toolbar.append(actions, this.counter, this.send); this.form.append(this.text, this.tray, toolbar); this.form.addEventListener('submit', event => { event.preventDefault(); this.submit(); });
+      this.target = $('div', 'cc-target'); this.target.hidden = true;
+      toolbar.append(actions, this.counter, this.send); this.form.append(this.target, this.text, this.tray, toolbar); this.form.addEventListener('submit', event => { event.preventDefault(); this.submit(); });
       this.form.addEventListener('paste', event => { const files = [...(event.clipboardData?.files || [])]; if (files.length) { event.preventDefault(); this.addFiles(files); } });
       this.form.addEventListener('dragover', event => { if (event.dataTransfer?.types.includes('Files')) { event.preventDefault(); this.form.classList.add('cc-dragging'); } });
       this.form.addEventListener('dragleave', () => this.form.classList.remove('cc-dragging'));
@@ -247,11 +248,12 @@
     }
     saveDraft() {
       if (this.destroyed) return;
-      storage.set(this.draftKey, JSON.stringify({ text: this.text.value, stickers: this.stickers.map(sticker => sticker.id), requestId: this.requestId, lastAttempt: this.lastAttempt }), true);
+      storage.set(this.draftKey, JSON.stringify({ relation: this.relation, text: this.text.value, stickers: this.stickers.map(sticker => sticker.id), requestId: this.requestId, lastAttempt: this.lastAttempt }), true);
     }
     async restoreDraft() {
       let draft; try { draft = JSON.parse(storage.get(this.draftKey, true) || 'null'); } catch {}
       if (!draft) return;
+      if (draft.relation && ['reply','quote'].includes(draft.relation.kind) && Number.isSafeInteger(draft.relation.targetId)) { this.relation = draft.relation; this.showTarget(); }
       this.text.value = String(draft.text || '').slice(0, 6000); this.cursor = [this.text.value.length, this.text.value.length];
       if (/^[a-f0-9-]{36}$/.test(draft.requestId || '')) this.requestId = draft.requestId;
       if (typeof draft.lastAttempt === 'string') this.lastAttempt = draft.lastAttempt;
@@ -274,17 +276,61 @@
       const content = $('div', 'cc-comment-content'), head = $('div', 'cc-comment-head');
       const name = $('a', 'cc-comment-author', comment.author.name || comment.author.login); name.href = 'https://github.com/' + encodeURIComponent(comment.author.login); name.target = '_blank'; name.rel = 'noopener noreferrer';
       const date = $('time'); const timestamp = new Date(comment.createdAt); if (!Number.isNaN(timestamp.getTime())) { date.dateTime = timestamp.toISOString(); date.textContent = timestamp.toLocaleString('zh-CN', { dateStyle: 'medium', timeStyle: 'short' }); }
-      head.append(name, date);
+      const meta = $('span', 'cc-comment-meta');
+      if (comment.context) for (const value of [comment.context.location, comment.context.browser, comment.context.os]) meta.append($('span', '', value || '未知'));
+      meta.append(date); head.append(name, meta);
       const body = $('div', 'cc-comment-body'); body.innerHTML = sanitize.sanitize(comment.html || '', { USE_PROFILES: { html: true }, FORBID_TAGS: ['style', 'form', 'input', 'button', 'iframe'], FORBID_ATTR: ['style', 'srcset'] });
       body.querySelectorAll('a').forEach(link => { link.target = '_blank'; link.rel = 'noopener noreferrer nofollow'; });
       body.querySelectorAll('img').forEach(img => { if (!/^https?:\/\//i.test(img.getAttribute('src') || '')) { img.remove(); return; } img.loading = 'lazy'; img.decoding = 'async'; });
-      content.append(head, body); article.append(avatar, content); this.seen.add(comment.id); return article;
+      const reference = $('div', 'cc-reference');
+      if (comment.relation) { reference.textContent = (comment.relation.kind === 'reply' ? '回复 ' : '引用 ') + '@' + comment.relation.name + '：' + comment.relation.excerpt; }
+      else reference.hidden = true;
+      const actions = $('div', 'cc-comment-actions');
+      for (const [kind, label, path] of [['quote', '引用', 'M5 8h5v5H7v3H4v-5z M14 8h5v5h-3v3h-3v-5z'], ['reply', '回复', 'M10 5 3 11l7 6v-4c5 0 8 1 11 5-1-8-5-10-11-10z']]) {
+        const button = $('button', 'cc-icon'); button.type = 'button'; button.title = label; button.setAttribute('aria-label', label + ' @' + comment.author.login);
+        button.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="' + path + '"></path></svg>';
+        button.addEventListener('click', () => { if (this.busy) return; this.relation = { kind, targetId: comment.id, name: comment.author.name || comment.author.login, excerpt: body.textContent.trim().slice(0, 300) }; this.showTarget(); this.saveDraft(); this.form.scrollIntoView({behavior:'smooth', block:'center'}); this.text.focus({preventScroll:true}); }); actions.append(button);
+      }
+      actions.hidden = !this.threadSupport;
+      content.append(head, reference, body, actions); article.append(avatar, content); this.seen.add(comment.id);
+      if (!comment.relation || comment.relation.kind !== 'reply' || comment.replies) {
+        const replies = $('div', 'cc-replies'), more = $('button', 'cc-more-replies', '展开更多回复'); more.type = 'button';
+        const thread = { replies, more, offset: comment.nextReplyOffset, count: comment.replyCount || 0 }; this.threads.set(comment.id, thread);
+        more.hidden = thread.offset == null; more.addEventListener('click', () => this.loadReplies(comment.id)); content.append(replies, more);
+        for (const reply of comment.replies || []) { const node = await this.renderComment(reply); if (node) replies.append(node); }
+      }
+      return article;
+    }
+    showTarget() {
+      this.target.replaceChildren(); this.target.hidden = !this.relation;
+      if (!this.relation) return;
+      const text = $('span', '', (this.relation.kind === 'reply' ? '回复 ' : '引用 ') + '@' + this.relation.name + '：' + this.relation.excerpt);
+      const cancel = $('button', '', '取消'); cancel.type = 'button'; cancel.addEventListener('click', () => { if (this.busy) return; this.relation = null; this.showTarget(); this.saveDraft(); }); this.target.append(text, cancel);
+    }
+    async loadReplies(id) {
+      const thread = this.threads.get(id); if (!thread || thread.offset == null) return;
+      thread.more.disabled = true;
+      try {
+        const data = await this.request('/v1/comments?' + new URLSearchParams({path:this.config.page, root:String(id), offset:String(thread.offset)}));
+        for (const comment of data.comments) { const node = await this.renderComment(comment); if (node) thread.replies.append(node); }
+        thread.offset = data.nextOffset; thread.more.hidden = data.nextOffset == null;
+      } catch(error) { this.message(error.message, true); }
+      finally { thread.more.disabled = false; }
+    }
+    async addPublished(comment) {
+      const thread = comment.relation?.kind === 'reply' && this.threads.get(comment.relation.rootId);
+      if (thread) {
+        thread.count++;
+        if (thread.offset == null && thread.replies.children.length < 2) { const node = await this.renderComment(comment); if (node) thread.replies.append(node); }
+        else { if (thread.offset == null) thread.offset = thread.replies.children.length; thread.more.hidden = false; }
+      } else { const node = await this.renderComment(comment); if (node) this.list.append(node); }
     }
     async load(page = 1) {
       if (this.destroyed) return;
       this.more.disabled = true; this.reload.hidden = true; if (page === 1) this.message('正在加载评论……');
       try {
         const data = await this.request('/v1/comments?' + new URLSearchParams({ path: this.config.page, page: String(page) }));
+        this.threadSupport = data.capabilities?.includes('threads-v1') === true;
         for (const comment of data.comments) { const article = await this.renderComment(comment); if (article) this.list.appendChild(article); }
         this.nextPage = data.nextPage; this.more.hidden = !data.nextPage; this.message(this.seen.size ? '' : '还没有评论，来发表第一条吧。');
       } catch (error) {
@@ -295,21 +341,22 @@
     }
     async submit() {
       if (this.busy || !(this.text.value.trim() || this.files.length || this.stickers.length)) return;
+      if (this.relation && !this.threadSupport) { this.message('回复服务尚未更新，请先取消回复，或等待站长更新服务。', true); return; }
       if (!this.user) { this.message('请先点击 GitHub 登录，草稿会为你保留。'); this.login.focus(); this.saveDraft(); return; }
       this.picker?.close(); this.busy = true; this.update(); this.renderTray(); this.saveDraft(); this.message(this.files.length ? '正在上传图片并发送评论……' : '正在发送评论……');
-      const fingerprint = JSON.stringify({ text: this.text.value, stickers: this.stickers.map(sticker => sticker.id), files: this.files.map(item => [item.file.name, item.file.size, item.file.lastModified]) });
+      const fingerprint = JSON.stringify({ relation: this.relation, text: this.text.value, stickers: this.stickers.map(sticker => sticker.id), files: this.files.map(item => [item.file.name, item.file.size, item.file.lastModified]) });
       if (this.lastAttempt && this.lastAttempt !== fingerprint) this.requestId = crypto.randomUUID();
       this.lastAttempt = fingerprint;
       this.saveDraft();
       const form = new FormData();
-      form.append('payload', JSON.stringify({ text: this.text.value, stickers: this.stickers.map(sticker => sticker.id), stickerRevision: this.stickerRevision, requestId: this.requestId }));
+      form.append('payload', JSON.stringify({ text: this.text.value, stickers: this.stickers.map(sticker => sticker.id), stickerRevision: this.stickerRevision, requestId: this.requestId, relation: this.relation ? { kind: this.relation.kind, targetId: this.relation.targetId } : null }));
       for (const item of this.files) form.append('files', item.file, item.file.name);
       try {
         const result = await this.request('/v1/comments?' + new URLSearchParams({ path: this.config.page }), { method: 'POST', body: form });
         // Only the successful server response becomes a published comment.
-        const article = await this.renderComment(result.comment); if (article) this.list.appendChild(article);
+        await this.addPublished(result.comment);
         for (const item of this.files) URL.revokeObjectURL(item.url);
-        this.files = []; this.stickers = []; this.text.value = ''; this.requestId = crypto.randomUUID(); this.lastAttempt = null; this.cursor = [0, 0]; storage.remove(this.draftKey, true); this.renderTray(); this.message('评论已发送。');
+        this.files = []; this.stickers = []; this.relation = null; this.showTarget(); this.text.value = ''; this.requestId = crypto.randomUUID(); this.lastAttempt = null; this.cursor = [0, 0]; storage.remove(this.draftKey, true); this.renderTray(); this.message('评论已发送。');
       } catch (error) {
         if (error.name !== 'AbortError') this.message(error.message, true);
         if (error.status === 401) { storage.remove(AUTH_KEY); this.user = null; this.session(); }
